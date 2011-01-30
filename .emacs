@@ -102,6 +102,13 @@
 (require 'zencoding-mode)
 (add-hook 'sgml-mode-hook 'zencoding-mode) ;; Auto-start on any markup modes
 
+; indent html with tabs only
+(add-hook 'html-mode-hook
+  (function
+   (lambda ()
+     (setq indent-tabs-mode t)
+     (setq sgml-basic-offset 8))))
+
 (require 'magit)
 
 ; show contents of kill ring
