@@ -117,3 +117,6 @@
   (interactive)
   (popup-menu 'yank-menu))
 (global-set-key "\C-cy" 'show-kill-ring)
+
+; clojure mode
+(require 'clojure-mode)
