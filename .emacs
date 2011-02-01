@@ -106,8 +106,9 @@
 (add-hook 'html-mode-hook
   (function
    (lambda ()
-     (setq indent-tabs-mode t)
-     (setq sgml-basic-offset 8))))
+     (progn
+       (setq indent-tabs-mode t)
+       (setq sgml-basic-offset 8)))))
 
 (require 'magit)
 
