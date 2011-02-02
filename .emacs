@@ -53,8 +53,22 @@
 ; always truncate lines
 (setq-default truncate-lines t)
 
+; Python
+; ------
 ; indent python by 4 spaces by default
 (setq-default python-indent 4)
+; use pyflakes to check code (requires pyflakes installed and on $PATH)
+(when (load "flymake" t)
+  (defun flymake-pyflakes-init ()
+    (let* ((temp-file (flymake-init-create-temp-buffer-copy
+                       'flymake-create-temp-inplace))
+           (local-file (file-relative-name
+                        temp-file
+                        (file-name-directory buffer-file-name))))
+      (list "pyflakes" (list local-file))))
+  (add-to-list 'flymake-allowed-file-name-masks
+               '("\\.py\\'" flymake-pyflakes-init)))
+(add-hook 'python-mode-hook 'flymake-mode)
 
 ; indent JavaScript tabs (treating them as eight spaces)
 (setq-default js-indent-level 8)
