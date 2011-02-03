@@ -71,6 +71,14 @@
           '(lambda ()
              (setq indent-tabs-mode t)))
 
+; HTML modes / Django templates
+; -----------------------------
+; nXhtml, which includes Django template highlighting
+(load "~/.emacs.d/user-lisp/nxhtml/autostart.el")
+; no horrible background highlighting on html major mode
+(custom-set-faces
+ '(mumamo-background-chunk-major ((((class color) (min-colors 88) (background dark)) (:background "*")))))
+
 ; .dtml are our Django templates which are mostly HTML
 (setq auto-mode-alist
       (append
