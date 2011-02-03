@@ -1,3 +1,30 @@
+; Loading third party code
+; ------------------------
+; we will store all our 3rd party modes here
+(add-to-list 'load-path "~/.emacs.d/user-lisp/")
+; some plugins (at least w3) install themselves here:
+(add-to-list 'load-path "/usr/share/emacs/site-lisp")
+
+; Interface
+; ---------
+; hide toolbar and scrollbar
+(tool-bar-mode 0)
+(scroll-bar-mode 0)
+; show x-position (ie column number) for point in buffer
+(column-number-mode 1)
+; always highlight matching parentheses
+(show-paren-mode 1)
+; no startup screen
+(setq-default inhibit-startup-screen t)
+; always highlight line that cursor is on
+(global-hl-line-mode 1)
+; always truncate lines
+(setq-default truncate-lines t)
+; theme stuff
+(require 'color-theme)
+(require 'color-theme-tango)
+(color-theme-tango)
+
 ; top of kill ring should also be in X clipboard
 (setq x-select-enable-clipboard t)
 
@@ -6,33 +33,13 @@
 (setq ido-everywhere t)
 (ido-mode)
 
-; we will store all our 3rd party modes here
-(add-to-list 'load-path "~/.emacs.d/user-lisp/")
-
-; some plugins (at least w3) install themselves here:
-(add-to-list 'load-path "/usr/share/emacs/site-lisp")
-
-; theme stuff
-(require 'color-theme)
-(require 'color-theme-tango)
-(color-theme-tango)
-
 ; always spaces, never tabs
 (setq-default indent-tabs-mode nil)
 
-; note: to get tabs (use whitespace-mode to check and (tabify) to fix):
-; use tabs rather than spaces:
-; M-x set-variable indent-tabs-mode t
-; indent to 8 spaces
-; M-x set-variable js-indent-level 8
-
-; remove extraneous GUI elements
-(tool-bar-mode 0)
-(scroll-bar-mode 0)
-
+; Text formatting modes
+; ---------------------
 ; csv mode stuff, since it's used extensively in GBBO
 (require 'csv-mode)
-
 ; yaml mode stuff, since google app engine uses it
 (require 'yaml-mode)
 (add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
@@ -40,18 +47,6 @@
 (add-hook 'yaml-mode-hook
 	  '(lambda ()
 	     (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
-
-; show x-position (ie column number) for point in buffer
-(column-number-mode 1)
-
-; always highlight matching parentheses
-(show-paren-mode 1)
-
-; always highlight line that cursor is on
-(global-hl-line-mode 1)
-
-; always truncate lines
-(setq-default truncate-lines t)
 
 ; Python
 ; ------
@@ -75,19 +70,6 @@
 (add-hook 'js-mode-hook
           '(lambda ()
              (setq indent-tabs-mode t)))
-
-(custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(inhibit-startup-screen t))
-(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- )
 
 ; .dtml are our Django templates which are mostly HTML
 (setq auto-mode-alist
