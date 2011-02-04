@@ -30,10 +30,30 @@
 ; top of kill ring should also be in X clipboard
 (setq x-select-enable-clipboard t)
 
+; Editing conveniences
+; --------------------
 ; ido-mode -- fuzzy completion
 (setq ido-enable-flex-matching t)
 (setq ido-everywhere t)
 (ido-mode)
+; zap-to-char but don't delete the character itself
+(defun zap-up-to-char (arg char)
+  "Kill up to, but not including ARGth occurrence of CHAR.
+Case is ignored if `case-fold-search' is non-nil in the current buffer.
+Goes backward if ARG is negative; error if CHAR not found.
+Ignores CHAR at point."
+  (interactive "p\ncZap up to char: ")
+  (let ((direction (if (>= arg 0) 1 -1)))
+    (kill-region (point)
+		 (progn
+		   (forward-char direction)
+		   (unwind-protect
+		       (search-forward (char-to-string char) nil nil arg)
+		     (backward-char direction))
+		   (point)))))
+; bind it to the usual zap-to-char shortcut
+(global-set-key "\M-z" 'zap-up-to-char)
+
 
 ; always spaces, never tabs
 (setq-default indent-tabs-mode nil)
@@ -79,7 +99,8 @@
 (load "~/.emacs.d/user-lisp/nxhtml/autostart.el")
 ; no horrible background highlighting on html major mode
 (custom-set-faces
- '(mumamo-background-chunk-major ((((class color) (min-colors 88) (background dark)) (:background "*")))))
+ '(mumamo-background-chunk-major 
+   ((((class color) (min-colors 88) (background dark)) (:background "*")))))
 
 ; .dtml are our Django templates which are mostly HTML
 (setq auto-mode-alist
