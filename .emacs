@@ -20,10 +20,12 @@
 (global-hl-line-mode 1)
 ; always truncate lines
 (setq-default truncate-lines t)
-; theme stuff
+; colour scheme
 (require 'color-theme)
 (require 'color-theme-tango)
 (color-theme-tango)
+; show file name in window title
+(setq frame-title-format "%b - emacs")
 
 ; top of kill ring should also be in X clipboard
 (setq x-select-enable-clipboard t)
