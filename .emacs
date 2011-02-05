@@ -137,6 +137,8 @@ Ignores CHAR at point."
        (setq indent-tabs-mode t)
        (setq sgml-basic-offset 8)))))
 
+; better git handling
+; note that you will still need to install magit.info manually
 (require 'magit)
 
 ; show contents of kill ring
