@@ -154,3 +154,7 @@ Ignores CHAR at point."
   "Turn on pseudo-structural editing of Lisp code."
   t)
 (add-hook 'clojure-mode-hook 'enable-paredit-mode)
+
+; something in the above has switched on debugging. Switch it off.
+; TODO: find offending code
+(setq debug-on-error nil)
