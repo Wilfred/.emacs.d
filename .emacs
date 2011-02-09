@@ -155,6 +155,9 @@ Ignores CHAR at point."
   t)
 (add-hook 'clojure-mode-hook 'enable-paredit-mode)
 
+; deleting files should go to recycle bin
+(setq delete-by-moving-to-trash t)
+
 ; something in the above has switched on debugging. Switch it off.
 ; TODO: find offending code
 (setq debug-on-error nil)
