@@ -87,6 +87,26 @@ Ignores CHAR at point."
                '("\\.py\\'" flymake-pyflakes-init)))
 (add-hook 'python-mode-hook 'flymake-mode)
 
+; outline mode, note that the the minor mode shorcuts have an @ in them
+; e.g. C-c C-c becomes C-c @ C-c
+(defun py-outline-level ()
+  (let (buffer-invisibility-spec)
+    (save-excursion
+      (skip-chars-forward "\t ")
+      (current-column))))
+(defun python-outline-minor-mode ()
+  ; match lines with no indent and indented "class"
+  ; and "def" lines.
+  (setq outline-regexp "\\(def\\|class\\) ")
+  ; enable our level computation
+  (setq outline-level 'py-outline-level)
+  ; turn on outline mode
+  (outline-minor-mode t)
+  ; initially hide all but the headers
+  (hide-body))
+
+(add-hook 'python-mode-hook 'python-outline-minor-mode)
+
 ; indent JavaScript tabs (treating them as eight spaces)
 (setq-default js-indent-level 8)
 (add-hook 'js-mode-hook
