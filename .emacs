@@ -32,6 +32,8 @@
 
 ; Editing conveniences
 ; --------------------
+; Automatically indent the new line when we hit enter
+(define-key global-map (kbd "RET") 'newline-and-indent)
 ; ido-mode -- fuzzy completion
 (setq ido-enable-flex-matching t)
 (setq ido-everywhere t)
