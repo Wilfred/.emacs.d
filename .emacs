@@ -124,12 +124,6 @@ Ignores CHAR at point."
  '(mumamo-background-chunk-major 
    ((((class color) (min-colors 88) (background dark)) (:background "*")))))
 
-; .dtml are our Django templates which are mostly HTML
-(setq auto-mode-alist
-      (append
-       '(("\\.dtml\\'" . html-mode))
-       auto-mode-alist))
-
 ; django template tags
 (define-skeleton template-tag-skeleton
   "Insert a {% foo %} template tag"

@@ -106,7 +106,7 @@ order."
   (add-to-list 'auto-mode-alist '("\\.jsp\\'"      . jsp-nxhtml-mumamo-mode))
   (add-to-list 'auto-mode-alist '("\\.gsp\\'"      . gsp-nxhtml-mumamo-mode))
   (add-to-list 'auto-mode-alist '("\\.asp\\'"      . asp-nxhtml-mumamo-mode))
-  (add-to-list 'auto-mode-alist '("\\.djhtml\\'"   . django-nxhtml-mumamo-mode))
+  (add-to-list 'auto-mode-alist '("\\.dtml\\'"     . django-html-mumamo-mode))
   (add-to-list 'auto-mode-alist '("\\.rhtml\\'"    . eruby-nxhtml-mumamo-mode))
   (add-to-list 'auto-mode-alist '("\\.erb\\'"      . eruby-javascript-mumamo-mode))
   (add-to-list 'auto-mode-alist '("\\.phps\\'"     . smarty-nxhtml-mumamo-mode))
