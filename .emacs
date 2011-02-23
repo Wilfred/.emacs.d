@@ -177,6 +177,13 @@ Ignores CHAR at point."
 ; deleting files should go to recycle bin
 (setq delete-by-moving-to-trash t)
 
+; auto-completion with neat popup
+(add-to-list 'load-path "~/.emacs.d/user-lisp/auto-complete")
+(require 'auto-complete-config)
+(add-to-list 'ac-dictionary-directories "~/.emacs.d/user-lisp/auto-complete/dict")
+(ac-config-default)
+
+
 ; something in the above has switched on debugging. Switch it off.
 ; TODO: find offending code
 (setq debug-on-error nil)
