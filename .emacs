@@ -178,7 +178,12 @@ Ignores CHAR at point."
 (setq delete-by-moving-to-trash t)
 
 ; auto-completion with neat popup
+; using dabbrev as auto-completion source
 (add-to-list 'load-path "~/.emacs.d/user-lisp/auto-complete")
+(require 'ac-dabbrev)
+(setq ac-sources
+      (list ac-source-dabbrev))
+
 (require 'auto-complete-config)
 (add-to-list 'ac-dictionary-directories "~/.emacs.d/user-lisp/auto-complete/dict")
 (ac-config-default)
