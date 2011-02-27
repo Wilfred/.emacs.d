@@ -188,6 +188,13 @@ Ignores CHAR at point."
 (add-to-list 'ac-dictionary-directories "~/.emacs.d/user-lisp/auto-complete/dict")
 (ac-config-default)
 
+; don't try to complete after semicolon (is a pain in CSS)
+(setq ac-ignores '(";"))
+; tab only for completion
+(define-key ac-complete-mode-map "\r" nil)
+
+(define-key ac-complete-mode-map (kbd "C-n") 'ac-next)
+
 
 ; something in the above has switched on debugging. Switch it off.
 ; TODO: find offending code
