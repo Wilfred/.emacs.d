@@ -181,6 +181,9 @@ Ignores CHAR at point."
 ; deleting files should go to recycle bin
 (setq delete-by-moving-to-trash t)
 
+; dabbrev-expand should match case
+(setq dabbrev-case-fold-search nil)
+
 ; auto-completion with neat popup
 ; using dabbrev as auto-completion source
 (add-to-list 'load-path "~/.emacs.d/user-lisp/auto-complete")
