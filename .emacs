@@ -155,6 +155,10 @@ Ignores CHAR at point."
      (progn
        (setq indent-tabs-mode t)
        (setq sgml-basic-offset 8)))))
+; indent django html similarly
+(setq django-indent-width 8)
+(setq sgml-basic-offset 8)
+(setq indent-tabs-mode t)
 
 ; better git handling
 ; note that you will still need to install magit.info manually
