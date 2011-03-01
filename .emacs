@@ -56,6 +56,9 @@ Ignores CHAR at point."
 ; bind it to the usual zap-to-char shortcut
 (global-set-key "\M-z" 'zap-up-to-char)
 
+; automatically finish quotes, brackets etc according to mode
+(require 'autopair)
+(autopair-global-mode)
 
 ; always spaces, never tabs
 (setq-default indent-tabs-mode nil)
