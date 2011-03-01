@@ -10,30 +10,50 @@
 ; hide toolbar and scrollbar
 (tool-bar-mode 0)
 (scroll-bar-mode 0)
+;
 ; show x-position (ie column number) for point in buffer
 (column-number-mode 1)
+;
 ; always highlight matching parentheses
 (show-paren-mode 1)
+;
 ; no startup screen
 (setq-default inhibit-startup-screen t)
+;
 ; always highlight line that cursor is on
 (global-hl-line-mode 1)
+;
 ; always truncate lines
 (setq-default truncate-lines t)
+;
 ; colour scheme
 (require 'color-theme)
 (require 'color-theme-tango)
 (color-theme-tango)
+;
 ; show file name in window title
 (setq frame-title-format "%b - emacs")
 
+; Clipboard
+; ---------
+;
 ; top of kill ring should also be in X clipboard
 (setq x-select-enable-clipboard t)
+;
+; show contents of kill ring on demand
+(defun show-kill-ring ()
+  "Show the contents of the kill ring in a pop-up"
+  (interactive)
+  (popup-menu 'yank-menu))
+(global-set-key "\C-cy" 'show-kill-ring)
+
 
 ; Editing conveniences
 ; --------------------
+;
 ; Automatically indent the new line when we hit enter
 (define-key global-map (kbd "RET") 'newline-and-indent)
+;
 ; ido-mode -- fuzzy completion
 (setq ido-enable-flex-matching t)
 (setq ido-everywhere t)
@@ -55,7 +75,7 @@ Ignores CHAR at point."
 		   (point)))))
 ; bind it to the usual zap-to-char shortcut
 (global-set-key "\M-z" 'zap-up-to-char)
-
+;
 ; automatically finish quotes, brackets etc according to mode
 (require 'autopair)
 (autopair-global-mode)
@@ -94,7 +114,7 @@ Ignores CHAR at point."
                '("\\.py\\'" flymake-pyflakes-init)))
 ; now always load flymake-mode with python-mode
 (add-hook 'python-mode-hook 'flymake-mode)
-
+;
 ; outline mode, note that the the minor mode shorcuts have an @ in them
 ; e.g. C-c C-c becomes C-c @ C-c
 (defun py-outline-level ()
@@ -112,7 +132,7 @@ Ignores CHAR at point."
   (outline-minor-mode t)
   ; initially hide all but the headers
   (hide-body))
-
+; load when we open a python file
 (add-hook 'python-mode-hook 'python-outline-minor-mode)
 
 ; indent JavaScript tabs (treating them as eight spaces)
@@ -129,7 +149,7 @@ Ignores CHAR at point."
 (custom-set-faces
  '(mumamo-background-chunk-major 
    ((((class color) (min-colors 88) (background dark)) (:background "*")))))
-
+;
 ; django template tags
 (define-skeleton template-tag-skeleton
   "Insert a {% foo %} template tag"
@@ -146,11 +166,11 @@ Ignores CHAR at point."
 (global-set-key "\C-ctt" 'template-tag-skeleton)
 (global-set-key "\C-ctv" 'template-variable-skeleton)
 (global-set-key "\C-ctc" 'template-comment-skeleton)
-
+;
 ; zen coding in HTML mode
 (require 'zencoding-mode)
 (add-hook 'sgml-mode-hook 'zencoding-mode) ;; Auto-start on any markup modes
-
+;
 ; indent html with tabs only
 (add-hook 'html-mode-hook
   (function
@@ -166,13 +186,6 @@ Ignores CHAR at point."
 ; better git handling
 ; note that you will still need to install magit.info manually
 (require 'magit)
-
-; show contents of kill ring
-(defun show-kill-ring ()
-  "Show the contents of the kill ring in a pop-up"
-  (interactive)
-  (popup-menu 'yank-menu))
-(global-set-key "\C-cy" 'show-kill-ring)
 
 ; clojure mode and other lisp necessities
 (require 'clojure-mode)
