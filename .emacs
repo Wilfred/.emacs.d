@@ -1,12 +1,14 @@
 ; Loading third party code
 ; ------------------------
+;
 ; we will store all our 3rd party modes here
 (add-to-list 'load-path "~/.emacs.d/user-lisp/")
 ; some plugins (at least w3) install themselves here:
 (add-to-list 'load-path "/usr/share/emacs/site-lisp")
-
+;
 ; Interface
 ; ---------
+;
 ; hide toolbar and scrollbar
 (tool-bar-mode 0)
 (scroll-bar-mode 0)
@@ -33,7 +35,7 @@
 ;
 ; show file name in window title
 (setq frame-title-format "%b - emacs")
-
+;
 ; Clipboard
 ; ---------
 ;
@@ -46,8 +48,7 @@
   (interactive)
   (popup-menu 'yank-menu))
 (global-set-key "\C-cy" 'show-kill-ring)
-
-
+;
 ; Editing conveniences
 ; --------------------
 ;
@@ -79,12 +80,33 @@ Ignores CHAR at point."
 ; automatically finish quotes, brackets etc according to mode
 (require 'autopair)
 (autopair-global-mode)
-
+;
+; dabbrev-expand should match case
+(setq dabbrev-case-fold-search nil)
+;
+; auto-completion with neat popup
+; using dabbrev as auto-completion source
+(add-to-list 'load-path "~/.emacs.d/user-lisp/auto-complete")
+(require 'ac-dabbrev)
+(setq ac-sources
+      (list ac-source-dabbrev))
+;
+(require 'auto-complete-config)
+(add-to-list 'ac-dictionary-directories "~/.emacs.d/user-lisp/auto-complete/dict")
+(ac-config-default)
+;
+; don't try to complete after semicolon (is a pain in CSS)
+(setq ac-ignores '(";"))
+; tab only for completion
+(define-key ac-complete-mode-map "\r" nil)
+(define-key ac-complete-mode-map (kbd "C-n") 'ac-next)
+;
 ; always spaces, never tabs
 (setq-default indent-tabs-mode nil)
-
-; Text formatting modes
-; ---------------------
+;
+; Text formatting
+; ---------------
+;
 ; csv mode stuff, since it's used extensively in GBBO
 (require 'csv-mode)
 ; yaml mode stuff, since google app engine uses it
@@ -94,9 +116,10 @@ Ignores CHAR at point."
 (add-hook 'yaml-mode-hook
 	  '(lambda ()
 	     (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
-
+;
 ; Python
 ; ------
+;
 ; indent python by 4 spaces by default
 (setq-default python-indent 4)
 ; set flymake to use pyflakes to check code (requires pyflakes installed and on $PATH)
@@ -134,15 +157,19 @@ Ignores CHAR at point."
   (hide-body))
 ; load when we open a python file
 (add-hook 'python-mode-hook 'python-outline-minor-mode)
-
+;
+; JavaScript
+; ----------
+;
 ; indent JavaScript tabs (treating them as eight spaces)
 (setq-default js-indent-level 8)
 (add-hook 'js-mode-hook
           '(lambda ()
              (setq indent-tabs-mode t)))
-
+;
 ; HTML modes / Django templates
 ; -----------------------------
+;
 ; nXhtml, which includes Django template highlighting
 (load "~/.emacs.d/user-lisp/nxhtml/autostart.el")
 ; no horrible background highlighting on html major mode
@@ -196,28 +223,6 @@ Ignores CHAR at point."
 
 ; deleting files should go to recycle bin
 (setq delete-by-moving-to-trash t)
-
-; dabbrev-expand should match case
-(setq dabbrev-case-fold-search nil)
-
-; auto-completion with neat popup
-; using dabbrev as auto-completion source
-(add-to-list 'load-path "~/.emacs.d/user-lisp/auto-complete")
-(require 'ac-dabbrev)
-(setq ac-sources
-      (list ac-source-dabbrev))
-
-(require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/user-lisp/auto-complete/dict")
-(ac-config-default)
-
-; don't try to complete after semicolon (is a pain in CSS)
-(setq ac-ignores '(";"))
-; tab only for completion
-(define-key ac-complete-mode-map "\r" nil)
-
-(define-key ac-complete-mode-map (kbd "C-n") 'ac-next)
-
 
 ; something in the above has switched on debugging. Switch it off.
 ; TODO: find offending code
