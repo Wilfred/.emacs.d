@@ -209,6 +209,13 @@ Ignores CHAR at point."
 (setq django-indent-width 8)
 (setq sgml-basic-offset 8)
 (setq indent-tabs-mode t)
+; indent CSS with tabs also
+(add-hook 'css-mode-hook
+          (function
+           (lambda ()
+             (progn
+               (setq css-indent-offset 8)
+               (setq indent-tabs-mode t)))))
 
 ; better git handling
 ; note that you will still need to install magit.info manually
