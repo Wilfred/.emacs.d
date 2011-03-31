@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# assumes Rhino is installed as js.jar
+absolute_path=`readlink -m $1`
+cd ~/.emacs.d/user-js/jshint
+java -jar /usr/share/java/js.jar env/rhino.js $absolute_path
+
