@@ -190,12 +190,21 @@ Ignores CHAR at point."
 ; HTML modes / Django templates
 ; -----------------------------
 ;
-; nXhtml, which includes Django template highlighting
-(load "~/.emacs.d/user-lisp/nxhtml/autostart.el")
-; no horrible background highlighting on html major mode
-(custom-set-faces
- '(mumamo-background-chunk-major 
-   ((((class color) (min-colors 88) (background dark)) (:background "*")))))
+; we use normal HTML mode, but add custom highlighting:
+(add-to-list 'auto-mode-alist '("\\.dtml$" . html-mode))
+(defvar django-tag-face (make-face 'django-tag-face))
+(set-face-background 'django-tag-face "Aquamarine")
+(set-face-foreground 'django-tag-face "Black")
+;
+(defvar django-variable-face (make-face 'django-variable-face))
+(set-face-background 'django-variable-face "Plum")
+(set-face-foreground 'django-variable-face "Black")
+;
+(font-lock-add-keywords
+ 'html-mode
+ '(("\\({%[^%]*%}\\)" 1 django-tag-face prepend)
+   ("\\({{[^}]*}}\\)" 1 django-variable-face prepend)
+   ))
 ;
 ; django template tags
 (define-skeleton template-tag-skeleton
