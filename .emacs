@@ -193,12 +193,10 @@ Ignores CHAR at point."
 ; we use normal HTML mode, but add custom highlighting:
 (add-to-list 'auto-mode-alist '("\\.dtml$" . html-mode))
 (defvar django-tag-face (make-face 'django-tag-face))
-(set-face-background 'django-tag-face "Aquamarine")
-(set-face-foreground 'django-tag-face "Black")
+(set-face-foreground 'django-tag-face "Orange")
 ;
 (defvar django-variable-face (make-face 'django-variable-face))
-(set-face-background 'django-variable-face "Plum")
-(set-face-foreground 'django-variable-face "Black")
+(set-face-foreground 'django-variable-face "Green")
 ;
 (font-lock-add-keywords
  'html-mode
