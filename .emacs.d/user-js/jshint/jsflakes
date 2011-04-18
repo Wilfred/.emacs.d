@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [ $# -ne 1 ]
+then
+  echo "Usage: jsflikes <your JavaScript file>"
+  exit
+fi
+
 absolute_path=`readlink -m $1`
 
 cd ~/.emacs.d/user-js/jshint
