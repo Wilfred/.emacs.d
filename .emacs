@@ -87,8 +87,8 @@ Ignores CHAR at point."
 ; enable recent files mode.
 (recentf-mode t)
 ;
-; 50 files ought to be enough.
-(setq recentf-max-saved-items 50)
+; 200 files ought to be enough.
+(setq recentf-max-saved-items 200)
 ;
 (defun ido-recentf-open ()
   "Use `ido-completing-read' to \\[find-file] a recent file"
