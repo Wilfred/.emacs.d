@@ -5,7 +5,7 @@ load("jshint.js");
 (function (args) {
     var name   = args[0],
         optstr = args[1], // arg1=val1,arg2=val2,...
-        opts   = { rhino: true, browser: true, curly: true, undef: true },
+        opts   = { browser: true, curly: true, undef: true },
         input;
 
     if (!name) {
