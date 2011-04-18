@@ -119,7 +119,7 @@ Ignores CHAR at point."
 (setq ac-ignores '(";"))
 ; tab only for completion
 (define-key ac-complete-mode-map "\r" nil)
-(define-key ac-complete-mode-map (kbd "C-n") 'ac-next)
+
 ;
 ; always spaces, never tabs
 (setq-default indent-tabs-mode nil)
