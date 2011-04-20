@@ -192,16 +192,23 @@ Ignores CHAR at point."
 ;
 ; we use normal HTML mode, but add custom highlighting:
 (add-to-list 'auto-mode-alist '("\\.dtml$" . html-mode))
+
+; highlight Django templating stuff
 (defvar django-tag-face (make-face 'django-tag-face))
 (set-face-foreground 'django-tag-face "Orange")
 ;
 (defvar django-variable-face (make-face 'django-variable-face))
 (set-face-foreground 'django-variable-face "Green")
-;
+
+
+(defvar django-comment-face (make-face 'django-comment-face))
+(set-face-foreground 'django-comment-face "Gray")
+
 (font-lock-add-keywords
  'html-mode
  '(("\\({%[^%]*%}\\)" 1 django-tag-face prepend)
    ("\\({{[^}]*}}\\)" 1 django-variable-face prepend)
+   ("\\({#[^}]*#}\\)" 1 django-comment-face prepend)
    ))
 ;
 ; django template tags
