@@ -262,6 +262,12 @@ Ignores CHAR at point."
   t)
 (add-hook 'clojure-mode-hook 'enable-paredit-mode)
 
+; markdown mode
+(autoload 'markdown-mode "markdown-mode.el"
+   "Major mode for editing Markdown files" t)
+(setq auto-mode-alist
+   (cons '("\\.md" . markdown-mode) auto-mode-alist))
+
 ; deleting files should go to recycle bin
 (setq delete-by-moving-to-trash t)
 
