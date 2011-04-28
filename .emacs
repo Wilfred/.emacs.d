@@ -126,10 +126,6 @@ Ignores CHAR at point."
 (add-hook 'js-mode-hook
           '(lambda ()
              (setq indent-tabs-mode t)))
-;
-; HTML modes / Django templates
-; -----------------------------
-;
 
 ; better git handling
 ; note that you will still need to install magit.info manually
