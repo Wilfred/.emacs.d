@@ -147,6 +147,23 @@ Ignores CHAR at point."
 ; deleting files should go to recycle bin
 (setq delete-by-moving-to-trash t)
 
+;; source: http://steve.yegge.googlepages.com/my-dot-emacs-file
+; FIXME: breaks if you have another buffer called NEW-NAME
+(defun rename-file-and-buffer (new-name)
+  "Renames both current buffer and file it's visiting to NEW-NAME."
+  (interactive "sNew name: ")
+  (let ((name (buffer-name))
+    (filename (buffer-file-name)))
+    (if (not filename)
+    (message "Buffer '%s' is not visiting a file!" name)
+      (if (get-buffer new-name)
+      (message "A buffer named '%s' already exists!" new-name)
+    (progn
+      (rename-file name new-name 1)
+      (rename-buffer new-name)
+      (set-visited-file-name new-name)
+      (set-buffer-modified-p nil))))))
+
 ; something in the above has switched on debugging. Switch it off.
 ; TODO: find offending code
 (setq debug-on-error nil)
