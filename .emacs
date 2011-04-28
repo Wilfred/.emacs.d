@@ -113,6 +113,9 @@ Ignores CHAR at point."
 	  '(lambda ()
 	     (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
 
+(require 'html-customisations)
+(require 'css-customisations)
+
 (require 'python-customisations)
 
 ; JavaScript
@@ -127,66 +130,6 @@ Ignores CHAR at point."
 ; HTML modes / Django templates
 ; -----------------------------
 ;
-; we use normal HTML mode, but add custom highlighting:
-(add-to-list 'auto-mode-alist '("\\.dtml$" . html-mode))
-
-; highlight Django templating stuff
-(defvar django-tag-face (make-face 'django-tag-face))
-(set-face-foreground 'django-tag-face "Orange")
-;
-(defvar django-variable-face (make-face 'django-variable-face))
-(set-face-foreground 'django-variable-face "Green")
-
-
-(defvar django-comment-face (make-face 'django-comment-face))
-(set-face-foreground 'django-comment-face "Gray")
-
-(font-lock-add-keywords
- 'html-mode
- '(("\\({%[^%]*%}\\)" 1 django-tag-face prepend)
-   ("\\({{[^}]*}}\\)" 1 django-variable-face prepend)
-   ("\\({#[^}]*#}\\)" 1 django-comment-face prepend)
-   ))
-;
-; django template tags
-(define-skeleton template-tag-skeleton
-  "Insert a {% foo %} template tag"
-  "Template tag name: "
-  "{% " str " %}")
-(define-skeleton template-variable-skeleton
-  "Insert a {{ foo }} template variable"
-  "Template variable: "
-  "{{ " str " }}")
-(define-skeleton template-comment-skeleton
-  "Insert a {# foo #} template variable"
-  "Comment: "
-  "{# " str " #}")
-(global-set-key "\C-ctt" 'template-tag-skeleton)
-(global-set-key "\C-ctv" 'template-variable-skeleton)
-(global-set-key "\C-ctc" 'template-comment-skeleton)
-;
-; zen coding in HTML mode
-(require 'zencoding-mode)
-(add-hook 'sgml-mode-hook 'zencoding-mode) ;; Auto-start on any markup modes
-;
-; indent html with tabs only
-(add-hook 'html-mode-hook
-  (function
-   (lambda ()
-     (progn
-       (setq indent-tabs-mode t)
-       (setq sgml-basic-offset 8)))))
-; indent django html similarly
-(setq django-indent-width 8)
-(setq sgml-basic-offset 8)
-(setq indent-tabs-mode t)
-; indent CSS with tabs also
-(add-hook 'css-mode-hook
-          (function
-           (lambda ()
-             (progn
-               (setq css-indent-offset 8)
-               (setq indent-tabs-mode t)))))
 
 ; better git handling
 ; note that you will still need to install magit.info manually
