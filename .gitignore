@@ -1,6 +1,12 @@
 # ignore everything
 *
 
-# except .emacs and emacs lisp
+# except .emacs and its dependencies
 !.emacs
-!*.el
+!/.emacs.d
+!/.emacs.d/*
+!/.emacs.d/user-lisp/*
+!/.emacs.d/user-js/*
+
+# and allow gitignore to be tracked too
+!.gitignore
