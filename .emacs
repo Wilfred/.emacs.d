@@ -10,6 +10,8 @@
 
 (require 'ui-customisations)
 
+(require 'dired+)
+
 ; Interface
 ; ---------
 ;
