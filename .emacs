@@ -5,8 +5,6 @@
 (add-to-list 'load-path "~/.emacs.d/user-lisp/")
 ; some plugins (at least w3) install themselves here:
 (add-to-list 'load-path "/usr/share/emacs/site-lisp")
-; and unhelpfully, magit installed itself here
-(add-to-list 'load-path "/usr/local/share/emacs/site-lisp")
 
 (require 'ui-customisations)
 
@@ -132,7 +130,7 @@ Ignores CHAR at point."
              (setq indent-tabs-mode t)))
 
 ; better git handling
-; note that this requires you to install magit manually, it's not in user-lisp
+(add-to-list 'load-path "~/.emacs.d/user-lisp/magit")
 (require 'magit)
 
 ; clojure mode and other lisp necessities
