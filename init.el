@@ -133,6 +133,9 @@ Ignores CHAR at point."
 (add-to-list 'load-path "~/.emacs.d/user-lisp/magit")
 (require 'magit)
 
+(global-set-key [(f2)] 'magit-status)
+
+
 ; clojure mode and other lisp necessities
 (require 'clojure-mode)
 (autoload 'enable-paredit-mode "paredit"
