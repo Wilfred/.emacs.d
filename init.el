@@ -117,8 +117,8 @@ Ignores CHAR at point."
 
 (require 'html-customisations)
 (require 'css-customisations)
-
 (require 'python-customisations)
+(require 'potato-customisations)
 
 ; JavaScript
 ; ----------
@@ -172,14 +172,4 @@ Ignores CHAR at point."
 ; something in the above has switched on debugging. Switch it off.
 ; TODO: find offending code
 (setq debug-on-error nil)
-
-(defun set-gxbo-market (str)
-  "Write the GxBO market into app.yaml."
-  (interactive "sMarket: ")
-  (goto-char 19)
-  (delete-region (point) (line-end-position))
-  (insert str)
-  (save-buffer))
-
-(global-set-key [(f1)] 'set-gxbo-market)
 
