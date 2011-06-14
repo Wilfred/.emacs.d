@@ -55,6 +55,19 @@ Ignores CHAR at point."
 		   (point)))))
 ; bind it to the usual zap-to-char shortcut
 (global-set-key "\M-z" 'zap-up-to-char)
+
+(defun transpose-symbols (arg)
+  "Interchange sybmols around point, leaving point at end of them.
+With prefix arg ARG, effect is to take symbol before or around point
+and drag it forward past ARG other symbol (backward if ARG negative).
+If ARG is zero, the symbol around or after point and around or after mark
+are interchanged."
+  (interactive "*p")
+  (transpose-subr 'forward-symbol arg))
+
+; bind it to the usual transpose-word key combination
+(global-set-key "\M-t" 'transpose-symbols)
+
 ;
 ; offer recent files
 (require 'recentf)
