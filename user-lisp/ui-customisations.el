@@ -15,9 +15,6 @@
 ; always highlight matching parentheses
 (show-paren-mode 1)
 
-; no startup screen
-(setq-default inhibit-startup-screen t)
-
 ; always highlight line that cursor is on
 (global-hl-line-mode 1)
 
