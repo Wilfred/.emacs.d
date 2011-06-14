@@ -18,6 +18,15 @@
 ; now always load flymake-mode with python-mode
 (add-hook 'python-mode-hook 'flymake-mode)
 
+(defun flymake-error-at-point ()
+  "Show the flymake error in the minibuffer when point is on an invalid line."
+  (when (get-char-property (point) 'flymake-overlay)
+    (let ((help (get-char-property (point) 'help-echo)))
+      (if help (message "%s" help)))))
+
+(add-hook 'post-command-hook 'flymake-error-at-point)
+
+
 ; outline mode, note that the the minor mode shorcuts have an @ in them
 ; e.g. C-c C-c becomes C-c @ C-c
 (defun py-outline-level ()
