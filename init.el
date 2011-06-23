@@ -182,3 +182,5 @@ are interchanged."
 ; TODO: find offending code
 (setq debug-on-error nil)
 
+; suspend seems to crash on Gnome 3, and I don't use it anyway, so just remove the shortcut
+(global-set-key "\C-z" nil)
