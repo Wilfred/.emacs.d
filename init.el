@@ -132,16 +132,9 @@ are interchanged."
 (require 'html-customisations)
 (require 'css-customisations)
 (require 'python-customisations)
-(require 'potato-customisations)
+(require 'javascript-customisations)
 
-; JavaScript
-; ----------
-;
-; indent JavaScript tabs (treating them as eight spaces)
-(setq-default js-indent-level 8)
-(add-hook 'js-mode-hook
-          '(lambda ()
-             (setq indent-tabs-mode t)))
+(require 'potato-customisations)
 
 ; better git handling
 (add-to-list 'load-path "~/.emacs.d/user-lisp/magit")
