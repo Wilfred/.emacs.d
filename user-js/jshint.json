@@ -1,0 +1,6 @@
+{ "browser": true, //browser constants, such as alert
+  "curly": true, // require {} on one-line if
+  "undef": true, // non-globals must be declared before sue
+  "newcap": true, // constructors must start with capital letter
+  "jquery": true // jQuery constants
+}
