@@ -142,6 +142,8 @@ are interchanged."
 
 (global-set-key [(f2)] 'magit-status)
 
+(global-set-key [(f8)] 'flymake-goto-prev-error)
+(global-set-key [(f9)] 'flymake-goto-next-error)
 
 ; clojure mode and other lisp necessities
 (require 'clojure-mode)
