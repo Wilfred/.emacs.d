@@ -68,6 +68,9 @@ are interchanged."
 ; bind it to the usual transpose-word key combination
 (global-set-key "\M-t" 'transpose-symbols)
 
+; make re-builder use the same regexp format as regexp-replace (no double escaping)
+(setq reb-re-syntax 'string)
+
 ;
 ; offer recent files
 (require 'recentf)
