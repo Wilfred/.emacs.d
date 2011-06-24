@@ -7,7 +7,7 @@
   (insert str)
   (save-buffer))
 
-(global-set-key [(f1)] 'set-gxbo-market)
+(define-key yaml-mode-map [(f12)] 'set-gxbo-market)
 
 (defun is-gae-project-root (path)
   "Does this project contain a app.yaml file?"
