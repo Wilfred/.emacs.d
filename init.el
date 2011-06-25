@@ -168,7 +168,7 @@ are interchanged."
 ; FIXME: breaks if you have another buffer called NEW-NAME
 (defun rename-file-and-buffer (new-name)
   "Renames both current buffer and file it's visiting to NEW-NAME."
-  (interactive "sNew name: ")
+  (interactive (list (read-from-minibuffer "New name: " (buffer-name))))
   (let ((name (buffer-name))
     (filename (buffer-file-name)))
     (if (not filename)
