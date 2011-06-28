@@ -49,4 +49,13 @@
 ; load when we open a python file
 (add-hook 'python-mode-hook 'python-outline-minor-mode)
 
+(defun insert-break-point ()
+  (interactive)
+  (newline-and-indent)
+  (previous-line)
+  (indent-for-tab-command)
+  (insert "import gae_pdb; gae_pdb.set_trace()"))
+
+(define-key python-mode-map [(f1)] 'insert-break-point)
+
 (provide 'python-customisations)
