@@ -18,6 +18,9 @@
 ; now always load flymake-mode with python-mode
 (add-hook 'python-mode-hook 'flymake-mode)
 
+(define-key python-mode-map [(f7)] 'flymake-goto-prev-error)
+(define-key python-mode-map [(f8)] 'flymake-goto-next-error)
+
 (defun flymake-error-at-point ()
   "Show the flymake error in the minibuffer when point is on an invalid line."
   (when (get-char-property (point) 'flymake-overlay)
