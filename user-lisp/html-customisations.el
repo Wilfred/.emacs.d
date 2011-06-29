@@ -44,6 +44,22 @@
 (global-set-key "\C-ctv" 'template-variable-skeleton)
 (global-set-key "\C-ctc" 'template-comment-skeleton)
 
+(defun html-linkify-region (url)
+  "Wraps the region in a <a> tag with with provided URL."
+  (interactive "sURL: ")
+  (let* (
+         (initial-cursor-position (point))
+         (beginning (region-beginning))
+         (end (region-end))
+         (first-replacement (concat "<a href=\"" url "\">"))
+         (second-replacement "</a>"))
+  (goto-char beginning)
+  (insert first-replacement)
+  (goto-char (+ end (length first-replacement)))
+  (insert second-replacement)
+  (goto-char (+ initial-cursor-position (length first-replacement)))
+  ))
+
 ; zen coding: converts selector-style lines to tags
 ; e.g. table>tr*2 becomes <table><tr></tr><tr></tr></table>
 (require 'zencoding-mode)
