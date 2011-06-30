@@ -1,5 +1,8 @@
+(require 'python)
+
 ; indent python by 4 spaces by default
 (setq-default python-indent 4)
+
 
 ; set flymake to use pyflakes to check code (requires pyflakes installed and on $PATH)
 (when (load "flymake" t)
