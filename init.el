@@ -11,10 +11,6 @@
 
 (require 'dired+)
 
-; Interface
-; ---------
-;
-;
 ; Clipboard
 ; ---------
 ;
