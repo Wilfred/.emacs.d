@@ -5,16 +5,23 @@
 
 
 ; set flymake to use pyflakes to check code (requires pyflakes installed and on $PATH)
+
+(defun flymake-friendly-p ()
+  "True only if the current buffer is local and writable."
+  (let ((is-local (not (subsetp (list (current-buffer)) (tramp-list-remote-buffers))))
+        (is-writable (file-writable-p (buffer-file-name))))
+    (and is-local is-writable)))
+
+(defun flymake-pyflakes-init ()
+  (when (flymake-friendly-p)
+    (let* ((temp-file (flymake-init-create-temp-buffer-copy
+                       'flymake-create-temp-inplace))
+           (local-file (file-relative-name
+                        temp-file
+                        (file-name-directory buffer-file-name))))
+      (list "pyflakes" (list local-file)))))
+
 (when (load "flymake" t)
-  (defun flymake-pyflakes-init ()
-     ; Make sure it's not a remote buffer or flymake would not work
-     (when (not (subsetp (list (current-buffer)) (tramp-list-remote-buffers)))
-      (let* ((temp-file (flymake-init-create-temp-buffer-copy
-                         'flymake-create-temp-inplace))
-             (local-file (file-relative-name
-                          temp-file
-                          (file-name-directory buffer-file-name))))
-        (list "pyflakes" (list local-file)))))
   (add-to-list 'flymake-allowed-file-name-masks
                '("\\.py\\'" flymake-pyflakes-init)))
 
