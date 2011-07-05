@@ -2,5 +2,6 @@
   "curly": true, // require {} on one-line if
   "undef": true, // non-globals must be declared before sue
   "newcap": true, // constructors must start with capital letter
-  "jquery": true // jQuery constants
+  "jquery": true, // jQuery constants
+  "node": true
 }
