@@ -37,6 +37,10 @@
 ; Editing conveniences
 ; --------------------
 ;
+
+(require 'uniquify)
+(setq uniquify-buffer-name-style 'post-forward-angle-brackets)
+
 ; Automatically indent the new line when we hit enter
 (define-key global-map (kbd "RET") 'newline-and-indent)
 ;
