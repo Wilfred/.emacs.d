@@ -33,10 +33,9 @@
   "Set app.yaml market as appropriate, then deploy the business-progress backend."
   (interactive "sGAE email: \nsGAE password: \nsMarket: ")
   (let ((project-root (find-gae-project-root (buffer-file-name)))
-        (app-yaml-path (concat project-root "/app.yaml"))
-        (app-yaml-buffer (get-file-buffer app-yaml-path)))
+        (app-yaml-path (concat project-root "/app.yaml")))
     
-    (switch-to-buffer app-yaml-buffer)
+    (find-file app-yaml-path)
     (set-gxbo-market market))
   
   (let ((project-root (find-gae-project-root (buffer-file-name)))
