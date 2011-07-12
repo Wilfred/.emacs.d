@@ -32,4 +32,7 @@
 ; load flymake-mode with js-mode
 (add-hook 'js-mode-hook 'flymake-mode)
 
+; use paredit for JS
+(add-hook 'js-mode-hook 'enable-paredit-mode)
+
 (provide 'javascript-customisations)
