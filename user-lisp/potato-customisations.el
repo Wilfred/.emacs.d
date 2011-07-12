@@ -29,6 +29,23 @@
   (if project-root
       (vc-git-grep search-term "*" project-root)))
 
+(defun deploy-gae-backend (email password market)
+  "Set app.yaml market as appropriate, then deploy the business-progress backend."
+  (interactive "sGAE email: \nsGAE password: \nsMarket: ")
+  (let ((project-root (find-gae-project-root (buffer-file-name)))
+        (app-yaml-path (concat project-root "/app.yaml"))
+        (app-yaml-buffer (get-file-buffer app-yaml-path)))
+    
+    (switch-to-buffer app-yaml-buffer)
+    (set-gxbo-market market))
+  
+  (let ((project-root (find-gae-project-root (buffer-file-name)))
+        (process (start-process "gae_deploy" "*GAE-deploy*"
+                                "/opt/google_appengine/appcfg.py"
+                                "backends" project-root "update" "business-progress")))
+    (process-send-string process (concat email "\n"))
+    (process-send-string process (concat password "\n"))))
+
 (global-set-key [(f5)] 'grep-gae-project)
 
 (provide 'potato-customisations)
