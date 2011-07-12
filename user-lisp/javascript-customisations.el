@@ -1,5 +1,6 @@
 ; indent with tab characters (treating them as eight spaces)
-(setq-default js-indent-level 8)
+(setq-default js-indent-level 4)
+(setq tab-width 4)
 (add-hook 'js-mode-hook
           '(lambda ()
              (setq indent-tabs-mode t)))
