@@ -27,7 +27,8 @@
   (interactive "sSearch for: ")
   (setq project-root (find-gae-project-root "."))
   (if project-root
-      (vc-git-grep search-term "*" project-root)))
+      (vc-git-grep search-term "*" project-root)
+    (message "Couldn't find project root.")))
 
 (global-set-key [(f5)] 'grep-gae-project)
 
