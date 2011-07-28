@@ -3,6 +3,11 @@
 ; indent python by 4 spaces by default
 (setq-default python-indent 4)
 
+; use autopair+ for Python, since it doesn't really suit paredit
+(require 'autopair)
+(setq autopair-autowrap t)
+(add-hook 'python-mode-hook #'(lambda () (autopair-mode)))
+
 
 ; set flymake to use pyflakes to check code (requires pyflakes installed and on $PATH)
 
@@ -19,7 +24,7 @@
            (local-file (file-relative-name
                         temp-file
                         (file-name-directory buffer-file-name))))
-      (list "pyflakes" (list local-file)))))
+      (list "~/.emacs.d/user-python/run-pyflakes" (list local-file)))))
 
 (when (load "flymake" t)
   (add-to-list 'flymake-allowed-file-name-masks
