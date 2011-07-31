@@ -1,6 +1,8 @@
 This is the Emacs environment I (Wilfred Hughes) use for development.
 
-I'm aiming to keep this as portable as possible, and self-contained.
+I'm aiming to keep this as portable as possible, and
+self-contained. Code I've written (init.el and the *-customisations.el
+files) is BSD licensed.
 
 ### Major third party packages
 
@@ -16,6 +18,7 @@ submodules.
 * [zencoding-mode](https://github.com/rooney/zencoding)
 * [color-theme](http://www.nongnu.org/color-theme/) (note Tango theme is
   not part of the default collection)
+* autopair
 
 ### Flymake tools
 
