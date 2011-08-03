@@ -27,7 +27,8 @@
 (defun grep-gae-project (search-term)
   "Search a GAE project using git grep. The default search term is the symbol at point."
   (interactive (list (read-from-minibuffer "Search for: "
-                                           (symbol-name (symbol-at-point)))))
+                                           (if (symbol-at-point)
+                                               (symbol-name (symbol-at-point))))))
   (setq project-root (find-gae-project-root "."))
   (if project-root
       (vc-git-grep search-term "*" project-root)
