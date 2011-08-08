@@ -124,6 +124,31 @@ Ignores CHAR at point."
        (skip-chars-forward " \t\n")
        (constrain-to-field nil orig-pos t)))))
 
+;; I-search with initial contents
+(defvar isearch-initial-string nil)
+
+(defun isearch-set-initial-string ()
+  (remove-hook 'isearch-mode-hook 'isearch-set-initial-string)
+  (setq isearch-string isearch-initial-string)
+  (isearch-search-and-update))
+
+(defun isearch-forward-at-point (&optional regexp-p no-recursive-edit)
+  "Interactive search forward for the symbol at point."
+  (interactive "P\np")
+  (if regexp-p (isearch-forward regexp-p no-recursive-edit)
+    (let* ((end (progn (skip-syntax-forward "w_") (point)))
+           (begin (progn (skip-syntax-backward "w_") (point))))
+      (if (eq begin end)
+          (isearch-forward regexp-p no-recursive-edit)
+        (setq isearch-initial-string (buffer-substring begin end))
+        (add-hook 'isearch-mode-hook 'isearch-set-initial-string)
+        (isearch-forward regexp-p no-recursive-edit)))))
+
+(global-set-key "\M-s" 'isearch-forward-at-point)
+
+(require 'thingatpt)
+
+
 
 (defun transpose-symbols (arg)
   "Interchange sybmols around point, leaving point at end of them.
