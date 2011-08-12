@@ -10,6 +10,7 @@
 
 
 ; set flymake to use pyflakes to check code (requires pyflakes installed and on $PATH)
+(require 'tramp)
 
 (defun flymake-friendly-p ()
   "True only if the current buffer is local and writable."
