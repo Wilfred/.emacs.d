@@ -3,36 +3,35 @@
 ; indent python by 4 spaces by default
 (setq-default python-indent 4)
 
-; use autopair+ for Python, since it doesn't really suit paredit
+; use autopair for Python, since it doesn't really suit paredit
 (require 'autopair)
 (setq autopair-autowrap t)
 (add-hook 'python-mode-hook #'(lambda () (autopair-mode)))
 
-
 ; set flymake to use pyflakes to check code (requires pyflakes installed and on $PATH)
-(require 'tramp)
-
-(defun flymake-friendly-p ()
-  "True only if the current buffer is local and writable."
-  (let ((is-local (not (subsetp (list (current-buffer)) (tramp-list-remote-buffers))))
-        (is-writable (file-writable-p (buffer-file-name))))
-    (and is-local is-writable)))
+(require 'flymake)
 
 (defun flymake-pyflakes-init ()
-  (when (flymake-friendly-p)
     (let* ((temp-file (flymake-init-create-temp-buffer-copy
                        'flymake-create-temp-inplace))
            (local-file (file-relative-name
                         temp-file
                         (file-name-directory buffer-file-name))))
-      (list "~/.emacs.d/user-python/run-pyflakes" (list local-file)))))
+      (list "~/.emacs.d/user-python/run-pyflakes" (list local-file))))
 
-(when (load "flymake" t)
-  (add-to-list 'flymake-allowed-file-name-masks
-               '("\\.py\\'" flymake-pyflakes-init)))
+(add-to-list 'flymake-allowed-file-name-masks
+             '("\\.py\\'" flymake-pyflakes-init))
 
 ; now always load flymake-mode with python-mode
 (add-hook 'python-mode-hook 'flymake-mode)
+
+
+(defun flymake-can-syntax-check-file (file-name)
+  "Determine whether we can syntax check FILE-NAME.
+Return nil if we cannot, non-nil if we can.
+More rigorous than the default, excluding nil file names and unwritable files"
+  (and file-name (file-writable-p file-name)))
+
 
 (define-key python-mode-map [(f7)] 'flymake-goto-prev-error)
 (define-key python-mode-map [(f8)] 'flymake-goto-next-error)
