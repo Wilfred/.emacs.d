@@ -69,6 +69,7 @@ More rigorous than the default, excluding nil file names and unwritable files"
 
 (defun insert-break-point ()
   (interactive)
+  (move-beginning-of-line nil)
   (newline-and-indent)
   (previous-line)
   (indent-for-tab-command)
