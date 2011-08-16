@@ -230,6 +230,7 @@ are interchanged."
 (require 'css-customisations)
 (require 'python-customisations)
 (require 'javascript-customisations)
+(require 'xml-customisations)
 
 (require 'potato-customisations)
 
