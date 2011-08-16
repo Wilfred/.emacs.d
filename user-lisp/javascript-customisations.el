@@ -15,7 +15,6 @@
 		      temp-file
 		      (file-name-directory buffer-file-name))))
    (list "jshint" (list local-file "--config" (expand-file-name "~/.emacs.d/user-js/jshint.json")))))
-    ;; (list "jshint" (list local-file))))
 
 (setq flymake-allowed-file-name-masks
       (cons '(".+\\.js$"

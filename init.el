@@ -132,6 +132,7 @@ Ignores CHAR at point."
   (setq isearch-string isearch-initial-string)
   (isearch-search-and-update))
 
+; TODO: make this case-sensitive
 (defun isearch-forward-at-point (&optional regexp-p no-recursive-edit)
   "Interactive search forward for the symbol at point."
   (interactive "P\np")
