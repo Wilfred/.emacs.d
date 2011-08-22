@@ -278,5 +278,8 @@ are interchanged."
 ; TODO: find offending code
 (setq debug-on-error nil)
 
-; suspend seems to crash on Gnome 3, and I don't use it anyway, so just remove the shortcut
-(global-unset-key "\C-z")
+; suspend seems to crash on Gnome 3, and I don't use it anyway, so just disable it
+(defun suspend-emacs (&rest)
+  (interactive))
+(defun suspend-frame (&rest)
+  (interactive))
