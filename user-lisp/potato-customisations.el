@@ -9,27 +9,14 @@
 
 (define-key yaml-mode-map [(f12)] 'set-gxbo-market)
 
-(defun is-gae-project-root (path)
-  "Does this project contain a app.yaml file?"
-  (setq app-yaml-path (concat path "/app.yaml"))
-  (file-exists-p app-yaml-path))
-
-(defun find-gae-project-root (path)
-  "If we're in a GAE project, find the directory that contains the app.yaml file."
-  (setq abs-path (expand-file-name path))
-  (if (string= abs-path "/") 'nil
-    (if (is-gae-project-root abs-path)
-        abs-path
-      (find-gae-project-root (concat path "/..")))))
-
 (require 'thingatpt) ; provides symbol-at-point
 
-(defun grep-gae-project (search-term)
-  "Search a GAE project using git grep. The default search term is the symbol at point."
+(defun grep-project (search-term)
+  "Search a git project using git grep. The default search term is the symbol at point."
   (interactive (list (read-from-minibuffer "Search for: "
                                            (if (symbol-at-point)
                                                (symbol-name (symbol-at-point))))))
-  (setq project-root (find-gae-project-root "."))
+  (setq project-root (vc-git-root (buffer-file-name)))
   (if project-root
       (vc-git-grep search-term "*" project-root)
     (message "Couldn't find project root.")))
@@ -50,6 +37,6 @@
     (process-send-string process (concat email "\n"))
     (process-send-string process (concat password "\n"))))
 
-(global-set-key [(f5)] 'grep-gae-project)
+(global-set-key [(f5)] 'grep-project)
 
 (provide 'potato-customisations)
