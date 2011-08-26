@@ -9,18 +9,6 @@
 
 (define-key yaml-mode-map [(f12)] 'set-gxbo-market)
 
-(require 'thingatpt) ; provides symbol-at-point
-
-(defun grep-project (search-term)
-  "Search a git project using git grep. The default search term is the symbol at point."
-  (interactive (list (read-from-minibuffer "Search for: "
-                                           (if (symbol-at-point)
-                                               (symbol-name (symbol-at-point))))))
-  (setq project-root (vc-git-root (buffer-file-name)))
-  (if project-root
-      (vc-git-grep search-term "*" project-root)
-    (message "Couldn't find project root.")))
-
 (defun deploy-gae-backend (email password market)
   "Set app.yaml market as appropriate, then deploy the business-progress backend."
   (interactive "sGAE email: \nsGAE password: \nsMarket: ")
@@ -37,6 +25,5 @@
     (process-send-string process (concat email "\n"))
     (process-send-string process (concat password "\n"))))
 
-(global-set-key [(f5)] 'grep-project)
 
 (provide 'potato-customisations)

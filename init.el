@@ -235,11 +235,8 @@ are interchanged."
 
 (require 'potato-customisations)
 
-; better git handling
-(add-to-list 'load-path "~/.emacs.d/user-lisp/magit")
-(require 'magit)
+(require 'git-customisations)
 
-(global-set-key [(f2)] 'magit-status)
 
 (global-set-key [(f8)] 'flymake-goto-prev-error)
 (global-set-key [(f9)] 'flymake-goto-next-error)
