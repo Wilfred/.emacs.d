@@ -9,8 +9,7 @@
 (require 'ui-customisations)
 (require 'startup-customisations)
 
-(require 'dired+)
-
+(require 'file-customisations)
 
 
 ; OS X fixes:
@@ -253,9 +252,6 @@ are interchanged."
    "Major mode for editing Markdown files" t)
 (setq auto-mode-alist
    (cons '("\\.md" . markdown-mode) auto-mode-alist))
-
-; deleting files should go to recycle bin
-(setq delete-by-moving-to-trash t)
 
 ; note there is also set-visited-file-name but this is for name changes, not path changes
 (defun rename-file-and-buffer (new-name)
