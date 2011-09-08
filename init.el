@@ -14,6 +14,24 @@
 (if (eq system-type 'darwin)
     (require 'os-x-fixes))
 
+(defun toggle-case-next-char ()
+  "Toggles the case of the next character after point.
+The point is also moved one character forward."
+  (interactive)
+  ; note next-char is a string
+  (let ((next-char (buffer-substring (point) (1+ (point))))
+        (case-fold-search nil)) ; case sensitive
+    (if (string-match "[a-z]" next-char)
+        (upcase-region (point) (1+ (point)))
+      (downcase-region (point) (1+ (point)))))
+  (forward-char))
+
+; toggling on char is often more useful than capitalising a whole word
+(global-set-key "\M-c" 'toggle-case-next-char)
+
+; but keep capitalize-word available
+(global-set-key "\M-C" 'capitalize-word)
+
 
 
 ; Clipboard
