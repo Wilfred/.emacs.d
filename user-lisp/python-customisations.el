@@ -8,6 +8,9 @@
 (setq autopair-autowrap t)
 (add-hook 'python-mode-hook #'(lambda () (autopair-mode)))
 
+; use which-func-mode for Python, so we know where we are in big functions or classes
+(add-hook 'python-mode-hook #'(lambda () (which-func-mode)))
+
 ; set flymake to use pyflakes to check code (requires pyflakes installed and on $PATH)
 (require 'flymake)
 
