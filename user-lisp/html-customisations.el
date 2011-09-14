@@ -21,9 +21,12 @@
 
 (font-lock-add-keywords
  'html-mode
- '(("\\({%[^%]*%}\\)" 1 django-tag-face prepend)
+ '(
+   ("\\({%[^%]*%}\\)" 1 django-tag-face prepend)
    ("\\({{[^}]*}}\\)" 1 django-variable-face prepend)
    ("\\({#[^}]*#}\\)" 1 django-comment-face prepend)
+   ("\\({% comment %}\\(.\\|
+\\)*{% endcomment %}\\)" 1 django-comment-face prepend)
    ))
 
 
