@@ -32,6 +32,23 @@ The point is also moved one character forward."
 ; but keep capitalize-word available
 (global-set-key "\M-C" 'capitalize-word)
 
+; kill-word is less useful than kill-symbol
+(require 'thingatpt)
+(defun kill-symbol (arg)
+  "Kill characters forward until encountering the end of a symbol.
+With argument ARG, do this that many times."
+  (interactive "p")
+  (kill-region (point) (progn (forward-symbol arg) (point))))
+
+(global-set-key "\M-d" 'kill-symbol)
+
+(defun backward-kill-symbol (arg)
+  "Kill characters backward until encountering the beginning of a symbol.
+With argument ARG, do this that many times."
+  (interactive "p")
+  (kill-symbol (- arg)))
+
+(global-set-key [M-backspace] 'backward-kill-symbol)
 
 
 ; Clipboard
