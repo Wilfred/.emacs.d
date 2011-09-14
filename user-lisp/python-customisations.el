@@ -78,6 +78,8 @@ More rigorous than the default, excluding nil file names and unwritable files"
   (indent-for-tab-command)
   (insert "import gae_pdb; gae_pdb.set_trace()"))
 
+(define-key python-mode-map [(f12)] 'insert-break-point)
+
 (defun insert-logging-statement (statement)
   (interactive "sWhat to log: ")
   (move-end-of-line nil)
