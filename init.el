@@ -127,26 +127,9 @@ Ignores CHAR at point."
 ; bind it to the usual zap-to-char shortcut
 (global-set-key "\M-z" 'zap-up-to-char)
 
-; just-one-space should also consider newlines
-; TODO: investiage if this is cleaner with defadvice
-(defun just-one-space (&optional n)
-  "Delete all spaces and tabs around point, leaving one space (or N spaces)."
-  (interactive "*p")
-  (let ((orig-pos (point)))
-    (skip-chars-backward " \t\n")
-    (constrain-to-field nil orig-pos)
-    (dotimes (i (or n 1))
-      (if (= (following-char) ?\s)
-	  (forward-char 1)
-	(insert ?\s)))
-    (delete-region
-     (point)
-     (progn
-       (skip-chars-forward " \t\n")
-       (constrain-to-field nil orig-pos t)))))
-
 ;; I-search with initial contents
 (defvar isearch-initial-string nil)
+
 
 (defun isearch-set-initial-string ()
   (remove-hook 'isearch-mode-hook 'isearch-set-initial-string)
