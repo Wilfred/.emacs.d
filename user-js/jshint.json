@@ -3,7 +3,7 @@
   "undef": true, // non-globals must be declared before use
   "newcap": true, // constructors must start with capital letter
   "jquery": true, // jQuery constants
-  "node": true, // node constants
   "nomen": false, // permit leading/trailing underscores, these do actually mean private in jQuery plugins
-  "nonew": true // don't permit object creation for side-effects only
+  "nonew": true, // don't permit object creation for side-effects only
+  "strict": true // require "use strict";
 }
