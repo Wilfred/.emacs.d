@@ -9,26 +9,50 @@
 (require 'ui-customisations)
 (require 'startup-customisations)
 
-(require 'dired+)
-
-
-
-; OS X fixes:
-(defun insert-hash ()
-  (interactive)
-  (insert "#"))
+(require 'file-customisations)
 
 (if (eq system-type 'darwin)
-    (progn
-      ; set Meta-3 to insert a # character
-      (global-set-key "\263" 'insert-hash)
-      ; same PATH as bash from Terminal
-      (setenv
-       "PATH"
-       "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/X11/bin:/usr/local/bin/g4bin:/usr/local/git/bin:/usr/local/sbin:/usr/X11/bin:/Users/wilfredhughes/homebrew/bin:/Users/wilfredhughes/homebrew/Cellar/fish/1.23.1/bin:/usr/X11R6/bin")
-      ; and add these to exec-path too, so Emacs can find git and so on
-      (setq exec-path (append exec-path
-                              (split-string (getenv "PATH") ":")))))
+    (require 'os-x-fixes))
+
+(defun toggle-case-next-char ()
+  "Toggles the case of the next character after point.
+The point is also moved one character forward."
+  (interactive)
+  ; note next-char is a string
+  (let ((next-char (buffer-substring (point) (1+ (point))))
+        (case-fold-search nil)) ; case sensitive
+    (if (string-match "[a-z]" next-char)
+        (upcase-region (point) (1+ (point)))
+      (downcase-region (point) (1+ (point)))))
+  (forward-char))
+
+; toggling on char is often more useful than capitalising a whole word
+(global-set-key "\M-c" 'toggle-case-next-char)
+
+; but keep capitalize-word available
+(global-set-key "\M-C" 'capitalize-word)
+
+; kill-word is less useful than kill-symbol
+(require 'thingatpt)
+(defun kill-symbol (arg)
+  "Kill characters forward until encountering the end of a symbol.
+With argument ARG, do this that many times."
+  (interactive "p")
+  (kill-region (point) (progn (forward-symbol arg) (point))))
+
+(global-set-key "\M-d" 'kill-symbol)
+
+(defun backward-kill-symbol (arg)
+  "Kill characters backward until encountering the beginning of a symbol.
+With argument ARG, do this that many times."
+  (interactive "p")
+  (kill-symbol (- arg)))
+
+(global-set-key [M-backspace] 'backward-kill-symbol)
+
+; switch on which-func-mode for all major modes that support it
+; (which-func-mode shows which function or class that point is in)
+(which-func-mode 1)
 
 ; Clipboard
 ; ---------
@@ -106,26 +130,9 @@ Ignores CHAR at point."
 ; bind it to the usual zap-to-char shortcut
 (global-set-key "\M-z" 'zap-up-to-char)
 
-; just-one-space should also consider newlines
-; TODO: investiage if this is cleaner with defadvice
-(defun just-one-space (&optional n)
-  "Delete all spaces and tabs around point, leaving one space (or N spaces)."
-  (interactive "*p")
-  (let ((orig-pos (point)))
-    (skip-chars-backward " \t\n")
-    (constrain-to-field nil orig-pos)
-    (dotimes (i (or n 1))
-      (if (= (following-char) ?\s)
-	  (forward-char 1)
-	(insert ?\s)))
-    (delete-region
-     (point)
-     (progn
-       (skip-chars-forward " \t\n")
-       (constrain-to-field nil orig-pos t)))))
-
 ;; I-search with initial contents
 (defvar isearch-initial-string nil)
+
 
 (defun isearch-set-initial-string ()
   (remove-hook 'isearch-mode-hook 'isearch-set-initial-string)
@@ -213,20 +220,8 @@ are interchanged."
 ;
 ; always spaces, never tabs
 (setq-default indent-tabs-mode nil)
-;
-; Text formatting
-; ---------------
-;
-; csv mode stuff, since it's used extensively in GBBO
-(require 'csv-mode)
-; yaml mode stuff, since google app engine uses it
-(require 'yaml-mode)
-(add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
-(add-to-list 'auto-mode-alist '("\\.yaml$" . yaml-mode))
-(add-hook 'yaml-mode-hook
-	  '(lambda ()
-	     (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
 
+(require 'structured-text-customisations)
 (require 'html-customisations)
 (require 'css-customisations)
 (require 'python-customisations)
@@ -235,11 +230,8 @@ are interchanged."
 
 (require 'potato-customisations)
 
-; better git handling
-(add-to-list 'load-path "~/.emacs.d/user-lisp/magit")
-(require 'magit)
+(require 'git-customisations)
 
-(global-set-key [(f2)] 'magit-status)
 
 (global-set-key [(f8)] 'flymake-goto-prev-error)
 (global-set-key [(f9)] 'flymake-goto-next-error)
@@ -257,19 +249,16 @@ are interchanged."
 (setq auto-mode-alist
    (cons '("\\.md" . markdown-mode) auto-mode-alist))
 
-; deleting files should go to recycle bin
-(setq delete-by-moving-to-trash t)
-
 ; note there is also set-visited-file-name but this is for name changes, not path changes
 (defun rename-file-and-buffer (new-name)
   "Renames both current buffer and file it's visiting to NEW-NAME."
-  (interactive (list (read-from-minibuffer "New name: " (buffer-name))))
+  (interactive (list (read-from-minibuffer "New name: " (buffer-file-name))))
   (let ((name (buffer-name))
         (filename (buffer-file-name)))
     (if (not filename)
         (message "Buffer '%s' is not visiting a file!" name)
       (progn
-          (rename-file name new-name 1)
+          (rename-file filename new-name 1)
           (rename-buffer new-name t)
           (set-visited-file-name new-name)
           (set-buffer-modified-p nil)))))
@@ -278,5 +267,8 @@ are interchanged."
 ; TODO: find offending code
 (setq debug-on-error nil)
 
-; suspend seems to crash on Gnome 3, and I don't use it anyway, so just remove the shortcut
-(global-unset-key "\C-z")
+; suspend seems to crash on Gnome 3, and I don't use it anyway, so just disable it
+(defun suspend-emacs (&rest)
+  (interactive))
+(defun suspend-frame (&rest)
+  (interactive))

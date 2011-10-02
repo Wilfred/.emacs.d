@@ -8,6 +8,7 @@
 (setq autopair-autowrap t)
 (add-hook 'python-mode-hook #'(lambda () (autopair-mode)))
 
+
 ; set flymake to use pyflakes to check code (requires pyflakes installed and on $PATH)
 (require 'flymake)
 
@@ -74,6 +75,8 @@ More rigorous than the default, excluding nil file names and unwritable files"
   (previous-line)
   (indent-for-tab-command)
   (insert "import gae_pdb; gae_pdb.set_trace()"))
+
+(define-key python-mode-map [(f12)] 'insert-break-point)
 
 (defun insert-logging-statement (statement)
   (interactive "sWhat to log: ")

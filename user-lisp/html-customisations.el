@@ -21,9 +21,12 @@
 
 (font-lock-add-keywords
  'html-mode
- '(("\\({%[^%]*%}\\)" 1 django-tag-face prepend)
+ '(
+   ("\\({%[^%]*%}\\)" 1 django-tag-face prepend)
    ("\\({{[^}]*}}\\)" 1 django-variable-face prepend)
    ("\\({#[^}]*#}\\)" 1 django-comment-face prepend)
+   ("\\({% comment %}\\(.\\|
+\\)*{% endcomment %}\\)" 1 django-comment-face prepend)
    ))
 
 
@@ -40,12 +43,18 @@
   "Insert a {# foo #} template variable"
   "Comment: "
   "{# " str " #}")
+(define-skeleton template-block-skeleton
+  "Insert {% block foo %}{% endblock %}"
+  "Block name: "
+  "{% block " str " %}\n" - "\n{% endblock %}")
+
 (global-set-key "\C-ctt" 'template-tag-skeleton)
 (global-set-key "\C-ctv" 'template-variable-skeleton)
 (global-set-key "\C-ctc" 'template-comment-skeleton)
+(global-set-key "\C-ctb" 'template-block-skeleton)
 
 (defun html-linkify-region (url)
-  "Wraps the region in a <a> tag with with provided URL."
+  "Wraps the region in an <a> tag with href set to URL."
   (interactive "sURL: ")
   (let* (
          (initial-cursor-position (point))

@@ -8,3 +8,4 @@ by using nxml's indentation rules."
     (replace-regexp ">[ \\t]*<" ">\n<" nil begin end)
     (indent-region begin end)))
 
+(provide 'xml-customisations)
