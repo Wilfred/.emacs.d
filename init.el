@@ -236,6 +236,17 @@ are interchanged."
 (global-set-key [(f8)] 'flymake-goto-prev-error)
 (global-set-key [(f9)] 'flymake-goto-next-error)
 
+; coffeescript mode
+(require 'coffee-mode)
+
+; idiomatic coffeescript uses 2 spaces
+(defun coffee-custom ()
+  "coffee-mode-hook"
+ (set (make-local-variable 'tab-width) 2))
+
+(add-hook 'coffee-mode-hook
+  '(lambda() (coffee-custom)))
+
 ; clojure mode and other lisp necessities
 (require 'clojure-mode)
 (autoload 'enable-paredit-mode "paredit"
