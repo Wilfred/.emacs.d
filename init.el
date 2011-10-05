@@ -243,12 +243,6 @@ are interchanged."
   t)
 (add-hook 'clojure-mode-hook 'enable-paredit-mode)
 
-; markdown mode
-(autoload 'markdown-mode "markdown-mode.el"
-   "Major mode for editing Markdown files" t)
-(setq auto-mode-alist
-   (cons '("\\.md" . markdown-mode) auto-mode-alist))
-
 ; note there is also set-visited-file-name but this is for name changes, not path changes
 (defun rename-file-and-buffer (new-name)
   "Renames both current buffer and file it's visiting to NEW-NAME."
