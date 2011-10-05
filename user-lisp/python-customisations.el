@@ -68,6 +68,25 @@ More rigorous than the default, excluding nil file names and unwritable files"
 ; load when we open a python file
 (add-hook 'python-mode-hook 'python-outline-minor-mode)
 
+(defun insert-init-function ()
+  (interactive)
+  
+  (let* ((exact-position (split-string (which-function) (rx "."))) ; e.g. ("FooBar" "method")
+         (class-name (car exact-position))
+         (method-name (cdr exact-position)))
+
+    (newline-and-indent)
+    ; if we're currently after another method, we will end up one indent too deep
+    ; (assuming autopair is in use, replace the backspace command with equivalent otherwise)
+    (when method-name
+      (delete-char -4))
+    
+    (insert "def __init__(self, *args, **kwargs):")
+    (newline-and-indent)
+    (insert (concat "super(" class-name ", self).__init__(*args, **kwargs)"))
+    
+    (newline-and-indent)))
+
 (defun insert-break-point ()
   (interactive)
   (move-beginning-of-line nil)
