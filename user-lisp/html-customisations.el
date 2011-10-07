@@ -48,9 +48,9 @@
   "Block name: "
   "{% block " str " %}\n" - "\n{% endblock %}")
 (define-skeleton template-if-skeleton
-  "Insert {% if foo %}{% else %}{% endblock %}"
+  "Insert {% if foo %}{% else %}{% endif %}"
   "Block name: "
-  "{% if " str " %}\n" - "\n{% else %}\n\n{% endblock %}")
+  "{% if " str " %}\n" - "\n{% else %}\n\n{% endif %}")
 
 (setq template-skeletons '(template-tag-skeleton
                            template-variable-skeleton
