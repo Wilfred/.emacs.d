@@ -47,11 +47,25 @@
   "Insert {% block foo %}{% endblock %}"
   "Block name: "
   "{% block " str " %}\n" - "\n{% endblock %}")
+(define-skeleton template-if-skeleton
+  "Insert {% if foo %}{% else %}{% endblock %}"
+  "Block name: "
+  "{% if " str " %}\n" - "\n{% else %}\n\n{% endblock %}")
 
-(global-set-key "\C-ctt" 'template-tag-skeleton)
-(global-set-key "\C-ctv" 'template-variable-skeleton)
-(global-set-key "\C-ctc" 'template-comment-skeleton)
-(global-set-key "\C-ctb" 'template-block-skeleton)
+(setq template-skeletons '(template-tag-skeleton
+                           template-variable-skeleton
+                           template-comment-skeleton
+                           template-block-skeleton
+                           template-if-skeleton))
+
+(defun insert-django-skeleton ()
+  (interactive)
+  (let* ((skeleton-names (mapcar 'symbol-name template-skeletons))
+        (skeleton-chosen (ido-completing-read "Django template element: " skeleton-names)))
+    (funcall (intern skeleton-chosen))))
+
+(define-key html-mode-map "\C-ct" 'insert-django-skeleton)
+
 
 (defun html-linkify-region (url)
   "Wraps the region in an <a> tag with href set to URL."
