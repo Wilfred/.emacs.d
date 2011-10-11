@@ -1,3 +1,5 @@
+(require 'sgml-mode)
+
 ; indent html with tabs only
 (add-hook 'html-mode-hook
   (function
