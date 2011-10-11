@@ -9,7 +9,11 @@
                                 "~/bin/google_appengine/appcfg.py"
                                 "update" project-root
                                 "-e" email)))
-    (process-send-string process (concat conf "\n"))
+    ; this shouldn't be necessary. The SDK just doesn't accept early
+    ; input, and it's slow to give the password prompt:
+    (sleep-for 2)
+    
+    (process-send-string process (concat "\n\n\n\n" password "\n\n"))
     (switch-to-buffer "*GAE-deploy*")))
 
 (require 'yaml-mode)
