@@ -14,5 +14,18 @@
    kept-old-versions 2
    version-control t)       ; use versioned backups
 
+; note there is also set-visited-file-name but this is for name changes, not path changes
+(defun rename-file-and-buffer (new-name)
+  "Renames both current buffer and file it's visiting to NEW-NAME."
+  (interactive (list (read-from-minibuffer "New name: " (buffer-file-name))))
+  (let ((name (buffer-name))
+        (filename (buffer-file-name)))
+    (if (not filename)
+        (message "Buffer '%s' is not visiting a file!" name)
+      (progn
+          (rename-file filename new-name 1)
+          (rename-buffer new-name t)
+          (set-visited-file-name new-name)
+          (set-buffer-modified-p nil)))))
 
 (provide 'file-customisations)

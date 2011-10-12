@@ -24,4 +24,8 @@
 ; show file name in window title
 (setq frame-title-format "%b - emacs")
 
+; name buffers foo<directory> foo<other_directory> rather than just numbering
+(require 'uniquify)
+(setq uniquify-buffer-name-style 'post-forward-angle-brackets)
+
 (provide 'ui-customisations)

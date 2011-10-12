@@ -66,14 +66,12 @@ With argument ARG, do this that many times."
   (interactive)
   (popup-menu 'yank-menu))
 (global-set-key "\C-cy" 'show-kill-ring)
+
+; TODO: increase kill ring size
+
 ;
 ; Editing conveniences
 ; --------------------
-;
-
-; name buffers foo<directory> foo<other_directory> rather than just numbering
-(require 'uniquify)
-(setq uniquify-buffer-name-style 'post-forward-angle-brackets)
 
 ; Automatically indent the new line when we hit enter
 (define-key global-map (kbd "RET") 'newline-and-indent)
@@ -253,20 +251,6 @@ are interchanged."
   "Turn on pseudo-structural editing of Lisp code."
   t)
 (add-hook 'clojure-mode-hook 'enable-paredit-mode)
-
-; note there is also set-visited-file-name but this is for name changes, not path changes
-(defun rename-file-and-buffer (new-name)
-  "Renames both current buffer and file it's visiting to NEW-NAME."
-  (interactive (list (read-from-minibuffer "New name: " (buffer-file-name))))
-  (let ((name (buffer-name))
-        (filename (buffer-file-name)))
-    (if (not filename)
-        (message "Buffer '%s' is not visiting a file!" name)
-      (progn
-          (rename-file filename new-name 1)
-          (rename-buffer new-name t)
-          (set-visited-file-name new-name)
-          (set-buffer-modified-p nil)))))
 
 ; something in the above has switched on debugging. Switch it off.
 ; TODO: find offending code
