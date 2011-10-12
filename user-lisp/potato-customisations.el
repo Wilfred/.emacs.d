@@ -1,9 +1,14 @@
 (defvar last-email-address "" "Email address previously used")
 
+; TODO: Django equivalent of the below
+
+(setq last-gae-email-used "")
+
 (defun deploy-gae-application (email password)
   "Deploy the current GAE application."
-  (interactive "sGAE email: \nsGAE password: ")
-  
+  (interactive (list (read-from-minibuffer "GAE email: " last-gae-email-used)
+                     (read-from-minibuffer "Password: ")))
+  (setq last-gae-email-used email)
   (let ((project-root (vc-git-root (buffer-file-name)))
         (process (start-process "gae_deploy" "*GAE-deploy*"
                                 "~/bin/google_appengine/appcfg.py"
