@@ -10,48 +10,10 @@
 (require 'startup-customisations)
 
 (require 'file-customisations)
+(require 'editing-customisations)
 
 (if (eq system-type 'darwin)
     (require 'os-x-fixes))
-
-(defun toggle-case-next-char ()
-  "Toggles the case of the next character after point.
-The point is also moved one character forward."
-  (interactive)
-  ; note next-char is a string
-  (let ((next-char (buffer-substring (point) (1+ (point))))
-        (case-fold-search nil)) ; case sensitive
-    (if (string-match "[a-z]" next-char)
-        (upcase-region (point) (1+ (point)))
-      (downcase-region (point) (1+ (point)))))
-  (forward-char))
-
-; toggling on char is often more useful than capitalising a whole word
-(global-set-key "\M-c" 'toggle-case-next-char)
-
-; but keep capitalize-word available
-(global-set-key "\M-C" 'capitalize-word)
-
-; kill-word is less useful than kill-symbol
-(require 'thingatpt)
-(defun kill-symbol (arg)
-  "Kill characters forward until encountering the end of a symbol.
-With argument ARG, do this that many times."
-  (interactive "p")
-  (kill-region (point) (progn (forward-symbol arg) (point))))
-
-(global-set-key "\M-d" 'kill-symbol)
-
-(defun backward-kill-symbol (arg)
-  "Kill characters backward until encountering the beginning of a symbol.
-With argument ARG, do this that many times."
-  (interactive "p")
-  (kill-symbol (- arg)))
-
-(global-set-key [M-backspace] 'backward-kill-symbol)
-
-; to be consistent with C-M-f as forward-sexp, bind C-M-backspace to backward-kill-sexp
-(global-set-key (kbd "<C-M-backspace>") 'backward-kill-sexp)
 
 ; switch on which-func-mode for all major modes that support it
 ; (which-func-mode shows which function or class that point is in)
@@ -71,13 +33,6 @@ With argument ARG, do this that many times."
 (global-set-key "\C-cy" 'show-kill-ring)
 
 ; TODO: increase kill ring size
-
-;
-; Editing conveniences
-; --------------------
-
-; Automatically indent the new line when we hit enter
-(define-key global-map (kbd "RET") 'newline-and-indent)
 
 ; ido-mode -- fuzzy completion
 (setq ido-enable-flex-matching t)
@@ -113,27 +68,9 @@ With argument ARG, do this that many times."
               (lambda (x) (and (char-equal (string-to-char x) ?.) x))
               ido-temp-list))))
 
-; zap-to-char but don't delete the character itself
-(defun zap-up-to-char (arg char)
-  "Kill up to, but not including ARGth occurrence of CHAR.
-Case is ignored if `case-fold-search' is non-nil in the current buffer.
-Goes backward if ARG is negative; error if CHAR not found.
-Ignores CHAR at point."
-  (interactive "p\ncZap up to char: ")
-  (let ((direction (if (>= arg 0) 1 -1)))
-    (kill-region (point)
-		 (progn
-		   (forward-char direction)
-		   (unwind-protect
-		       (search-forward (char-to-string char) nil nil arg)
-		     (backward-char direction))
-		   (point)))))
-; bind it to the usual zap-to-char shortcut
-(global-set-key "\M-z" 'zap-up-to-char)
 
 ;; I-search with initial contents
 (defvar isearch-initial-string nil)
-
 
 (defun isearch-set-initial-string ()
   (remove-hook 'isearch-mode-hook 'isearch-set-initial-string)
@@ -154,22 +91,6 @@ Ignores CHAR at point."
         (isearch-forward regexp-p no-recursive-edit)))))
 
 (global-set-key "\M-s" 'isearch-forward-at-point)
-
-(require 'thingatpt)
-
-
-
-(defun transpose-symbols (arg)
-  "Interchange sybmols around point, leaving point at end of them.
-With prefix arg ARG, effect is to take symbol before or around point
-and drag it forward past ARG other symbol (backward if ARG negative).
-If ARG is zero, the symbol around or after point and around or after mark
-are interchanged."
-  (interactive "*p")
-  (transpose-subr 'forward-symbol arg))
-
-; bind it to the usual transpose-word key combination
-(global-set-key "\M-t" 'transpose-symbols)
 
 ; make re-builder use the same regexp format as regexp-replace (no double escaping)
 (setq reb-re-syntax 'string)
@@ -218,7 +139,6 @@ are interchanged."
 ; tab only for completion
 (define-key ac-complete-mode-map "\r" nil)
 
-;
 ; always spaces, never tabs
 (setq-default indent-tabs-mode nil)
 
