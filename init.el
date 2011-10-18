@@ -50,6 +50,9 @@ With argument ARG, do this that many times."
 
 (global-set-key [M-backspace] 'backward-kill-symbol)
 
+; to be consistent with C-M-f as forward-sexp, bind C-M-backspace to backward-kill-sexp
+(global-set-key (kbd "<C-M-backspace>") 'backward-kill-sexp)
+
 ; switch on which-func-mode for all major modes that support it
 ; (which-func-mode shows which function or class that point is in)
 (which-func-mode 1)
