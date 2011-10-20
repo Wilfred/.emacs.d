@@ -40,10 +40,10 @@ With argument ARG, do this that many times."
   (interactive "p")
   (kill-symbol (- arg)))
 
-(global-set-key (kbd "M-backspace") 'backward-kill-symbol)
+(global-set-key (kbd "M-<backspace>") 'backward-kill-symbol)
 
 ; to be consistent with C-M-f as forward-sexp, bind C-M-backspace to backward-kill-sexp
-(global-set-key (kbd "C-M-backspace") 'backward-kill-sexp)
+(global-set-key (kbd "C-M-<backspace>") 'backward-kill-sexp)
 
 
 (defun toggle-case-next-char ()
