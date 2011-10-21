@@ -43,7 +43,10 @@ With argument ARG, do this that many times."
 (global-set-key (kbd "M-<backspace>") 'backward-kill-symbol)
 
 ; to be consistent with C-M-f as forward-sexp, bind C-M-backspace to backward-kill-sexp
+; and C-M-d to forward-kill-sexp
 (global-set-key (kbd "C-M-<backspace>") 'backward-kill-sexp)
+(global-set-key (kbd "C-M-d") 'kill-sexp)
+
 
 
 (defun toggle-case-next-char ()
