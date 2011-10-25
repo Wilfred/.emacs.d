@@ -1,10 +1,20 @@
 ; Loading third party code
 ; ------------------------
 ;
-; we will store all our 3rd party modes here
+; we will store all our 3rd party code here if we want to hack around with it
 (add-to-list 'load-path "~/.emacs.d/user-lisp/")
 ; some plugins (at least w3) install themselves here:
 (add-to-list 'load-path "/usr/share/emacs/site-lisp")
+; for 3rd party code that we aren't modifying, we just install as
+; packages
+(when
+    (load
+     (expand-file-name "~/.emacs.d/elpa/package.el"))
+  (package-initialize))
+
+; marmalade is a third party repo that anyone can submit to, so has
+; many more packages
+(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
 
 (require 'ui-customisations)
 (require 'startup-customisations)
@@ -185,14 +195,3 @@
 (defun suspend-frame (&rest)
   (interactive))
 
-;;; This was installed by package-install.el.
-;;; This provides support for the package system and
-;;; interfacing with ELPA, the package archive.
-;;; Move this code earlier if you want to reference
-;;; packages in your .emacs.
-(when
-    (load
-     (expand-file-name "~/.emacs.d/elpa/package.el"))
-  (package-initialize))
-
-(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
