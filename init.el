@@ -158,7 +158,7 @@
 (require 'python-customisations)
 (require 'javascript-customisations)
 (require 'xml-customisations)
-
+(require 'lisp-customisations)
 (require 'potato-customisations)
 
 (require 'git-customisations)
@@ -178,12 +178,6 @@
 (add-hook 'coffee-mode-hook
   '(lambda() (coffee-custom)))
 
-; clojure mode and other lisp necessities
-(require 'clojure-mode)
-(autoload 'enable-paredit-mode "paredit"
-  "Turn on pseudo-structural editing of Lisp code."
-  t)
-(add-hook 'clojure-mode-hook 'enable-paredit-mode)
 
 ; something in the above has switched on debugging. Switch it off.
 ; TODO: find offending code
