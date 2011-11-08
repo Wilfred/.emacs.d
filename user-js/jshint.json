@@ -5,5 +5,6 @@
   "jquery": true, // jQuery constants
   "nomen": false, // permit leading/trailing underscores, these do actually mean private in jQuery plugins
   "nonew": true, // don't permit object creation for side-effects only
+  "asi": true, // don't require trailing semicolons, since js2-mode handles this already
   "strict": true // require "use strict";
 }
