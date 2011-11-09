@@ -82,6 +82,22 @@ Note that this will not search git submodules."
          (message "Couldn't find project root.")))
    (message "You need to be in a file buffer.")))
 
+; TODO: jump directly to first result
+(defun git-grep-to-definition (function-or-class-name)
+  "Search a git project for the definition of a Python function or class."
+  (interactive (list (read-from-minibuffer "Find definition for: "
+                                           (if (symbol-at-point)
+                                               (symbol-name (symbol-at-point))))))
+  (let* ((first-char (substring function-or-class-name 0 1))
+         (case-fold-search nil)
+         (is-function (string-match "[a-z]" first-char)))
+    (if is-function
+        (grep-git-project (concat "def " function-or-class-name "("))
+      ; we assume all Python classes are of the form "clas Foo(bar)" not "class Foo:"
+      (grep-git-project (concat "class " function-or-class-name "(")))))
+
 (global-set-key (kbd "<f5>") 'grep-git-project)
+(global-set-key (kbd "<C-f5>") 'git-grep-to-definition)
+
 
 (provide 'git-customisations)
