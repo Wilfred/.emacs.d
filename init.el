@@ -157,12 +157,12 @@
 (require 'css-customisations)
 (require 'python-customisations)
 (require 'javascript-customisations)
+(require 'coffeescript-customisations)
 (require 'xml-customisations)
 (require 'lisp-customisations)
 (require 'potato-customisations)
 
 (require 'git-customisations)
-
 
 (global-set-key [(f8)] 'flymake-goto-prev-error)
 (global-set-key [(f9)] 'flymake-goto-next-error)
