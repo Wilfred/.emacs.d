@@ -3,3 +3,5 @@
 *.elc
 image-dired
 tramp
+session.*
+url/cookies
