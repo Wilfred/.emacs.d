@@ -1,5 +1,9 @@
 ; Editing customisations -- general text munging when typing.
 
+; redraw *before* handling input events to improve syntax highlighting responsiveness
+; discussed at http://www.masteringemacs.org/articles/2011/10/02/improving-performance-emacs-display-engine/
+(setq redisplay-dont-pause t)
+
 ; Automatically indent the new line when we hit enter
 (define-key global-map (kbd "RET") 'newline-and-indent)
 

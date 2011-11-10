@@ -1,3 +1,8 @@
+; use js2-mode from https://github.com/mooz/js2-mode
+; todo: include a copy of the source, just in case
+(autoload 'js2-mode "js2-mode" nil t)
+(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+
 ; indent with tab characters (treating them as eight spaces)
 (setq-default js-indent-level 8)
 (setq tab-width 8)
@@ -28,7 +33,8 @@
 	      1 2 3 4)
 	    flymake-err-line-patterns))
 
-; load flymake-mode with js-mode
+; load flymake-mode with js-mode and js2-mode
 (add-hook 'js-mode-hook 'flymake-mode)
+(add-hook 'js2-mode-hook 'flymake-mode)
 
 (provide 'javascript-customisations)

@@ -1,5 +1,27 @@
 (require 'python)
 
+;;; TODO: fix indentation for the following code:
+;; def foo():
+;;     try:
+;;         pass
+;;     except Artwork.DoesNotExist:
+;;         bar = "A very very very long string, so we use backslash %s %s" % \
+;;             (None,
+;;              None)
+
+;;             # this is four spaces more than correct indentation, but
+;;             # Python mode doesn't like the proper indentation
+;;             pass
+
+;; TODO: also fix indentation for the following:
+
+;; response = Client().post('admin/tasks/csv_checkflbjklj',
+;;                          # the value of the ID is irrelevant:
+;;                              {'csv_import_id': 123456})
+
+;; (the problem is the colon in the comment)
+
+
 ; indent python by 4 spaces by default
 (setq-default python-indent 4)
 
@@ -44,7 +66,6 @@ More rigorous than the default, excluding nil file names and unwritable files"
       (if help (message "%s" help)))))
 
 (add-hook 'post-command-hook 'flymake-error-at-point)
-
 
 ; outline mode, note that the the minor mode shorcuts have an @ in them
 ; e.g. C-c C-c becomes C-c @ C-c

@@ -25,7 +25,7 @@
 ; taken from http://osdir.com/ml/emacs.nxml.general/2006-05/msg00013.html
 (defun show-xml-path (&optional print-message)
   "Return all the elements in the ancestor axis of the current
-    element.  If called interactively, show it in the echo area."
+element.  If called interactively, show it in the echo area."
   (interactive "p")
   (nxml-ensure-scan-up-to-date)
   (let ((path ""))
