@@ -2,3 +2,4 @@
 *.pyc
 *.elc
 image-dired
+tramp
