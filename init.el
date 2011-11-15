@@ -159,7 +159,7 @@
 (require 'javascript-customisations)
 (require 'xml-customisations)
 (require 'lisp-customisations)
-(require 'potato-customisations)
+(require 'gae-utils)
 
 (require 'git-customisations)
 
