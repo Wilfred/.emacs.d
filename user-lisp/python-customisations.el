@@ -126,7 +126,13 @@ More rigorous than the default, excluding nil file names and unwritable files"
          (concat "import logging; logging.critical(" statement ")")))
     (insert logging-statment)))
 
-
 (define-key python-mode-map [(f1)] 'insert-logging-statement)
+
+(define-skeleton python-insert-docstring
+  "Insert a Python docstring."
+  "This string is ignored!"
+  "\"\"\"" - "\"\"\"")
+
+(define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
 
 (provide 'python-customisations)
