@@ -89,7 +89,7 @@ More rigorous than the default, excluding nil file names and unwritable files"
 ; load when we open a python file
 (add-hook 'python-mode-hook 'python-outline-minor-mode)
 
-(defun insert-init-function ()
+(defun python-insert-init-function ()
   (interactive)
   
   (let* ((exact-position (split-string (which-function) (rx "."))) ; e.g. ("FooBar" "method")
@@ -108,7 +108,7 @@ More rigorous than the default, excluding nil file names and unwritable files"
     
     (newline-and-indent)))
 
-(defun insert-break-point ()
+(defun python-insert-break-point ()
   (interactive)
   (move-beginning-of-line nil)
   (newline-and-indent)
@@ -116,7 +116,7 @@ More rigorous than the default, excluding nil file names and unwritable files"
   (indent-for-tab-command)
   (insert "import gae_pdb; gae_pdb.set_trace()"))
 
-(define-key python-mode-map [(f12)] 'insert-break-point)
+(define-key python-mode-map [(f12)] 'python-insert-break-point)
 
 (defun insert-logging-statement (statement)
   (interactive "sWhat to log: ")
@@ -126,7 +126,7 @@ More rigorous than the default, excluding nil file names and unwritable files"
          (concat "import logging; logging.critical(" statement ")")))
     (insert logging-statment)))
 
-(define-key python-mode-map [(f1)] 'insert-logging-statement)
+(define-key python-mode-map [(f1)] 'python-insert-logging-statement)
 
 (define-skeleton python-insert-docstring
   "Insert a Python docstring."
