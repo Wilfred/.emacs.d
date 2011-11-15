@@ -157,12 +157,12 @@
 (require 'css-customisations)
 (require 'python-customisations)
 (require 'javascript-customisations)
+(require 'coffeescript-customisations)
 (require 'xml-customisations)
 (require 'lisp-customisations)
 (require 'gae-utils)
 
 (require 'git-customisations)
-
 
 (global-set-key [(f8)] 'flymake-goto-prev-error)
 (global-set-key [(f9)] 'flymake-goto-next-error)
@@ -189,3 +189,16 @@
 (defun suspend-frame (&rest)
   (interactive))
 
+
+;;; This was installed by package-install.el.
+;;; This provides support for the package system and
+;;; interfacing with ELPA, the package archive.
+;;; Move this code earlier if you want to reference
+;;; packages in your .emacs.
+(when
+    (load
+     (expand-file-name "~/.emacs.d/elpa/package.el"))
+  (package-initialize))
+
+; marmalade packages too!
+(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
