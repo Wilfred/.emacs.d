@@ -16,25 +16,26 @@ PASSWORD, passing ARGUMENTS to appcfg.py."
     ; TODO: check where all these \n characters are necessary
     (process-send-string process (concat "\n\n\n\n" password "\n\n"))))
 
-(defun gae-deploy-application (email password)
+(defun gae-deploy-application (email)
   "Deploy the current GAE application."
-  (interactive (list (read-from-minibuffer "GAE email: " gae-email-address)
-                     (read-from-minibuffer "Password: ")))
-  (setq last-gae-email-used email)
+  (interactive (list (read-from-minibuffer "GAE email: " gae-email-address)))
+  (setq gae-email-address email)
 
-  (let ((project-root (expand-file-name (vc-git-root (buffer-file-name)))))
+  (let ((password (read-passwd "Password: "))
+        (project-root (expand-file-name (vc-git-root (buffer-file-name)))))
     (gae-run-appcfg email password (list "update" project-root))
     (switch-to-buffer "*GAE-deploy*")))
 
 (require 'yaml-mode)
 (define-key yaml-mode-map (kbd "<f12>") 'gae-deploy-application)
 
-(defun gae-deploy-backend (email password)
+(defun gae-deploy-backend (email)
   "Deploy all the backends of the current application."
-  (interactive (list (read-from-minibuffer "GAE email: " gae-email-address)
-                     (read-from-minibuffer "Password: ")))
-  (setq last-gae-email-used email)
-  (let ((project-root (expand-file-name (vc-git-root (buffer-file-name)))))
+  (interactive (list (read-from-minibuffer "GAE email: " gae-email-address)))
+  (setq gae-email-address email)
+
+  (let ((password (read-passwd "Password: "))
+        (project-root (expand-file-name (vc-git-root (buffer-file-name)))))
     (gae-run-appcfg email password (list "backends" project-root "update"))
     (switch-to-buffer "*GAE-deploy*")))
 
