@@ -165,6 +165,9 @@
 (require 'coffeescript-customisations)
 (require 'xml-customisations)
 (require 'lisp-customisations)
+
+; add ~/bin to PATH since we store the GAE SDK there
+(setenv "PATH" "$PATH:/home/wilfred/bin/google_appengine" t)
 (require 'gae-utils)
 
 (require 'git-customisations)
