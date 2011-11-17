@@ -185,19 +185,6 @@
 (defun suspend-frame (&rest)
   (interactive))
 
-;;; This was installed by package-install.el.
-;;; This provides support for the package system and
-;;; interfacing with ELPA, the package archive.
-;;; Move this code earlier if you want to reference
-;;; packages in your .emacs.
-(when
-    (load
-     (expand-file-name "~/.emacs.d/elpa/package.el"))
-  (package-initialize))
-
-; marmalade packages too!
-(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
-
 (custom-set-variables
   ;; custom-set-variables was added by Custom.
   ;; If you edit it by hand, you could mess it up, so be careful.
