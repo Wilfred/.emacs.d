@@ -16,6 +16,11 @@
 ; many more packages
 (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
 
+; always close the minibuffer on C-x o:
+; <jlf> wilfredh: you could before-advise other-window to quit first
+; if the minibuffer is active.. but it would be better to break that
+; habit :)
+
 (require 'ui-customisations)
 (require 'startup-customisations)
 
@@ -160,45 +165,39 @@
 (require 'coffeescript-customisations)
 (require 'xml-customisations)
 (require 'lisp-customisations)
-(require 'potato-customisations)
+
+; add ~/bin to PATH since we store the GAE SDK there
+(setenv "PATH" "$PATH:/home/wilfred/bin/google_appengine" t)
+(require 'gae-utils)
 
 (require 'git-customisations)
 
 (global-set-key [(f8)] 'flymake-goto-prev-error)
 (global-set-key [(f9)] 'flymake-goto-next-error)
 
-; coffeescript mode
-(require 'coffee-mode)
-
-; idiomatic coffeescript uses 2 spaces
-(defun coffee-custom ()
-  "coffee-mode-hook"
- (set (make-local-variable 'tab-width) 2))
-
-(add-hook 'coffee-mode-hook
-  '(lambda() (coffee-custom)))
-
+(setq visible-bell nil)
 
 ; something in the above has switched on debugging. Switch it off.
 ; TODO: find offending code
 (setq debug-on-error nil)
 
 ; suspend seems to crash on Gnome 3, and I don't use it anyway, so just disable it
+(setq cannot-suspend t)
 (defun suspend-emacs (&rest)
   (interactive))
 (defun suspend-frame (&rest)
   (interactive))
 
+(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(frame-background-mode (quote dark)))
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ )
 
-;;; This was installed by package-install.el.
-;;; This provides support for the package system and
-;;; interfacing with ELPA, the package archive.
-;;; Move this code earlier if you want to reference
-;;; packages in your .emacs.
-(when
-    (load
-     (expand-file-name "~/.emacs.d/elpa/package.el"))
-  (package-initialize))
-
-; marmalade packages too!
-(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))

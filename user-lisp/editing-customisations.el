@@ -28,7 +28,7 @@ Ignores CHAR at point."
 
 
 ; kill-word is less useful than kill-symbol
-(require 'thingatpt)
+(autoload 'forward-symbol "thingatpt")
 (defun kill-symbol (arg)
   "Kill characters forward until encountering the end of a symbol.
 With argument ARG, do this that many times."
