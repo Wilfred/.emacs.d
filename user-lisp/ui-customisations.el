@@ -1,9 +1,10 @@
 ; colour scheme
 (add-to-list 'load-path "~/.emacs.d/user-lisp/color-theme")
 
-(require 'color-theme)
-(require 'color-theme-tango)
-(color-theme-tango)
+(when window-system
+  (require 'color-theme)
+  (require 'color-theme-tango)
+  (color-theme-tango))
 
 ; hide toolbar and scrollbar
 (tool-bar-mode 0)
