@@ -175,7 +175,7 @@
 (global-set-key [(f8)] 'flymake-goto-prev-error)
 (global-set-key [(f9)] 'flymake-goto-next-error)
 
-(setq visible-bell nil)
+(setq ring-bell-function 'ignore)
 
 ; something in the above has switched on debugging. Switch it off.
 ; TODO: find offending code
