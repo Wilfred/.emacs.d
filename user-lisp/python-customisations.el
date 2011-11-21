@@ -118,7 +118,7 @@ More rigorous than the default, excluding nil file names and unwritable files"
 
 (define-key python-mode-map [(f12)] 'python-insert-break-point)
 
-(defun insert-logging-statement (statement)
+(defun python-insert-logging-statement (statement)
   (interactive "sWhat to log: ")
   (move-end-of-line nil)
   (newline-and-indent)
