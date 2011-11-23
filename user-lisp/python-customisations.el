@@ -21,6 +21,16 @@
 
 ;; (the problem is the colon in the comment)
 
+;; TOOD: also fix indentation for the following:
+
+;; def foo():
+;;     """foo bar foo bar foo bar foo bar foo bar foo bar(see #634), so we always try
+;;     that first.
+
+;;     """
+
+;; (the problem is the # inside the docstring)
+
 
 ; indent python by 4 spaces by default
 (setq-default python-indent 4)
