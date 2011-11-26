@@ -60,8 +60,6 @@ INTERACTIVE-ARGS in order interactively."
       ; TODO: check whether all these \n characters are necessary
       (process-send-string process (concat "\n" arg "\n")))))
 
-(process-get) (get-buffer gae-deploy-buffer-name)
-
 (defun gae-deploy-application (email)
   "Deploy the current GAE application."
   (interactive (list (read-from-minibuffer "GAE email: " gae-email-address)))
