@@ -130,8 +130,6 @@ More rigorous than the default, excluding nil file names and unwritable files"
 
 (defun python-insert-logging-statement (statement)
   (interactive "sWhat to log: ")
-  (move-end-of-line nil)
-  (newline-and-indent)
   (let ((logging-statment
          (concat "import logging; logging.critical(" statement ")")))
     (insert logging-statment)))
