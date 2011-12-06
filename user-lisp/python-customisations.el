@@ -21,7 +21,7 @@
 
 ;; (the problem is the colon in the comment)
 
-;; TOOD: also fix indentation for the following:
+;; TODO: also fix indentation for the following:
 
 ;; def foo():
 ;;     """foo bar foo bar foo bar foo bar foo bar foo bar(see #634), so we always try
@@ -30,6 +30,12 @@
 ;;     """
 
 ;; (the problem is the # inside the docstring)
+
+;; TODO: properly highlight differently named self arguments (often seen in nested classes):
+
+;; class Foo(object):
+;;     def __init__(_self, *args):
+;;         pass
 
 
 ; indent python by 4 spaces by default
