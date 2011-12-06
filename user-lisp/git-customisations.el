@@ -14,7 +14,7 @@
 (require 'thingatpt) ; provides symbol-at-point
 
 ; vc-git-grep, fixed so it doesn't use the local color settings (Emacs bug #9408)
-(defun vc-git-grep (regexp &optional files dir)
+(defun vc-git-grep-highlight (regexp &optional files dir)
   "Run git grep, searching for REGEXP in FILES in directory DIR.
 The search is limited to file names matching shell pattern FILES.
 FILES may use abbreviations defined in `grep-files-aliases', e.g.
@@ -78,7 +78,7 @@ Note that this will not search git submodules."
  (if (buffer-file-name)
      (let ((project-root (expand-file-name (vc-git-root (buffer-file-name)))))
        (if project-root
-           (vc-git-grep search-term "*" project-root)
+           (vc-git-grep-highlight search-term "*" project-root)
          (message "Couldn't find project root.")))
    (message "You need to be in a file buffer.")))
 
