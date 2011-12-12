@@ -11,8 +11,6 @@
      (when (not window-system)
        (set-face-background 'magit-item-highlight "black"))))
 
-(require 'thingatpt) ; provides symbol-at-point
-
 ; vc-git-grep, fixed so it doesn't use the local color settings (Emacs bug #9408)
 (defun vc-git-grep-highlight (regexp &optional files dir)
   "Run git grep, searching for REGEXP in FILES in directory DIR.
@@ -69,6 +67,7 @@ This command shares argument histories with \\[rgrep] and \\[grep]."
 	    (setq default-directory dir))))))
 
 
+(autoload 'symbol-at-point "thingatpt" nil t)
 (defun grep-git-project (search-term)
   "Search a git project for SEARCH-TERM. The default search term is the symbol at point.
 Note that this will not search git submodules."
