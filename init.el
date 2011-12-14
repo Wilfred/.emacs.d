@@ -134,29 +134,8 @@
 ; automatically finish quotes, brackets etc according to mode
 (require 'autopair)
 (autopair-global-mode)
-;
-; dabbrev-expand should match case
-(setq dabbrev-case-fold-search nil)
-;
-; auto-completion with neat popup
-; using dabbrev as auto-completion source
-(add-to-list 'load-path "~/.emacs.d/user-lisp/auto-complete")
-(require 'ac-dabbrev)
-(setq ac-sources
-      (list ac-source-dabbrev))
-;
-(require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/user-lisp/auto-complete/dict")
-(ac-config-default)
-;
-; don't try to complete after semicolon (is a pain in CSS)
-(setq ac-ignores '(";"))
-; tab only for completion
-(define-key ac-complete-mode-map "\r" nil)
 
-; always spaces, never tabs
-(setq-default indent-tabs-mode nil)
-
+(require 'completion-customisations)
 (require 'structured-text-customisations)
 (require 'html-customisations)
 (require 'css-customisations)
