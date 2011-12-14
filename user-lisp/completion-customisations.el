@@ -2,6 +2,11 @@
 (setq dabbrev-case-fold-search nil)
 
 
+; hippie-expand is overeage but occasionally useful
+; so we bind it to M-? instead of M-/
+(global-set-key (kbd "M-?") 'hippie-expand)
+
+
 ; auto-completion with neat popup
 ; using dabbrev as auto-completion source
 (add-to-list 'load-path "~/.emacs.d/user-lisp/auto-complete")
