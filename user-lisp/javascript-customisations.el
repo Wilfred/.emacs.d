@@ -13,7 +13,8 @@
              (setq indent-tabs-mode t)))
 (add-hook 'js2-mode-hook
           '(lambda ()
-             (setq indent-tabs-mode t)))
+             (setq indent-tabs-mode t)
+	     (setq js2-basic-offset 8)))
 
 (require 'flymake-jshint)
 
