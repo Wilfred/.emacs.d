@@ -50,6 +50,11 @@
 ; set flymake to use pyflakes to check code (requires pyflakes installed and on $PATH)
 (require 'flymake)
 
+(custom-set-faces
+ '(flymake-errline ((((class color)) (:underline "Red"))))
+ '(flymake-warnline ((((class color)) (:underline "Orange")))))
+
+
 (defun flymake-pyflakes-init ()
     (let* ((temp-file (flymake-init-create-temp-buffer-copy
                        'flymake-create-temp-inplace))
