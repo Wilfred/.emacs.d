@@ -25,3 +25,5 @@
 
 ; always spaces, never tabs
 (setq-default indent-tabs-mode nil)
+
+(provide 'completion-customisations)
