@@ -125,9 +125,21 @@ More rigorous than the default, excluding nil file names and unwritable files"
     
     (insert "def __init__(self, *args, **kwargs):")
     (newline-and-indent)
-    (insert (concat "super(" class-name ", self).__init__(*args, **kwargs)"))
-    
+    (python-insert-super-function)
+    (move-end-of-line)
     (newline-and-indent)))
+
+(defun python-insert-super-function ()
+  "Insert a call to super for the current class and function."
+  ; TODO: automatically add arguments to the superclass's function based on the current arguements
+  (interactive)
+
+  (let* ((exact-position (split-string (which-function) (rx "."))) ; e.g. ("FooBar" "method")
+         (class-name (first exact-position))
+         (method-name (second exact-position)))
+    (insert (concat "super(" class-name ", self)." method-name "()"))
+    ; backward one char so the user can enter the argument for the superclass's function
+    (backward-char)))
 
 (defun python-insert-break-point ()
   (interactive)
