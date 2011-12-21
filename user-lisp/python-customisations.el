@@ -132,6 +132,8 @@ More rigorous than the default, excluding nil file names and unwritable files"
 (defun python-insert-super-function ()
   "Insert a call to super for the current class and function."
   ; TODO: automatically add arguments to the superclass's function based on the current arguements
+  ; FIXME: detecting function name is not very reliable
+  ; suggestion: use (beginning-of-defun) and (python-beginning-of-block) to get class-name and method-name
   (interactive)
 
   (let* ((exact-position (split-string (which-function) (rx "."))) ; e.g. ("FooBar" "method")
