@@ -29,4 +29,8 @@
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'post-forward-angle-brackets)
 
+; highlight TODO, FIXME and BUG
+(font-lock-add-keywords nil
+                        '(("\\<\\(FIXME\\|TODO\\|BUG\\):" 1 font-lock-warning-face t)))
+
 (provide 'ui-customisations)
