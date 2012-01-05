@@ -15,6 +15,11 @@
              (setq indent-tabs-mode t)
 	     (setq js2-basic-offset 8)))
 
+; fix js2-mode's function parameter colour, which is too dark for a dark theme
+(custom-set-faces
+ '(js2-function-param-face ((((class color)) (:foreground "Green")))))
+
+
 (require 'flymake-jshint)
 
 (custom-set-variables
