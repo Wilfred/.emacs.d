@@ -21,3 +21,5 @@
       (replace-in-buffer "application: gap2-production" "application: gap2-staging"))))
 
 (define-key yaml-mode-map (kbd "<f11>") 'gap2-toggle-application)
+
+(provide 'potato-customisations)
