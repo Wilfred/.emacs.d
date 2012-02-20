@@ -15,10 +15,11 @@
   "Toggle between gap2-staging and gap2-production in app.yaml"
   (interactive)
   (save-excursion
-    (set-buffer "app.yaml")
+    (set-buffer (find-file "~/work/gap2/app.yaml"))
     (if (buffer-contains-string-p "application: gap2-staging")
         (replace-in-buffer "application: gap2-staging" "application: gap2-production")
       (replace-in-buffer "application: gap2-production" "application: gap2-staging"))))
+
 
 (define-key yaml-mode-map (kbd "<f11>") 'gap2-toggle-application)
 
