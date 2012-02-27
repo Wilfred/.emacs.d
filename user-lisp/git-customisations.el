@@ -104,8 +104,16 @@ Note that this will not search git submodules."
       ; we assume all Python classes are of the form "clas Foo(bar)" not "class Foo:"
       (git-grep-to-first-result (concat "class " function-or-class-name "(")))))
 
+(defun git-show-conflicts ()
+  (interactive)
+  (occur "<<<<<<< HEAD"))
+
+(global-set-key (kbd "<f11>") 'git-show-conflicts)
+
 (global-set-key (kbd "<f5>") 'grep-git-project)
 (global-set-key (kbd "<C-f5>") 'git-grep-to-definition)
+
+
 
 
 (provide 'git-customisations)
