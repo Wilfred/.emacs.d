@@ -161,7 +161,7 @@ More rigorous than the default, excluding nil file names and unwritable files"
   (indent-for-tab-command)
   (insert "import ipdb; ipdb.set_trace()"))
 
-(define-key python-mode-map [(f12)] 'python-insert-gae-pdb)
+(define-key python-mode-map (kbd "<f12>") 'python-insert-gae-pdb)
 
 (defun python-insert-logging-statement (statement)
   (interactive "sWhat to log: ")
@@ -169,7 +169,7 @@ More rigorous than the default, excluding nil file names and unwritable files"
          (concat "import logging; logging.critical(" statement ")")))
     (insert logging-statment)))
 
-(define-key python-mode-map [(f1)] 'python-insert-logging-statement)
+(define-key python-mode-map (kbd "<f1>") 'python-insert-logging-statement)
 
 (define-skeleton python-insert-docstring
   "Insert a Python docstring."
