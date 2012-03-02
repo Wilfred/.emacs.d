@@ -103,9 +103,7 @@ More rigorous than the default, excluding nil file names and unwritable files"
   ; enable our level computation
   (setq outline-level 'py-outline-level)
   ; turn on outline mode
-  (outline-minor-mode t)
-  ; initially hide all but the headers
-  (hide-body))
+  (outline-minor-mode t))
 
 ; load when we open a python file
 (add-hook 'python-mode-hook 'python-outline-minor-mode)
