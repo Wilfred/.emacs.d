@@ -178,5 +178,7 @@
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- )
+ '(flymake-errline ((((class color)) (:underline "Red"))))
+ '(flymake-warnline ((((class color)) (:underline "Orange"))))
+ '(js2-function-param-face ((((class color)) (:foreground "Green")))))
 
