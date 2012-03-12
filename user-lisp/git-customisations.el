@@ -1,4 +1,4 @@
-(add-to-list 'load-path "~/.emacs.d/user-lisp/magit")
+(add-to-list 'load-path "~/.emacs.d/third-party-lisp/magit")
 (require 'magit)
 
 (global-set-key [(f2)] 'magit-status)

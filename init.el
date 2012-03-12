@@ -1,8 +1,6 @@
-; Loading third party code
-; ------------------------
-;
-; we will store all our 3rd party code here if we want to hack around with it
+(add-to-list 'load-path "~/.emacs.d/third-party-lisp/")
 (add-to-list 'load-path "~/.emacs.d/user-lisp/")
+
 ; some plugins (at least w3) install themselves here:
 (add-to-list 'load-path "/usr/share/emacs/site-lisp")
 ; for 3rd party code that we aren't modifying, we just install as
