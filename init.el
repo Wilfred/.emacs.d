@@ -154,6 +154,14 @@
 (global-set-key [(f8)] 'flymake-goto-prev-error)
 (global-set-key [(f9)] 'flymake-goto-next-error)
 
+; auto-highlight-symbol -- highlights the symbol under cursor
+; elsewhere in the buffer
+(require 'auto-highlight-symbol)
+(global-auto-highlight-symbol-mode t)
+(global-set-key (kbd "M-n") 'ahs-forward)
+(global-set-key (kbd "M-p") 'ahs-backward)
+
+
 (setq ring-bell-function 'ignore)
 
 ; something in the above has switched on debugging. Switch it off.
@@ -178,6 +186,7 @@
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
+ '(ahs-plugin-defalt-face ((t nil)))
  '(flymake-errline ((((class color)) (:underline "Red"))))
  '(flymake-warnline ((((class color)) (:underline "Orange"))))
  '(js2-function-param-face ((((class color)) (:foreground "Green")))))
