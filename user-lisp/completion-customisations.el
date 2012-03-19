@@ -2,7 +2,7 @@
 (setq dabbrev-case-fold-search nil)
 
 
-; hippie-expand is overeage but occasionally useful
+; hippie-expand is over-eager but occasionally useful
 ; so we bind it to M-? instead of M-/
 (global-set-key (kbd "M-?") 'hippie-expand)
 
