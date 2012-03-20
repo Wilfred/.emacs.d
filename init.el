@@ -182,12 +182,14 @@
   ;; If there is more than one, they won't work right.
  '(frame-background-mode (quote dark)))
 (custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(ahs-plugin-defalt-face ((t nil)))
  '(flymake-errline ((((class color)) (:underline "Red"))))
  '(flymake-warnline ((((class color)) (:underline "Orange"))))
- '(js2-function-param-face ((((class color)) (:foreground "Green")))))
+ '(js2-function-param-face ((((class color)) (:foreground "Green"))))
+ '(magit-header ((t (:background "black" :foreground "white"))))
+ '(magit-section-title ((t (:inherit magit-header)))))
 
