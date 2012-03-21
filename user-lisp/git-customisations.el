@@ -113,7 +113,28 @@ Note that this will not search git submodules."
 (global-set-key (kbd "<f5>") 'grep-git-project)
 (global-set-key (kbd "<C-f5>") 'git-grep-to-definition)
 
+(defun git-keep-conflict-first ()
+  "Given a buffer containing `<<<< HEAD' stuff, keep the first of
+the two options."
+  (interactive)
+  ; remove the first line
+  (search-forward-regexp "<<<<<<<.*?\n")
+  (replace-match "")
 
+  ; remove the second option
+  (search-forward-regexp "=======\\(\n\\|.\\)*?>>>>>>>.*?\n")
+  (replace-match ""))
 
+(defun git-keep-conflict-second ()
+  "Given a buffer containing `<<<< HEAD' stuff, keep the second of
+the two options."
+  (interactive)
+  ; remove the first option
+  (search-forward-regexp "<<<<<<<\\(\n\\|.\\)*?=======\n")
+  (replace-match "")
+  
+  ; remove the last line
+  (search-forward-regexp ">>>>>>>.*?\n")
+  (replace-match ""))
 
 (provide 'git-customisations)
