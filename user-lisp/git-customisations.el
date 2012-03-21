@@ -1,7 +1,7 @@
 (add-to-list 'load-path "~/.emacs.d/third-party-lisp/magit")
 (require 'magit)
 
-(global-set-key [(f2)] 'magit-status)
+(global-set-key (kbd "<f2>") 'magit-status)
 
 ;; change magit diff colors to the standard red and green
 (eval-after-load 'magit
@@ -108,7 +108,7 @@ Note that this will not search git submodules."
   (interactive)
   (occur "<<<<<<< HEAD"))
 
-(global-set-key (kbd "<f11>") 'git-show-conflicts)
+(global-set-key (kbd "<f10>") 'git-show-conflicts)
 
 (global-set-key (kbd "<f5>") 'grep-git-project)
 (global-set-key (kbd "<C-f5>") 'git-grep-to-definition)
