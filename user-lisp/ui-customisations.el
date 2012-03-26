@@ -10,6 +10,9 @@
 (tool-bar-mode 0)
 (scroll-bar-mode 0)
 
+; scroll one row at at time
+(setq scroll-step 1)
+
 ; show x-position (ie column number) for point in buffer
 (column-number-mode 1)
 
