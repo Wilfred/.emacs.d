@@ -105,8 +105,13 @@ Note that this will not search git submodules."
       (git-grep-to-first-result (concat "class " function-or-class-name "(")))))
 
 (defun git-show-conflicts ()
+  "Show all the conflicts in the current buffer using occur-mode."
   (interactive)
-  (occur "<<<<<<< HEAD"))
+  (occur "<<<<<<< HEAD")
+
+  ; put mark on the first result in the occur window
+  (other-window 1)
+  (next-line))
 
 (global-set-key (kbd "<f10>") 'git-show-conflicts)
 
