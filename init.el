@@ -143,6 +143,8 @@
 (require 'xml-customisations)
 (require 'lisp-customisations)
 (require 'haskell-customisations)
+(require 'c-customisations)
+
 (require 'potato-customisations)
 
 ; add ~/bin to PATH since we store the GAE SDK there
