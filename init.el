@@ -55,16 +55,6 @@
 ; reduce how often we get 'directory too big' problems:
 (setq ido-max-directory-size 100000)
 
-; use ido for commands
-(global-set-key
- "\M-x"
- (lambda ()
-   (interactive)
-   (call-interactively
-    (intern
-     (ido-completing-read
-      "M-x "
-      (all-completions "" obarray 'commandp))))))
 
 ; when using ido for opening files, show last modified first:
 (add-hook 'ido-make-file-list-hook 'ido-sort-mtime)
@@ -80,6 +70,13 @@
    (delq nil (mapcar
               (lambda (x) (and (char-equal (string-to-char x) ?.) x))
               ido-temp-list))))
+
+(require 'smex)
+(smex-initialize)
+(global-set-key (kbd "M-x") 'smex)
+(global-set-key (kbd "M-X") 'smex-major-mode-commands)
+;; Old traditional M-x
+(global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
 
 
 ;; I-search with initial contents
