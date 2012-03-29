@@ -1,8 +1,8 @@
 This is the Emacs environment I (Wilfred Hughes) use for development.
 
 I'm aiming to keep this as portable as possible, and
-self-contained. Code I've written (init.el and the *-customisations.el
-files) is BSD licensed.
+self-contained. Code I've written (init.el and files under
+`user-lisp/`) is BSD licensed.
 
 ### Major third party packages
 
