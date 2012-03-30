@@ -1,5 +1,5 @@
 ; colour scheme
-(add-to-list 'load-path "~/.emacs.d/user-lisp/color-theme")
+(add-to-list 'load-path "~/.emacs.d/third-party-lisp/color-theme")
 
 (when window-system
   (require 'color-theme)
