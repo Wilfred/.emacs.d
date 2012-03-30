@@ -36,4 +36,7 @@
 (font-lock-add-keywords nil
                         '(("\\<\\(FIXME\\|TODO\\|BUG\\):" 1 font-lock-warning-face t)))
 
+; use ibuffer to group buffers
+(global-set-key (kbd "C-x C-b") 'ibuffer)
+
 (provide 'ui-customisations)
