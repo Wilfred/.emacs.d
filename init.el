@@ -141,6 +141,7 @@
 (require 'lisp-customisations)
 (require 'haskell-customisations)
 (require 'c-customisations)
+(require 'sh-customisations)
 
 (require 'potato-customisations)
 
