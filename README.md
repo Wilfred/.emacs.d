@@ -4,6 +4,16 @@ I'm aiming to keep this as portable as possible, and
 self-contained. Code I've written (init.el and files under
 `user-lisp/`) is BSD licensed, see COPYING.
 
+### Installing
+
+Remove any existing .emacs.d configuration (or move elsewhere):
+
+    $ rm -r ~/.emacs.d
+    
+Clone the repo including submodules:
+
+    $ git clone git://github.com/Wilfred/.emacs.d.git
+
 ### Major third party packages
 
 To avoid problems where code becomes abandoned or changes hosting,
