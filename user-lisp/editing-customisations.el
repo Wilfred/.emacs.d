@@ -103,8 +103,8 @@ are interchanged."
   (increment-number-decimal (if arg (- arg) -1)))
 
 ;; bound to Ctrl with + on the keypad
-(global-set-key (kbd "<C-kp-add>") 'increment-number-decimal)
-(global-set-key (kbd "<C-kp-subtract>") 'decrement-number-decimal)
+(global-set-key (kbd "<C-up>") 'increment-number-decimal)
+(global-set-key (kbd "<C-down>") 'decrement-number-decimal)
 
 
 (provide 'editing-customisations)
