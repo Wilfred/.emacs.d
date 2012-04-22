@@ -46,6 +46,13 @@
 (setq autopair-autowrap t)
 (add-hook 'python-mode-hook #'(lambda () (autopair-mode)))
 
+; ensure autopair handles triple-quoted strings correctly
+(add-hook 'python-mode-hook
+          #'(lambda ()
+              (setq autopair-handle-action-fns
+                    (list #'autopair-default-handle-action
+                          #'autopair-python-triple-quote-action))))
+
 
 ; set flymake to use pyflakes to check code (requires pyflakes installed and on $PATH)
 (require 'flymake)
