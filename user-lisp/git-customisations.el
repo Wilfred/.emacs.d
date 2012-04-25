@@ -44,9 +44,9 @@ Note that this will not search git submodules."
          (case-fold-search nil)
          (is-function (string-match "[a-z]" first-char)))
     (if is-function
-        (grep-git-project (concat "def " function-or-class-name "("))
+        (grep-git-project (format "def %s(" function-or-class-name))
       ; we assume all Python classes are of the form "clas Foo(bar)" not "class Foo:"
-      (grep-git-project (concat "class " function-or-class-name "(")))))
+      (grep-git-project (format "class %s(" function-or-class-name)))))
 
 (defun git-show-conflicts ()
   "Show all the conflicts in the current buffer using occur-mode."
