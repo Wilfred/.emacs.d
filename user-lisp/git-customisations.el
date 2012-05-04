@@ -51,7 +51,7 @@ Note that this will not search git submodules."
 (defun git-show-conflicts ()
   "Show all the conflicts in the current buffer using occur-mode."
   (interactive)
-  (occur "<<<<<<< HEAD")
+  (occur "<<<<<<< ")
 
   ; put mark on the first result in the occur window
   (other-window 1)
