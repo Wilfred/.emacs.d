@@ -154,6 +154,17 @@
 (global-set-key [(f8)] 'flymake-goto-prev-error)
 (global-set-key [(f9)] 'flymake-goto-next-error)
 
+;; (add-to-list 'load-path "~/.emacs.d/third-party-lisp/ack-and-a-half.el")
+(autoload 'ack-and-a-half-same "ack-and-a-half" nil t)
+(autoload 'ack-and-a-half "ack-and-a-half" nil t)
+(autoload 'ack-and-a-half-find-file-same "ack-and-a-half" nil t)
+(autoload 'ack-and-a-half-find-file "ack-and-a-half" nil t)
+(defalias 'ack 'ack-and-a-half)
+(defalias 'ack-same 'ack-and-a-half-same)
+(defalias 'ack-find-file 'ack-and-a-half-find-file)
+(defalias 'ack-find-file-same 'ack-and-a-half-find-file-same)
+
+
 ; auto-highlight-symbol -- highlights the symbol under cursor
 ; elsewhere in the buffer
 (require 'auto-highlight-symbol)
@@ -180,7 +191,8 @@
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- '(frame-background-mode (quote dark)))
+ '(frame-background-mode (quote dark))
+ '(ack-and-a-half-executable (executable-find "ack-grep")))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
