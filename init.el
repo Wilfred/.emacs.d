@@ -28,6 +28,10 @@
 (if (eq system-type 'darwin)
     (require 'os-x-fixes))
 
+; automatically abbreviate long grep output
+(require 'scf-mode)
+(add-hook 'grep-mode-hook (lambda () (scf-mode 1)))
+
 ; switch on which-func-mode for all major modes that support it
 ; (which-func-mode shows which function or class that point is in)
 (which-func-mode 1)
