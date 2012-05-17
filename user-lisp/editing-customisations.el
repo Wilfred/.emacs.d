@@ -69,6 +69,10 @@ The point is also moved one character forward."
 ; it doesn't break camelcase
 (global-set-key (kbd "M-c") 'toggle-case-next-char)
 
+; insist on this binding with camelCase mode too
+(require 'camelCase)
+(define-key camelCase-mode-map (kbd "M-c") 'toggle-case-next-char)
+
 
 (defun transpose-symbols (arg)
   "Interchange sybmols around point, leaving point at end of them.
