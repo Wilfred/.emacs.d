@@ -105,7 +105,7 @@
         (add-hook 'isearch-mode-hook 'isearch-set-initial-string)
         (isearch-forward regexp-p no-recursive-edit)))))
 
-(global-set-key "\M-s" 'isearch-forward-at-point)
+(global-set-key (kbd "<f12>") 'isearch-forward-at-point)
 
 ; make re-builder use the same regexp format as regexp-replace (no double escaping)
 (setq reb-re-syntax 'string)
