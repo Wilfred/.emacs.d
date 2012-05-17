@@ -31,6 +31,7 @@
 ; automatically abbreviate long grep output
 (require 'scf-mode)
 (add-hook 'grep-mode-hook (lambda () (scf-mode 1)))
+(add-hook 'ack-and-a-half-mode-hook (lambda () (scf-mode 1)))
 
 ; switch on which-func-mode for all major modes that support it
 ; (which-func-mode shows which function or class that point is in)
