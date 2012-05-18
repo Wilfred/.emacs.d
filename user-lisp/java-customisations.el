@@ -74,4 +74,24 @@ Example: (split-string-with-sep \"bazBoxBar\" \"B\")
      first-char
      (substring capitalised-variable-name 1))))
 
+(defun find-in-parent-directory (path file-name)
+  "Search PATH and all parent directories for file FILE-NAME,
+returning the first path found or nil."
+  (let* ((abs-directory-path (expand-file-name path))
+         (abs-file-path (concat abs-directory-path file-name)))
+    (if (file-exists-p abs-file-path)
+        ; success -- we've found it!
+        abs-directory-path
+      (if (string= abs-directory-path "/")
+          nil
+        (find-in-parent-directory (concat abs-directory-path "../") file-name)))))
+
+(defun project-find-root ()
+  "Find the probable root of the project for the current buffer.
+TODO: svn"
+  (let ((current-directory (expand-file-name ".")))
+    (or
+     (find-in-parent-directory current-directory ".git")
+     (find-in-parent-directory current-directory "pom.xml"))))
+
 (provide 'java-customisations)
