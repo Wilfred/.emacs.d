@@ -3,14 +3,6 @@
 
 (global-set-key (kbd "<f2>") 'magit-status)
 
-;; change magit diff colors to the standard red and green
-(eval-after-load 'magit
-  '(progn
-     (set-face-foreground 'magit-diff-add "green3")
-     (set-face-foreground 'magit-diff-del "red3")
-     (when (not window-system)
-       (set-face-background 'magit-item-highlight "black"))))
-
 (autoload 'symbol-at-point "thingatpt" nil t)
 
 ; TODO: make more generic, falling back to ack if git isn't available
