@@ -1,8 +1,10 @@
 (defun buffer-contains-string-p (string)
-  (save-excursion
-    (save-match-data
-      (goto-char (point-min))
-      (search-forward string nil t))))
+  "Does the current buffer contain STRING? Case sensitive."
+  (let ((case-fold-search nil))
+    (save-excursion
+      (save-match-data
+        (goto-char (point-min))
+        (search-forward string nil t)))))
 
 (defun replace-in-buffer (from-string to-string)
   (save-excursion
