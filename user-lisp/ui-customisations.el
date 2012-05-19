@@ -36,6 +36,9 @@
 (font-lock-add-keywords nil
                         '(("\\<\\(FIXME\\|TODO\\|BUG\\):" 1 font-lock-warning-face t)))
 
+; style diffs so that additions, removals etc are different colours
+(require 'diff-mode-)
+
 ; use ibuffer to group buffers
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 

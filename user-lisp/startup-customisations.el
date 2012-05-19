@@ -5,15 +5,14 @@
 (setq-default initial-scratch-message nil)
 
 ; rename the scratch buffer since I only use it for elisp
-(rename-buffer "*scratch-elisp*")
+(switch-to-buffer (get-buffer-create "*scratch-elisp*"))
 (emacs-lisp-mode)
 
 ; create a scratch Python buffer too
-(get-buffer-create "*scratch-python*")
-(switch-to-buffer "*scratch-python*")
+(switch-to-buffer  (get-buffer-create "*scratch-python*"))
 (python-mode)
 
-; Python mode is more useful for the scratch buffer
-(setq-default initial-major-mode 'python-mode)
+; start in the scratch buffer
+(switch-to-buffer  (get-buffer-create "*scratch*"))
 
 (provide 'startup-customisations)

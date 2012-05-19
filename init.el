@@ -31,6 +31,7 @@
 ; automatically abbreviate long grep output
 (require 'scf-mode)
 (add-hook 'grep-mode-hook (lambda () (scf-mode 1)))
+(add-hook 'ack-and-a-half-mode-hook (lambda () (scf-mode 1)))
 
 ; switch on which-func-mode for all major modes that support it
 ; (which-func-mode shows which function or class that point is in)
@@ -104,7 +105,7 @@
         (add-hook 'isearch-mode-hook 'isearch-set-initial-string)
         (isearch-forward regexp-p no-recursive-edit)))))
 
-(global-set-key "\M-s" 'isearch-forward-at-point)
+(global-set-key (kbd "<f12>") 'isearch-forward-at-point)
 
 ; make re-builder use the same regexp format as regexp-replace (no double escaping)
 (setq reb-re-syntax 'string)
