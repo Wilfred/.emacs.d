@@ -148,15 +148,6 @@ More rigorous than the default, excluding nil file names and unwritable files"
     ; backward one char so the user can enter the argument for the superclass's function
     (backward-char)))
 
-(defun python-insert-gae-pdb ()
-  "Insert GAE pdb break point on this line."
-  (interactive)
-  (move-beginning-of-line nil)
-  (newline-and-indent)
-  (previous-line)
-  (indent-for-tab-command)
-  (insert "import gae_pdb; gae_pdb.set_trace()"))
-
 (defun python-insert-ipdb ()
   "Insert ipdb break point on this line."
   (interactive)
@@ -165,8 +156,6 @@ More rigorous than the default, excluding nil file names and unwritable files"
   (previous-line)
   (indent-for-tab-command)
   (insert "import ipdb; ipdb.set_trace()"))
-
-(define-key python-mode-map (kbd "<f12>") 'python-insert-gae-pdb)
 
 (defun python-insert-logging-statement (statement)
   (interactive "sWhat to log: ")
