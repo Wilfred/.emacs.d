@@ -84,7 +84,7 @@ TODO: svn"
 (require 'cl); dolist
 (require 'ido); ido-completing-read
 
-(defun java-show-maven-errors ()
+(defun java-show-test-failures ()
   "Show the failures from the last maven test run."
   (interactive)
   (let* ((test-results-directory (concat (project-find-root) "target/surefire-reports"))
@@ -95,15 +95,17 @@ TODO: svn"
       (when (string-match ".txt$" file-name)
         (save-current-buffer
           (find-file (concat test-results-directory "/" file-name))
-          (revert-buffer); if we already had the file open, we want the latest version
+          (revert-buffer t t); if we already had the file open, we want the latest version
           (if (buffer-contains-string-p "FAILURE")
               (progn
                 (setq failed-tests (cons file-name failed-tests))))
           (kill-buffer))))
     ; let the user choose which failure they want to see
     (if failed-tests
-        (find-file (concat test-results-directory "/"
-                           (ido-completing-read "Pick a failed class: " failed-tests)))
+        (progn
+          (find-file (concat test-results-directory "/"
+                             (ido-completing-read "Pick a failed class: " failed-tests)))
+          (compilation-mode))
       (message "No failed tests!"))))
 
 
