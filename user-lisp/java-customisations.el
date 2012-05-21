@@ -21,58 +21,25 @@
 	  '(lambda ()
              (camelCase-mode)))
 
+(require 'regexp-utils); re-find-all
+
 ; java convenience functions
 ; TODO: write a Python-flavoured set of regexp utils
-(defun string-match-all (regexp string &optional offset)
-  "Find all the match positions of REGEXP in STRING, starting from
-OFFSET (default 0). Case sensitive."
-  (let* ((string-offset (if offset offset 0))
-        (case-fold-search nil)
-        (last-match-position (string-match regexp string string-offset)))
-    (if last-match-position
-     (cons
-      (match-beginning 0)
-      (string-regexp-positions regexp string (match-end 0)))
-     nil)))
-
-(defun list-pair-up (list)
-  "Convert a list of the form (1 2 3 4) to ((1 2) (2 3) (3 4))"
-  (let ((firsts (butlast list))
-        (seconds (cdr list)))
-    (mapcar* 'list firsts seconds)))
-
-(defun split-string-with-sep (string separator)
-  "Split STRING into substrings based on regexp SEPARATOR.
-The separator is included in the subsequent substring
-
-Example: (split-string-with-sep \"bazBoxBar\" \"B\")
-    -> (\"baz\" \"Box\" \"Bar\"
-"
-  (let* ((substring-ends (string-match-all separator string))
-        (substring-positions
-         (list-pair-up (append '(0) substring-ends (list (length string))))))
-    (mapcar (lambda (pos)
-              (let ((start (first pos))
-                    (end (second pos)))
-                (substring string start end)))
-            substring-positions)))
-
 (defun java-variable-to-constant (variable-name)
   "Convert a string \"fooBar\" to \"FOO_BAR\"."
-  (mapconcat 'upcase (split-string-with-sep variable-name "[A-Z]") "_"))
+  (mapconcat 'upcase (re-find-all "[A-Z]?[a-z]+" variable-name) "_"))
 
 (defun java-constant-to-variable (constant-name)
   "Convert a string  \"FOO_BAR\" to \"fooBar\"."
   (let* ((camelcase-variable-name
           (apply 'concat
-                 (mapcar 'capitalize (split-string constant-name "_")))
-          )
+                 (mapcar 'capitalize (split-string constant-name "_"))))
          (first-char
           (downcase
            (substring camelcase-variable-name 0 1))))
     (concat
      first-char
-     (substring capitalised-variable-name 1))))
+     (substring camelcase-variable-name 1))))
 
 (defun find-in-parent-directory (path file-name)
   "Search PATH and all parent directories for file FILE-NAME,

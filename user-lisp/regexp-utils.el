@@ -64,3 +64,5 @@
   (let ((case-fold-search nil))
     (if (string-match regexp string)
         t nil)))
+
+(provide 'regexp-utils)
