@@ -41,6 +41,25 @@
      first-char
      (substring camelcase-variable-name 1))))
 
+
+(defun java-toggle-case ()
+  "Convert toggle symbol at mark between variable and constant formatting."
+  (interactive)
+  (let* ((symbol (symbol-name (symbol-at-point)))
+        (symbol-bounds (bounds-of-thing-at-point 'symbol))
+        (bound-start (car symbol-bounds))
+        (bound-end (cdr symbol-bounds)))
+    (when symbol-bounds
+      (goto-char bound-start)
+      (kill-forward-chars (- bound-end bound-start))
+      (if (re-search-p "[a-z]" symbol)
+          (progn
+            (message (java-constant-to-variable symbol))
+            (insert (java-variable-to-constant symbol)))
+        (insert (java-constant-to-variable symbol))))))
+
+(define-key java-mode-map (kbd "C-M-c") 'java-toggle-case)
+
 (defun find-in-parent-directory (path file-name)
   "Search PATH and all parent directories for file FILE-NAME,
 returning the first path found or nil."
