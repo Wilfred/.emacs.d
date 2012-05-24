@@ -110,5 +110,8 @@ are interchanged."
 (global-set-key (kbd "<C-up>") 'increment-number-decimal)
 (global-set-key (kbd "<C-down>") 'decrement-number-decimal)
 
+(add-to-list 'load-path "~/.emacs.d/third-party-lisp/expand-region")
+(require 'expand-region)
+(global-set-key (kbd "C-=") 'er/expand-region)
 
 (provide 'editing-customisations)
