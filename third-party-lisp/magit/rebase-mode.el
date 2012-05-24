@@ -24,6 +24,8 @@
 
 ;;; Code:
 
+(require 'server)
+
 (defgroup rebase-mode nil
   "Customize Rebase Mode"
   :group 'faces)
@@ -305,6 +307,11 @@ By default, this is the same except for the \"pick\" command."
                          (key-description (where-is-internal command nil t)))))))))
 
 (add-hook 'rebase-mode-hook 'rebase-mode-show-keybindings t)
+
+(defun rebase-mode-disable-before-save-hook ()
+  (set (make-local-variable 'before-save-hook) nil))
+
+(add-hook 'rebase-mode-hook 'rebase-mode-disable-before-save-hook)
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist

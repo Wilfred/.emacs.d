@@ -11,8 +11,8 @@
 @end direntry
 
 @copying
-Copyright @copyright{} 2008, 2009, 2011 Marius Vollmer et al. (See the
-header of magit.el for the lengthy list of Magit contributors.)
+Copyright @copyright{} 2008, 2009, 2010, 2011 Magit contributors. (See
+the header of magit.el for the lengthy list of Magit contributors.)
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -59,6 +59,7 @@ maintain compatibility are still welcome.
 * Using Magit Extensions::
 * Using Git Directly::
 * Customization::
+* Frequently Asked Questions::
 @end menu
 
 @node Introduction
@@ -94,6 +95,8 @@ recent command.  You can switch to it with @kbd{$}.
 
 @node Acknowledgments
 @chapter Acknowledgments
+
+Marius Vollmer started the whole project.  Thanks !
 
 From day one of the first Magit announcement, John Wiegley has
 contributed numerous fixes, UI improvements, and new features.
@@ -218,8 +221,8 @@ them as described in the previous section.
 The first section shows @emph{Untracked files}, if there are any.  See
 @ref{Untracked files} for more details.
 
-Two section show your local changes.  They are explained fully in the
-next chapter, @ref{Staging and Committing}.
+The next two sections show your local changes.  They are explained
+fully in the next chapter, @ref{Staging and Committing}.
 
 If the current branch is associated with a remote tracking branch, the
 status buffer shows the differences between the current branch and the
@@ -242,10 +245,14 @@ Typing @kbd{C-u S} anywhere will also stage all untracked files,
 together with all changes to the tracked files.
 
 You can instruct Git to ignore them by typing @kbd{i}.  This will add
-the filename to the @code{.gitignore} file.  Typing @kbd{C-u i} will
-ask you for the name of the file to ignore.  This is useful to ignore
-whole directories, for example.  The @kbd{I} command is similar to
-@kbd{i} but will add the file to @code{.git/info/exclude} instead.
+the filename to the @code{.gitignore} file.  Typing @kbd{C-u i} will ask
+you for the name of the file to ignore.  This is useful to ignore whole
+directories, for example.  In this case, the minibuffer's future history
+(accessible with @kbd{M-n}) contains predefined values (such as
+wildcards) that might be of interest. If prefix argument is negative
+(for example after typing @kbd{C-- i}), the prompt proposes wildcard by
+default.  The @kbd{I} command is similar to @kbd{i} but will add the
+file to @code{.git/info/exclude} instead.
 
 To delete an untracked file forever, use @kbd{k}.  If point is on the
 @emph{Untracked files} section title when you hit @kbd{k}, all
@@ -279,6 +286,10 @@ If the region is active when you type @kbd{s} or @kbd{u}, only the
 changes in the region are staged or unstaged.  (This works line by
 line: if the beginning of a line is in the region it is included in
 the changes, otherwise it is not.)
+
+To change the size of the hunks, you can type @kbd{+} or @kbd{-} to
+increase and decrease, respectively.  Typing @kbd{0} will
+reset the hunk size to the default.
 
 Typing @kbd{C-u s} will ask you for a name of a file to be staged, for
 example to stage files that are hidden.
@@ -321,6 +332,10 @@ variable.
 Typing @kbd{C-c C-e} will toggle the @code{--allow-empty} option.  This
 allows you to make commits that serve as notes, without including any
 changes.
+
+Typing @kbd{C-c C-t} will toggle the option to specify the name and
+email address for the commit's author.  The default is determined by
+the @code{user.name} and @code{user.email} git configuration settings.
 
 If you change your mind and don't want to go ahead with your commit
 while you are in the @code{*magit-log-edit*} buffer, you can just
@@ -454,7 +469,7 @@ is of a file in the status buffer that needs to be merged, you will be
 able to use Ediff as an interactive merge tool.  Otherwise, Ediff will
 simply show the two versions of the file.
 
-To show the changes from you working tree to another revision, type
+To show the changes from your working tree to another revision, type
 @kbd{d}.  To show the changes between two arbitrary revisions, type
 @kbd{D}.
 
@@ -469,7 +484,7 @@ Typing @kbd{v} will apply the selected changes in reverse.
 @node Tagging
 @chapter Tagging
 
-Typing @kbd{t t} will make a lighweight tag.  Typing @kbd{t T} will
+Typing @kbd{t t} will make a lighweight tag.  Typing @kbd{t a} will
 make an annotated tag.  It will put you in the normal
 @code{*magit-log-edit} buffer for writing commit messages, but typing
 @kbd{C-c C-c} in it will make the tag instead.  This is controlled by
@@ -718,14 +733,17 @@ it, like from any other diff.
 @node Pushing and Pulling
 @chapter Pushing and Pulling
 
-Magit will run @code{git push} when you type @kbd{P P}.  If you give a
-prefix argument to @kbd{P P}, you will be prompted for the repository to
-push to.  When no default remote repository has been configured yet for
-the current branch, you will be prompted as well.  Typing @kbd{P P} will
-only push the current branch to the remote.  In other words, it will run
-@code{git push <remote> <branch>}.  The branch will be created in the
-remote if it doesn't exist already.  The local branch will be configured
-so that it pulls from the new remote branch.
+Magit will run @code{git push} when you type @kbd{P P}.  If you give
+a prefix argument to @kbd{P P}, you will be prompted for the repository
+to push to.  When no default remote repository has been configured yet
+for the current branch, you will be prompted as well.  Typing @kbd{P P}
+will only push the current branch to the remote.  In other words, it
+will run @code{git push <remote> <branch>}.  The branch will be created
+in the remote if it doesn't exist already.  The local branch will be
+configured so that it pulls from the new remote branch. If you give
+a double prefix argument to @kbd{P P}, you will be prompted in addition
+for the target branch to push to.  In other words, it will run @code{git
+push <remote> <branch>:<target>}.
 
 Typing @kbd{f f} will run @code{git fetch}.  It will prompt for the name
 of the remote to update if there is no default one.  Typing @kbd{f o}
@@ -800,12 +818,53 @@ When you're finished bisecting you have to reset the session with
 @chapter Magit Extensions
 
 @menu
+* Activating extensions::
 * Interfacing with Subversion::
 * Interfacing with Topgit::
 * Interfacing with StGit::
 * Developing Extensions::
 @end menu
 
+@node Activating extensions
+@section Activating extensions
+
+Magit comes with a couple of shipped extensions that allow interaction
+with @code{git-svn}, @code{topgit} and @code{stgit}. See following
+sections for specific details on how to use them.
+
+Extensions can be activated globally or on a per-repository basis. Since
+those extensions are implemented as minor modes, one can use for example
+@kbd{M-x magit-topgit-mode} to toggle the @code{topgit} extension,
+making the corresponding section and commands (un)available.
+
+In order to do that automatically (and for every repository), one can
+use for example:
+
+@example
+(add-hook 'magit-mode-hook 'turn-on-magit-topgit)
+@end example
+
+Magit also allows configuring different extensions, based on the git
+repository configuration.
+
+@example
+(add-hook 'magit-mode-hook 'magit-load-config-extensions)
+@end example
+
+This will read git configuration variables and activate the
+relevant extensions.
+
+For example, after running the following commands, the @code{topgit}
+extension will be loaded for every repository, while the @code{svn} one
+will be loaded only for the current one.
+
+@example
+$ git config --global --add magit.extension topgit
+$ git config --add magit.extension svn
+@end example
+
+Note the @code{--add} flag, which means that each extension gets its own
+line in the @code{config} file.
 
 @node Interfacing with Subversion
 @section Interfacing with Subversion
@@ -947,6 +1006,24 @@ This part is not really specific to extensions, except that menus take
 place in the ``Extensions'' submenu.
 
 @end itemize
+
+It is suggested that Magit extensions authors stick to the convention of
+making extensions minor modes. This has many advantages, including the
+fact that users are able to toggle extensions, and that it's easy to
+configure a specific set of extensions for a given repository.
+
+Shipped extensions can serve as an example of how to develop
+new extensions.
+
+Basically a @code{foo} extension should provide a @code{magit-foo-mode}
+minor mode, as well as a @code{turn-on-magit-foo} function.  The main
+task of the minor mode is to register/unregister the various hooks that
+the extension requires. The registered actions on the other hand can be
+left alone and activated globally, since they can be run only on
+displayed items, which won't happen when the minor mode is off.
+
+Don't forget to call @code{magit-refresh} when the minor mode is toggled
+interactively, so that the relevant sections can be shown or hidden.
 
 @node Using Git Directly
 @chapter Using Git Directly
@@ -1096,5 +1173,74 @@ Convention prefix for topic branch creation.
 
 @end table
 
+@node Frequently Asked Questions
+@chapter Frequently Asked Questions
+
+@menu
+* FAQ - Changes::
+* FAQ 1 - Troubleshooting::
+* FAQ 2 - Display issues::
+@end menu
+
+@node FAQ - Changes
+@section Changes
+
+@itemize @bullet
+
+@item
+v1.1: Changed the way extensions work. Previously, they were enabled
+unconditionally once the library was loaded. Now they are minor modes
+that need to be activated explicitly (potentially on a per-repository
+basis). See @ref{Activating extensions}.
+
+@end itemize
+
+@node FAQ 1 - Troubleshooting
+@section Troubleshooting
+
+@menu
+* FAQ 1-1::    How do I get raw error messages from git?
+@end menu
+
+@node FAQ 1-1
+@subsection Question 1.1
+
+How do I get raw error messages from git?
+
+@subsubheading Answer
+
+If a command goes wrong, you can hit @kbd{$} to access the git process
+buffer. There, the entire trace for the latest operation is available.
+
+@node FAQ 2 - Display issues
+@section Display issues
+
+@menu
+* FAQ 2-1::    How do I fix international characters display?
+@end menu
+
+@node FAQ 2-1
+@subsection Question 2.1
+
+How do I fix international characters display?
+
+@subsubheading Answer
+
+Please make sure your Magit buffer uses a compatible coding system.
+In the particular case of file names, git itself quotes them by
+default. You can disable this with one of the following approaches:
+
+@example
+$ git config core.quotepath false
+@end example
+
+or
+
+@example
+(setq magit-git-standard-options (append magit-git-standard-options
+                                         '("-c" "core.quotepath=false")))
+@end example
+
+The latter might not work in old versions of git.
 
 @bye

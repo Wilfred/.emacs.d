@@ -81,18 +81,21 @@
   "Whether this buffer has StGit support.")
 (make-variable-buffer-local 'magit-stgit--enabled)
 
+(defvar magit-stgit-mode)
+
 (defun magit-stgit--enabled ()
   "Whether this buffer has StGit support enabled."
   (if (assoc 'magit-stgit--enabled (buffer-local-variables))
       magit-stgit--enabled
     (setq magit-stgit--enabled
-          (if (member (concat (magit-get-current-branch) ".stgit")
-                      (mapcar '(lambda (line)
-                                 (string-match "^\\*?\s*\\([^\s]*\\)" line)
-                                 (match-string 1 line))
-                              (magit-git-lines "branch")))
-              t
-            nil))))
+          (and magit-stgit-mode
+               (not (null
+                     (member (concat (magit-get-current-branch) ".stgit")
+                             (mapcar #'(lambda (line)
+                                         (string-match "^\\*?\s*\\([^\s]*\\)"
+                                                       line)
+                                         (match-string 1 line))
+                                     (magit-git-lines "branch")))))))))
 
 (defun magit-stgit--enabled-reset ()
   "Reset the StGit enabled state."
@@ -162,7 +165,6 @@
     (magit-insert-section 'series
                           "Series:" 'magit-stgit--wash-series
                           magit-stgit-executable "series" "-a" "-d" "-e")))
-(add-hook 'magit-after-insert-stashes-hook 'magit-insert-series)
 
 ;;; Actions:
 
@@ -197,9 +199,8 @@
            (with-current-buffer buf
              (set-buffer buf)
              (goto-char (point-min))
-             (magit-mode-init dir 'commit
-                              #'magit-stgit--refresh-patch-buffer patch)
-             (magit-commit-mode t))))))
+             (magit-mode-init dir 'magit-commit-mode
+                              #'magit-stgit--refresh-patch-buffer patch))))))
 
 (magit-add-action (item info "visit")
   ((series)
@@ -264,6 +265,24 @@ into the series."
                    (format "remotes/%s/%s"
                            (magit-get-current-remote)
                            (magit-get-current-branch))))))
+
+;;;###autoload
+(define-minor-mode magit-stgit-mode "StGit support for Magit"
+  :lighter " Stg" :require 'magit-stgit
+  (or (derived-mode-p 'magit-mode)
+      (error "This mode only makes sense with magit"))
+  (if magit-stgit-mode
+      (progn
+        (add-hook 'magit-after-insert-stashes-hook 'magit-insert-series nil t))
+    (progn
+      (remove-hook 'magit-after-insert-stashes-hook 'magit-insert-series t)))
+  (when (called-interactively-p 'any)
+    (magit-refresh)))
+
+;;;###autoload
+(defun turn-on-magit-stgit ()
+  "Unconditionally turn on `magit-stgit-mode'."
+  (magit-stgit-mode 1))
 
 (provide 'magit-stgit)
 ;;; magit-stgit.el ends here
