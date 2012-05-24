@@ -42,4 +42,9 @@
 ; use ibuffer to group buffers
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 
+; automatically abbreviate long grep output
+(require 'scf-mode)
+(add-hook 'grep-mode-hook (lambda () (scf-mode 1)))
+(add-hook 'ack-and-a-half-mode-hook (lambda () (scf-mode 1)))
+
 (provide 'ui-customisations)
