@@ -91,13 +91,11 @@ TODO: svn"
     ; iterate over all the files, open and read them, then kill them
     (dolist (file-name result-files)
       (when (string-match ".txt$" file-name)
-        (save-current-buffer
-          (find-file (concat test-results-directory "/" file-name))
-          (revert-buffer t t); if we already had the file open, we want the latest version
+        (with-temp-buffer
+          (insert-file-contents (concat test-results-directory "/" file-name))
           (if (buffer-contains-string-p "FAILURE")
               (progn
-                (setq failed-tests (cons file-name failed-tests))))
-          (kill-buffer))))
+                (setq failed-tests (cons file-name failed-tests)))))))
     ; let the user choose which failure they want to see
     (if failed-tests
         (progn
@@ -105,6 +103,5 @@ TODO: svn"
                              (ido-completing-read "Pick a failed class: " failed-tests)))
           (compilation-mode))
       (message "No failed tests!"))))
-
 
 (provide 'java-customisations)
