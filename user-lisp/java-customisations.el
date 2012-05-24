@@ -17,9 +17,7 @@
 
 
 ; treat camelCaseWords as different words with M-f and M-b
-(add-hook 'java-mode-hook
-	  '(lambda ()
-             (camelCase-mode)))
+(add-hook 'java-mode-hook 'camelCase-mode)
 
 (require 'regexp-utils); re-find-all
 
