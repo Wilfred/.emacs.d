@@ -104,4 +104,9 @@ TODO: svn"
           (compilation-mode))
       (message "No failed tests!"))))
 
+(defun eclim-maven-run-tests ()
+  "Run the test goal for the current project with maven."
+  (interactive)
+  (eclim-maven-run "test"))
+
 (provide 'java-customisations)
