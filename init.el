@@ -28,6 +28,11 @@
 (if (eq system-type 'darwin)
     (require 'os-x-fixes))
 
+(defun start-scratch-file (file-name)
+  "Create a file in ~/scratch for the given file name."
+  (interactive "sName of scratch file: ")
+  (find-file
+   (format "~/scratch/%s" file-name)))
 
 ; switch on which-func-mode for all major modes that support it
 ; (which-func-mode shows which function or class that point is in)
