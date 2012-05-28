@@ -1,3 +1,0 @@
-[submodule "user-lisp/auto-complete"]
-	path = user-lisp/auto-complete
-	url = https://github.com/m2ym/auto-complete.git
