@@ -8,14 +8,16 @@
 
 
 ; auto-completion with neat popup
+(add-to-list 'load-path "~/.emacs.d/third-party-lisp/auto-complete")
+(require 'auto-complete-config)
+(ac-config-default)
 ; using dabbrev as auto-completion source
-(add-to-list 'load-path "~/.emacs.d/user-lisp/auto-complete")
 (require 'ac-dabbrev)
 (setq ac-sources
       (list ac-source-dabbrev))
 
 (require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/user-lisp/auto-complete/dict")
+(add-to-list 'ac-dictionary-directories "~/.emacs.d/third-party-lisp/auto-complete/dict")
 (ac-config-default)
 ;
 ; don't try to complete after semicolon (is a pain in CSS)
