@@ -1,14 +1,13 @@
-; Editing customisations -- general text munging when typing.
+;;;; Editing customisations -- general text munging when typing.
 
-; redraw *before* handling input events to improve syntax highlighting responsiveness
-; discussed at http://www.masteringemacs.org/articles/2011/10/02/improving-performance-emacs-display-engine/
+;; redraw *before* handling input events to improve syntax highlighting responsiveness
+;; discussed at http://www.masteringemacs.org/articles/2011/10/02/improving-performance-emacs-display-engine/
 (setq redisplay-dont-pause t)
 
 ; Automatically indent the new line when we hit enter
 (define-key global-map (kbd "RET") 'newline-and-indent)
 
-
-; zap-to-char but don't delete the character itself
+;; zap-to-char but don't delete the character itself
 (defun zap-up-to-char (arg char)
   "Kill up to, but not including ARGth occurrence of CHAR.
 Case is ignored if `case-fold-search' is non-nil in the current buffer.
@@ -23,11 +22,11 @@ Ignores CHAR at point."
 		       (search-forward (char-to-string char) nil nil arg)
 		     (backward-char direction))
 		   (point)))))
-; bind it to the usual zap-to-char shortcut
+;; bind it to the usual zap-to-char shortcut
 (global-set-key (kbd "M-z") 'zap-up-to-char)
 
 
-; kill-word is less useful than kill-symbol
+;; kill-word is less useful than kill-symbol
 (autoload 'forward-symbol "thingatpt")
 (defun kill-symbol (arg)
   "Kill characters forward until encountering the end of a symbol.
@@ -46,8 +45,8 @@ With argument ARG, do this that many times."
 
 (global-set-key (kbd "C-<backspace>") 'backward-kill-symbol)
 
-; to be consistent with C-M-f as forward-sexp, bind C-M-backspace to backward-kill-sexp
-; and C-M-d to forward-kill-sexp
+;; to be consistent with C-M-f as forward-sexp, bind C-M-backspace to backward-kill-sexp
+;; and C-M-d to forward-kill-sexp
 (global-set-key (kbd "C-M-<backspace>") 'backward-kill-sexp)
 (global-set-key (kbd "C-M-d") 'kill-sexp)
 
@@ -57,7 +56,7 @@ With argument ARG, do this that many times."
   "Toggles the case of the next character after point.
 The point is also moved one character forward."
   (interactive)
-  ; note next-char is a string
+  ;; note next-char is a string
   (let ((next-char (buffer-substring (point) (1+ (point))))
         (case-fold-search nil)) ; case sensitive
     (if (string-match "[a-z]" next-char)
@@ -65,11 +64,11 @@ The point is also moved one character forward."
       (downcase-region (point) (1+ (point)))))
   (forward-char))
 
-; toggling on char is more useful than capitalising a whole word since
-; it doesn't break camelcase
+;; toggling on char is more useful than capitalising a whole word since
+;; it doesn't break camelcase
 (global-set-key (kbd "M-c") 'toggle-case-next-char)
 
-; insist on this binding with camelCase mode too
+;; don't allow camelcase mode to mess with the keybinds set above
 (require 'camelCase)
 (define-key camelCase-mode-map (kbd "M-c") 'toggle-case-next-char)
 
@@ -83,7 +82,7 @@ are interchanged."
   (interactive "*p")
   (transpose-subr 'forward-symbol arg))
 
-; bind it to the usual transpose-word key combination
+;; bind it to the usual transpose-word key combination
 (global-set-key (kbd "M-t") 'transpose-symbols)
 
 (defun increment-number-decimal (&optional arg)
