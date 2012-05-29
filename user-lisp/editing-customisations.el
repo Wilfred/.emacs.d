@@ -70,7 +70,8 @@ The point is also moved one character forward."
 
 ;; don't allow camelcase mode to mess with the keybinds set above
 (require 'camelCase)
-(define-key camelCase-mode-map (kbd "M-c") 'toggle-case-next-char)
+(define-key camelCase-mode-map (kbd "M-c") nil)
+(define-key camelCase-mode-map (kbd "C-<backspace>") nil)
 
 
 (defun transpose-symbols (arg)
