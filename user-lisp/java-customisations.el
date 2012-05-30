@@ -70,8 +70,8 @@
   (interactive)
   (let* ((symbol (symbol-name (symbol-at-point)))
         (symbol-bounds (bounds-of-thing-at-point 'symbol))
-        (bound-start (first symbol-bounds))
-        (bound-end (second symbol-bounds)))
+        (bound-start (car symbol-bounds))
+        (bound-end (cdr symbol-bounds)))
     (when symbol-bounds
       (goto-char bound-start)
       (kill-forward-chars (- bound-end bound-start))
