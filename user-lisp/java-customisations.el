@@ -21,33 +21,29 @@
 
 (require 'regexp-utils); re-find-all
 
-; java convenience functions
-; TODO: write a Python-flavoured set of regexp utils
-(defun java-variable-to-constant (variable-name)
-  "Convert a string \"fooBar\" to \"FOO_BAR\"."
-  (mapconcat 'upcase (re-find-all "[A-Z]?[a-z]+" variable-name) "_"))
+(defun string-contains-p (substring string)
+  "Returns t if STRING contains SUBSTRING."
+  (re-search-p (regexp-quote substring) string))
 
-(defun java-variable-to-type (variable-name)
-  "Convert a string \"fooBar\" to \"FooBar\"."
-  (let ((first-char (substring variable-name 0 1))
-        (rest (substring variable-name 1)))
-    (concat (upcase first-char) rest)))
+(defun format-symbol (string format)
+  "Convert a given string to a specified formatting convention.
 
-(defun java-type-to-constant (type-name)
-  "Convert a string \"FooBar\" to \"FOO_BAR\"."
-  (mapconcat 'upcase (re-find-all "[A-Z][a-z]+" type-name) "_"))
-
-(defun java-constant-to-variable (constant-name)
-  "Convert a string  \"FOO_BAR\" to \"fooBar\"."
-  (let* ((camelcase-variable-name
-          (apply 'concat
-                 (mapcar 'capitalize (split-string constant-name "_"))))
-         (first-char
-          (downcase
-           (substring camelcase-variable-name 0 1))))
-    (concat
-     first-char
-     (substring camelcase-variable-name 1))))
+(format-symbol \"fooBar\" 'constant) => \"FOO_BAR\""
+  (let ((components))
+    ;; split the string into its word components
+    (if (string-contains-p "_" string)
+        (setq components (split-string string "_"))
+      (setq components (re-find-all "[A-Z]?[a-z]+" string)))
+    ;; format each component as a lowercase string
+    (setq components (mapcar 'downcase components))
+    (cond
+     ((eq format 'constant) (mapconcat 'upcase components "_"))
+     ((eq format 'camelcase) (mapconcat 'toggle-case-first-char components ""))
+     ((eq format 'camelcase-lower) (toggle-case-first-char
+                                    (mapconcat 'toggle-case-first-char components "")))
+     ((eq format 'variable-underscore) (mapconcat (lambda (x) x) components "_"))
+     ((eq format 'variable-hyphen) (mapconcat (lambda (x) x) components "-"))
+     (t (error "Unknown symbol format")))))
 
 (defun toggle-case-first-char (string)
   (let ((first-char (substring string 0 1))
@@ -56,11 +52,6 @@
         (setq first-char (upcase first-char))
       (setq first-char (downcase first-char)))
     (concat first-char rest)))
-
-(defun underscores-to-camelcase (variable-name)
-  "Convert a string  \"foo_bar\" to \"fooBar\"."
-  (toggle-case-first-char
-   (mapconcat 'toggle-case-first-char (split-string variable-name "_") "")))
 
 (require 'cl); first, second
 
@@ -76,10 +67,10 @@
       (goto-char bound-start)
       (kill-forward-chars (- bound-end bound-start))
       (cond
-       ((re-match-p "[a-z_]+$" symbol) (message (insert (underscores-to-camelcase symbol))))
-       ((re-match-p "[a-z]+" symbol) (insert (java-variable-to-type symbol)))
-       ((re-match-p "[A-Z][a-z]+" symbol) (insert (java-type-to-constant symbol)))
-       (t (insert (downcase symbol)))))))
+       ((re-match-p "[a-z_]+$" symbol) (insert (format-symbol symbol 'camelcase-lower)))
+       ((re-match-p "[a-z]+" symbol) (insert (format-symbol symbol 'camelcase)))
+       ((re-match-p "[A-Z][a-z]+" symbol) (insert (format-symbol symbol 'constant)))
+       (t (insert (format-symbol symbol 'variable-underscore)))))))
 
 (define-key java-mode-map (kbd "C-M-c") 'java-cycle-case)
 
