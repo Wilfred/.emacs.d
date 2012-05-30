@@ -28,4 +28,16 @@
           (set-visited-file-name new-name)
           (set-buffer-modified-p nil)))))
 
+(defun git-pick-file ()
+  "List all the files in the repo, and use ido to pick one."
+  (interactive)
+  (let* ((project-root (expand-file-name (vc-git-root (buffer-file-name))))
+         (command (format "cd %s; git ls-files" project-root)))
+    (find-file
+     (concat
+      project-root
+      (ido-completing-read
+       "Pick a file: "
+       (split-string (shell-command-to-string command) "\n" t))))))
+
 (provide 'file-customisations)
