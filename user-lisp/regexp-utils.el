@@ -48,8 +48,8 @@
  matching substrings."
   (let* ((case-fold-search nil)
          (match-start-index (string-match regexp string offset)))
-    (if match-start-index 
-        (cons 
+    (if match-start-index
+        (cons
          (substring string (match-beginning 0) (match-end 0))
          (re--find-all regexp string (match-end 0)))
       nil)))
@@ -60,9 +60,13 @@
     (split-string string regexp)))
 
 (defun re-search-p (regexp string)
-  "Returns t if REGEXP matches anywhere inside STRING."
+  "Returns t if REGEXP can be found anywhere inside STRING."
   (let ((case-fold-search nil))
     (if (string-match regexp string)
         t nil)))
+
+(defun re-match-p (regexp string)
+  "Returns t if REGEXP matches the start of STRING."
+  (re-search-p (format "^%s" regexp) string))
 
 (provide 'regexp-utils)
