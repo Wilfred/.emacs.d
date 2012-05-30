@@ -27,6 +27,16 @@
   "Convert a string \"fooBar\" to \"FOO_BAR\"."
   (mapconcat 'upcase (re-find-all "[A-Z]?[a-z]+" variable-name) "_"))
 
+(defun java-variable-to-type (variable-name)
+  "Convert a string \"fooBar\" to \"FooBar\"."
+  (let ((first-char (substring variable-name 0 1))
+        (rest (substring variable-name 1)))
+    (concat (upcase first-char) rest)))
+
+(defun java-type-to-constant (type-name)
+  "Convert a string \"FooBar\" to \"FOO_BAR\"."
+  (mapconcat 'upcase (re-find-all "[A-Z][a-z]+" type-name) "_"))
+
 (defun java-constant-to-variable (constant-name)
   "Convert a string  \"FOO_BAR\" to \"fooBar\"."
   (let* ((camelcase-variable-name
@@ -39,24 +49,39 @@
      first-char
      (substring camelcase-variable-name 1))))
 
+(defun toggle-case-first-char (string)
+  (let ((first-char (substring string 0 1))
+        (rest (substring string 1)))
+    (if (re-match-p "[a-z]" first-char)
+        (setq first-char (upcase first-char))
+      (setq first-char (downcase first-char)))
+    (concat first-char rest)))
 
-(defun java-toggle-case ()
-  "Convert toggle symbol at mark between variable and constant formatting."
+(defun underscores-to-camelcase (variable-name)
+  "Convert a string  \"foo_bar\" to \"fooBar\"."
+  (toggle-case-first-char
+   (mapconcat 'toggle-case-first-char (split-string variable-name "_") "")))
+
+(require 'cl); first, second
+
+(defun java-cycle-case ()
+  "Convert toggle symbol at mark between the forms \"fooBar\",
+\"FooBar\", \"FOO_BAR\" and \"foo_bar\"."
   (interactive)
   (let* ((symbol (symbol-name (symbol-at-point)))
         (symbol-bounds (bounds-of-thing-at-point 'symbol))
-        (bound-start (car symbol-bounds))
-        (bound-end (cdr symbol-bounds)))
+        (bound-start (first symbol-bounds))
+        (bound-end (second symbol-bounds)))
     (when symbol-bounds
       (goto-char bound-start)
       (kill-forward-chars (- bound-end bound-start))
-      (if (re-search-p "[a-z]" symbol)
-          (progn
-            (message (java-constant-to-variable symbol))
-            (insert (java-variable-to-constant symbol)))
-        (insert (java-constant-to-variable symbol))))))
+      (cond
+       ((re-match-p "[a-z_]+$" symbol) (message (insert (underscores-to-camelcase symbol))))
+       ((re-match-p "[a-z]+" symbol) (insert (java-variable-to-type symbol)))
+       ((re-match-p "[A-Z][a-z]+" symbol) (insert (java-type-to-constant symbol)))
+       (t (insert (downcase symbol)))))))
 
-(define-key java-mode-map (kbd "C-M-c") 'java-toggle-case)
+(define-key java-mode-map (kbd "C-M-c") 'java-cycle-case)
 
 (defun find-in-parent-directory (path file-name)
   "Search PATH and all parent directories for file FILE-NAME,
