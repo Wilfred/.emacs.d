@@ -19,61 +19,6 @@
 ; treat camelCaseWords as different words with M-f and M-b
 (add-hook 'java-mode-hook 'camelCase-mode)
 
-(require 'regexp-utils); re-find-all
-
-(defun string-contains-p (substring string)
-  "Returns t if STRING contains SUBSTRING."
-  (re-search-p (regexp-quote substring) string))
-
-(defun format-symbol (string format)
-  "Convert a given string to a specified formatting convention.
-
-(format-symbol \"fooBar\" 'constant) => \"FOO_BAR\""
-  (let ((components))
-    ;; split the string into its word components
-    (if (string-contains-p "_" string)
-        (setq components (split-string string "_"))
-      (setq components (re-find-all "[A-Z]?[a-z]+" string)))
-    ;; format each component as a lowercase string
-    (setq components (mapcar 'downcase components))
-    (cond
-     ((eq format 'constant) (mapconcat 'upcase components "_"))
-     ((eq format 'camelcase) (mapconcat 'toggle-case-first-char components ""))
-     ((eq format 'camelcase-lower) (toggle-case-first-char
-                                    (mapconcat 'toggle-case-first-char components "")))
-     ((eq format 'variable-underscore) (mapconcat (lambda (x) x) components "_"))
-     ((eq format 'variable-hyphen) (mapconcat (lambda (x) x) components "-"))
-     (t (error "Unknown symbol format")))))
-
-(defun toggle-case-first-char (string)
-  (let ((first-char (substring string 0 1))
-        (rest (substring string 1)))
-    (if (re-match-p "[a-z]" first-char)
-        (setq first-char (upcase first-char))
-      (setq first-char (downcase first-char)))
-    (concat first-char rest)))
-
-(require 'cl); first, second
-
-(defun java-cycle-case ()
-  "Convert toggle symbol at mark between the forms \"fooBar\",
-\"FooBar\", \"FOO_BAR\" and \"foo_bar\"."
-  (interactive)
-  (let* ((symbol (symbol-name (symbol-at-point)))
-        (symbol-bounds (bounds-of-thing-at-point 'symbol))
-        (bound-start (car symbol-bounds))
-        (bound-end (cdr symbol-bounds)))
-    (when symbol-bounds
-      (goto-char bound-start)
-      (kill-forward-chars (- bound-end bound-start))
-      (cond
-       ((re-match-p "[a-z_]+$" symbol) (insert (format-symbol symbol 'camelcase-lower)))
-       ((re-match-p "[a-z]+" symbol) (insert (format-symbol symbol 'camelcase)))
-       ((re-match-p "[A-Z][a-z]+" symbol) (insert (format-symbol symbol 'constant)))
-       (t (insert (format-symbol symbol 'variable-underscore)))))))
-
-(define-key java-mode-map (kbd "C-M-c") 'java-cycle-case)
-
 (defun find-in-parent-directory (path file-name)
   "Search PATH and all parent directories for file FILE-NAME,
 returning the first path found or nil."
