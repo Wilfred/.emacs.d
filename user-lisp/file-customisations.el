@@ -31,7 +31,8 @@
 (defun git-pick-file ()
   "List all the files in the repo, and use ido to pick one."
   (interactive)
-  (let* ((project-root (expand-file-name (vc-git-root (buffer-file-name))))
+  (let* ((ido-enable-flex-matching nil) ; required for acceptable performance
+         (project-root (expand-file-name (vc-git-root (buffer-file-name))))
          (command (format "cd %s; git ls-files" project-root)))
     (find-file
      (concat
