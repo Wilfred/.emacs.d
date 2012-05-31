@@ -157,6 +157,7 @@
 (require 'gae-utils)
 
 (require 'git-customisations)
+(require 'search-tools)
 
 (global-set-key [(f8)] 'flymake-goto-prev-error)
 (global-set-key [(f9)] 'flymake-goto-next-error)

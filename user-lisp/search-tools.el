@@ -1,25 +1,14 @@
-(autoload 'symbol-at-point "thingatpt" nil t)
-(autoload 'ack-and-a-half "ack-and-a-half" nil t)
+(autoload 'symbol-at-point "thingatpt")
+(autoload 'ack-and-a-half "ack-and-a-half")
 
-(defun string-nonempty-p (string)
-  "Return t if STRING is non-null and non-empty."
-  (if (stringp string)
-      (if (> (length string) 0) t
-          nil)
-      nil))
+(defun ack-at-point (search-term)
+  "Run ack searching for string SEARCH-TERM, defaulting to the
+current symbol at point."
+ (interactive (list (read-from-minibuffer "Search for: "
+                                           (if (symbol-at-point)
+                                               (symbol-name (symbol-at-point))))))
+ (ack search-term nil))
 
-; todo: get directory from vc-git-root
-(defun ack-project ()
-  "Search the current project's directory for SEARCH-TERM, or the
-symbol under point."
-  (interactive)
-  (let* ((current-symbol (symbol-name (symbol-at-point)))
-         (search-message (if current-symbol
-                             (concat "Search for (default '" current-symbol "'): ")
-                           "Search for: "))
-        (search-term (read-from-minibuffer search-message)))
+(global-set-key (kbd "<f5>") 'ack-at-point)
 
-    (ack-and-a-half 
-     (if (string-nonempty-p search-term) search-term current-symbol))))
-
-(global-set-key (kbd "<f5>") 'ack-project)
+(provide 'search-tools)

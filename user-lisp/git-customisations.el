@@ -5,7 +5,6 @@
 
 (autoload 'symbol-at-point "thingatpt" nil t)
 
-; TODO: make more generic, falling back to ack if git isn't available
 (defun grep-git-project (search-term)
   "Search a git project for SEARCH-TERM. The default search term is the symbol at point.
 Note that this will not search git submodules."
