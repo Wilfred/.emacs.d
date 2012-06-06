@@ -1,5 +1,5 @@
 (add-to-list 'load-path "~/.emacs.d/third-party-lisp/magit")
-(require 'magit)
+(autoload 'magit-status "magit")
 
 (global-set-key (kbd "<f2>") 'magit-status)
 

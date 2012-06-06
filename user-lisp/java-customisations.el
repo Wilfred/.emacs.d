@@ -40,8 +40,8 @@ TODO: svn"
      (find-in-parent-directory current-directory "pom.xml"))))
 
 (require 'potato-customisations); buffer-contains-string-p
-(require 'cl); dolist
-(require 'ido); ido-completing-read
+(autoload 'dolist "cl")
+(autoload 'ido-completing-read "ido")
 
 (defun java-show-test-failures ()
   "Show the failures from the last maven test run."

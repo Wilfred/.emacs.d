@@ -1,5 +1,5 @@
 ; csv mode stuff, since it's used extensively in GBBO
-(require 'csv-mode)
+(autoload 'csv-mode "csv-mode")
 
 ; yaml mode stuff, since google app engine uses it
 (require 'yaml-mode)

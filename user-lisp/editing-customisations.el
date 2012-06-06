@@ -68,7 +68,7 @@ The point is also moved one character forward."
 ;; it doesn't break camelcase
 (global-set-key (kbd "M-c") 'toggle-case-next-char)
 
-(require 'regexp-utils); re-find-all
+(autoload 're-find-all "regexp-utils")
 
 (defun string-contains-p (substring string)
   "Returns t if STRING contains SUBSTRING."

@@ -28,6 +28,8 @@
           (set-visited-file-name new-name)
           (set-buffer-modified-p nil)))))
 
+(autoload 'ido-completing-read "ido")
+
 (defun git-pick-file ()
   "List all the files in the repo, and use ido to pick one."
   (interactive)
