@@ -5,7 +5,7 @@
 
 (autoload 'symbol-at-point "thingatpt" nil t)
 
-(defun grep-git-project (search-term)
+(defun git-grep-project (search-term)
   "Search a git project for SEARCH-TERM. The default search term is the symbol at point.
 Note that this will not search git submodules."
  (interactive (list (read-from-minibuffer "Search for: "
