@@ -46,10 +46,11 @@ TODO: svn"
 (defun java-show-test-failures ()
   "Show the failures from the last maven test run."
   (interactive)
-  (let* ((test-results-directory (concat (project-find-root) "target/surefire-reports"))
-        (result-files (directory-files test-results-directory))
-        (failed-tests nil))
-    ; iterate over all the files, open and read them, then kill them
+  (let* ((current-directory (expand-file-name "."))
+         (test-results-directory (find-in-parent-directory current-directory "target"))
+         (result-files (directory-files test-results-directory))
+         (failed-tests nil))
+    ;; iterate over all the files, open and read them, then kill them
     (dolist (file-name result-files)
       (when (string-match ".txt$" file-name)
         (with-temp-buffer
@@ -57,13 +58,13 @@ TODO: svn"
           (if (buffer-contains-string-p "FAILURE")
               (progn
                 (setq failed-tests (cons file-name failed-tests)))))))
-    ; let the user choose which failure they want to see
+    ;; let the user choose which failure they want to see
     (if failed-tests
         (progn
           (find-file (concat test-results-directory "/"
                              (ido-completing-read "Pick a failed class: " failed-tests)))
           (compilation-mode))
-      (message "No failed tests!"))))
+      (message (format "No failed tests in %s." test-results-directory)))))
 
 (defun eclim-maven-run-tests ()
   "Run the test goal for the current project with maven."
