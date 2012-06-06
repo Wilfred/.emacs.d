@@ -20,7 +20,7 @@ Note that this will not search git submodules."
 
 (defun git-grep-to-first-result (search-term)
   "Search a git project for SEARCH-TERM, jumping to the first result."
-  (grep-git-project search-term)
+  (git-grep-project search-term)
   (switch-to-buffer "*grep*")
   (sleep-for 0.3)
   (next-error))
@@ -35,9 +35,9 @@ Note that this will not search git submodules."
          (case-fold-search nil)
          (is-function (string-match "[a-z]" first-char)))
     (if is-function
-        (grep-git-project (format "def %s(" function-or-class-name))
+        (git-grep-project (format "def %s(" function-or-class-name))
       ; we assume all Python classes are of the form "clas Foo(bar)" not "class Foo:"
-      (grep-git-project (format "class %s(" function-or-class-name)))))
+      (git-grep-project (format "class %s(" function-or-class-name)))))
 
 (defun git-show-conflicts ()
   "Show all the conflicts in the current buffer using occur-mode."
@@ -50,7 +50,7 @@ Note that this will not search git submodules."
 
 (global-set-key (kbd "<f10>") 'git-show-conflicts)
 
-(global-set-key (kbd "<f5>") 'grep-git-project)
+(global-set-key (kbd "<f5>") 'git-grep-project)
 (global-set-key (kbd "<C-f5>") 'git-grep-to-definition)
 
 (defun git-keep-conflict-first ()
