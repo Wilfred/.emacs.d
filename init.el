@@ -1,3 +1,5 @@
+(setq *emacs-load-start* (current-time))
+
 (add-to-list 'load-path "~/.emacs.d/third-party-lisp/")
 (add-to-list 'load-path "~/.emacs.d/user-lisp/")
 
@@ -214,3 +216,12 @@
  '(magit-header ((t (:background "black" :foreground "white"))))
  '(magit-section-title ((t (:inherit magit-header)))))
 
+(defun time-as-unixtime (most-sig-bits least-sig-bits microseconds)
+  "Return the number of seconds since 1st of January 1970."
+  (+ (lsh most-sig-bits 16) least-sig-bits
+     (/ microseconds 1000000.0)))
+
+(let* ((start-time (apply 'time-as-unixtime *emacs-load-start*))
+      (finish-time (apply 'time-as-unixtime (current-time)))
+      (elapsed-time (- finish-time start-time)))
+  (message (format "Spent %f seconds executing .emacs.d/init.el." elapsed-time)))
