@@ -47,7 +47,8 @@ TODO: svn"
   "Show the failures from the last maven test run."
   (interactive)
   (let* ((current-directory (expand-file-name "."))
-         (test-results-directory (find-in-parent-directory current-directory "target"))
+         (target-directory (find-in-parent-directory current-directory "target"))
+         (test-results-directory (concat target-directory "target/surefire-reports"))
          (result-files (directory-files test-results-directory))
          (failed-tests nil))
     ;; iterate over all the files, open and read them, then kill them
