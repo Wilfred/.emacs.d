@@ -28,6 +28,12 @@
           (set-visited-file-name new-name)
           (set-buffer-modified-p nil)))))
 
+(defun git-list-files (directory)
+  "Recursively list all the files in DIRECTORY, assuming
+DIRECTORY is in a git repo."
+    (let ((command (format "cd %s; git ls-files" directory)))
+      (split-string (shell-command-to-string command) "\n" t)))
+
 (autoload 'ido-completing-read "ido")
 
 (defun git-pick-file ()
@@ -35,12 +41,11 @@
   (interactive)
   (let* ((ido-enable-flex-matching nil) ; required for acceptable performance
          (project-root (expand-file-name (vc-git-root (buffer-file-name))))
-         (command (format "cd %s; git ls-files" project-root)))
+         (file-names (git-list-files project-root)))
     (find-file
      (concat
       project-root
-      (ido-completing-read
-       "Pick a file: "
-       (split-string (shell-command-to-string command) "\n" t))))))
+      (ido-completing-read "Pick a file: " file-names)))))
+
 
 (provide 'file-customisations)
