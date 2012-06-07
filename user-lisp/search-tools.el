@@ -6,7 +6,7 @@
 (defun ack-at-point (search-term)
   "Run ack searching for string SEARCH-TERM, defaulting to the
 current symbol at point."
- (interactive (list (read-from-minibuffer "Search for: "
+ (interactive (list (read-from-minibuffer "Search with ack for: "
                                            (if (symbol-at-point)
                                                (symbol-name (symbol-at-point))))))
  (ack search-term nil (project-find-root)))

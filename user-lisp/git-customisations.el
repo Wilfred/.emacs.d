@@ -8,7 +8,7 @@
 (defun git-grep-project (search-term)
   "Search a git project for SEARCH-TERM. The default search term is the symbol at point.
 Note that this will not search git submodules."
- (interactive (list (read-from-minibuffer "Search for: "
+ (interactive (list (read-from-minibuffer "Search with git-grep for: "
                                            (if (symbol-at-point)
                                                (symbol-name (symbol-at-point))))))
  (if (buffer-file-name)
