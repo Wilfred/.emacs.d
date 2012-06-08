@@ -24,12 +24,12 @@
 (autoload 'ido-completing-read "ido")
 
 (autoload 'find-in-parent-directory "file-customisations")
+(autoload 'path-for-current-buffer "file-customisations")
 
 (defun java-show-test-failures ()
   "Show the failures from the last maven test run."
   (interactive)
-  (let* ((current-directory (expand-file-name "."))
-         (target-directory (find-in-parent-directory current-directory "target"))
+  (let* ((target-directory (find-in-parent-directory (path-for-current-buffer) "target"))
          (test-results-directory (concat target-directory "target/surefire-reports"))
          (result-files (directory-files test-results-directory))
          (failed-tests nil))

@@ -34,6 +34,13 @@ DIRECTORY is in a git repo."
     (let ((command (format "cd %s; git ls-files" directory)))
       (split-string (shell-command-to-string command) "\n" t)))
 
+(defun path-for-current-buffer ()
+  "Find a path associated with the current buffer, if
+possible. No trailing slash."
+  (let ((file-name (buffer-file-name)))
+    (if file-name (directory-file-name (file-name-directory file-name))
+      (expand-file-name "."))))
+
 (autoload 'ido-completing-read "ido")
 
 (defun git-pick-file ()
