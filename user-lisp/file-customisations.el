@@ -46,13 +46,17 @@ possible. No trailing slash."
 (defun git-pick-file ()
   "List all the files in the repo, and use ido to pick one."
   (interactive)
-  (let* ((ido-enable-flex-matching nil) ; required for acceptable performance
-         (project-root (expand-file-name (vc-git-root (buffer-file-name))))
-         (file-names (git-list-files project-root)))
-    (find-file
-     (concat
-      project-root
-      (ido-completing-read "Pick a file: " file-names)))))
+  (let ((current-directory (path-for-current-buffer)))
+    (if current-directory
+        (let* ((ido-enable-flex-matching nil) ; required for acceptable performance
+               (project-root (file-name-as-directory
+                              (expand-file-name (vc-git-root current-directory))))
+               (file-names (git-list-files project-root)))
+          (find-file
+           (concat
+            project-root
+            (ido-completing-read "Pick a file: " file-names))))
+      (message "This buffer is not associated with a file or directory."))))
 
 (defun find-in-parent-directory (path file-name)
   "Search PATH and all parent directories for file FILE-NAME,
