@@ -1,10 +1,10 @@
 ; better dired, with colouring
 (require 'dired+)
 
-; deleting files should go to recycle bin
+;; deleting files should go to recycle bin
 (setq delete-by-moving-to-trash t)
 
-; better backups rather than just littering the directory with foo~
+;; better backups rather than just littering the directory with foo~
 (setq
    backup-by-copying t      ; don't clobber symlinks
    backup-directory-alist
@@ -14,7 +14,7 @@
    kept-old-versions 2
    version-control t)       ; use versioned backups
 
-; note there is also set-visited-file-name but this is for name changes, not path changes
+;; note there is also set-visited-file-name but this is for name changes, not path changes
 (defun rename-file-and-buffer (new-name)
   "Renames both current buffer and file it's visiting to NEW-NAME."
   (interactive (list (read-from-minibuffer "New name: " (buffer-file-name))))
