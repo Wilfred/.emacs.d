@@ -66,26 +66,35 @@ possible. No trailing slash. Returns nil otherwise."
   "Join the relative FILE-NAME to DIRECTORY-NAME, adding slashes where appropriate."
   (concat (file-name-as-directory directory-name) file-name))
 
-(defun find-in-parent-directory (path file-name)
+(defun find-containing-parent-directory (path file-name)
   "Search PATH and all parent directories for file FILE-NAME,
-returning the first path found or nil."
+returning the first containing diretory found or nil."
   (let* ((canonical-path (expand-file-name path))
          (absolute-file-path (file-path-join canonical-path file-name)))
     (cond ((file-exists-p absolute-file-path)
            ;; success -- we've found it!
-           absolute-file-path)
+           canonical-path)
           ((string= canonical-path "/")
            ;; reached root, the file doesn't exist in any ancestor directory
            nil)
           (t
-           (find-in-parent-directory (parent-directory canonical-path) file-name)))))
+           ;; recurse
+           (find-containing-parent-directory
+            (parent-directory canonical-path) file-name)))))
+
+(defun find-path-parent-directory (path file-name)
+  "Search PATH and all parent directories for file FILE-NAME,
+returning the path where FILE-NAME can be found."
+  (let ((directory-path (find-containing-parent-directory path file-name)))
+    (when directory-path
+        (file-path-join directory-path file-name))))
 
 (defun project-find-root ()
   "Find the probable root of the project for the current buffer.
 TODO: svn"
   (let ((current-directory (expand-file-name ".")))
     (or
-     (find-in-parent-directory current-directory ".git")
-     (find-in-parent-directory current-directory "pom.xml"))))
+     (find-containing-parent-directory current-directory ".git")
+     (find-containing-parent-directory current-directory "pom.xml"))))
 
 (provide 'file-customisations)

@@ -23,28 +23,29 @@
 (autoload 'dolist "cl")
 (autoload 'ido-completing-read "ido")
 
-(autoload 'find-in-parent-directory "file-customisations")
+(autoload 'find-containing-parent-directory "file-customisations")
 (autoload 'path-for-current-buffer "file-customisations")
+(autoload 'file-path-join "file-customisations")
 
 (defun java-show-test-failures ()
   "Show the failures from the last maven test run."
   (interactive)
-  (let* ((target-directory (find-in-parent-directory (path-for-current-buffer) "target"))
-         (test-results-directory (concat target-directory "target/surefire-reports"))
+  (let* ((target-directory (find-containing-parent-directory (path-for-current-buffer) "target"))
+         (test-results-directory (file-path-join target-directory "target/surefire-reports"))
          (result-files (directory-files test-results-directory))
          (failed-tests nil))
     ;; iterate over all the files, open and read them, then kill them
     (dolist (file-name result-files)
       (when (string-match ".txt$" file-name)
         (with-temp-buffer
-          (insert-file-contents (concat test-results-directory "/" file-name))
+          (insert-file-contents (file-path-join test-results-directory file-name))
           (if (buffer-contains-string-p "FAILURE")
               (progn
                 (setq failed-tests (cons file-name failed-tests)))))))
     ;; let the user choose which failure they want to see
     (if failed-tests
         (progn
-          (find-file (concat test-results-directory "/"
+          (find-file (file-path-join test-results-directory
                              (ido-completing-read "Pick a failed class: " failed-tests)))
           (compilation-mode))
       (message (format "No failed tests in %s." test-results-directory)))))
@@ -52,7 +53,7 @@
 (defun java-run-maven-tests ()
   "Run the test goal for the current project with maven."
   (interactive)
-  (let ((pom-path (find-in-parent-directory (path-for-current-buffer) "pom.xml")))
+  (let ((pom-path (find-path-parent-directory (path-for-current-buffer) "pom.xml")))
     (compile (format "mvn -f %s test" pom-path))))
 
 (provide 'java-customisations)
