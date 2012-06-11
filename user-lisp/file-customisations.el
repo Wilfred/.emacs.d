@@ -36,7 +36,7 @@ DIRECTORY is in a git repo."
 
 (defun path-for-current-buffer ()
   "Find a path associated with the current buffer, if
-possible. No trailing slash."
+possible. No trailing slash. Returns nil otherwise."
   (let ((file-name (buffer-file-name)))
     (if file-name (directory-file-name (file-name-directory file-name))
       (expand-file-name "."))))
@@ -60,17 +60,26 @@ possible. No trailing slash."
 
 (global-set-key (kbd "C-x C-g") 'git-pick-file)
 
+(defun parent-directory (path)
+  (directory-file-name (file-name-directory path)))
+
+(defun file-path-join (directory-name file-name)
+  "Join the relative FILE-NAME to DIRECTORY-NAME, adding slashes where appropriate."
+  (concat (file-name-as-directory directory-name) file-name))
+
 (defun find-in-parent-directory (path file-name)
   "Search PATH and all parent directories for file FILE-NAME,
 returning the first path found or nil."
-  (let* ((abs-directory-path (expand-file-name path))
-         (abs-file-path (concat abs-directory-path file-name)))
-    (if (file-exists-p abs-file-path)
-        ; success -- we've found it!
-        abs-directory-path
-      (if (string= abs-directory-path "/")
-          nil
-        (find-in-parent-directory (concat abs-directory-path "../") file-name)))))
+  (let* ((canonical-path (expand-file-name path))
+         (absolute-file-path (file-path-join canonical-path file-name)))
+    (cond ((file-exists-p absolute-file-path)
+           ;; success -- we've found it!
+           absolute-file-path)
+          ((string= canonical-path "/")
+           ;; reached root, the file doesn't exist in any ancestor directory
+           nil)
+          (t
+           (find-in-parent-directory (parent-directory canonical-path) file-name)))))
 
 (defun project-find-root ()
   "Find the probable root of the project for the current buffer.
