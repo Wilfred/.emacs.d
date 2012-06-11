@@ -49,9 +49,10 @@
           (compilation-mode))
       (message (format "No failed tests in %s." test-results-directory)))))
 
-(defun eclim-maven-run-tests ()
+(defun java-run-maven-tests ()
   "Run the test goal for the current project with maven."
   (interactive)
-  (eclim-maven-run "test"))
+  (let ((pom-path (find-in-parent-directory (path-for-current-buffer) "pom.xml")))
+    (compile (format "mvn -f %s test" pom-path))))
 
 (provide 'java-customisations)
