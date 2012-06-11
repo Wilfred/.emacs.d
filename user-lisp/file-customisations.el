@@ -46,17 +46,16 @@ possible. No trailing slash. Returns nil otherwise."
 (defun git-pick-file ()
   "List all the files in the repo, and use ido to pick one."
   (interactive)
-  (let ((current-directory (path-for-current-buffer)))
-    (if current-directory
+  (let* ((current-directory (path-for-current-buffer))
+         (repo-directory (if current-directory (vc-git-root current-directory))))
+    (if (and current-directory repo-directory)
         (let* ((ido-enable-flex-matching nil) ; required for acceptable performance
-               (project-root (file-name-as-directory
-                              (expand-file-name (vc-git-root current-directory))))
-               (file-names (git-list-files project-root)))
+               (file-names (git-list-files (expand-file-name repo-directory))))
           (find-file
            (concat
-            project-root
+            repo-directory
             (ido-completing-read "Pick a file: " file-names))))
-      (message "This buffer is not associated with a file or directory."))))
+      (message "This buffer isn't related to a git repo."))))
 
 (global-set-key (kbd "C-x C-g") 'git-pick-file)
 
