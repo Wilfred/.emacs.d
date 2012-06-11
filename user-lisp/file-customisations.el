@@ -58,6 +58,8 @@ possible. No trailing slash."
             (ido-completing-read "Pick a file: " file-names))))
       (message "This buffer is not associated with a file or directory."))))
 
+(global-set-key (kbd "C-x C-g") 'git-pick-file)
+
 (defun find-in-parent-directory (path file-name)
   "Search PATH and all parent directories for file FILE-NAME,
 returning the first path found or nil."
