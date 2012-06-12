@@ -7,4 +7,7 @@
 (add-hook 'emacs-lisp-mode-hook 'turn-on-paredit)
 (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
 
+(autoload 'clojure-mode "clojure-mode")
+(add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
+
 (provide 'lisp-customisations)
