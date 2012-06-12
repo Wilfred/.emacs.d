@@ -4,6 +4,18 @@ I'm aiming to keep this as portable as possible, and
 self-contained. Code I've written (init.el and files under
 `user-lisp/`) is BSD licensed, see COPYING.
 
+Emacs 23.X and Emacs 24.X are both tested with this code.
+
+### Conventions
+
+Any code in user-lisp is written by me. `*-customisations.el` are
+interactive commands, configuration and key bindings. `*-utils.el` are
+elisp convenience functions.
+
+Where possible, functions are depended on using `autoload` instead of
+`require`. Macros are depended on using `(eval-when-compile (require 'foo))`.
+ Variables are also depended on by the function using `autoload`.
+
 ### Installing
 
 Remove any existing .emacs.d configuration (or move elsewhere):
