@@ -49,7 +49,7 @@ DIRECTORY is in a git repo. Return nil otherwise."
 (defun find-file-fuzzy ()
   "Use ido to a pick a file anywhere in the current project."
   (interactive)
-  (let* ((ido-enable-flex-matching nil) ; required for acceptable performance (over 0999 items)
+  (let* ((ido-enable-flex-matching nil) ; required for acceptable performance (over 1000 items)
          (search-directory (file-find-project-root default-directory))
          (file-names (or (git-list-files search-directory)
                          (list-files-recursive search-directory))))
