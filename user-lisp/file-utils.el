@@ -38,12 +38,11 @@ returning the path where FILE-NAME can be found."
     (when directory-path
         (file-path-join directory-path file-name))))
 
-(defun project-find-root ()
+(defun file-find-project-root (path)
   "Find the probable root of the project for the current buffer.
 TODO: svn"
-  (let ((current-directory (expand-file-name ".")))
-    (or
-     (find-containing-parent-directory current-directory ".git")
-     (find-containing-parent-directory current-directory "pom.xml"))))
+  (or
+   (find-containing-parent-directory path ".git")
+   (find-containing-parent-directory path "pom.xml")))
 
 (provide 'file-utils)
