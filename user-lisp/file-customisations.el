@@ -28,11 +28,14 @@
           (set-visited-file-name new-name)
           (set-buffer-modified-p nil)))))
 
+(autoload 'shell-command-to-string-in-dir "shell-utils")
+
 (defun git-list-files (directory)
   "Recursively list all the files in DIRECTORY, assuming
-DIRECTORY is in a git repo."
-    (let ((command (format "cd %s; git ls-files" directory)))
-      (split-string (shell-command-to-string command) "\n" t)))
+DIRECTORY is in a git repo. Return nil otherwise."
+  (when (vc-git-root directory)
+    (split-string
+     (shell-command-to-string-in-dir "git ls-files" directory) "\n" t)))
 
 (autoload 'path-for-current-buffer "file-utils")
 (autoload 'ido-completing-read "ido")
