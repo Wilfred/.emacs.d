@@ -37,23 +37,29 @@ DIRECTORY is in a git repo. Return nil otherwise."
     (split-string
      (shell-command-to-string-in-dir "git ls-files" directory) "\n" t)))
 
-(autoload 'path-for-current-buffer "file-utils")
+(defun list-files-recursive (directory)
+  "Recursively list all the files in DIRECTORY, ignoring .svn directories."
+  (split-string
+   (shell-command-to-string-in-dir "find . -type f -not -iwholename '*.svn*' | sed \"s|^\./||\"" (message directory))
+   "\n" t))
+
+(autoload 'file-find-project-root "file-utils")
 (autoload 'ido-completing-read "ido")
 
-(defun git-pick-file ()
-  "List all the files in the repo, and use ido to pick one."
+(defun find-file-fuzzy ()
+  "Use ido to a pick a file anywhere in the current project."
   (interactive)
-  (let* ((current-directory (path-for-current-buffer))
-         (repo-directory (if current-directory (vc-git-root current-directory))))
-    (if (and current-directory repo-directory)
-        (let* ((ido-enable-flex-matching nil) ; required for acceptable performance
-               (file-names (git-list-files (expand-file-name repo-directory))))
-          (find-file
-           (concat
-            repo-directory
-            (ido-completing-read "Pick a file: " file-names))))
-      (message "This buffer isn't related to a git repo."))))
+  (let* ((ido-enable-flex-matching nil) ; required for acceptable performance (over 0999 items)
+         (search-directory (file-find-project-root default-directory))
+         (file-names (or (git-list-files search-directory)
+                         (list-files-recursive search-directory))))
+    (find-file
+     (file-path-join
+      search-directory
+      (ido-completing-read
+       (format "Pick a file in %s: " search-directory)
+       file-names)))))
 
-(global-set-key (kbd "C-x C-g") 'git-pick-file)
+(global-set-key (kbd "C-x C-g") 'find-file-fuzzy)
 
 (provide 'file-customisations)
