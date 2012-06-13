@@ -9,7 +9,7 @@ current symbol at point."
  (interactive (list (read-from-minibuffer "Search with ack for: "
                                            (if (symbol-at-point)
                                                (symbol-name (symbol-at-point))))))
- (ack search-term nil (project-find-root)))
+ (ack search-term nil (file-find-project-root default-directory)))
 
 (global-set-key (kbd "<f5>") 'ack-at-point)
 
