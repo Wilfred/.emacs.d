@@ -30,17 +30,24 @@
 
 (autoload 'shell-command-to-string-in-dir "shell-utils")
 
-(defun git-list-files (directory)
+(defun list-files-recursive-git (directory)
   "Recursively list all the files in DIRECTORY, assuming
 DIRECTORY is in a git repo. Return nil otherwise."
-  (when (vc-git-root directory)
+  (when (and directory (vc-git-root directory))
     (split-string
      (shell-command-to-string-in-dir "git ls-files" directory) "\n" t)))
 
-(defun list-files-recursive (directory)
+(defun list-files-recursive-svn (directory)
+  "Recursively list all the files in DIRECTORY, assuming
+DIRECTORY is in a subversion repo. Return nil otherwise."
+  (when (and directory (file-exists-p (file-path-join directory ".svn")))
+    (split-string
+     (shell-command-to-string-in-dir "svn list --depth infinity | grep -v \"/$\" " directory) "\n" t)))
+
+(defun list-files-recursive-generic (directory)
   "Recursively list all the files in DIRECTORY, ignoring .svn directories."
   (split-string
-   (shell-command-to-string-in-dir "find . -type f -not -iwholename '*.svn*' | sed \"s|^\./||\"" (message directory))
+   (shell-command-to-string-in-dir "find . -type f | sed \"s|^\./||\"" (message directory))
    "\n" t))
 
 (autoload 'file-find-project-root "file-utils")
@@ -49,10 +56,12 @@ DIRECTORY is in a git repo. Return nil otherwise."
 (defun find-file-fuzzy ()
   "Use ido to a pick a file anywhere in the current project."
   (interactive)
+  (when (not default-directory) (error "This buffer isn't associated with a file"))
   (let* ((ido-enable-flex-matching nil) ; required for acceptable performance (over 1000 items)
          (search-directory (file-find-project-root default-directory))
-         (file-names (or (git-list-files search-directory)
-                         (list-files-recursive search-directory))))
+         (file-names (or (list-files-recursive-git search-directory)
+                         (list-files-recursive-svn search-directory)
+                         (list-files-recursive-generic search-directory))))
     (find-file
      (file-path-join
       search-directory
