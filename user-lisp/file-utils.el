@@ -4,7 +4,7 @@
 possible. No trailing slash. Returns nil otherwise."
   (let ((file-name (buffer-file-name)))
     (if file-name (directory-file-name (file-name-directory file-name))
-      (expand-file-name "."))))
+      default-directory)))
 
 ;;;; path manipulation
 (defun file-path-join (directory-name file-name)
