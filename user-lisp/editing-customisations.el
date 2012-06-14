@@ -164,6 +164,9 @@ are interchanged."
 (global-set-key (kbd "<C-up>") 'increment-number-decimal)
 (global-set-key (kbd "<C-down>") 'decrement-number-decimal)
 
+;; don't use shift to set the mark, or caps lock creates regions the whole time
+(setq-default shift-select-mode nil)
+
 (add-to-list 'load-path "~/.emacs.d/third-party-lisp/expand-region")
 (require 'expand-region)
 (global-set-key (kbd "C-=") 'er/expand-region)
