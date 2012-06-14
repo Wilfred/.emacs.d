@@ -4,7 +4,7 @@
 ;; discussed at http://www.masteringemacs.org/articles/2011/10/02/improving-performance-emacs-display-engine/
 (setq redisplay-dont-pause t)
 
-; Automatically indent the new line when we hit enter
+;; Automatically indent the new line when we hit enter
 (define-key global-map (kbd "RET") 'newline-and-indent)
 
 ;; zap-to-char but don't delete the character itself
@@ -167,6 +167,7 @@ are interchanged."
 ;; don't use shift to set the mark, or caps lock creates regions the whole time
 (setq-default shift-select-mode nil)
 
+;; use expand-region to grow the region according to the current mode's syntax
 (add-to-list 'load-path "~/.emacs.d/third-party-lisp/expand-region")
 (require 'expand-region)
 (global-set-key (kbd "C-=") 'er/expand-region)
