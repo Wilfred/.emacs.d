@@ -14,6 +14,13 @@ possible. No trailing slash. Returns nil otherwise."
 (defun parent-directory (path)
   (directory-file-name (file-name-directory path)))
 
+;;;; file creation
+(defun file-create-file (path content)
+  "Create a file at PATH with CONTENT as its contents."
+  (with-temp-buffer
+    (insert content)
+    (write-region (point-min) (point-max) path)))
+
 ;;;; path searching
 (defun find-containing-parent-directory (path file-name)
   "Search PATH and all parent directories for file FILE-NAME,
