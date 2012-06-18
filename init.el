@@ -154,10 +154,6 @@
 
 (require 'potato-customisations)
 
-; add ~/bin to PATH since we store the GAE SDK there
-(setenv "PATH" "$PATH:/home/wilfred/bin/google_appengine" t)
-(require 'gae-utils)
-
 (require 'git-customisations)
 (require 'search-tools)
 
