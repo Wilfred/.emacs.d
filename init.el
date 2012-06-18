@@ -182,6 +182,9 @@
 (global-set-key (kbd "M-n") 'ahs-forward)
 (global-set-key (kbd "M-p") 'ahs-backward)
 
+;; crontab mode for files named
+(require 'crontab-mode)
+(add-to-list 'auto-mode-alist '("^crontab" . crontab-mode))
 
 (setq ring-bell-function 'ignore)
 
