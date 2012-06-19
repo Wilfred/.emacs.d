@@ -157,8 +157,8 @@
 (require 'git-customisations)
 (require 'search-tools)
 
-(global-set-key [(f8)] 'flymake-goto-prev-error)
-(global-set-key [(f9)] 'flymake-goto-next-error)
+(global-set-key (kbd "<f8>") 'flymake-goto-prev-error)
+(global-set-key (kbd "<f9>") 'flymake-goto-next-error)
 
 ;; (add-to-list 'load-path "~/.emacs.d/third-party-lisp/ack-and-a-half.el")
 (autoload 'ack-and-a-half-same "ack-and-a-half" nil t)
