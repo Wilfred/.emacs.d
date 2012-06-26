@@ -69,6 +69,8 @@ The point is also moved one character forward."
 (global-set-key (kbd "M-c") 'toggle-case-next-char)
 
 (autoload 're-find-all "regexp-utils")
+(autoload 're-search-p "regexp-utils")
+(autoload 're-match-p "regexp-utils")
 
 (defun string-contains-p (substring string)
   "Returns t if STRING contains SUBSTRING."
