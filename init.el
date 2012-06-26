@@ -180,7 +180,7 @@
 
 ;; crontab mode for files named
 (require 'crontab-mode)
-(add-to-list 'auto-mode-alist '("^crontab" . crontab-mode))
+(add-to-list 'auto-mode-alist '("crontab.*?\\'" . crontab-mode))
 
 (setq ring-bell-function 'ignore)
 
