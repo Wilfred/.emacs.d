@@ -40,12 +40,12 @@
 
 (defun re-find-all (regexp string)
   "Find all matches of REGEXP in STRING, return a list of the
- matching substrings."
+ matching substrings. Case sensitive."
   (re--find-all regexp string 0))
 
 (defun re--find-all (regexp string offset)
-  "Find all matches of REGEXP in STRING, return a list of the
- matching substrings."
+  "Recursively find all matches of REGEXP in STRING, return a
+list of the matching substrings."
   (let* ((case-fold-search nil)
          (match-start-index (string-match regexp string offset)))
     (if match-start-index
