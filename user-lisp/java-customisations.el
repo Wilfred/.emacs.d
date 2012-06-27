@@ -16,7 +16,8 @@
 (define-key java-mode-map (kbd "<f6>") 'eclim-java-find-declaration)
 
 ; treat camelCaseWords as different words with M-f and M-b
-(add-hook 'java-mode-hook 'camelCase-mode)
+(require 'camelCase)
+(add-hook 'java-mode-hook '(lambda () (camelCase-mode 1)))
 
 (require 'potato-customisations); buffer-contains-string-p
 (autoload 'dolist "cl")
