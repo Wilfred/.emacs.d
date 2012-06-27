@@ -39,5 +39,11 @@ strings, one per Tube line."
                (gethash "status" line-hash)))
      lines-vector "\n")))
 
+(defun tube-status ()
+  (interactive)
+  (message (tube-get-status)))
+
 (defun fs-tube ()
   (tube-get-status))
+
+(provide 'tube)
