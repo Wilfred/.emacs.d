@@ -116,7 +116,7 @@ The point is also moved one character forward."
        ((re-match-p "[a-z_]+$" symbol) (insert (format-symbol symbol 'camelcase-lower)))
        ((re-match-p "[a-z]+" symbol) (insert (format-symbol symbol 'camelcase)))
        ((re-match-p "[A-Z][a-z]+" symbol) (insert (format-symbol symbol 'constant)))
-       (t (insert (format-symbol symbol 'variable-hyphen)))))))
+       (t (insert (format-symbol symbol 'variable-underscore)))))))
 
 (global-set-key (kbd "C-M-c") 'cycle-symbol-case)
 
