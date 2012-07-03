@@ -15,16 +15,17 @@
 ;; This is was written for ErBot, but could easily be used for other
 ;; purposes.
 
+(autoload 'url-get "url-utils")
+
 (defun tube-get-status-json-string ()
   "Query the unofficial Tube status API and return the raw JSON response."
-  (save-excursion
-    (switch-to-buffer
-     (url-retrieve-synchronously "http://api.tubeupdates.com/?method=get.status"))
-    ;; for some reason, getting an application/x-json response means
-    ;; we get the headers in our buffer too, so remove them:
-    (goto-char (point-max))
-    (move-beginning-of-line nil)
-    (buffer-substring (point) (point-max))))
+  ;; For some reason, getting an application/x-json response means
+  ;; we get the headers too. The actual JSON is on the last line.
+  (car
+   (last
+    (split-string
+     (url-get "http://api.tubeupdates.com/?method=get.status")
+     "\n"))))
 
 (defun tube-get-status ()
   "Query the unofficialy Tube status API and return a list of
