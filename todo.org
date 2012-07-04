@@ -1,0 +1,8 @@
+
+
+* TODO release regexp-utils
+* TODO move utils to a consistent namespace
+* TODO rename customisations to preferences
+* TODO find out why hippie-expand doesn't complete identical lines
+* TODO find out how to combine dabbrev-expand with normal expansion 
+  to avoid confusion where the show expansion isn't given on M-/
