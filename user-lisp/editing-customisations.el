@@ -205,7 +205,7 @@ are interchanged."
    (interactive "*p")
    (move-text-internal (- arg)))
 
-(global-set-key (kbd "<M-S-up>") 'move-text-up)
-(global-set-key (kbd "<M-S-up>") 'move-text-down)
+(global-set-key (kbd "<M-up>") 'move-text-up)
+(global-set-key (kbd "<M-down>") 'move-text-down)
 
 (provide 'editing-customisations)
