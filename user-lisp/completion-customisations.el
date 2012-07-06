@@ -19,11 +19,9 @@
 (require 'auto-complete-config)
 (add-to-list 'ac-dictionary-directories "~/.emacs.d/third-party-lisp/auto-complete/dict")
 (ac-config-default)
-;
-; don't try to complete after semicolon (is a pain in CSS)
+
+;; don't try to complete after semicolon (is a pain in CSS)
 (setq ac-ignores '(";"))
-; tab only for completion
-(define-key ac-complete-mode-map "\r" nil)
 
 ; always spaces, never tabs
 (setq-default indent-tabs-mode nil)
