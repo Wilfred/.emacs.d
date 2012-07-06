@@ -11,6 +11,8 @@ current symbol at point."
                                                (symbol-name (symbol-at-point))))))
  (ack search-term nil (file-find-project-root default-directory)))
 
+(setq ack-and-a-half-arguments '("--all-types"))
+
 (global-set-key (kbd "<f5>") 'ack-at-point)
 
 (provide 'search-tools)
