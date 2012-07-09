@@ -120,11 +120,6 @@ The point is also moved one character forward."
 
 (global-set-key (kbd "C-M-c") 'cycle-symbol-case)
 
-;; don't allow camelcase mode to mess with the keybinds set above
-(require 'camelCase)
-(define-key camelCase-mode-map (kbd "M-c") nil)
-(define-key camelCase-mode-map (kbd "C-<backspace>") nil)
-
 
 (defun transpose-symbols (arg)
   "Interchange sybmols around point, leaving point at end of them.
