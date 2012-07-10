@@ -19,6 +19,14 @@ by (current-time)."
       (finish-time (apply 'time-as-unixtime to-time)))
     (- finish-time start-time)))
 
+(defmacro timed-require (feature)
+  (let ((timing-var (make-symbol "start-time")))
+    `(let ((,timing-var (current-time)))
+       (require ,feature)
+       (message "(require \'%s) took %.2f seconds."
+                (symbol-name ,feature)
+                (time-difference ,timing-var (current-time))))))
+
 ; for 3rd party code that we aren't modifying, we just install as
 ; packages
 (when
