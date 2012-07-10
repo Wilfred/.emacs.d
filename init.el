@@ -5,6 +5,20 @@
 
 ; some plugins (at least w3) install themselves here:
 (add-to-list 'load-path "/usr/share/emacs/site-lisp")
+
+(defun time-as-unixtime (most-sig-bits least-sig-bits microseconds)
+  "Return the number of seconds since 1st of January 1970."
+  (+ (lsh most-sig-bits 16) least-sig-bits
+     (/ microseconds 1000000.0)))
+
+(defun time-difference (from-time to-time)
+  "Calculate the time difference in seconds between FROM-TIME and
+TO-TIME. Parameters are assumed to be in the format returned
+by (current-time)."
+  (let* ((start-time (apply 'time-as-unixtime from-time))
+      (finish-time (apply 'time-as-unixtime to-time)))
+    (- finish-time start-time)))
+
 ; for 3rd party code that we aren't modifying, we just install as
 ; packages
 (when
@@ -215,12 +229,5 @@
  '(magit-header ((t (:background "black" :foreground "white"))))
  '(magit-section-title ((t (:inherit magit-header)))))
 
-(defun time-as-unixtime (most-sig-bits least-sig-bits microseconds)
-  "Return the number of seconds since 1st of January 1970."
-  (+ (lsh most-sig-bits 16) least-sig-bits
-     (/ microseconds 1000000.0)))
-
-(let* ((start-time (apply 'time-as-unixtime *emacs-load-start*))
-      (finish-time (apply 'time-as-unixtime (current-time)))
-      (elapsed-time (- finish-time start-time)))
-  (message (format "Spent %f seconds executing .emacs.d/init.el." elapsed-time)))
+(message "Spent %.2f seconds executing .emacs.d/init.el."
+         (time-difference *emacs-load-start* (current-time)))
