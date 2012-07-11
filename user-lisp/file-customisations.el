@@ -45,7 +45,7 @@ DIRECTORY is in a subversion repo. Return nil otherwise."
      (shell-command-to-string-in-dir "svn list --depth infinity | grep -v \"/$\" " directory) "\n" t)))
 
 (defun list-files-recursive-generic (directory)
-  "Recursively list all the files in DIRECTORY, ignoring .svn directories."
+  "Recursively list all the files in DIRECTORY."
   (split-string
    (shell-command-to-string-in-dir "find . -type f | sed \"s|^\./||\"" (message directory))
    "\n" t))
