@@ -1,16 +1,37 @@
-;; relative-line-numbers.el -- show relative line number and allow offset jumping
+;;; relative-linum.el -- show relative line number and allow offset jumping
 
-;; taken from http://stackoverflow.com/a/7882046
+;; Version: 1.0
+;; Author: Wilfred Hughes <me@wilfred.me.uk>
+;; Mostly taken from http://stackoverflow.com/a/7882046
 
-;;; relative line numbers, vim style
+;; This file is not part of GNU Emacs.
+;; However, it is distributed under the same license.
 
-;; enable:
+;; GNU Emacs is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 3, or (at your option)
+;; any later version.
+
+;; GNU Emacs is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with GNU Emacs; see the file COPYING.  If not, write to the
+;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+;; Boston, MA 02110-1301, USA.
+
+;;; Commentary
+
+;; Relative line numbers, Vim style.
+
+;; This will modify the linum (line numbering) behaviour in Emacs. To
+;; enable it in a single buffer, do `M-x linum-mode` or execute
+;; (linum-mode 1).
+
+;; To enable this globally, add this to your .emacs:
 ;; (global-linum-mode t)
-;; disable:
-;; (global-linum-mode 0)
-;; enable locally:
-;; (linum-mode 1)
-
 
 (defvar relative-linum-format-string "%3d")
 
