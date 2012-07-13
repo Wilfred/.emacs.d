@@ -1,24 +1,17 @@
-; offer recent files
+;; offer recently accessed files
 (require 'recentf)
-
-; get rid of `find-file-read-only' and replace it with something
-; more useful.
-(global-set-key (kbd "C-x C-r") 'ido-recentf-open)
-
-; enable recent files mode.
 (recentf-mode t)
-
-; 200 files ought to be enough.
 (setq recentf-max-saved-items 200)
 
 (defun ido-recentf-open ()
   "Use `ido-completing-read' to \\[find-file] a recent file"
   (interactive)
-
   (if (find-file (ido-completing-read "Find recent file: " recentf-list))
       (message "Opening file...")
     (message "Aborting")))
 
+;; C-x C-r was previously bound to `find-file-read-only which is not very useful
+(global-set-key (kbd "C-x C-r") 'ido-recentf-open)
 
 ;; better dired, with colouring
 (require 'dired+)
