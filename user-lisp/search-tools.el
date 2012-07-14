@@ -15,4 +15,6 @@ current symbol at point."
 
 (global-set-key (kbd "<f5>") 'ack-at-point)
 
+(setq ack-and-a-half-executable "ack")
+
 (provide 'search-tools)
