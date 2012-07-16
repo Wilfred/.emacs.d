@@ -3,8 +3,8 @@
 
 (when window-system
   (require 'color-theme)
-  (require 'color-theme-tango)
-  (color-theme-tango))
+  (require 'color-theme-tangotango)
+  (color-theme-tangotango))
 
 ; hide toolbar and scrollbar
 (tool-bar-mode 0)

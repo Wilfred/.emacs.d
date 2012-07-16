@@ -212,9 +212,7 @@ by (current-time)."
  '(ahs-plugin-defalt-face ((t nil)))
  '(flymake-errline ((((class color)) (:underline "Red"))))
  '(flymake-warnline ((((class color)) (:underline "Orange"))))
- '(js2-function-param-face ((((class color)) (:foreground "Green"))))
- '(magit-header ((t (:background "black" :foreground "white"))))
- '(magit-section-title ((t (:inherit magit-header)))))
+ '(js2-function-param-face ((((class color)) (:foreground "Green")))))
 
 (message "Spent %.2f seconds executing .emacs.d/init.el."
          (time-difference *emacs-load-start* (current-time)))
