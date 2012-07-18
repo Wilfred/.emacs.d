@@ -159,6 +159,7 @@ by (current-time)."
 
 (require 'git-customisations)
 (require 'search-tools)
+(require 'conflicts)
 
 (global-set-key (kbd "<f8>") 'flymake-goto-prev-error)
 (global-set-key (kbd "<f9>") 'flymake-goto-next-error)
