@@ -1,3 +1,8 @@
+;;; conflicts.el -- Conveniences for handling files with conflicts
+
+;; This is just a wrapper around smerge, but with more memorable
+;; command names and more convenient key bindings.
+
 (defun conflicts-list ()
   "Show all the conflicts in the current buffer using occur-mode."
   (interactive)
@@ -14,6 +19,10 @@
 ;; TODO: it would be nice if these jumped to the first conflict
 (defalias 'conflicts-keep-first 'smerge-keep-base)
 (defalias 'conflicts-keep-second 'smerge-keep-other)
+
+(define-key smerge-mode-map (kbd "<C-return>") 'conflicts-keep-current)
+(define-key smerge-mode-map (kbd "<f8>") 'smerge-next)
+(define-key smerge-mode-map (kbd "<f9>") 'smerge-prev)
 
 ;; TODO: a function to find all files containing merge conflicts in a repo
 
