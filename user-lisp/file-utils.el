@@ -50,6 +50,7 @@ returning the path where FILE-NAME can be found."
 TODO: svn"
   (or
    (find-containing-parent-directory path ".git")
-   (find-containing-parent-directory path "pom.xml")))
+   (find-containing-parent-directory path "pom.xml")
+   (error "%s doesn't seem to be part of a project" path)))
 
 (provide 'file-utils)
