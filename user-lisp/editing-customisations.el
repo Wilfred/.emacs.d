@@ -1,5 +1,8 @@
 ;;;; Editing customisations -- general text munging when typing.
 
+;; overwrite when text is selected
+(delete-selection-mode t)
+
 ;; Automatically indent the new line when we hit enter
 (define-key global-map (kbd "RET") 'newline-and-indent)
 
