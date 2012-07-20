@@ -39,8 +39,31 @@
 ; style diffs so that additions, removals etc are different colours
 (require 'diff-mode-)
 
-; use ibuffer to group buffers
+;;; ibuffer
+
+;; use ibuffer to group buffers
+(require 'ibuffer)
 (global-set-key (kbd "C-x C-b") 'ibuffer)
+
+;; Use human readable Size column instead of original one
+(define-ibuffer-column size-h
+  (:name "Size" :inline t)
+  (cond
+   ((> (buffer-size) 1000) (format "%7.0f KiB" (/ (buffer-size) 1024.0)))
+   ((> (buffer-size) 1000000) (format "%7.0f MiB" (/ (buffer-size) (* 1024.0 1024.0))))
+   (t (format "%9d B" (buffer-size)))))
+
+;; Modify the default ibuffer-formats
+(setq ibuffer-formats
+      '((mark modified read-only " "
+              (name 40 40 :left :elide)
+              " "
+              (size-h 10 -1 :right)
+              " "
+              (mode 16 16 :left :elide)
+              " "
+              filename-and-process)))
+
 
 ; automatically abbreviate long grep output
 (require 'scf-mode)
