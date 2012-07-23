@@ -17,7 +17,7 @@
 (defalias 'conflicts-keep-current 'smerge-keep-current)
 
 ;; TODO: it would be nice if these jumped to the first conflict
-(defalias 'conflicts-keep-first 'smerge-keep-base)
+(defalias 'conflicts-keep-first 'smerge-keep-mine)
 (defalias 'conflicts-keep-second 'smerge-keep-other)
 
 (define-key smerge-mode-map (kbd "<C-return>") 'conflicts-keep-current)
