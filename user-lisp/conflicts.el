@@ -20,6 +20,7 @@
 (defalias 'conflicts-keep-first 'smerge-keep-mine)
 (defalias 'conflicts-keep-second 'smerge-keep-other)
 
+(require 'smerge-mode)
 (define-key smerge-mode-map (kbd "<C-return>") 'conflicts-keep-current)
 (define-key smerge-mode-map (kbd "<f8>") 'smerge-next)
 (define-key smerge-mode-map (kbd "<f9>") 'smerge-prev)
