@@ -1,6 +1,6 @@
 ;;; relative-linum.el -- show relative line number and allow offset jumping
 
-;; Version: 1.0
+;; Version: 1.1
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Mostly taken from http://stackoverflow.com/a/7882046
 
@@ -58,9 +58,15 @@
 
 (defun relative-linum-jump (offset)
   "Move OFFSET lines up or down from the current line."
-  (interactive "nLine offset: ")
+  (interactive "nForward how many lines?: ")
   (forward-line offset))
 
+(defun relative-linum-jump-backward (offset)
+  "Move OFFSET * -1 lines up or down from the current line."
+  (interactive "nBackward how many lines?: ")
+  (forward-line (-  offset)))
+
 (global-set-key (kbd "C-S-n") 'relative-linum-jump)
+(global-set-key (kbd "C-S-p") 'relative-linum-jump-backward)
 
 (provide 'relative-linum)
