@@ -45,11 +45,14 @@ returning the path where FILE-NAME can be found."
     (when directory-path
         (file-path-join directory-path file-name))))
 
+(autoload 'vc-git-root "vc-git")
+(autoload 'vc-svn-root "vc-svn")
+
 (defun file-find-project-root (path)
-  "Find the probable root of the project for the current buffer.
-TODO: svn"
+  "Find the probable root of the project for the current buffer."
   (or
-   (find-containing-parent-directory path ".git")
+   (vc-git-root path)
+   (vc-svn-root path)
    (find-containing-parent-directory path "pom.xml")
    (error "%s doesn't seem to be part of a project" path)))
 
