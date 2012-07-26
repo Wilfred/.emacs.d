@@ -8,7 +8,7 @@ specify the directory whilst preserving default-directory."
         (original-default-directory default-directory)
         (command-output))
     (when (not (file-exists-p normalized-path))
-      (error ("Directory %s doesn't exist" normalized-path)))
+      (error "Directory %s doesn't exist" normalized-path))
     (setq default-directory normalized-path)
     (setq command-output (shell-command-to-string command))
     (setq default-directory original-default-directory)

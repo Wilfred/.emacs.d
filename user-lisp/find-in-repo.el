@@ -2,7 +2,7 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 24 July 2012
-;; Version: 1.0
+;; Version: 1.1
 
 ;;; Commentary
 
@@ -46,7 +46,7 @@ of `default-directory' is a path that exists. If not, it crashes."
         (original-default-directory default-directory)
         (command-output))
     (when (not (file-exists-p normalized-path))
-      (error ("Directory %s doesn't exist" normalized-path)))
+      (error "Directory %s doesn't exist" normalized-path))
     (setq default-directory normalized-path)
     (setq command-output (shell-command-to-string command))
     (setq default-directory original-default-directory)
