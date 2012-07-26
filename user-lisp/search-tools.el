@@ -11,7 +11,7 @@
 (defalias 'ack-find-file-same 'ack-and-a-half-find-file-same)
 
 
-(autoload 'file-find-project-root "file-customisations")
+(autoload 'file-find-project-root "file-utils")
 
 (defun ack-at-point (search-term)
   "Run ack searching for string SEARCH-TERM, defaulting to the
