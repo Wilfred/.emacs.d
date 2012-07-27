@@ -1,17 +1,18 @@
-; configure eclim, which lets use use eclispe as a server
+;;; eclim, which lets us use eclispe as a server
+
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/third-party-lisp/emacs-eclim"))
+(setq eclim-executable (expand-file-name "~/.eclipse/org.eclipse.platform_3.7.0_155965261/eclim"))
 (require 'eclim)
 
-(setq eclim-executable (expand-file-name "~/.eclipse/org.eclipse.platform_3.7.0_155965261/eclim"))
+;; use eclim-mode only for Java
+(add-hook 'java-mode-hook '(lambda () (eclim-mode 1)))
 
-(global-eclim-mode)
-
-; show eclim errors in minibuffer
+;; show eclim errors in minibuffer
 (setq help-at-pt-display-when-idle t)
 (setq help-at-pt-timer-delay 0.3)
 (help-at-pt-set-timer)
 
-; eclim key bindings
+;; eclim key bindings
 (require 'cc-mode); java-mode-map
 (define-key java-mode-map (kbd "<f6>") 'eclim-java-find-declaration)
 
