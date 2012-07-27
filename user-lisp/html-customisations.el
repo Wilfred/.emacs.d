@@ -5,8 +5,8 @@
   (function
    (lambda ()
      (progn
-       (setq indent-tabs-mode t)
-       (setq sgml-basic-offset 8)))))
+       (setq indent-tabs-mode nil)
+       (setq sgml-basic-offset 4)))))
                                         ;
 ; we use .dtml for Django templates that are largely HTML
 (add-to-list 'auto-mode-alist '("\\.dtml$" . html-mode))
