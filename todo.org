@@ -6,3 +6,9 @@
 * TODO find out why hippie-expand doesn't complete identical lines
 * TODO find out how to combine dabbrev-expand with normal expansion 
   to avoid confusion where the show expansion isn't given on M-/
+* TODO fix syntax highlighting for generics in java-mode
+** TODO example: public void foo(A<B> c, D e) // A isn't highlighted as a type
+
+* TODO port raw strings from XEmacs 21.5
+
+** TODO start with HG blame on lisp-reader-tests.el line 35 onwards to find relevant commit
