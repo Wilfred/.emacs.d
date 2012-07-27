@@ -5,7 +5,9 @@ nothing but whitespace between them.  It then indents the markup
 by using nxml's indentation rules."
   (interactive "r")
   (save-excursion
-    (replace-regexp ">[ \\t]*<" ">\n<" nil begin end)
+    (goto-char begin)
+    (while (re-search-forward ">[ \\t]*<" end t)
+      (replace-match ">\n<" nil nil))
     (indent-region begin end)))
 
 (provide 'xml-customisations)

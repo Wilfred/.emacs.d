@@ -64,7 +64,7 @@
 (defun relative-linum-jump-backward (offset)
   "Move OFFSET * -1 lines up or down from the current line."
   (interactive "nBackward how many lines?: ")
-  (forward-line (-  offset)))
+  (forward-line (- offset)))
 
 (global-set-key (kbd "C-S-n") 'relative-linum-jump)
 (global-set-key (kbd "C-S-p") 'relative-linum-jump-backward)

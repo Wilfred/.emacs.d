@@ -10,7 +10,7 @@
 
   ; put mark on the first result in the occur window
   (other-window 1)
-  (next-line))
+  (forward-line))
 
 (global-set-key (kbd "<f10>") 'conflicts-list)
 
