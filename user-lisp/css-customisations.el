@@ -3,8 +3,8 @@
           (function
            (lambda ()
              (progn
-               (setq css-indent-offset 8)
-               (setq indent-tabs-mode t)))))
+               (setq css-indent-offset 4)
+               (setq indent-tabs-mode nil)))))
 
 ; highlight colours as themselves
 (defvar hexcolour-keywords
