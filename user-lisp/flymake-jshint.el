@@ -4,7 +4,7 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 23 June 2011
-;; Version: 1.0
+;; Version: 1.1
 ;; Keywords: flymake, jshint, javascript
 
 ;; This file is not part of GNU Emacs.
@@ -36,8 +36,7 @@
 ;; jshint by doing the following:
 
 ;; $ apt-get install nodejs # or your distro / OS equivalent
-;; $ curl http://npmjs.org/install.sh | sh
-;; $ npm install -g jshint
+;; $ sudo npm install -g jshint
 
 ;; You will probably want to configure the warnings that JSHint
 ;; produces. The full list is at http://www.jshint.com/options/ but
@@ -116,4 +115,4 @@
 
 (provide 'flymake-jshint)
 
-;;; flymake-jshint.el ends herep
+;;; flymake-jshint.el ends here
