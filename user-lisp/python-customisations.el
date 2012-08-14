@@ -55,45 +55,16 @@
 
 
 ; set flymake to use pyflakes to check code (requires pyflakes installed and on $PATH)
-(require 'flymake)
+(require 'flymake-python-pyflakes)
+(setq flymake-python-pyflakes-executable "~/.emacs.d/user-python/run-pyflakes")
+(add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
 
 (custom-set-faces
  '(flymake-errline ((((class color)) (:underline "Red"))))
  '(flymake-warnline ((((class color)) (:underline "Orange")))))
 
-
-(defun flymake-pyflakes-init ()
-    (let* ((temp-file (flymake-init-create-temp-buffer-copy
-                       'flymake-create-temp-inplace))
-           (local-file (file-relative-name
-                        temp-file
-                        (file-name-directory buffer-file-name))))
-      (list "~/.emacs.d/user-python/run-pyflakes" (list local-file))))
-
-(add-to-list 'flymake-allowed-file-name-masks
-             '("\\.py\\'" flymake-pyflakes-init))
-
-; now always load flymake-mode with python-mode
-(add-hook 'python-mode-hook 'flymake-mode)
-
-
-(defun flymake-can-syntax-check-file (file-name)
-  "Determine whether we can syntax check FILE-NAME.
-Return nil if we cannot, non-nil if we can.
-More rigorous than the default, excluding nil file names and unwritable files"
-  (and file-name (file-writable-p file-name)))
-
-
 (define-key python-mode-map [(f7)] 'flymake-goto-prev-error)
 (define-key python-mode-map [(f8)] 'flymake-goto-next-error)
-
-(defun flymake-error-at-point ()
-  "Show the flymake error in the minibuffer when point is on an invalid line."
-  (when (get-char-property (point) 'flymake-overlay)
-    (let ((help (get-char-property (point) 'help-echo)))
-      (if help (message "%s" help)))))
-
-(add-hook 'post-command-hook 'flymake-error-at-point)
 
 ; outline mode, note that the the minor mode shorcuts have an @ in them
 ; e.g. C-c C-c becomes C-c @ C-c
