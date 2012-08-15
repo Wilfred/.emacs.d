@@ -1,20 +1,6 @@
 (require 'python)
 
 ;;; TODO: fix indentation for the following code:
-;; def foo():
-;;     try:
-;;         pass
-;;     except Artwork.DoesNotExist:
-;;         bar = "A very very very long string, so we use backslash %s %s" % \
-;;             (None,
-;;              None)
-
-;;             # this is four spaces more than correct indentation, but
-;;             # Python mode doesn't like the proper indentation
-;;             pass
-
-;; TODO: also fix indentation for the following:
-
 ;; response = Client().post('admin/tasks/csv_checkflbjklj',
 ;;                          # the value of the ID is irrelevant:
 ;;                              {'csv_import_id': 123456})
