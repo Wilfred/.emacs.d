@@ -4,7 +4,7 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 23 June 2011
-;; Version: 1.1
+;; Version: 1.2
 ;; Keywords: flymake, jshint, javascript
 
 ;; This file is not part of GNU Emacs.
@@ -84,18 +84,12 @@
   :type 'string
   :group 'flymake-jshint)
 
-
 (defun flymake-jshint-init ()
   (let* ((temp-file (flymake-init-create-temp-buffer-copy
-		     'flymake-create-temp-inplace))
-         (local-file (file-relative-name
-		      temp-file
-		      (file-name-directory buffer-file-name))))
+		     'flymake-create-temp-inplace)))
     (if jshint-configuration-path
-        (list "jshint" (list local-file "--config" (expand-file-name jshint-configuration-path)))
-   (list "jshint" (list local-file)))))
-
-
+        (list "jshint" (list temp-file "--config" (expand-file-name jshint-configuration-path)))
+   (list "jshint" (list temp-file)))))
 
 (setq flymake-allowed-file-name-masks
       (cons '(".+\\.js$"
@@ -104,14 +98,10 @@
 	      flymake-get-real-file-name)
 	    flymake-allowed-file-name-masks))
 
-
 (setq flymake-err-line-patterns 
       (cons '("^\\(.*\\): line \\([[:digit:]]+\\), col \\([[:digit:]]+\\), \\(.+\\)$"
 	      1 2 3 4)
 	    flymake-err-line-patterns))
-
-; load flymake automatically in JavaScript mode
-(add-hook 'js-mode-hook 'flymake-mode)
 
 (provide 'flymake-jshint)
 
