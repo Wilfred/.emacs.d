@@ -206,4 +206,12 @@ are interchanged."
 (global-set-key (kbd "<M-up>") 'move-text-up)
 (global-set-key (kbd "<M-down>") 'move-text-down)
 
+;; ace-jump-mode -- jump to an arbitrary word quickly
+(autoload
+  'ace-jump-mode
+  "ace-jump-mode"
+  "Emacs quick move minor mode"
+  t)
+(define-key global-map (kbd "C-c SPC") 'ace-jump-mode)
+
 (provide 'editing-customisations)
