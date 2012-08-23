@@ -19,8 +19,7 @@
 (defun flymake-python-pyflakes-init ()
   (list flymake-python-pyflakes-executable
         (list
-         (flymake-init-create-temp-buffer-copy 'flymake-create-temp-inplace)
-         (file-name-directory buffer-file-name))))
+         (flymake-init-create-temp-buffer-copy 'flymake-create-temp-inplace))))
 
 ;;;###autoload
 (defun flymake-python-pyflakes-load ()

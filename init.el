@@ -175,7 +175,13 @@ by (current-time)."
 (global-set-key (kbd "<f8>") 'flymake-goto-prev-error)
 (global-set-key (kbd "<f9>") 'flymake-goto-next-error)
 
+(defun flymake-error-at-point ()
+  "Show the flymake error in the minibuffer when point is on an invalid line."
+  (when (get-char-property (point) 'flymake-overlay)
+    (let ((help (get-char-property (point) 'help-echo)))
+      (if help (message "%s" help)))))
 
+(add-hook 'post-command-hook 'flymake-error-at-point)
 
 ; auto-highlight-symbol -- highlights the symbol under cursor
 ; elsewhere in the buffer
