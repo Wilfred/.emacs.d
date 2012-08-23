@@ -164,7 +164,6 @@ by (current-time)."
 (require 'haskell-customisations)
 (require 'c-customisations)
 (require 'sh-customisations)
-(require 'java-customisations)
 
 (require 'potato-customisations)
 
