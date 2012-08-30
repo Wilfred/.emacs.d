@@ -4,13 +4,22 @@
 (setq eclim-executable (expand-file-name "~/.eclipse/org.eclipse.platform_3.7.0_155965261/eclim"))
 (require 'eclim)
 
-;; use eclim-mode only for Java
-(add-hook 'java-mode-hook '(lambda () (eclim-mode 1)))
+(defvar eclim-in-use nil)
+(defun eclim-switch-on ()
+  "Turn on eclim mode. We wrap this stuff in a function as eclim
+is quite invasive, messing with (amongst others) after-save-hook."
+  (unless eclim-in-use
+    (setq eclim-in-use t)
+    (require 'eclim)
 
-;; show eclim errors in minibuffer
-(setq help-at-pt-display-when-idle t)
-(setq help-at-pt-timer-delay 0.3)
-(help-at-pt-set-timer)
+    ;; show eclim errors in minibuffer
+    (setq help-at-pt-display-when-idle t)
+    (setq help-at-pt-timer-delay 0.3)
+    (help-at-pt-set-timer)))
+
+
+;; use eclim-mode only for Java
+(add-hook 'java-mode-hook '(lambda () (progn (eclim-switch-on) (eclim-mode 1))))
 
 ;; eclim key bindings
 (require 'cc-mode); java-mode-map
