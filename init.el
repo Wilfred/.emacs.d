@@ -197,13 +197,6 @@ by (current-time)."
 
 (add-hook 'post-command-hook 'flymake-error-at-point)
 
-; auto-highlight-symbol -- highlights the symbol under cursor
-; elsewhere in the buffer
-(require 'auto-highlight-symbol)
-(global-auto-highlight-symbol-mode t)
-(global-set-key (kbd "M-n") 'ahs-forward)
-(global-set-key (kbd "M-p") 'ahs-backward)
-
 ;; crontab mode for files named
 (require 'crontab-mode)
 (add-to-list 'auto-mode-alist '("crontab.*?\\'" . crontab-mode))

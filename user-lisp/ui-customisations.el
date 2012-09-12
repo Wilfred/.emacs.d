@@ -65,10 +65,18 @@
               filename-and-process)))
 
 
-; automatically abbreviate long grep output
-(require 'scf-mode)
-(add-hook 'grep-mode-hook (lambda () (scf-mode 1)))
-(add-hook 'ack-and-a-half-mode-hook (lambda () (scf-mode 1)))
+;; automatically abbreviate long paths in grep or ack output
+(defvar abbreviate-paths-when-searching nil)
+(when abbreviate-paths-when-searching
+  (require 'scf-mode)
+  (add-hook 'grep-mode-hook (lambda () (scf-mode 1)))
+  (add-hook 'ack-and-a-half-mode-hook (lambda () (scf-mode 1))))
+
+;; auto-highlight-symbol -- highlights other occurrences of the current symbol
+(require 'auto-highlight-symbol)
+(global-auto-highlight-symbol-mode t)
+(global-set-key (kbd "M-n") 'ahs-forward)
+(global-set-key (kbd "M-p") 'ahs-backward)
 
 (defun toggle-frame-split ()
   (interactive)
