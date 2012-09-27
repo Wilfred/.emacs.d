@@ -49,9 +49,9 @@ With argument ARG, do this that many times."
 (global-set-key (kbd "C-M-<backspace>") 'backward-kill-sexp)
 (global-set-key (kbd "C-M-d") 'kill-sexp)
 
-(defun beginning-of-line-or-indent ()
-  "Toggles between moving point to the beginning of the line, and
-the first non-whitespace character on the line."
+(defun beginning-of-line-dwim ()
+  "Toggles between moving point to the first non-whitespace character, and
+the start of the line."
   (interactive)
   (let ((start-position (point)))
     ;; see if going back to indentation changes our position
@@ -60,7 +60,7 @@ the first non-whitespace character on the line."
         ;; we didn't move, so go to the beginning of the line
         (goto-char (- (point) (current-column))))))
 
-(global-set-key (kbd "C-a") 'beginning-of-line-or-indent)
+(global-set-key (kbd "C-a") 'beginning-of-line-dwim)
 
 (defun toggle-case-next-char ()
   "Toggles the case of the next character after point.
