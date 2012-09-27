@@ -58,7 +58,7 @@ the start of the line."
     (back-to-indentation)
     (if (= (point) start-position)
         ;; we didn't move, so go to the beginning of the line
-        (goto-char (- (point) (current-column))))))
+        (move-to-column 0))))
 
 (global-set-key (kbd "C-a") 'beginning-of-line-dwim)
 
