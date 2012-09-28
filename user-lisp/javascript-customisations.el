@@ -1,5 +1,5 @@
-; use js2-mode from https://github.com/mooz/js2-mode
-; todo: include a copy of the source, just in case
+;; use js2-mode from https://github.com/mooz/js2-mode, commit be0394e00f530fdd999f13e3d653
+(add-to-list 'load-path "~/.emacs.d/third-party-lisp/js2-mode")
 (autoload 'js2-mode "js2-mode" nil t)
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 
