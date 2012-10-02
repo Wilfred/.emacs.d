@@ -47,23 +47,12 @@ of `default-directory' is a path that exists. If not, it crashes."
   (let ((project-root (tags-utils/project-root default-directory)))
     (tags-utils/regenerate project-root)))
 
-(defun tags-find (search-term)
-  "Find tag in current git repository."
-  (interactive "sSearch for: ")
-  (let* ((project-root (tags-utils/project-root default-directory))
-         (tags-file-name (concat project-root "TAGS")))
-    (find-tag search-term)))
+(require 'etags-select)
+(global-set-key "\M-." 'etags-select-find-tag)
+(global-set-key "\M-?" 'etags-select-find-tag-at-point)
 
-(autoload 'symbol-at-point "thingatpt")
+(global-set-key (kbd "<f6>") 'etags-select-find-tag-at-point)
+(global-set-key (kbd "M-.") 'etags-select-find-tag-at-point)
 
-(defun tags-at-point ()
-  "Find symbol under point in the current tags table."
-  (interactive)
-  (let* ((project-root (tags-utils/project-root default-directory))
-         (tags-file-name (concat project-root "TAGS"))
-         (search-term (symbol-name (symbol-at-point))))
-    (find-tag search-term)))
-
-(global-set-key (kbd "<f6>") 'tags-at-point)
 
 (provide 'tags-utils)
