@@ -54,11 +54,13 @@ With argument ARG, do this that many times."
 the start of the line."
   (interactive)
   (let ((start-position (point)))
-    ;; see if going back to indentation changes our position
-    (back-to-indentation)
+    ;; see if going to the beginning of the line changes our position
+    (move-beginning-of-line nil)
+
     (if (= (point) start-position)
-        ;; we didn't move, so go to the beginning of the line
-        (move-to-column 0))))
+        ;; we're already at the beginning of the line, so go to the
+        ;; first non-whitespace character
+        (back-to-indentation))))
 
 (global-set-key (kbd "C-a") 'beginning-of-line-dwim)
 
