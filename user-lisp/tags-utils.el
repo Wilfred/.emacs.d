@@ -48,11 +48,10 @@ of `default-directory' is a path that exists. If not, it crashes."
     (tags-utils/regenerate project-root)))
 
 (require 'etags-select)
-(global-set-key "\M-." 'etags-select-find-tag)
-(global-set-key "\M-?" 'etags-select-find-tag-at-point)
 
 (global-set-key (kbd "<f6>") 'etags-select-find-tag-at-point)
-(global-set-key (kbd "M-.") 'etags-select-find-tag-at-point)
+(global-set-key (kbd "M-.") 'etags-select-find-tag)
+(global-set-key (kbd "M-?") 'etags-select-find-tag-at-point)
 
 
 (provide 'tags-utils)
