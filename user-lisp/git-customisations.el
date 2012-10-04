@@ -3,6 +3,8 @@
 
 (global-set-key (kbd "<f2>") 'magit-status)
 
+(setq magit-completing-read-function 'magit-ido-completing-read)
+
 (autoload 'symbol-at-point "thingatpt" nil t)
 
 (defun git-grep-project (search-term)
