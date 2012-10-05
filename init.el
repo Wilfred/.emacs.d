@@ -203,6 +203,8 @@ by (current-time)."
 (require 'crontab-mode)
 (add-to-list 'auto-mode-alist '("crontab.*?\\'" . crontab-mode))
 
+(require 'wiki)
+
 (setq ring-bell-function 'ignore)
 
 ; something in the above has switched on debugging. Switch it off.
