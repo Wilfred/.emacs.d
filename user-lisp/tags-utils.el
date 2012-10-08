@@ -33,7 +33,7 @@ of `default-directory' is a path that exists. If not, it crashes."
 
 (defun tags-utils/regenerate (file-path)
   (tags-utils/shell-in-dir "rm -f TAGS" file-path)
-  (tags-utils/shell-in-dir "ack -f --print0 | xargs --null etags -a" file-path))
+  (tags-utils/shell-in-dir "find . -name \"*.py\" -print0 -or -name \"*.el\" -print0 | xargs --null etags -a" file-path))
 
 (defun tags-utils/project-root (file-path)
   (unless file-path (error "This buffer isn't associated with a file"))
