@@ -68,6 +68,11 @@
 
 (define-key html-mode-map "\C-ct" 'insert-django-skeleton)
 
+(define-skeleton underscore-template
+  "Insert <%= foo %>"
+  "Contents: "
+  "<%= " str " %>")
+
 
 (defun html-linkify-region (url)
   "Wraps the region in an <a> tag with href set to URL."
