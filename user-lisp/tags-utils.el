@@ -56,5 +56,8 @@ other projects' tags table will be ignored."
 (global-set-key (kbd "M-.") 'etags-select-find-tag)
 (global-set-key (kbd "M-?") 'etags-select-find-tag-at-point)
 
+;; finding tags should be case sensitive
+(setq tags-case-fold-search nil)
+
 
 (provide 'tags-utils)
