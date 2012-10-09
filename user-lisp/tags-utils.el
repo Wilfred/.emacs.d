@@ -48,7 +48,7 @@ other projects' tags table will be ignored."
   (interactive)
   (let ((project-root (tags-utils/project-root default-directory)))
     (tags-utils/regenerate project-root)
-    (setq tags-table-list (list (concat project-root "TAGS")))))
+    (add-to-list 'tags-table-list (concat project-root "TAGS"))))
 
 (require 'etags-select)
 
