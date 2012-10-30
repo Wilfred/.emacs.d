@@ -229,4 +229,10 @@ are interchanged."
 ;; we'd find a shortcut with a better mnemonic
 (define-key global-map (kbd "C-S-n") 'ace-jump-mode)
 
+;; keep whitespace clean, but don't clean up files if they were dirty
+;; when we opened them
+(add-to-list 'load-path (expand-file-name "~/.emacs.d/third-party-lisp/ethan-wspace/lisp"))
+(require 'ethan-wspace)
+(global-ethan-wspace-mode 1)
+
 (provide 'editing-customisations)
