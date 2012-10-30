@@ -15,12 +15,12 @@ Ignores CHAR at point."
   (interactive "p\ncZap up to char: ")
   (let ((direction (if (>= arg 0) 1 -1)))
     (kill-region (point)
-		 (progn
-		   (forward-char direction)
-		   (unwind-protect
-		       (search-forward (char-to-string char) nil nil arg)
-		     (backward-char direction))
-		   (point)))))
+                 (progn
+                   (forward-char direction)
+                   (unwind-protect
+                       (search-forward (char-to-string char) nil nil arg)
+                     (backward-char direction))
+                   (point)))))
 ;; bind it to the usual zap-to-char shortcut
 (global-set-key (kbd "M-z") 'zap-up-to-char)
 
