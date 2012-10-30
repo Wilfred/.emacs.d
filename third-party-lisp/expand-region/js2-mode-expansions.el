@@ -33,7 +33,10 @@
 
 (defun js2-mark-parent-statement ()
   (interactive)
-  (let* ((parent-statement (js2-node-parent-stmt (js2-node-at-point)))
+  (let* ((parent-statement (if (not (looking-back ";"))
+                               (js2-node-parent-stmt (js2-node-at-point))
+                             (forward-char -1)
+                             (js2-node-at-point)))
          (beg (js2-node-abs-pos parent-statement))
          (end (+ beg (js2-node-len parent-statement))))
     (goto-char beg)
@@ -45,8 +48,7 @@
                                                   er/try-expand-list
                                                   '(js2-mark-parent-statement))))
 
-(add-hook 'js2-mode-hook 'er/add-js2-mode-expansions)
-;(add-hook 'js3-mode-hook 'er/add-js2-mode-expansions) -- works?
+(er/enable-mode-expansions 'js2-mode 'er/add-js2-mode-expansions)
 
 (provide 'js2-mode-expansions)
 

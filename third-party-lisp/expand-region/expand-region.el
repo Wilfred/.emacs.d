@@ -51,8 +51,6 @@
 ;;     er/mark-word
 ;;     er/mark-symbol
 ;;     er/mark-method-call
-;;     er/mark-comment
-;;     er/mark-comment-block
 ;;     er/mark-inside-quotes
 ;;     er/mark-outside-quotes
 ;;     er/mark-inside-pairs
@@ -88,7 +86,7 @@
 ;;                                 '(mark-paragraph
 ;;                                   mark-page))))
 
-;;     (add-hook 'text-mode-hook 'er/add-text-mode-expansions)
+;;     (er/enable-mode-expansions 'text-mode 'er/add-text-mode-expansions)
 
 ;; Add that to its own file, and require it at the bottom of this one,
 ;; where it says "Mode-specific expansions"
@@ -128,6 +126,10 @@
 ;; * [Ivan Andrus](https://github.com/gvol) contributed expansions for python-mode, text-mode, LaTeX-mode and nxml-mode.
 ;; * [Raimon Grau](https://github.com/kidd) added support for when transient-mark-mode is off.
 ;; * [Gleb Peregud](https://github.com/gleber) contributed expansions for erlang-mode.
+;; * [fgeller](https://github.com/fgeller) and [edmccard](https://github.com/edmccard) contributed better support for python and its multiple modes.
+;; * [François Févotte](https://github.com/ffevotte) contributed expansions for C and C++.
+;; * [Roland Walker](https://github.com/rolandwalker) added option to copy the contents of the most recent action to a register, and some fixes.
+;; * [Damien Cassou](https://github.com/DamienCassou) added option to continue expanding/contracting with fast keys after initial expand.
 
 ;; Thanks!
 
@@ -136,6 +138,25 @@
 (require 'expand-region-core)
 (require 'expand-region-custom)
 
+;;;###autoload
+(defun er/expand-region (arg)
+  "Increase selected region by semantic units.
+
+With prefix argument expands the region that many times.
+If prefix argument is negative calls `er/contract-region'.
+If prefix argument is 0 it resets point and mark to their state
+before calling `er/expand-region' for the first time."
+  (interactive "p")
+  (if (< arg 1)
+      (er/contract-region (- arg))
+    (er--prepare-expanding)
+    (while (>= arg 1)
+      (setq arg (- arg 1))
+      (er--expand-region-1))
+    (when (and expand-region-fast-keys-enabled
+               (not (memq last-command '(er/expand-region er/contract-region))))
+      (er/prepare-for-more-expansions))))
+
 (eval-after-load "clojure-mode" '(require 'clojure-mode-expansions))
 (eval-after-load "css-mode"     '(require 'css-mode-expansions))
 (eval-after-load "erlang-mode"  '(require 'erlang-mode-expansions))
@@ -143,10 +164,11 @@
 (eval-after-load "sgml-mode"    '(require 'html-mode-expansions)) ;; html-mode is defined in sgml-mode.el
 (eval-after-load "rhtml-mode"   '(require 'html-mode-expansions))
 (eval-after-load "nxhtml-mode"  '(require 'html-mode-expansions))
+(eval-after-load "js"           '(require 'js-mode-expansions))
 (eval-after-load "js2-mode"     '(require 'js-mode-expansions))
 (eval-after-load "js2-mode"     '(require 'js2-mode-expansions))
 (eval-after-load "js3-mode"     '(require 'js-mode-expansions))
-(eval-after-load "LaTeX-mode"   '(require 'latex-mode-expansions))
+(eval-after-load "latex"        '(require 'latex-mode-expansions))
 (eval-after-load "nxml-mode"    '(require 'nxml-mode-expansions))
 (eval-after-load "python"       '(progn
                                    (when expand-region-guess-python-mode
@@ -156,14 +178,9 @@
                                      (require 'python-el-fgallina-expansions))))
 (eval-after-load "python-mode"  '(require 'python-mode-expansions))
 (eval-after-load "ruby-mode"    '(require 'ruby-mode-expansions))
-(eval-after-load "org-mode"     '(require 'org-mode-expansions))
-
-;; unfortunately html-mode inherits from text-mode
-;; and text-mode-expansions don't work well in html-mode
-;; so if you want text-mode-expansions, add this to your
-;; own init:
-;;
-;; (eval-after-load "text-mode"    '(require 'text-mode-expansions))
+(eval-after-load "org"          '(require 'org-mode-expansions))
+(eval-after-load "cc-mode"      '(require 'cc-mode-expansions))
+(eval-after-load "text-mode"    '(require 'text-mode-expansions))
 
 (provide 'expand-region)
 

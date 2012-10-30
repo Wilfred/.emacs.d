@@ -151,7 +151,7 @@ Feature: Expand Region
     And I go to point "6"
     And I press "C-@"
     And I press "C-@"
-    And I press "C-g"
+    And I quit
     Then the region should not be active
     And cursor should be at point "6"
 
@@ -232,3 +232,81 @@ Feature: Expand Region
     And I go to point "6"
     And I press "C-@"
     Then the region should be "(is some)"
+
+  Scenario: Allow pressing the last key of the sequence continuously
+    Given there is no region selected
+    When I insert "This (is (some)) text"
+    And I go to point "12"
+    And I press "C-@"
+    Then the region should be "some"
+    And I press "@"
+    Then the region should be "(some)"
+    And I press "@"
+    Then the region should be "is (some)"
+    And I press "@"
+    Then the region should be "(is (some))"
+
+  Scenario: Allow pressing `-' to contract region
+    Given there is no region selected
+    When I insert "This (is (some)) text"
+    And I go to point "12"
+    And I press "C-@"
+    Then the region should be "some"
+    And I press "@"
+    Then the region should be "(some)"
+    And I press "@"
+    Then the region should be "is (some)"
+    And I press "-"
+    Then the region should be "(some)"
+    And I press "-"
+    Then the region should be "some"
+
+  Scenario: Allow pressing `0' to reset region
+    Given there is no region selected
+    When I insert "This (is (some)) text"
+    And I go to point "12"
+    And I press "C-@"
+    Then the region should be "some"
+    And I press "@"
+    Then the region should be "(some)"
+    And I press "@"
+    Then the region should be "is (some)"
+    And I press "0"
+    Then there is no region selected
+    And cursor should be at point "12"
+
+  Scenario: Allow pressing C-g to reset region after pressing `@'
+    Given there is no region selected
+    When I insert "This (is (some)) text"
+    And I go to point "12"
+    And I press "C-@"
+    Then the region should be "some"
+    And I press "@"
+    Then the region should be "(some)"
+    And I press "@"
+    Then the region should be "is (some)"
+    And I quit
+    Then there is no region selected
+    And cursor should be at point "12"
+
+  Scenario: Allow pressing C-g to reset region after pressing `-'
+    Given there is no region selected
+    When I insert "This (is (some)) text"
+    And I go to point "12"
+    And I press "C-@"
+    Then the region should be "some"
+    And I press "@"
+    Then the region should be "(some)"
+    And I press "-"
+    Then the region should be "some"
+    And I quit
+    Then there is no region selected
+    And cursor should be at point "12"
+
+  Scenario: Autocopy-register
+    Given there is no region selected
+    And autocopy-register is "e"
+    When I insert "This is some text"
+    And I go to point "10"
+    And I press "C-@"
+    Then register "e" should be "some"

@@ -33,8 +33,8 @@
 (require 'expand-region-core)
 
 (defun er--block-between-keywords (start-keywords-regexp &optional end-keywords-regexp)
-  (let* ((start-key-words (concatenate 'string "^\\( \\)*" start-keywords-regexp))
-         (end-key-words (concatenate 'string "^\\( \\)*" (or end-keywords-regexp start-keywords-regexp))))
+  (let* ((start-key-words (concat "^\\( \\)*" start-keywords-regexp))
+         (end-key-words (concat "^\\( \\)*" (or end-keywords-regexp start-keywords-regexp))))
     (when (looking-at-p "[^\\s-]")
       (skip-syntax-forward "w."))
     (if (looking-at-p start-keywords-regexp)
@@ -63,6 +63,6 @@
                                                   '(er/mark-feature-scenario
                                                     er/mark-feature-step))))
 
-(add-hook 'feature-mode-hook 'er/add-feature-mode-expansions)
+(er/enable-mode-expansions 'feature-mode 'er/add-feature-mode-expansions)
 
 (provide 'feature-mode-expansions)

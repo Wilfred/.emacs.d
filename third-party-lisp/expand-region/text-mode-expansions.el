@@ -36,10 +36,9 @@
   ;; (backward-sentence 1) (mark-end-of-sentence 1)
   ;; doesn't work here because it's repeated and the selection keeps
   ;; growing by sentences, which isn't what's wanted.
-  (backward-sentence 1)
-  (set-mark (point))
   (forward-sentence 1)
-  (exchange-point-and-mark))
+  (set-mark (point))
+  (backward-sentence 1))
 
 (defun er/mark-text-paragraph ()
   "Marks one paragraph."
@@ -48,14 +47,18 @@
   (skip-chars-forward er--space-str))
 
 (defun er/add-text-mode-expansions ()
-  "Adds expansions for buffers in text-mode"
-  (set (make-local-variable 'er/try-expand-list) (append
-                                                  er/try-expand-list
-                                                  '(er/mark-text-sentence
-                                                    er/mark-text-paragraph
-                                                    mark-page))))
+  "Adds expansions for buffers in `text-mode' except for `html-mode'.
+Unfortunately `html-mode' inherits from `text-mode' and
+text-mode-expansions don't work well in `html-mode'."
+  (unless (member major-mode expand-region-exclude-text-mode-expansions)
+    (set (make-local-variable 'er/try-expand-list)
+         (append
+          er/try-expand-list
+          '(er/mark-text-sentence
+            er/mark-text-paragraph
+            mark-page)))))
 
-(add-hook 'text-mode-hook 'er/add-text-mode-expansions)
+(er/enable-mode-expansions 'text-mode 'er/add-text-mode-expansions)
 
 (provide 'text-mode-expansions)
 
