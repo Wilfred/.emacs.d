@@ -234,5 +234,7 @@ are interchanged."
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/third-party-lisp/ethan-wspace/lisp"))
 (require 'ethan-wspace)
 (global-ethan-wspace-mode 1)
+;; don't highlight tabs, they're distracting
+(setq ethan-wspace-face-customized t)
 
 (provide 'editing-customisations)

@@ -232,6 +232,7 @@ by (current-time)."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(ahs-plugin-defalt-face ((t nil)))
+ '(ethan-wspace-face ((t (:background "#2e3434"))))
  '(flymake-errline ((((class color)) (:underline "Red"))))
  '(flymake-warnline ((((class color)) (:underline "Orange"))))
  '(js2-function-param-face ((((class color)) (:foreground "Green")))))
