@@ -1,6 +1,10 @@
 (autoload 'symbol-at-point "thingatpt")
 (autoload 'ack-and-a-half "ack-and-a-half")
 
+;; ack configuration
+(setq ack-and-a-half-arguments '("--all-types"))
+(setq ack-and-a-half-executable "ack")
+
 (autoload 'ack-and-a-half-same "ack-and-a-half" nil t)
 (autoload 'ack-and-a-half "ack-and-a-half" nil t)
 (autoload 'ack-and-a-half-find-file-same "ack-and-a-half" nil t)
@@ -21,10 +25,6 @@ current symbol at point."
                                                (symbol-name (symbol-at-point))))))
  (ack search-term nil (file-find-project-root default-directory)))
 
-(setq ack-and-a-half-arguments '("--all-types"))
-
 (global-set-key (kbd "<f5>") 'ack-at-point)
-
-(setq ack-and-a-half-executable "ack")
 
 (provide 'search-tools)
