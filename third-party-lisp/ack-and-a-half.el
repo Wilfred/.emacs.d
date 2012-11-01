@@ -1,27 +1,38 @@
 ;;; ack-and-a-half.el --- Yet another front-end for ack
 ;;
-;; Copyright (C) 2011 Jacob Helwig
+;; Copyright (C) 2012 Jacob Helwig <jacob@technosorcery.net>
+;; Alexey Lebedeff <binarin@binarin.ru>
+;; Andrew Stine <stine.drew@gmail.com>
+;; Derek Chen-Becker <derek@precog.com>
+;; Gleb Peregud <gleber.p@gmail.com>
+;; Kim van Wyk <vanwykk@gmail.com>
+;; Ronaldo M. Ferraz <ronaldoferraz@gmail.com>
+;; Ryan Thompson <rct@thompsonclan.org>
 ;;
-;; Author: Jacob Helwig <jacob+ack * technosorcery.net>
-;; Version: 0.1.0
+;; Author: Jacob Helwig <jacob+ack@technosorcery.net>
 ;; Homepage: http://technosorcery.net
+;; Version: 1.1.1
+;; URL: https://github.com/jhelwig/ack-and-a-half
 ;;
 ;; This file is NOT part of GNU Emacs.
 ;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 2, or (at
-;; your option) any later version.
+;; Permission is hereby granted, free of charge, to any person obtaining a copy of
+;; this software and associated documentation files (the "Software"), to deal in
+;; the Software without restriction, including without limitation the rights to
+;; use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+;; of the Software, and to permit persons to whom the Software is furnished to do
+;; so, subject to the following conditions:
 ;;
-;; This program is distributed in the hope that it will be useful, but
-;; WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
+;; The above copyright notice and this permission notice shall be included in all
+;; copies or substantial portions of the Software.
 ;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program ; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-;; Boston, MA 02111-1307, USA.
+;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+;; IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+;; FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+;; AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+;; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+;; SOFTWARE.
 ;;
 ;;; Commentary:
 ;;
@@ -30,15 +41,12 @@
 ;;
 ;; Add the following to your .emacs:
 ;;
-;; (add-to-list 'load-path "/path/to/ack-and-a-half")
-;; (autoload 'ack-and-a-half-same "ack-and-a-half" nil t)
-;; (autoload 'ack-and-a-half "ack-and-a-half" nil t)
-;; (autoload 'ack-and-a-half-find-file-same "ack-and-a-half" nil t)
-;; (autoload 'ack-and-a-half-find-file "ack-and-a-half" nil t)
-;; (defalias 'ack 'ack-and-a-half)
-;; (defalias 'ack-same 'ack-and-a-half-same)
-;; (defalias 'ack-find-file 'ack-and-a-half-find-file)
-;; (defalias 'ack-find-file-same 'ack-and-a-half-find-file-same)
+;;     (add-to-list 'load-path "/path/to/ack-and-a-half")
+;;     (require 'ack-and-a-half)
+;;     (defalias 'ack 'ack-and-a-half)
+;;     (defalias 'ack-same 'ack-and-a-half-same)
+;;     (defalias 'ack-find-file 'ack-and-a-half-find-file)
+;;     (defalias 'ack-find-file-same 'ack-and-a-half-find-file-same)
 ;;
 ;; Run `ack' to search for all files and `ack-same' to search for
 ;; files of the same type as the current buffer.
@@ -54,6 +62,7 @@
 (eval-when-compile (require 'cl))
 (require 'compile)
 (require 'grep)
+(require 'thingatpt)
 
 (add-to-list 'debug-ignored-errors
              "^Moved \\(back before fir\\|past la\\)st match$")
@@ -64,7 +73,7 @@
   (set (make-local-variable 'truncate-lines) t)
   (set (make-local-variable 'compilation-disable-input) t)
   (let ((smbl  'compilation-ack-nogroup)
-        (pttrn '("^\\([^:\n]+?\\):\\([0-9]+\\):" 1 2)))
+        (pttrn '("^\\([^:\n]+?\\):\\([0-9]+\\):\\([0-9]+\\):" 1 2 3)))
     (set (make-local-variable 'compilation-error-regexp-alist) (list smbl))
     (set (make-local-variable 'compilation-error-regexp-alist-alist) (list (cons smbl pttrn))))
   (set (make-local-variable 'compilation-error-face) grep-hit-face))
@@ -73,11 +82,18 @@
   :group 'tools
   :group 'matching)
 
-; TODO Determine how to fall back to using ack-grep if ack is not found.
-(defcustom ack-and-a-half-executable (executable-find "ack")
+(defcustom ack-and-a-half-executable (or (executable-find "ack")
+                                         (executable-find "ack-grep"))
   "*The location of the ack executable"
   :group 'ack-and-a-half
   :type 'file)
+
+(defcustom ack-and-a-half-buffer-name "*Ack-and-a-half*"
+  "*The name of the ack-and-a-half buffer"
+  :group 'ack-and-a-half
+  :type 'string)
+
+(defun ack-buffer-name (mode) ack-and-a-half-buffer-name)
 
 (defcustom ack-and-a-half-arguments nil
   "*Extra arguments to pass to ack."
@@ -157,7 +173,7 @@ is used without confirmation.  If it is nil, then the directory is never
 confirmed.  If t, then always prompt for the directory to use."
   :group 'ack-and-a-half
   :type '(choice (const :tag "Don't prompt" nil)
-                 (const :tag "Don't prompt when guessed" 'unless-guessed)
+                 (const :tag "Don't prompt when guessed" unless-guessed)
                  (const :tag "Always prompt" t)))
 
 ;;; Default setting lists ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -200,6 +216,7 @@ confirmed.  If t, then always prompt for the directory to use."
     (plone-mode "plone")
     (python-mode "python")
     (ruby-mode "ruby")
+    (scala-mode "scala")
     (scheme-mode "scheme")
     (shell-script-mode "shell")
     (skipped-mode "skipped")
@@ -265,10 +282,30 @@ This is intended to be used in `ack-and-a-half-root-directory-functions'."
 (defvar ack-and-a-half-regexp-history nil
   "Regular expressions recently searched for with `ack-and-a-half'.")
 
+(defun ack-and-a-half-initial-contents-for-read ()
+  (when (ack-and-a-half-use-region-p)
+    (buffer-substring-no-properties (region-beginning) (region-end))))
+
+(defun ack-and-a-half-default-for-read ()
+  (unless (ack-and-a-half-use-region-p)
+    (thing-at-point 'symbol)))
+
+(defun ack-and-a-half-use-region-p ()
+  (or (and (fboundp 'use-region-p) (use-region-p))
+      (and transient-mark-mode mark-active
+           (> (region-end) (region-beginning)))))
+
 (defsubst ack-and-a-half-read (regexp)
-  (read-from-minibuffer (if regexp "ack pattern: " "ack literal search: ")
-                        nil nil nil
-                        (if regexp 'ack-and-a-half-regexp-history 'ack-and-a-half-literal-history)))
+  (let* ((default (ack-and-a-half-default-for-read))
+         (type (if regexp "pattern" "literal search"))
+         (history-var )
+         (prompt  (if default
+                      (format "ack %s (default %s): " type default)
+                    (format "ack %s: " type))))
+    (read-string prompt
+                 (ack-and-a-half-initial-contents-for-read)
+                 (if regexp 'ack-regexp-history 'ack-literal-history)
+                 default)))
 
 (defun ack-and-a-half-read-dir ()
   (let ((dir (run-hook-with-args-until-success 'ack-and-a-half-root-directory-functions)))
@@ -299,9 +336,10 @@ This is intended to be used in `ack-and-a-half-root-directory-functions'."
   (format "--%s%s" (if enabled "" "no") name))
 
 (defun ack-and-a-half-arguments-from-options (regexp)
-  (let ((arguments (list "--nocolor" "--nogroup"
+  (let ((arguments (list "--nocolor" "--nogroup" "--column"
                          (ack-and-a-half-option "smart-case" (eq ack-and-a-half-ignore-case 'smart))
-                         (ack-and-a-half-option "env" ack-and-a-half-use-environment))))
+                         (ack-and-a-half-option "env" ack-and-a-half-use-environment)
+                         )))
     (unless ack-and-a-half-ignore-case
       (push "-i" arguments))
     (unless regexp
@@ -331,17 +369,22 @@ When optional fourth argument is non-nil, treat the from as a regular expression
   "Wrap in single quotes, and quote existing single quotes to make shell safe."
   (concat "'" (ack-and-a-half-string-replace "'" "'\\''" string) "'"))
 
-(defun ack-and-a-half-run (directory regexp &rest arguments)
+(defun ack-and-a-half-run (directory regexp pattern &rest arguments)
   "Run ack in DIRECTORY with ARGUMENTS."
-  (setq default-directory
-        (if directory
-            (file-name-as-directory (expand-file-name directory))
-          default-directory))
-  (setq arguments (append ack-and-a-half-arguments
-                          (nconc (ack-and-a-half-arguments-from-options regexp)
-                                 arguments)))
-  (compilation-start (mapconcat 'identity (nconc (list ack-and-a-half-executable) arguments) " ")
-                     'ack-and-a-half-mode))
+  (let ((default-directory (if directory
+                               (file-name-as-directory (expand-file-name directory))
+                             default-directory)))
+    (setq arguments (append ack-and-a-half-arguments
+                            (ack-and-a-half-arguments-from-options regexp)
+                            arguments
+                            (list "--")
+                            (list (ack-and-a-half-shell-quote pattern))
+                            ))
+    (make-local-variable 'compilation-buffer-name-function)
+    (let (compilation-buffer-name-function)
+      (setq compilation-buffer-name-function 'ack-buffer-name)
+      (compilation-start (mapconcat 'identity (nconc (list ack-and-a-half-executable) arguments) " ")
+                         'ack-and-a-half-mode))))
 
 (defun ack-and-a-half-read-file (prompt choices)
   (if ido-mode
@@ -385,7 +428,7 @@ DIRECTORY is the root directory.  If called interactively, it is determined by
 `ack-and-a-half-project-root-file-patterns'.  The user is only prompted, if
 `ack-and-a-half-prompt-for-directory' is set."
   (interactive (ack-and-a-half-interactive))
-  (ack-and-a-half-run directory regexp (ack-and-a-half-shell-quote pattern)))
+  (ack-and-a-half-run directory regexp pattern))
 
 ;;;###autoload
 (defun ack-and-a-half-same (pattern &optional regexp directory)
@@ -402,7 +445,7 @@ The user is only prompted, if `ack-and-a-half-prompt-for-directory' is set.`"
   (interactive (ack-and-a-half-interactive))
   (let ((type (ack-and-a-half-type)))
     (if type
-        (apply 'ack-and-a-half-run directory regexp (append type (list (ack-and-a-half-shell-quote pattern))))
+        (apply 'ack-and-a-half-run directory regexp pattern type)
       (ack-and-a-half pattern regexp directory))))
 
 ;;;###autoload
