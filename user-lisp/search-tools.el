@@ -27,4 +27,15 @@ current symbol at point."
 
 (global-set-key (kbd "<f5>") 'ack-at-point)
 
+;; todo: ido completion of virtual env path
+;; todo: only consider site-packages
+(setq virtualenv-path "/home/wilfred/.envs/drawbridge")
+(defun ack-in-virtualenv (search-term)
+  "Search the source code in a virtual environment for
+string SEARCH-TERM."
+ (interactive (list (read-from-minibuffer "Search with ack for: "
+                                           (if (symbol-at-point)
+                                               (symbol-name (symbol-at-point))))))
+ (ack search-term nil virtualenv-path))
+
 (provide 'search-tools)
