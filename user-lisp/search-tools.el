@@ -27,15 +27,21 @@ current symbol at point."
 
 (global-set-key (kbd "<f5>") 'ack-at-point)
 
-;; todo: ido completion of virtual env path
-;; todo: only consider site-packages
-(setq virtualenv-path "/home/wilfred/.envs/drawbridge")
+(require 'cl) ; 'remove-if
+
+(setq virtualenv-base-path "/home/wilfred/.envs")
 (defun ack-in-virtualenv (search-term)
   "Search the source code in a virtual environment for
 string SEARCH-TERM."
  (interactive (list (read-from-minibuffer "Search with ack for: "
                                            (if (symbol-at-point)
                                                (symbol-name (symbol-at-point))))))
- (ack search-term nil virtualenv-path))
+ (let* ((virtualenv-names
+        (remove-if
+         (lambda (name) (or (equal "." name) (equal ".." name)))
+         (directory-files virtualenv-base-path)))
+       (virtualenv-name (ido-completing-read "Virtualenv: " virtualenv-names))
+       (virtualenv-path (concat virtualenv-base-path "/" virtualenv-name "/lib/python2.7/site-packages")))
+   (ack search-term nil virtualenv-path)))
 
 (provide 'search-tools)
