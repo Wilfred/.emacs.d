@@ -30,18 +30,19 @@ current symbol at point."
 (require 'cl) ; 'remove-if
 
 (setq virtualenv-base-path "/home/wilfred/.envs")
-(defun ack-in-virtualenv (search-term)
+(defun ack-in-virtualenv ()
   "Search the source code in a virtual environment for
-string SEARCH-TERM."
- (interactive (list (read-from-minibuffer "Search with ack for: "
-                                           (if (symbol-at-point)
-                                               (symbol-name (symbol-at-point))))))
+a specific search string."
+ (interactive)
  (let* ((virtualenv-names
         (remove-if
          (lambda (name) (or (equal "." name) (equal ".." name)))
          (directory-files virtualenv-base-path)))
        (virtualenv-name (ido-completing-read "Virtualenv: " virtualenv-names))
-       (virtualenv-path (concat virtualenv-base-path "/" virtualenv-name "/lib/python2.7/site-packages")))
+       (virtualenv-path (concat virtualenv-base-path "/" virtualenv-name "/lib/python2.7/site-packages"))
+       (search-term (read-from-minibuffer "Search virtualenv for: "
+                                          (if (symbol-at-point)
+                                              (symbol-name (symbol-at-point))))))
    (ack search-term nil virtualenv-path)))
 
 (provide 'search-tools)
