@@ -49,16 +49,21 @@
   "Insert {% block foo %}{% endblock %}"
   "Block name: "
   "{% block " str " %}\n" - "\n{% endblock %}")
-(define-skeleton template-if-skeleton
+(define-skeleton template-if-else-skeleton
   "Insert {% if foo %}{% else %}{% endif %}"
-  "Block name: "
+  "If condition: "
   "{% if " str " %}\n" - "\n{% else %}\n\n{% endif %}")
+(define-skeleton template-if-skeleton
+  "Insert {% if foo %}{% endif %}"
+  "If condition: "
+  "{% if " str " %}" - "{% endif %}")
 
 (setq template-skeletons '(template-tag-skeleton
                            template-variable-skeleton
                            template-comment-skeleton
                            template-block-skeleton
-                           template-if-skeleton))
+                           template-if-skeleton
+                           template-if-else-skeleton))
 
 (defun insert-django-skeleton ()
   (interactive)
