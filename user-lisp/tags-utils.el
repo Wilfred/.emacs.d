@@ -43,12 +43,19 @@ of `default-directory' is a path that exists. If not, it crashes."
 
 (defun tags-regenerate ()
   "Regenerate the TAGS file in the root of the current git
-repository. We then tell Emacs to only use the current tags table, so
-other projects' tags table will be ignored."
+repository. This TAGS table is then added to the list of
+tags tables searched by Emacs."
   (interactive)
   (let ((project-root (tags-utils/project-root default-directory)))
     (tags-utils/regenerate project-root)
     (add-to-list 'tags-table-list (concat project-root "TAGS"))))
+
+(defun tags-clear-table-list ()
+  "A utility for forgetting all the tags tables we know
+about. Useful when we have loaded several project with name
+clashes."
+  (interactive)
+  (setq tags-table-list nil)
 
 (require 'etags-select)
 
