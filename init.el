@@ -158,8 +158,11 @@ by (current-time)."
 
 (global-set-key (kbd "<f12>") 'isearch-forward-at-point)
 
-; make re-builder use the same regexp format as regexp-replace (no double escaping)
+;; make re-builder use the same regexp format as regexp-replace (no double escaping)
 (setq reb-re-syntax 'string)
+
+;; treat space charcters as matching space characters, not like PCRE's '\s+'
+(setq search-whitespace-regexp nil)
 
 ;
 ;
