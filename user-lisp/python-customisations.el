@@ -129,16 +129,4 @@
 
 (define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
 
-(defun python-increase-indent (start end)
-  "Indent the current region by four spaces."
-  (interactive "r")
-  (indent-rigidly start end 4))
-
-(defun python-decrease-indent (start end)
-  "Unindent the current region by four spaces. We don't
-generalise this with an argument to python-increase-indent since
-this is a small convenience function."
-  (interactive "r")
-  (indent-rigidly start end -4))
-
 (provide 'python-customisations)
