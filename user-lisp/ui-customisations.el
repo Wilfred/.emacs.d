@@ -34,7 +34,7 @@
 
 ; highlight TODO, FIXME and BUG
 (font-lock-add-keywords nil
-                        '(("\\<\\(FIXME\\|TODO\\|BUG\\):" 1 font-lock-warning-face t)))
+                        '(("\\(FIXME\\|TODO\\|BUG\\):" 1 font-lock-warning-face t)))
 
 ; style diffs so that additions, removals etc are different colours
 (require 'diff-mode-)
