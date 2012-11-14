@@ -75,6 +75,7 @@
 ;; auto-highlight-symbol -- highlights other occurrences of the current symbol
 (require 'auto-highlight-symbol)
 (global-auto-highlight-symbol-mode t)
+(add-to-list 'ahs-modes 'js2-mode)
 (global-set-key (kbd "M-n") 'ahs-forward)
 (global-set-key (kbd "M-p") 'ahs-backward)
 
