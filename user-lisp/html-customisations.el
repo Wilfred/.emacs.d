@@ -57,26 +57,27 @@
   "Insert {% if foo %}{% endif %}"
   "If condition: "
   "{% if " str " %}" - "{% endif %}")
+(define-skeleton underscore-skeleton
+  "Insert <%= foo %>"
+  "Contents: "
+  "<%= " str " %>")
 
 (setq template-skeletons '(template-tag-skeleton
                            template-variable-skeleton
                            template-comment-skeleton
                            template-block-skeleton
                            template-if-skeleton
-                           template-if-else-skeleton))
+                           template-if-else-skeleton
+                           underscore-skeleton))
 
 (defun insert-django-skeleton ()
   (interactive)
   (let* ((skeleton-names (mapcar 'symbol-name template-skeletons))
-        (skeleton-chosen (ido-completing-read "Django template element: " skeleton-names)))
+        (skeleton-chosen (ido-completing-read "HTML skeleton: " skeleton-names)))
     (funcall (intern skeleton-chosen))))
 
 (define-key html-mode-map "\C-ct" 'insert-django-skeleton)
 
-(define-skeleton underscore-template
-  "Insert <%= foo %>"
-  "Contents: "
-  "<%= " str " %>")
 
 
 (defun html-linkify-region (url)
