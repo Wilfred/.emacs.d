@@ -1,5 +1,8 @@
 ;;;; Editing customisations -- general text munging when typing.
 
+;; highlight region whenever mark is active
+(transient-mark-mode t)
+
 ;; overwrite when text is selected
 (delete-selection-mode t)
 
