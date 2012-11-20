@@ -232,23 +232,4 @@ are interchanged."
 ;; we'd find a shortcut with a better mnemonic
 (define-key global-map (kbd "C-S-n") 'ace-jump-mode)
 
-;; keep whitespace clean, but don't clean up files if they were dirty
-;; when we opened them
-(add-to-list 'load-path (expand-file-name "~/.emacs.d/third-party-lisp/ethan-wspace/lisp"))
-(require 'ethan-wspace)
-(global-ethan-wspace-mode 1)
-
-; initial value is the background colour of the current colour scheme
-(setq ethan-wspace-background-previous "#f2e3434")
-(defun toggle-ethan-wspace-highlight ()
-  "Toggle whether or not we highlight dirty whitespace."
-  (interactive)
-  (let ((temp (face-background 'ethan-wspace-face)))
-    (setq ethan-wspace-face-customized t)
-    (set-face-background 'ethan-wspace-face ethan-wspace-background-previous)
-    (setq ethan-wspace-background-previous temp)))
-
-;; don't highlight tabs, they're distracting
-(toggle-ethan-wspace-highlight)
-
 (provide 'editing-customisations)
