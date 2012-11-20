@@ -21,6 +21,6 @@
 
 (global-set-key (kbd "<f12>") 'isearch-forward-at-point)
 
-(require 'isearch+)
+(eval-after-load "isearch" '(require 'isearch+))
 
 (provide 'isearch-customisations)
