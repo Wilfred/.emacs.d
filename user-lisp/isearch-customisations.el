@@ -1,7 +1,7 @@
 (require 'highlight-symbol)
 
-;; todo: switch on highlight-symbol mode automatically
-(highlight-symbol-mode 1)
+;; use highlight-symbol-mode in all programming modes
+(add-hook 'prog-mode-hook '(lambda () (highlight-symbol-mode 1)))
 
 (global-set-key (kbd "<f12>") 'highlight-symbol-next)
 
