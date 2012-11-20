@@ -72,13 +72,6 @@
   (add-hook 'grep-mode-hook (lambda () (scf-mode 1)))
   (add-hook 'ack-and-a-half-mode-hook (lambda () (scf-mode 1))))
 
-;; auto-highlight-symbol -- highlights other occurrences of the current symbol
-(require 'auto-highlight-symbol)
-(global-auto-highlight-symbol-mode t)
-(add-to-list 'ahs-modes 'js2-mode)
-(global-set-key (kbd "M-n") 'ahs-forward)
-(global-set-key (kbd "M-p") 'ahs-backward)
-
 (defun toggle-frame-split ()
   (interactive)
   (unless (= (length (window-list)) 2) (error "Can only toggle a frame split in two"))
