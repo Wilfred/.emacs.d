@@ -41,7 +41,7 @@ of `default-directory' is a path that exists. If not, it crashes."
     (unless git-repo-path (error "This buffer isn't associated with a git repo."))
     git-repo-path))
 
-(defun tags-regenerate ()
+(defun tags-generate-for-this-repo ()
   "Regenerate the TAGS file in the root of the current git
 repository. This TAGS table is then added to the list of
 tags tables searched by Emacs."
