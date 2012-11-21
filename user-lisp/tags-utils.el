@@ -55,7 +55,7 @@ tags tables searched by Emacs."
 about. Useful when we have loaded several project with name
 clashes."
   (interactive)
-  (setq tags-table-list nil)
+  (setq tags-table-list nil))
 
 (require 'etags-select)
 
