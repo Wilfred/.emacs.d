@@ -52,26 +52,6 @@
 (define-key python-mode-map [(f7)] 'flymake-goto-prev-error)
 (define-key python-mode-map [(f8)] 'flymake-goto-next-error)
 
-; outline mode, note that the the minor mode shorcuts have an @ in them
-; e.g. C-c C-c becomes C-c @ C-c
-(defun py-outline-level ()
-  (let (buffer-invisibility-spec)
-    (save-excursion
-      (skip-chars-forward "\t ")
-      (current-column))))
-
-(defun python-outline-minor-mode ()
-  ; match lines with no indent and indented "class"
-  ; and "def" lines.
-  (setq outline-regexp "\\(def\\|class\\) ")
-  ; enable our level computation
-  (setq outline-level 'py-outline-level)
-  ; turn on outline mode
-  (outline-minor-mode t))
-
-; load when we open a python file
-(add-hook 'python-mode-hook 'python-outline-minor-mode)
-
 (defun python-insert-init-function ()
   (interactive)
   
