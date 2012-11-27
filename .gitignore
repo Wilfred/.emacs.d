@@ -8,3 +8,5 @@ url/cookies
 ac-comphist.dat
 semanticdb/*
 TAGS
+third-party-lisp/pylookup/*-html/*
+third-party-lisp/pylookup/*.zip
