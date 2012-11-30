@@ -73,16 +73,21 @@
 
 (defun python-insert-super-function ()
   "Insert a call to super for the current class and function."
-  ; TODO: automatically add arguments to the superclass's function based on the current arguements
-  ; FIXME: detecting function name is not very reliable
-  ; suggestion: use (beginning-of-defun) and (python-beginning-of-block) to get class-name and method-name
+  ;; TODO: automatically add arguments to the superclass's function based on the current arguements
+  ;; suggestion: use (beginning-of-defun) and (python-beginning-of-block) to get class-name and method-name
   (interactive)
+
+  ;; for some reason, we need a non-empty block for which-function to find the name of the method
+  (insert "pass")
 
   (let* ((exact-position (split-string (which-function) (rx "."))) ; e.g. ("FooBar" "method")
          (class-name (first exact-position))
          (method-name (second exact-position)))
-    (insert (concat "super(" class-name ", self)." method-name "()"))
-    ; backward one char so the user can enter the argument for the superclass's function
+    ;; remove 'pass'
+    (backward-delete-char 4)
+    
+    (insert (format "super(%s, self).%s()" class-name method-name))
+    ;; backward one char so the user can enter the argument for the superclass's function
     (backward-char)))
 
 (defun python-insert-ipdb ()
