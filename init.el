@@ -216,7 +216,8 @@ by (current-time)."
  '(ethan-wspace-face ((t (:background "#2e3434"))))
  '(flymake-errline ((((class color)) (:underline "Red"))))
  '(flymake-warnline ((((class color)) (:underline "Orange"))))
- '(js2-function-param-face ((((class color)) (:foreground "Green")))))
+ '(js2-function-param-face ((((class color)) (:foreground "Green"))))
+ '(smerge-refined-change ((t (:background "black")))))
 
 (message "Spent %.2f seconds executing .emacs.d/init.el."
          (time-difference *emacs-load-start* (current-time)))
