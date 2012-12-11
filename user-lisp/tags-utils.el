@@ -35,6 +35,7 @@ of `default-directory' is a path that exists. If not, it crashes."
   (tags-utils/shell-in-dir "rm -f TAGS" file-path)
   (tags-utils/shell-in-dir "find . -name \"*.py\" -print0 -or -name \"*.el\" -print0 | xargs --null etags -a" file-path))
 
+;; todo: move to http://www.emacswiki.org/emacs/repository-root.el
 (defun tags-utils/project-root (file-path)
   (unless file-path (error "This buffer isn't associated with a file"))
   (let ((git-repo-path (vc-git-root file-path)))
