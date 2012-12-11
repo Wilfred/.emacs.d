@@ -172,7 +172,6 @@ are interchanged."
   (interactive "p*")
   (increment-number-decimal (if arg (- arg) -1)))
 
-;; bound to Ctrl with + on the keypad
 (global-set-key (kbd "<C-up>") 'increment-number-decimal)
 (global-set-key (kbd "<C-down>") 'decrement-number-decimal)
 
