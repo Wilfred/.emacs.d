@@ -2,7 +2,6 @@
 (autoload 'ack-and-a-half "ack-and-a-half")
 
 ;; ack configuration
-(setq ack-and-a-half-arguments '("--all-types"))
 (setq ack-and-a-half-executable "ack")
 
 (autoload 'ack-and-a-half-same "ack-and-a-half" nil t)
@@ -17,15 +16,26 @@
 
 (autoload 'file-find-project-root "file-utils")
 
-(defun ack-at-point (search-term)
+(defun ack-at-point-everything (search-term)
   "Run ack searching for string SEARCH-TERM, defaulting to the
-current symbol at point."
- (interactive (list (read-from-minibuffer "Search with ack for: "
+current symbol at point. This searches all files, whether or
+not they look like source files."
+ (interactive (list (read-from-minibuffer "Search all files for: "
+                                           (if (symbol-at-point)
+                                               (symbol-name (symbol-at-point))))))
+ (let ((ack-and-a-half-arguments '("--all-types")))
+   (ack search-term nil (file-find-project-root default-directory))))
+
+(defun ack-at-point-source (search-term)
+  "Run ack searching for string SEARCH-TERM, defaulting to the
+current symbol at point. This only searches files that look
+like source files."
+ (interactive (list (read-from-minibuffer "Search source files for: "
                                            (if (symbol-at-point)
                                                (symbol-name (symbol-at-point))))))
  (ack search-term nil (file-find-project-root default-directory)))
 
-(global-set-key (kbd "<f5>") 'ack-at-point)
+(global-set-key (kbd "<f5>") 'ack-at-point-everything)
 
 
 (autoload '--remove "dash" nil t)
