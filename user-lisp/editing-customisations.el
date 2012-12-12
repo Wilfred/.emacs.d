@@ -185,6 +185,7 @@ are interchanged."
 
 ;; move the current line or active region up/down, NetBeans style
 ;; from http://groups.google.com/group/gnu.emacs.help/msg/a784fbb684a24e17
+;; FIXME: interacts badly with paredit-mode
 (defun move-text-internal (arg)
    (cond
     ((and mark-active transient-mark-mode)
