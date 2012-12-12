@@ -3,7 +3,7 @@
 ;; Copyright (C) 2012 Magnar Sveen
 
 ;; Author: Magnar Sveen <magnars@gmail.com>
-;; Version: 1.0.1
+;; Version: 1.0.3
 ;; Keywords: lists
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -38,10 +38,12 @@
 (defmacro --each (list &rest body)
   "Anaphoric form of `-each'."
   (let ((l (make-symbol "list")))
-    `(let ((,l ,list))
+    `(let ((,l ,list)
+           (it-index 0))
        (while ,l
          (let ((it (car ,l)))
            ,@body)
+         (setq it-index (1+ it-index))
          (!cdr ,l)))))
 
 (put '--each 'lisp-indent-function 1)
@@ -107,9 +109,11 @@ exposed as `acc`."
 
 (defmacro --reduce (form list)
   "Anaphoric form of `-reduce'."
-  (if (eval list)
-      `(--reduce-from ,form ,(car (eval list)) ',(cdr (eval list)))
-    `(let (acc it) ,form)))
+  (let ((lv (make-symbol "list-value")))
+    `(let ((,lv ,list))
+       (if ,lv
+           (--reduce-from ,form (car ,lv) (cdr ,lv))
+         (let (acc it) ,form)))))
 
 (defun -reduce (fn list)
   "Returns the result of applying FN to the first 2 items in LIST,
@@ -171,6 +175,20 @@ Alias: `-reject'"
     `(let (,r)
        (--each ,list (!cons (if ,pred ,rep it) ,r))
        (nreverse ,r))))
+
+(defmacro --map-indexed (form list)
+  "Anaphoric form of `-map-indexed'."
+  (let ((r (make-symbol "result")))
+    `(let (,r)
+       (--each ,list
+         (!cons ,form ,r))
+       (nreverse ,r))))
+
+(defun -map-indexed (fn list)
+  "Returns a new list consisting of the result of (FN index item) for each item in LIST.
+
+In the anaphoric form `--map-indexed', the index is exposed as `it-index`."
+  (--map-indexed (funcall fn it-index it) list))
 
 (defun -map-when (pred rep list)
   "Returns a new list where the elements in LIST that does not match the PRED function
@@ -335,6 +353,18 @@ Returns `nil` both if all items match the predicate, and if none of the items ma
   "Returns a list of ((-take-while PRED LIST) (-drop-while PRED LIST))"
   (--split-with (funcall pred it) list))
 
+(defmacro --separate (form list)
+  "Anaphoric form of `-separate'."
+  (let ((y (make-symbol "yes"))
+        (n (make-symbol "no")))
+    `(let (,y ,n)
+       (--each ,list (if ,form (!cons it ,y) (!cons it ,n)))
+       (list (nreverse ,y) (nreverse ,n)))))
+
+(defun -separate (pred list)
+  "Returns a list of ((-filter PRED LIST) (-remove PRED LIST))."
+  (--separate (funcall pred it) list))
+
 (defun -partition (n list)
   "Returns a new list with the items in LIST grouped into N-sized sublists.
 If there are not enough items to make the last group N-sized,
@@ -391,6 +421,38 @@ The last group may contain less than N items."
   "Applies FN to each value in LIST, splitting it each time FN returns a new value."
   (--partition-by (funcall fn it) list))
 
+(defmacro --group-by (form list)
+  "Anaphoric form of `-group-by'."
+  (let ((l (make-symbol "list"))
+        (v (make-symbol "value"))
+        (k (make-symbol "key"))
+        (r (make-symbol "result")))
+    `(let ((,l ,list)
+           ,r)
+       ;; Convert `list' to an alist and store it in `r'.
+       (while ,l
+         (let* ((,v (car ,l))
+                (it ,v)
+                (,k ,form)
+                (kv (assoc ,k ,r)))
+           (if kv
+               (setcdr kv (cons ,v (cdr kv)))
+             (push (list ,k ,v) ,r))
+           (setq ,l (cdr ,l))))
+       ;; Reverse lists in each group.
+       (let ((rest ,r))
+         (while rest
+           (let ((kv (car rest)))
+             (setcdr kv (nreverse (cdr kv))))
+           (setq rest (cdr rest))))
+       ;; Reverse order of keys.
+       (nreverse ,r))))
+
+(defun -group-by (fn list)
+  "Separate LIST into an alist whose keys are FN applied to the
+elements of LIST.  Keys are compared by `equal'."
+  (--group-by (funcall fn it) list))
+
 (defun -interpose (sep list)
   "Returns a new list of all elements in LIST separated by SEP."
   (let (result)
@@ -426,6 +488,11 @@ args first and then ARGS.
 Requires Emacs 24 or higher."
   `(closure (t) (&rest args)
             (apply ',fn (append args ',args))))
+
+(defun -applify (fn)
+  "Changes an n-arity function FN to a 1-arity function that
+expects a list with n items as arguments"
+  (apply-partially 'apply fn))
 
 (defmacro -> (x &optional form &rest more)
   "Threads the expr through the forms. Inserts X as the second
@@ -468,10 +535,23 @@ in in second form, etc."
 (defun -distinct (list)
   "Return a new list with all duplicates removed.
 The test for equality is done with `equal',
+or with `-compare-fn' if that's non-nil.
+
+Alias: `-uniq'"
+  (let (result)
+    (--each list (unless (-contains? result it) (!cons it result)))
+    (nreverse result)))
+
+(defun -union (list list2)
+  "Return a new list containing the elements of LIST1 and elements of LIST2 that are not in LIST1.
+The test for equality is done with `equal',
 or with `-compare-fn' if that's non-nil."
   (let (result)
-    (--each list (when (not (-contains? result it)) (!cons it result)))
+    (--each list (!cons it result))
+    (--each list2 (unless (-contains? result it) (!cons it result)))
     (nreverse result)))
+
+(defalias '-uniq '-distinct)
 
 (defun -intersection (list list2)
   "Return a new list containing only the elements that are members of both LIST and LIST2.
@@ -594,6 +674,7 @@ or with `-compare-fn' if that's non-nil."
                            ))
            (special-variables '(
                                 "it"
+                                "it-index"
                                 "acc"
                                 )))
        (font-lock-add-keywords 'emacs-lisp-mode `((,(concat "\\<" (regexp-opt special-variables 'paren) "\\>")
