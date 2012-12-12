@@ -27,7 +27,8 @@ current symbol at point."
 
 (global-set-key (kbd "<f5>") 'ack-at-point)
 
-(require 'cl) ; 'remove-if
+
+(autoload '--remove "dash" nil t)
 
 (setq virtualenv-base-path "/home/wilfred/.envs")
 (defun ack-in-virtualenv ()
@@ -35,8 +36,8 @@ current symbol at point."
 a specific search string."
  (interactive)
  (let* ((virtualenv-names
-        (remove-if
-         (lambda (name) (or (equal "." name) (equal ".." name)))
+        (--remove
+         (or (equal "." it) (equal ".." it))
          (directory-files virtualenv-base-path)))
        (virtualenv-name (ido-completing-read "Virtualenv: " virtualenv-names))
        (virtualenv-path (concat virtualenv-base-path "/" virtualenv-name "/lib/python2.7/site-packages"))
