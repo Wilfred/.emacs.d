@@ -53,10 +53,9 @@
 (defun rename-file-and-buffer (new-name)
   "Renames both current buffer and file it's visiting to NEW-NAME."
   (interactive (list (read-from-minibuffer "New name: " (buffer-file-name))))
-  (let ((name (buffer-name))
-        (filename (buffer-file-name)))
+  (let ((filename (buffer-file-name)))
     (if (not filename)
-        (message "Buffer '%s' is not visiting a file!" name)
+        (message "Buffer '%s' is not visiting a file!" (buffer-name))
       (progn
           (rename-file filename new-name 1)
           (rename-buffer new-name t)
