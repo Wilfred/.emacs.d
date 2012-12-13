@@ -55,14 +55,13 @@
   (interactive (list (read-from-minibuffer "New name: " (buffer-file-name))))
   (let ((filename (buffer-file-name))
         (new-directory (file-name-directory new-name)))
-    (if (not filename)
-        (message "Buffer '%s' is not visiting a file!" (buffer-name))
-      (progn
-          (make-directory new-directory t)
-          (rename-file filename new-name 1)
-          (rename-buffer new-name t)
-          (set-visited-file-name new-name)
-          (set-buffer-modified-p nil)))))
+    (unless filename (error "Buffer '%s' is not visiting a file!" (buffer-name)))
+    
+    (make-directory new-directory t)
+    (rename-file filename new-name 1)
+    (rename-buffer new-name t)
+    (set-visited-file-name new-name)
+    (set-buffer-modified-p nil)))
 
 (require 'find-in-repo)
 (global-set-key (kbd "C-x C-g") 'find-in-repo)
