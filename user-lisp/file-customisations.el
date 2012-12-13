@@ -53,10 +53,12 @@
 (defun rename-file-and-buffer (new-name)
   "Renames both current buffer and file it's visiting to NEW-NAME."
   (interactive (list (read-from-minibuffer "New name: " (buffer-file-name))))
-  (let ((filename (buffer-file-name)))
+  (let ((filename (buffer-file-name))
+        (new-directory (file-name-directory new-name)))
     (if (not filename)
         (message "Buffer '%s' is not visiting a file!" (buffer-name))
       (progn
+          (make-directory new-directory t)
           (rename-file filename new-name 1)
           (rename-buffer new-name t)
           (set-visited-file-name new-name)
