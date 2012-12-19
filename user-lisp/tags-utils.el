@@ -62,7 +62,6 @@ clashes."
 
 (global-set-key (kbd "<f6>") 'etags-select-find-tag-at-point)
 (global-set-key (kbd "M-.") 'etags-select-find-tag)
-(global-set-key (kbd "M-?") 'etags-select-find-tag-at-point)
 
 ;; finding tags should be case sensitive
 (setq tags-case-fold-search nil)
