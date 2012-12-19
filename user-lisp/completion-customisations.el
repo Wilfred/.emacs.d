@@ -2,8 +2,20 @@
 (setq dabbrev-case-fold-search nil)
 
 
-; hippie-expand is over-eager but occasionally useful
-; so we bind it to M-? instead of M-/
+(setq hippie-expand-try-functions-list
+      '(try-expand-dabbrev
+        try-expand-dabbrev-all-buffers
+        try-expand-dabbrev-from-kill
+        try-complete-file-name-partially
+        try-complete-file-name
+        try-expand-all-abbrevs
+        try-expand-list
+        try-expand-line
+        try-expand-line-all-buffers
+        try-complete-lisp-symbol-partially
+        try-complete-lisp-symbol))
+;; hippie-expand is over-eager but occasionally useful
+;; so we bind it to M-? instead of M-/
 (global-set-key (kbd "M-?") 'hippie-expand)
 
 
