@@ -228,8 +228,6 @@ are interchanged."
   "ace-jump-mode"
   "Emacs quick move minor mode"
   t)
-;; I've previously used relative-jump with this shortcut, but ideally
-;; we'd find a shortcut with a better mnemonic
-(define-key global-map (kbd "C-S-n") 'ace-jump-mode)
+(define-key global-map (kbd "<f11>") 'ace-jump-mode)
 
 (provide 'editing-customisations)
