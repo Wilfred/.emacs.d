@@ -1,10 +1,35 @@
 ; dabbrev-expand should match case
 (setq dabbrev-case-fold-search nil)
 
+;; force hippie-expand completions to be case-sensitive
+(defadvice hippie-expand (around hippie-expand-case-fold)
+  "Try to do case-sensitive matching (not effective with all functions)."
+  (let ((case-fold-search nil))
+    ad-do-it))
+(ad-activate 'hippie-expand)
+
+(autoload '--filter "dash" nil t)
+(autoload '--remove "dash" nil t)
+
+;; only consider buffers in the same mode with try-expand-dabbrev-all-buffers
+(defun try-expand-dabbrev-matching-buffers (old)
+  (let ((matching-buffers (--filter
+                           (eq major-mode (with-current-buffer it major-mode))
+                           (buffer-list))))
+    (flet ((buffer-list () matching-buffers))
+      (try-expand-dabbrev-all-buffers old))))
+
+(defun try-expand-dabbrev-other-buffers (old)
+  (let ((matching-buffers (--remove
+                           (eq major-mode (with-current-buffer it major-mode))
+                           (buffer-list))))
+    (flet ((buffer-list () matching-buffers))
+      (try-expand-dabbrev-all-buffers old))))
 
 (setq hippie-expand-try-functions-list
       '(try-expand-dabbrev
-        try-expand-dabbrev-all-buffers
+        try-expand-dabbrev-matching-buffers
+        try-expand-dabbrev-other-buffers
         try-expand-dabbrev-from-kill
         try-complete-file-name-partially
         try-complete-file-name
@@ -16,7 +41,7 @@
         try-complete-lisp-symbol))
 ;; hippie-expand is over-eager but occasionally useful
 ;; so we bind it to M-? instead of M-/
-(global-set-key (kbd "M-?") 'hippie-expand)
+(global-set-key (kbd "M-/") 'hippie-expand)
 
 
 ; auto-completion with neat popup
