@@ -44,5 +44,6 @@ submodules.
 
 ### Flymake tools
 
-* [Pyflakes](https://github.com/kevinw/pyflakes) (note not the PyPI version, since that crashes on unfinished dicts: {foo})
+* [Pyflakes](https://github.com/kevinw/pyflakes) (note not the PyPI
+  version, since that crashes on unfinished dicts: `{foo}`)
 * [JSHint](https://github.com/jshint/jshint/) (requires node.js to be installed)
