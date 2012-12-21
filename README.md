@@ -22,7 +22,7 @@ Remove any existing .emacs.d configuration (or move elsewhere):
 
     $ rm -r ~/.emacs.d
     
-Clone the repo including submodules:
+Clone the repo:
 
     $ git clone git://github.com/Wilfred/.emacs.d.git
 
