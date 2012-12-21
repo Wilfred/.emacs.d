@@ -25,6 +25,15 @@ Remove any existing .emacs.d configuration (or move elsewhere):
 Clone the repo:
 
     $ git clone git://github.com/Wilfred/.emacs.d.git
+    
+### Major packages written by me
+
+I've moved the following packages to their own repos. These packages
+have been properly documented and don't depend on any convenience
+functions I've written.
+
+* [find-in-repo](https://github.com/Wilfred/find-in-repo.el)
+* [flymake-jshint](https://github.com/Wilfred/flymake-jshint.el)
 
 ### Major third party packages
 
