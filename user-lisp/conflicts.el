@@ -22,8 +22,8 @@
 
 (require 'smerge-mode)
 (define-key smerge-mode-map (kbd "<C-return>") 'conflicts-keep-current)
-(define-key smerge-mode-map (kbd "<f8>") 'smerge-next)
-(define-key smerge-mode-map (kbd "<f9>") 'smerge-prev)
+(define-key smerge-mode-map (kbd "<f8>") 'smerge-prev)
+(define-key smerge-mode-map (kbd "<f9>") 'smerge-next)
 
 ;; TODO: a function to find all files containing merge conflicts in a repo
 
