@@ -1,28 +1,10 @@
 (require 'python)
 
-;;; TODO: fix indentation for the following code:
-;; response = Client().post('admin/tasks/csv_checkflbjklj',
-;;                          # the value of the ID is irrelevant:
-;;                              {'csv_import_id': 123456})
-
-;; (the problem is the colon in the comment)
-
-;; TODO: also fix indentation for the following:
-
-;; def foo():
-;;     """foo bar foo bar foo bar foo bar foo bar foo bar(see #634), so we always try
-;;     that first.
-
-;;     """
-
-;; (the problem is the # inside the docstring)
-
 ;; TODO: properly highlight differently named self arguments (often seen in nested classes):
 
 ;; class Foo(object):
 ;;     def __init__(_self, *args):
 ;;         pass
-
 
 ; indent python by 4 spaces by default
 (setq-default python-indent 4)
