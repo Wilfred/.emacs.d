@@ -96,6 +96,14 @@
 
 (define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
 
+(defun python-skeleton-name-main ()
+  (interactive)
+  (move-beginning-of-line nil)
+  (insert "if __name__ == \"__main__\":")
+  (newline-and-indent))
+
+(define-key python-mode-map (kbd "C-c C-t m") 'python-skeleton-name-main)
+
 ;; pylookup -- python docs
 (setq pylookup-dir "~/.emacs.d/third-party-lisp/pylookup")
 (add-to-list 'load-path pylookup-dir)
