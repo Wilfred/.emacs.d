@@ -4,7 +4,7 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 January 2012
-;; Version: 0.2
+;; Version: 0.3
 
 ;;; Commentary
 
@@ -45,13 +45,17 @@
 (define-compilation-mode ag-mode "Ag"
   "Ag results compilation mode")
 
-(defun ag/shell-quote (string)
-  "Wrap in single quotes, and quote existing single quotes to make shell safe."
-  (concat "'" (ack-and-a-half-string-replace "'" "'\\''" string) "'"))
-
 (defun ag/s-join (separator strings)
   "Join all the strings in STRINGS with SEPARATOR in between."
   (mapconcat 'identity strings separator))
+
+(defun ag/s-replace (old new s)
+  "Replace all occurrences of OLD in NEW in S."
+  (replace-regexp-in-string (regexp-quote old) new s t t))
+
+(defun ag/shell-quote (string)
+  "Wrap in single quotes, and quote existing single quotes to make shell safe."
+  (concat "'" (ag/s-replace "'" "'\\''" string) "'"))
 
 (defun ag (string directory)
   "Run ag searching for the literal STRING given in DIRECTORY."
