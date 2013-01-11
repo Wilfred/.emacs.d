@@ -99,7 +99,7 @@ for the given string."
 (defun ag-project-at-point (string)
   "Same as ``ag-project'', but with the search string defaulting
 to the symbol under point."
-   (interactive (list (read-from-minibuffer "Search source files for: "
+   (interactive (list (read-from-minibuffer "Search string: "
                                            (if (symbol-at-point)
                                                (symbol-name (symbol-at-point))))))
    (ag/search string (ag/project-root (buffer-file-name))))
