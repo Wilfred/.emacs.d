@@ -4,18 +4,27 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 January 2012
-;; Version: 0.3
+;; Version: 0.4
 
 ;;; Commentary
 
 ;; This file is heavily based on the excellent ack-and-a-half.el.
 
-;;; Todo
+;;; Usage
 
-;; 1. Add ag-project
-;; 2. Add ag-project-at-point
-;; 3. Add ag-regexp
-;; 4. Add highlighting to *Ag* buffer
+;; Add you to your .emacs.d:
+
+;; (add-to-list 'load-path "/path/to/ag.el") ;; optional
+;; (require 'ag)
+
+;; I like to bind ag-project-at-point to F5:
+
+;; (global-set-key (kbd "<f5>") 'ag-project-at-point)
+
+;;; Todo:
+
+;; 1. Add ag-regexp
+;; 2. Add highlighting to *Ag* buffer
 
 ;;; License:
 
@@ -57,9 +66,40 @@
   "Wrap in single quotes, and quote existing single quotes to make shell safe."
   (concat "'" (ag/s-replace "'" "'\\''" string) "'"))
 
-(defun ag (string directory)
+(defun ag/search (string directory)
   "Run ag searching for the literal STRING given in DIRECTORY."
+  (let ((default-directory directory))
+    (compilation-start
+     (ag/s-join " "
+                (append '("ag") ag-arguments (list (ag/shell-quote string))))
+     'ag-mode)))
+
+(autoload 'vc-git-root "vc-git")
+(autoload 'vc-svn-root "vc-svn")
+
+(defun ag/project-root (file-path)
+  "Guess the project root of the given file path."
+  (or (vc-git-root file-path)
+      (vc-svn-root file-path)
+      file-path))
+
+(defun ag (string directory)
+  "Search using ag in a given directory for a given string."
   (interactive "sSearch string: \nDDirectory: ")
-  (compilation-start (ag/s-join " "
-                             (append '("ag") ag-arguments (list (ag/shell-quote string))))
-                     'ag-mode))
+  (ag/search string directory))
+
+(defun ag-project (string)
+  "Guess the root of the current project and search it with ag
+for the given string."
+  (interactive "sSearch string: ")
+  (ag/search string (ag/project-root (buffer-file-name))))
+
+(autoload 'symbol-at-point "thingatpt")
+
+(defun ag-project-at-point (string)
+  "Same as ``ag-project'', but with the search string defaulting
+to the symbol under point."
+   (interactive (list (read-from-minibuffer "Search source files for: "
+                                           (if (symbol-at-point)
+                                               (symbol-name (symbol-at-point))))))
+   (ag/search string (ag/project-root (buffer-file-name))))
