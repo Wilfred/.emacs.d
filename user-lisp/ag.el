@@ -103,3 +103,5 @@ to the symbol under point."
                                            (if (symbol-at-point)
                                                (symbol-name (symbol-at-point))))))
    (ag/search string (ag/project-root (buffer-file-name))))
+
+(provide 'ag)
