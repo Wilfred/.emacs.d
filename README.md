@@ -4,7 +4,8 @@ I'm aiming to keep this as portable as possible, and
 self-contained. Code I've written (init.el and files under
 `user-lisp/`) is BSD licensed, see COPYING.
 
-Emacs 23.X and Emacs 24.X are both tested with this code.
+This code is primarily tested with Emacs 24.X, but bug fixes for other
+Emacs versions (or other Emacsen) are welcomed.
 
 ### Conventions
 
