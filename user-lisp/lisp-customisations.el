@@ -23,8 +23,9 @@
 (set-face-foreground 'rainbow-delimiters-depth-9-face "green")
 (set-face-foreground 'rainbow-delimiters-unmatched-face "red")
 
-
 (autoload 'clojure-mode "clojure-mode")
 (add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
+
+(require 'nrepl)
 
 (provide 'lisp-customisations)
