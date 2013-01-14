@@ -4,7 +4,7 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 January 2012
-;; Version: 0.4
+;; Version: 0.5
 
 ;;; Commentary
 
@@ -102,6 +102,6 @@ to the symbol under point."
    (interactive (list (read-from-minibuffer "Search string: "
                                            (if (symbol-at-point)
                                                (symbol-name (symbol-at-point))))))
-   (ag/search string (ag/project-root (buffer-file-name))))
+   (ag/search string (ag/project-root default-directory)))
 
 (provide 'ag)
