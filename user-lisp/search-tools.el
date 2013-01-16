@@ -31,23 +31,21 @@ like source files."
 
 (global-set-key (kbd "<f5>") 'ack-at-point-everything)
 
+(setq virtualenv-base-path "/home/wilfred/.py_envs")
 
-(autoload '--remove "dash" nil t)
-
-(setq virtualenv-base-path "/home/wilfred/.envs")
-(defun ack-in-virtualenv ()
-  "Search the source code in a virtual environment for
+(require 'ag)
+(require 'file-utils)
+(defun ag-in-virtualenv ()
+  "Search the soruce code in a virtual environment for
 a specific search string."
- (interactive)
- (let* ((virtualenv-names
-        (--remove
-         (or (equal "." it) (equal ".." it))
-         (directory-files virtualenv-base-path)))
-       (virtualenv-name (ido-completing-read "Virtualenv: " virtualenv-names))
-       (virtualenv-path (concat virtualenv-base-path "/" virtualenv-name "/lib/python2.7/site-packages"))
-       (search-term (read-from-minibuffer "Search virtualenv for: "
-                                          (if (symbol-at-point)
-                                              (symbol-name (symbol-at-point))))))
-   (ack search-term nil virtualenv-path)))
+  (interactive)
+  (let* ((virtualenv-names
+          (no-dot-directories (directory-files virtualenv-base-path)))
+         (virtualenv-name (ido-completing-read "Virtualenv: " virtualenv-names))
+         (virtualenv-path (concat virtualenv-base-path "/" virtualenv-name "/lib/python2.7/site-packages"))
+         (search-term (read-from-minibuffer "Search virtualenv for: "
+                                            (if (symbol-at-point)
+                                                (symbol-name (symbol-at-point))))))
+    (ag/search search-term virtualenv-path)))
 
 (provide 'search-tools)

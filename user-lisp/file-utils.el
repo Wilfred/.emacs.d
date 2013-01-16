@@ -56,4 +56,10 @@ returning the path where FILE-NAME can be found."
    (find-containing-parent-directory path "pom.xml")
    (error "%s doesn't seem to be part of a project" path)))
 
+(autoload '--remove "dash" nil t)
+
+(defun no-dot-directories (directories)
+  "Exclude the . and .. directory from a list."
+  (--remove (or (equal "." it) (equal ".." it)) directories))
+
 (provide 'file-utils)
