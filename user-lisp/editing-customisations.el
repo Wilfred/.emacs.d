@@ -230,4 +230,18 @@ are interchanged."
   t)
 (define-key global-map (kbd "<f11>") 'ace-jump-mode)
 
+(defun query-replace-at-point (from-string to-string)
+  "Replace occurrences of FROM-STRING with TO-STRING, defaulting
+to the symbol at point."
+  (interactive (list
+                (read-from-minibuffer "Replace what? "
+                                      (if (symbol-at-point)
+                                          (symbol-name (symbol-at-point))))
+                (read-from-minibuffer "With what? ")))
+  ;; we need to go back one symbol so the symbol at point is replaced too
+  (forward-symbol -1)
+  (perform-replace from-string to-string t nil nil))
+
+(define-key global-map (kbd "M-%") 'query-replace-at-point)
+
 (provide 'editing-customisations)
