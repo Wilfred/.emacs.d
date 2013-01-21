@@ -237,7 +237,9 @@ to the symbol at point."
                 (read-from-minibuffer "Replace what? "
                                       (if (symbol-at-point)
                                           (symbol-name (symbol-at-point))))
-                (read-from-minibuffer "With what? ")))
+                (read-from-minibuffer "With what? "
+                                      (if (symbol-at-point)
+                                          (symbol-name (symbol-at-point))))))
   ;; we need to go back one symbol so the symbol at point is replaced too
   (forward-symbol -1)
   (perform-replace from-string to-string t nil nil))
