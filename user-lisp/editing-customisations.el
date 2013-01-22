@@ -195,16 +195,20 @@ are interchanged."
   t)
 (define-key global-map (kbd "<f11>") 'ace-jump-mode)
 
+(defun dwim-at-point ()
+  "If there's an active selection, return that. Otherwise, get
+the symbol at point."
+  (if (use-region-p)
+      (buffer-substring-no-properties (region-beginning) (region-end))
+    (if (symbol-at-point)
+        (symbol-name (symbol-at-point)))))
+
 (defun query-replace-at-point (from-string to-string)
   "Replace occurrences of FROM-STRING with TO-STRING, defaulting
 to the symbol at point."
   (interactive (list
-                (read-from-minibuffer "Replace what? "
-                                      (if (symbol-at-point)
-                                          (symbol-name (symbol-at-point))))
-                (read-from-minibuffer "With what? "
-                                      (if (symbol-at-point)
-                                          (symbol-name (symbol-at-point))))))
+                (read-from-minibuffer "Replace what? " (dwim-at-point))
+                (read-from-minibuffer "With what? " (dwim-at-point))))
   ;; we need to go back one symbol so the symbol at point is replaced too
   (forward-symbol -1)
   (perform-replace from-string to-string t nil nil))
