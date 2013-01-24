@@ -1,10 +1,10 @@
 ;;; ag.el --- A front-end for ag, the C ack replacement.
 
-;; Copyright (C) 2012 Wilfred Hughes <me@wilfred.meuk>
+;; Copyright (C) 2013 Wilfred Hughes <me@wilfred.me.uk>
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
-;; Created: 11 January 2012
-;; Version: 0.10
+;; Created: 11 January 2013
+;; Version: 0.11
 
 ;;; Commentary
 
@@ -49,7 +49,7 @@
 (require 'compile)
 
 (defvar ag-match-face 'match
-  "Face name to use for grep matches.")
+  "Face name to use for ag matches.")
 
 
 (define-compilation-mode ag-mode "Ag"
@@ -83,6 +83,14 @@ is non-nil, treat STRING as a regular expression."
                 (append '("ag") arguments (list (ag/shell-quote string))))
      'ag-mode)))
 
+(defun ag/dwim-at-point ()
+  "If there's an active selection, return that. Otherwise, get
+the symbol at point."
+  (if (use-region-p)
+      (buffer-substring-no-properties (region-beginning) (region-end))
+    (if (symbol-at-point)
+        (symbol-name (symbol-at-point)))))
+
 (autoload 'vc-git-root "vc-git")
 (autoload 'vc-svn-root "vc-svn")
 
@@ -113,14 +121,12 @@ for the given string."
 (defun ag-project-at-point (string)
   "Same as ``ag-project'', but with the search string defaulting
 to the symbol under point."
-   (interactive (list (read-from-minibuffer "Search string: "
-                                           (if (symbol-at-point)
-                                               (symbol-name (symbol-at-point))))))
+   (interactive (list (read-from-minibuffer "Search string: " (ag/dwim-at-point))))
    (ag/search string (ag/project-root default-directory)))
 
 ;; Taken from grep-filter, just changed the color regex.
 (defun ag-filter ()
-  "Handle match highlighting escape sequences inserted by the grep process.
+  "Handle match highlighting escape sequences inserted by the ag process.
 This function is called from `compilation-filter-hook'."
   (save-excursion
     (forward-line 0)
