@@ -29,11 +29,11 @@ like source files."
                                                (symbol-name (symbol-at-point))))))
  (ack search-term nil (file-find-project-root default-directory)))
 
-(global-set-key (kbd "<f5>") 'ack-at-point-everything)
-
 (setq virtualenv-base-path "/home/wilfred/.py_envs")
 
 (require 'ag)
+(global-set-key (kbd "<f5>") 'ag-project-at-point)
+
 (require 'file-utils)
 (defun ag-in-virtualenv ()
   "Search the soruce code in a virtual environment for
