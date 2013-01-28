@@ -223,4 +223,14 @@ to the symbol at point."
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 
+(defun copy-for-code-snippet (region-start region-end)
+  "Indent the current selection by four spaces on each line, and
+copy to the clipboard."
+  (interactive "r")
+  (let ((selected-text (buffer-substring-no-properties region-start region-end)))
+    (with-temp-buffer
+      (insert selected-text)
+      (indent-rigidly (point-min) (point-max) 4)
+      (clipboard-kill-region (point-min) (point-max)))))
+
 (provide 'editing-customisations)
