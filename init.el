@@ -165,6 +165,10 @@ by (current-time)."
 
 (require 'git-customisations)
 (require 'search-tools)
+
+(require 'ag)
+(global-set-key (kbd "<f5>") 'ag-project-at-point)
+
 (require 'conflicts)
 
 (require 'tags-utils)

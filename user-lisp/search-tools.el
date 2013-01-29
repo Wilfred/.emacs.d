@@ -31,9 +31,6 @@ like source files."
 
 (setq virtualenv-base-path "/home/wilfred/.py_envs")
 
-(require 'ag)
-(global-set-key (kbd "<f5>") 'ag-project-at-point)
-
 (require 'file-utils)
 (defun ag-in-virtualenv ()
   "Search the soruce code in a virtual environment for
