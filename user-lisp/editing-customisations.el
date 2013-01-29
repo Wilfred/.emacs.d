@@ -203,6 +203,8 @@ the symbol at point."
     (if (symbol-at-point)
         (symbol-name (symbol-at-point)))))
 
+(defvar query-replace-cached-from nil)
+(defvar query-replace-cached-to nil)
 (defun query-replace-at-point (from-string to-string)
   "Replace occurrences of FROM-STRING with TO-STRING, defaulting
 to the symbol at point."
@@ -211,9 +213,20 @@ to the symbol at point."
                 (read-from-minibuffer "With what? " (dwim-at-point))))
   ;; we need to go back one symbol so the symbol at point is replaced too
   (forward-symbol -1)
+  (setq query-replace-cached-from from-string)
+  (setq query-replace-cached-to to-string)
   (perform-replace from-string to-string t nil nil))
 
+(defun query-replace-repeat ()
+  (interactive)
+  (unless query-replace-cached-from
+    (error "You need to have done query-replace-at-point first"))
+  (perform-replace
+   query-replace-cached-from query-replace-cached-to
+   t nil nil))
+
 (define-key global-map (kbd "M-%") 'query-replace-at-point)
+(define-key global-map (kbd "C-c M-%") 'query-replace-repeat)
 
 ;; multiple cursors
 ;; a good replacement for simple macros since you see the results instantly
