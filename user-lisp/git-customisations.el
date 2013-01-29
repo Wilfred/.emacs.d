@@ -6,22 +6,5 @@
 (setq magit-completing-read-function 'magit-ido-completing-read)
 (setq magit-default-tracking-name-function 'magit-default-tracking-name-branch-only)
 
-(autoload 'symbol-at-point "thingatpt" nil t)
-
-(defun git-grep-project (search-term)
-  "Search a git project for SEARCH-TERM. The default search term is the symbol at point.
-Note that this will not search git submodules."
- (interactive (list (read-from-minibuffer "Search with git-grep for: "
-                                           (if (symbol-at-point)
-                                               (symbol-name (symbol-at-point))))))
- (if (buffer-file-name)
-     (let ((project-root (expand-file-name (vc-git-root (buffer-file-name)))))
-       (if project-root
-           (vc-git-grep search-term "*" project-root)
-         (message "Couldn't find project root.")))
-   (message "You need to be in a file buffer.")))
-
-(global-set-key (kbd "<f5>") 'git-grep-project)
-
 (provide 'git-customisations)
 
