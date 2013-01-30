@@ -1,9 +1,17 @@
 ; colour scheme
 (add-to-list 'load-path "~/.emacs.d/third-party-lisp/color-theme")
 
+(require 'color-theme)
+(require 'color-theme-tangotango)
+
+;; load theme when we are started with $ emacsclient -c
+(add-hook 'after-make-frame-functions
+          '(lambda (f)
+             (with-selected-frame f
+               (when (window-system f)
+                 (color-theme-tangotango)))))
+;; load theme when we are started with $ emacs
 (when window-system
-  (require 'color-theme)
-  (require 'color-theme-tangotango)
   (color-theme-tangotango))
 
 ; hide toolbar and scrollbar
