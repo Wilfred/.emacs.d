@@ -69,10 +69,6 @@ by (current-time)."
   (find-file
    (format "~/scratch/%s" file-name)))
 
-; switch on which-func-mode for all major modes that support it
-; (which-func-mode shows which function or class that point is in)
-(which-func-mode 1)
-
 ; Clipboard
 ; ---------
 ;
