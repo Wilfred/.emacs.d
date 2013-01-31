@@ -2,7 +2,7 @@
 
 ;; Version: 1.1
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
-;; Mostly taken from http://stackoverflow.com/a/7882046
+;; Mostly taken from http://stackoverflow.com/a/7882046 by phils
 
 ;; This file is not part of GNU Emacs.
 ;; However, it is distributed under the same license.
@@ -33,6 +33,12 @@
 ;; To enable this globally, add this to your .emacs:
 ;; (global-linum-mode t)
 
+;; Tip: to jump N lines forwards/backwards, use a prefix argument with
+;; next-line:
+
+;; E.g. to move 5 lines forward:
+;; C-u 5 C-n
+
 (defvar relative-linum-format-string "%3d")
 
 (add-hook 'linum-before-numbering-hook 'relative-linum-get-format-string)
@@ -55,18 +61,5 @@
   (let ((relative-linum-current-line-number (line-number-at-pos)))
     ad-do-it))
 (ad-activate 'linum-update)
-
-(defun relative-linum-jump (offset)
-  "Move OFFSET lines up or down from the current line."
-  (interactive "nForward how many lines?: ")
-  (forward-line offset))
-
-(defun relative-linum-jump-backward (offset)
-  "Move OFFSET * -1 lines up or down from the current line."
-  (interactive "nBackward how many lines?: ")
-  (forward-line (- offset)))
-
-(global-set-key (kbd "C-S-n") 'relative-linum-jump)
-(global-set-key (kbd "C-S-p") 'relative-linum-jump-backward)
 
 (provide 'relative-linum)
