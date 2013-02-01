@@ -33,7 +33,7 @@ of `default-directory' is a path that exists. If not, it crashes."
 
 (defun tags-utils/regenerate (file-path)
   (tags-utils/shell-in-dir "rm -f TAGS" file-path)
-  (tags-utils/shell-in-dir "find . -name \"*.py\" -print0 -or -name \"*.el\" -print0 | xargs --null etags -a" file-path))
+  (tags-utils/shell-in-dir "git ls-files -z | egrep \"(\.el|\.py)$\" -z | xargs --null etags -a" file-path))
 
 ;; todo: move to http://www.emacswiki.org/emacs/repository-root.el
 (defun tags-utils/project-root (file-path)
