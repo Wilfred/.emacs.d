@@ -203,6 +203,8 @@ the symbol at point."
     (if (symbol-at-point)
         (symbol-name (symbol-at-point)))))
 
+(require 'and-let)
+
 (defvar query-replace-cached-from nil)
 (defvar query-replace-cached-to nil)
 (defun query-replace-at-point (from-string to-string)
@@ -211,8 +213,13 @@ to the symbol at point."
   (interactive (list
                 (read-from-minibuffer "Replace what? " (dwim-at-point))
                 (read-from-minibuffer "With what? " (dwim-at-point))))
-  ;; we need to go back one symbol so the symbol at point is replaced too
-  (forward-symbol -1)
+
+  ;; if we currently have point on a symbol we're replacing, go back
+  (and-let* ((current-symbol (symbol-at-point))
+            (current-symbol-name (symbol-name current-symbol)))
+           (if (string-equal current-symbol-name from-string)
+               (format-symbol -1)))
+
   (setq query-replace-cached-from from-string)
   (setq query-replace-cached-to to-string)
   (perform-replace from-string to-string t nil nil))

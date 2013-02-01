@@ -18,4 +18,4 @@ variables were non-nil."
          (if ,var-name
              (and-let* ,(rest varlist) ,@body))))))
 
-(provide 'my-macros)
+(provide 'and-let)
