@@ -156,6 +156,7 @@ by (current-time)."
 (require 'haskell-customisations)
 (require 'c-customisations)
 (require 'sh-customisations)
+(require 'coffee-customisations)
 
 (require 'potato-customisations)
 
