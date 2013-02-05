@@ -150,7 +150,6 @@ by (current-time)."
 (require 'css-customisations)
 (require 'python-customisations)
 (require 'javascript-customisations)
-(require 'coffeescript-customisations)
 (require 'xml-customisations)
 (require 'lisp-customisations)
 (require 'haskell-customisations)
