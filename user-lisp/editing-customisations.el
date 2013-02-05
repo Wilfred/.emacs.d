@@ -205,8 +205,8 @@ the symbol at point."
 
 (require 'and-let)
 
-(defvar query-replace-cached-from nil)
-(defvar query-replace-cached-to nil)
+;; todo: investigate whether we're reinventing the wheel, since query-replace-history already exists
+(defvar query-replace/history nil)
 (defun query-replace-at-point (from-string to-string)
   "Replace occurrences of FROM-STRING with TO-STRING, defaulting
 to the symbol at point."
@@ -220,17 +220,24 @@ to the symbol at point."
            (if (string-equal current-symbol-name from-string)
                (forward-symbol -1)))
 
-  (setq query-replace-cached-from from-string)
-  (setq query-replace-cached-to to-string)
+  (add-to-list 'query-replace/history
+               (list (format "%s -> %s" from-string to-string)
+                     from-string to-string))
   (perform-replace from-string to-string t nil nil))
+
+(eval-when-compile (require 'cl)) ; first, second
 
 (defun query-replace-repeat ()
   (interactive)
-  (unless query-replace-cached-from
+  (unless query-replace/history
     (error "You need to have done query-replace-at-point first"))
-  (perform-replace
-   query-replace-cached-from query-replace-cached-to
-   t nil nil))
+  (let* ((choices (mapcar 'first query-replace/history))
+         (choice (ido-completing-read "Previous replaces: " choices))
+         (from-with-to (cdr (assoc choice query-replace/history)))
+         (from-string (first from-with-to))
+         (to-string (second from-with-to)))
+    (perform-replace from-string to-string
+                   t nil nil)))
 
 (define-key global-map (kbd "M-%") 'query-replace-at-point)
 (define-key global-map (kbd "C-c M-%") 'query-replace-repeat)
