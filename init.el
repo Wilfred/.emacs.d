@@ -137,12 +137,6 @@ by (current-time)."
 ;; treat space charcters as matching space characters, not like PCRE's '\s+'
 (setq search-whitespace-regexp nil)
 
-;
-;
-; automatically finish quotes, brackets etc according to mode
-(require 'autopair)
-(autopair-global-mode)
-
 (require 'completion-customisations)
 (require 'structured-text-customisations)
 (require 'isearch-customisations)
