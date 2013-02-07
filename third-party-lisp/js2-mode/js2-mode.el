@@ -1,12 +1,12 @@
-;;; js2-mode.el --- an improved JavaScript editing mode
+;;; js2-mode.el --- Improved JavaScript editing mode
 
-;; Copyright (C) 2009  Free Software Foundation, Inc.
+;; Copyright (C) 2009, 2012  Free Software Foundation, Inc.
 
-;; Author:  Steve Yegge <steve.yegge@gmail.com>
-;; Contributors:  mooz <stillpedant@gmail.com>
-;;                Dmitry Gutov <dgutov@yandex.ru>
-;; Version:  See `js2-mode-version'
-;; Keywords:  languages, javascript
+;; Author: Steve Yegge <steve.yegge@gmail.com>
+;;         mooz <stillpedant@gmail.com>
+;;         Dmitry Gutov <dgutov@yandex.ru>
+;; Version: 1.0
+;; Keywords: languages, javascript
 
 ;; This file is part of GNU Emacs.
 
@@ -28,7 +28,7 @@
 ;; This JavaScript editing mode supports:
 
 ;;  - strict recognition of the Ecma-262 language standard
-;;  - support for most Rhino and SpiderMonkey extensions from 1.5 to 1.8
+;;  - support for most Rhino and SpiderMonkey extensions from 1.5 and up
 ;;  - parsing support for ECMAScript for XML (E4X, ECMA-357)
 ;;  - accurate syntax highlighting using a recursive-descent parser
 ;;  - on-the-fly reporting of syntax errors and strict-mode warnings
@@ -309,12 +309,6 @@ end of the line, otherwise, at the beginning of the next line."
   :type '(choice (const t) (const eol) (const nil))
   :group 'js2-mode)
 
-(defcustom js2-mode-squeeze-spaces t
-  "Non-nil to normalize whitespace when filling in comments.
-Multiple runs of spaces are converted to a single space."
-  :type 'boolean
-  :group 'js2-mode)
-
 (defcustom js2-mode-show-parse-errors t
   "True to highlight parse errors."
   :type 'boolean
@@ -469,9 +463,6 @@ is rewritten as:
 which doesn't seem particularly useful, but Rhino permits it."
   :type 'boolean
   :group 'js2-mode)
-
-(defvar js2-mode-version 20101228
-  "Release number for `js2-mode'.")
 
 ;; scanner variables
 
@@ -1174,9 +1165,6 @@ another file, or you've got a potential bug."
     (define-key map (kbd "C-c C-o") #'js2-mode-toggle-element)
     (define-key map (kbd "C-c C-w") #'js2-mode-toggle-warnings-and-errors)
     (define-key map (kbd "C-c C-`") #'js2-next-error)
-    ;; also define user's preference for next-error, if available
-    (if (setq keys (where-is-internal #'next-error))
-        (define-key map (car keys) #'js2-next-error))
     (define-key map (or (car (where-is-internal #'mark-defun))
                         (kbd "M-C-h"))
       #'js2-mark-defun)
@@ -2105,17 +2093,17 @@ modifications to the buffer."
   (declare (indent 0) (debug t))
   (let ((modified (make-symbol "modified")))
     `(let ((,modified (buffer-modified-p))
-	   (inhibit-read-only t)
-	   (inhibit-modification-hooks t)
-	   (buffer-undo-list t)
-	   (deactivate-mark nil)
-	   ;; Apparently these avoid file locking problems.
-	   (buffer-file-name nil)
-	   (buffer-file-truename nil))
+           (inhibit-read-only t)
+           (inhibit-modification-hooks t)
+           (buffer-undo-list t)
+           (deactivate-mark nil)
+           ;; Apparently these avoid file locking problems.
+           (buffer-file-name nil)
+           (buffer-file-truename nil))
        (unwind-protect
-	   (progn ,@body)
-	 (unless ,modified
-	   (restore-buffer-modified-p nil))))))
+           (progn ,@body)
+         (unless ,modified
+           (restore-buffer-modified-p nil))))))
 
 (defmacro js2-with-underscore-as-word-syntax (&rest body)
   "Evaluate BODY with the _ character set to be word-syntax."
@@ -7084,8 +7072,8 @@ i.e. one or more nodes, and an integer position as the list tail."
 
 ;;; Parser
 
-(defconst js2-version "1.8.0"
-  "Version of JavaScript supported, plus minor js2 version.")
+(defconst js2-version "1.8.5"
+  "Version of JavaScript supported.")
 
 (defmacro js2-record-face (face)
   "Record a style run of FACE for the current token."
@@ -9922,16 +9910,19 @@ a comma)."
   (save-excursion
     (back-to-indentation)
     (or (js2-looking-at-operator-p)
-        ;; comment
-        (and (js2-re-search-backward "\n" nil t)
-	     (progn
-	       (skip-chars-backward " \t")
-               (unless (bolp)
-                 (backward-char)
-                 (and (js2-looking-at-operator-p)
-                      (and (progn
-                             (backward-char)
-                             (not (looking-at "\\*\\|++\\|--\\|/[/*]")))))))))))
+        (when (catch 'found
+                (while (and (re-search-backward "\n" nil t)
+                            (let ((state (syntax-ppss)))
+                              (when (nth 4 state)
+                                (goto-char (nth 8 state))) ;; skip comments
+                              (skip-chars-backward " \t")
+                              (if (bolp)
+                                  t
+                                (throw 'found t))))))
+          (backward-char)
+          (when (js2-looking-at-operator-p)
+            (backward-char)
+            (not (looking-at "\\*\\|++\\|--\\|/[/*]")))))))
 
 (defun js2-end-of-do-while-loop-p ()
   "Returns non-nil if word after point is `while' of a do-while
@@ -9942,20 +9933,20 @@ indented to the same column as the current line."
   (save-excursion
     (save-match-data
       (when (looking-at "\\s-*\\<while\\>")
-	(if (save-excursion
-	      (skip-chars-backward "[ \t\n]*}")
-	      (looking-at "[ \t\n]*}"))
-	    (save-excursion
-	      (backward-list) (backward-word 1) (looking-at "\\<do\\>"))
-	  (js2-re-search-backward "\\<do\\>" (point-at-bol) t)
-	  (or (looking-at "\\<do\\>")
-	      (let ((saved-indent (current-indentation)))
-		(while (and (js2-re-search-backward "^[ \t]*\\<" nil t)
-			    (/= (current-indentation) saved-indent)))
-		(and (looking-at "[ \t]*\\<do\\>")
-		     (not (js2-re-search-forward
-			   "\\<while\\>" (point-at-eol) t))
-		     (= (current-indentation) saved-indent)))))))))
+        (if (save-excursion
+              (skip-chars-backward "[ \t\n]*}")
+              (looking-at "[ \t\n]*}"))
+            (save-excursion
+              (backward-list) (backward-word 1) (looking-at "\\<do\\>"))
+          (js2-re-search-backward "\\<do\\>" (point-at-bol) t)
+          (or (looking-at "\\<do\\>")
+              (let ((saved-indent (current-indentation)))
+                (while (and (js2-re-search-backward "^[ \t]*\\<" nil t)
+                            (/= (current-indentation) saved-indent)))
+                (and (looking-at "[ \t]*\\<do\\>")
+                     (not (js2-re-search-forward
+                           "\\<while\\>" (point-at-eol) t))
+                     (= (current-indentation) saved-indent)))))))))
 
 (defun js2-multiline-decl-indentation ()
   "Returns the declaration indentation column if the current line belongs
@@ -10393,10 +10384,10 @@ If so, we don't ever want to use bounce-indent."
         ;; This has to be set before calling parse-partial-sexp below.
         (inhibit-point-motion-hooks t))
     (setq parse-status (save-excursion
-                          (syntax-ppss (point-at-bol)))
+                         (syntax-ppss (point-at-bol)))
           offset (- (point) (save-excursion
-                               (back-to-indentation)
-                               (point))))
+                              (back-to-indentation)
+                              (point))))
     (js2-with-underscore-as-word-syntax
      (if (nth 4 parse-status)
          (js2-lineup-comment parse-status)
@@ -10427,7 +10418,9 @@ If so, we don't ever want to use bounce-indent."
 
 ;;;###autoload
 (defun js2-mode ()
-  "Major mode for editing JavaScript code."
+  "Major mode for editing JavaScript code.
+
+\\{js2-mode-map}"
   (interactive)
   (kill-all-local-variables)
   (set-syntax-table js2-mode-syntax-table)
@@ -10643,10 +10636,10 @@ buffer will only rebuild its `js2-mode-ast' if the buffer is dirty."
   "Debugging aid:  highlight selected AST node on mouse click."
   (interactive "e")
   (mouse-set-point event)
-  (let ((node (js2-node-at-point))
-        beg
-        end)
-    (when js2-mode-show-overlay
+  (setq deactivate-mark t)
+  (when js2-mode-show-overlay
+    (let ((node (js2-node-at-point))
+          beg end)
       (if (null node)
           (message "No node found at location %s" (point))
         (setq beg (js2-node-abs-pos node)
@@ -10662,8 +10655,6 @@ buffer will only rebuild its `js2-mode-ast' if the buffer is dirty."
                  (if (js2-node-parent node)
                      (js2-node-short-name (js2-node-parent node))
                    "nil"))))))
-
-(put 'js2-mode-show-node 'CUA 'move)
 
 (defun js2-mode-hide-overlay (&optional p1 p2)
   "Remove the debugging overlay when the point moves.
