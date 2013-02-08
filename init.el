@@ -74,13 +74,18 @@ by (current-time)."
 ;
 ; top of kill ring should also be in X clipboard
 (setq x-select-enable-clipboard t)
-;
-; show contents of kill ring on demand
-(defun show-kill-ring ()
-  "Show the contents of the kill ring in a pop-up"
+
+(defun remove-all-text-properties (string)
+  "Return a copy of STRING without any text properties."
+  (let ((cleaned-string (copy-sequence string)))
+    (set-text-properties 0 (length string) nil cleaned-string)
+    cleaned-string))
+
+(defun kill-ring-choose ()
+  "Show the "
   (interactive)
-  (popup-menu 'yank-menu))
-(global-set-key "\C-cy" 'show-kill-ring)
+  (insert (ido-completing-read "Previously killed: "
+           (mapcar 'remove-all-text-properties kill-ring))))
 
 ; TODO: increase kill ring size
 
