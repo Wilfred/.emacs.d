@@ -59,6 +59,7 @@ by (current-time)."
 
 (require 'file-customisations)
 (require 'editing-customisations)
+(require 'kill-ring-customisations)
 
 (if (eq system-type 'darwin)
     (require 'os-x-fixes))
@@ -68,24 +69,6 @@ by (current-time)."
   (interactive "sName of scratch file: ")
   (find-file
    (format "~/scratch/%s" file-name)))
-
-; Clipboard
-; ---------
-;
-; top of kill ring should also be in X clipboard
-(setq x-select-enable-clipboard t)
-
-(defun remove-all-text-properties (string)
-  "Return a copy of STRING without any text properties."
-  (let ((cleaned-string (copy-sequence string)))
-    (set-text-properties 0 (length string) nil cleaned-string)
-    cleaned-string))
-
-(defun kill-ring-choose ()
-  "Show the "
-  (interactive)
-  (insert (ido-completing-read "Previously killed: "
-           (mapcar 'remove-all-text-properties kill-ring))))
 
 ; TODO: increase kill ring size
 
