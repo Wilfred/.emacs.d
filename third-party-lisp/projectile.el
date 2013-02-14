@@ -140,7 +140,12 @@ Otherwise consider the current directory the project root."
     )
   "A list of pairs of commands and prerequisite lambdas to perform project compilation.")
 
-(defvar projectile-projects-cache (make-hash-table :test 'equal)
+(defvar projectile-projects-cache
+  (if (file-exists-p projectile-cache-file)
+    (with-temp-buffer
+      (insert-file-contents projectile-cache-file)
+      (read (buffer-string)))
+    (make-hash-table :test 'equal))
   "A hashmap used to cache project file names to speed up related operations.")
 
 (defun projectile-version ()
@@ -193,8 +198,9 @@ The current directory is assumed to be the project's root otherwise."
       (if projectile-use-native-indexing
           (setq files-list (projectile-index-directory directory patterns))
         ;; use external tools to get the project files
-        (let ((current-dir (or (file-name-directory (buffer-file-name))
-                               default-directory)))
+        (let ((current-dir (if (buffer-file-name)
+                               (file-name-directory (buffer-file-name))
+                             default-directory)))
           ;; the shell commands need to invoked in the project's root dir
           (cd (projectile-project-root))
           (setq files-list (projectile-get-repo-files))
@@ -225,12 +231,12 @@ The current directory is assumed to be the project's root otherwise."
   :group 'projectile
   :type 'string)
 
-(defcustom projectile-svn-command "find . -type f"
+(defcustom projectile-svn-command "find . -type f -print0"
   "Command used by projectile to get the files in a svn project."
   :group 'projectile
   :type 'string)
 
-(defcustom projectile-generic-command "find . -type f"
+(defcustom projectile-generic-command "find . -type f -print0"
   "Command used by projectile to get the files in a generic project."
   :group 'projectile
   :type 'string)
@@ -315,22 +321,20 @@ have been indexed."
   (multi-occur (projectile-project-buffers)
                (car (occur-read-primary-args))))
 
-(defcustom projectile-show-paths 'disambiguate-only
+(defcustom projectile-show-paths-function 'projectile-hashify-with-uniquify
   "Whether to display paths with projectile-find-file."
   :group 'projectile
-  :type '(radio (const :tag "Only show paths to disambiguate files" disambiguate-only)
-                (const :tag "Show relative paths" relative)))
+  :type '(radio (const :tag "Only show paths to disambiguate files" projectile-hashify-with-uniquify)
+                (const :tag "Show relative paths" projectile-hashify-with-relative-paths)))
 
 (defun projectile-hashify-files (files-list)
-  (if (eq projectile-show-paths 'disambiguate-only)
-      (projectile-hashify-with-uniquify files-list)
-    (projectile-hashify-with-relative-paths files-list)))
+  (funcall projectile-show-paths-function files-list))
 
 (defun projectile-hashify-with-relative-paths (files-list)
   "Build a hash where the values match FILES-LIST and the keys are ido friendly.
 Our keys our relative paths in the project."
-  (let* ((project-root (projectile-project-root))
-         (files-table (make-hash-table :test 'equal)))
+  (let ((project-root (projectile-project-root))
+        (files-table (make-hash-table :test 'equal)))
     (dolist (current-file files-list files-table)
       (puthash (file-relative-name current-file project-root) current-file files-table))))
 
@@ -647,13 +651,6 @@ project-root for every file."
                     (point-max)
                     projectile-cache-file))))
 
-(defun projectile-load-cache ()
-  "Load the cache from the hard drive in memory."
-  (when (file-exists-p projectile-cache-file)
-    (with-temp-buffer
-      (insert-file-contents projectile-cache-file)
-      (setq projectile-projects-cache (read (buffer-string))))))
-
 (defun projectile-run-project-command (checks)
   "Run command considering CHECKS."
   (let* ((dir (or (projectile-project-root)
@@ -747,9 +744,7 @@ project-root for every file."
   :group 'projectile
   (if projectile-mode
       ;; on start
-      (progn
-        (projectile-load-cache)
-        (projectile-add-menu))
+      (projectile-add-menu)
     ;; on stop
     (projectile-remove-menu)))
 
