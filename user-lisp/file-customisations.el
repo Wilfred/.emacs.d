@@ -63,7 +63,7 @@
     (set-visited-file-name new-name)
     (set-buffer-modified-p nil)))
 
-(require 'projectile)
-(global-set-key (kbd "C-x C-g") 'projectile-find-file)
+(require 'find-file-in-repository)
+(global-set-key (kbd "C-x C-g") 'find-file-in-repository)
 
 (provide 'file-customisations)
