@@ -1,4 +1,9 @@
-; dabbrev-expand should match case
+;; yasnippet, clever abbreviation expansion
+(add-to-list 'load-path "~/.emacs.d/third-party-lisp/yasnippet")
+(require 'yasnippet)
+(yas-global-mode 1)
+
+;; dabbrev-expand should match case
 (setq dabbrev-case-fold-search nil)
 
 ;; force hippie-expand completions to be case-sensitive
