@@ -212,7 +212,7 @@ the symbol at point."
 to the symbol at point."
   (interactive (list
                 (read-from-minibuffer "Replace what? " (dwim-at-point))
-                (read-from-minibuffer "With what? " (dwim-at-point))))
+                (read-from-minibuffer "With what? ")))
 
   ;; if we currently have point on a symbol we're replacing, go back
   (and-let* ((current-symbol (symbol-at-point))
