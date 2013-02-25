@@ -1,6 +1,4 @@
-;; -*- coding: utf-8-unix -*-
-
-;;; ace-jump-mode.el --- a quick cursor location minor mode for emacs
+;;; ace-jump-mode.el --- a quick cursor location minor mode for emacs -*- coding: utf-8-unix -*-
 
 ;; Copyright (C) 2012 Free Software Foundation, Inc.
 
@@ -23,6 +21,8 @@
 
 ;; You should have received a copy of the GNU General Public License
 ;; along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
 
 ;;; INTRODUCTION
 ;;
@@ -90,7 +90,7 @@
 ;; Intro Doc: https://github.com/winterTTr/ace-jump-mode/wiki
 ;; FAQ      : https://github.com/winterTTr/ace-jump-mode/wiki/AceJump-FAQ
 
-;; Code goes here
+;;; Code:
 
 (eval-when-compile
   (require 'cl))
@@ -373,17 +373,15 @@ The returned value is a list of `aj-position' record."
                                     (> (point) end-point)
                                     (eobp))
                              if (or ace-jump-allow-invisible (not (invisible-p (match-beginning 0))))
-                             collect (let* ((mb (match-beginning 0))
-                                            (pos (make-aj-position :offset mb
-                                                                   :visual-area va)))
-                                       ;; when we use "^" to search line mode,
-                                       ;; re-search-backward will not move one
-                                       ;; char after search success, as line
-                                       ;; begin is not a valid visible char.
-                                       ;; We need to help it to move forward.
-                                       (if (string-equal re-query-string "^")
-                                           (goto-char (1+ mb)))
-                                       pos))))))))
+                             collect (make-aj-position :offset (match-beginning 0)
+                                                       :visual-area va)
+                             ;; when we use "^" to search line mode,
+                             ;; re-search-backward will not move one
+                             ;; char after search success, as line
+                             ;; begin is not a valid visible char.
+                             ;; We need to help it to move forward.
+                             do (if (string-equal re-query-string "^")
+                                    (goto-char (1+ (match-beginning 0)))))))))))
 
 (defun ace-jump-tree-breadth-first-construct (total-leaf-node max-child-node)
   "Constrct the search tree, each item in the tree is a cons cell.
