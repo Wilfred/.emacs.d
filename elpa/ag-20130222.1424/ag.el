@@ -4,7 +4,7 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 January 2013
-;; Version: 0.12
+;; Version: 0.13
 
 ;;; Commentary
 
@@ -17,9 +17,15 @@
 ;; (add-to-list 'load-path "/path/to/ag.el") ;; optional
 ;; (require 'ag)
 
-;; I like to bind ag-project-at-point to F5:
+;; If you're using ag 0.14+, which supports --color-match, then you
+;; can add highlighting with:
+
+;; (setq ag-highlight-search t)
+
+;; I like to bind the *-at-point commands to F5 and F6:
 
 ;; (global-set-key (kbd "<f5>") 'ag-project-at-point)
+;; (global-set-key (kbd "<f6>") 'ag-regexp-project-at-point)
 
 ;;; License:
 
@@ -42,9 +48,17 @@
 ;; Boston, MA 02110-1301, USA.
 
 (defcustom ag-arguments
-  (list "--color" "--color-match" "'30;43'" "--smart-case" "--nogroup" "--column" "--")
+  (list "--smart-case" "--nogroup" "--column" "--")
   "Default arguments passed to ag."
-  :type '(repeat (string)))
+  :type '(repeat (string))
+  :group 'ag)
+
+(defcustom ag-highlight-search nil
+  "Non-nil means we highlight the current search term in results.
+
+This requires the ag command to support --color-match, which is only in v0.14+"
+  :type 'boolean
+  :group 'ag)
 
 (require 'compile)
 
@@ -76,6 +90,9 @@ is non-nil, treat STRING as a regular expression."
         (arguments (if regexp
                        ag-arguments
                      (cons "--literal" ag-arguments))))
+    (if ag-highlight-search
+        (setq arguments (append '("--color" "--color-match" "'30;43'") arguments))
+      (setq arguments (append '("--nocolor") arguments)))
     (unless (file-exists-p default-directory)
       (error "No such directory %s" default-directory))
     (compilation-start
@@ -106,7 +123,7 @@ the symbol at point."
   (ag/search string directory))
 
 (defun ag-regexp (string directory)
-  "Search using ag in a given directory for a given string."
+  "Search using ag in a given directory for a given regexp."
   (interactive "sSearch regexp: \nDDirectory: ")
   (ag/search string directory t))
 
@@ -116,6 +133,12 @@ for the given string."
   (interactive "sSearch string: ")
   (ag/search string (ag/project-root (buffer-file-name))))
 
+(defun ag-project-regexp (regexp)
+  "Guess the root of the current project and search it with ag
+for the given regexp."
+  (interactive "sSearch regexp: ")
+  (ag/search regexp (ag/project-root (buffer-file-name)) t))
+
 (autoload 'symbol-at-point "thingatpt")
 
 (defun ag-project-at-point (string)
@@ -124,28 +147,36 @@ to the symbol under point."
    (interactive (list (read-from-minibuffer "Search string: " (ag/dwim-at-point))))
    (ag/search string (ag/project-root default-directory)))
 
+(defun ag-regexp-project-at-point (regexp)
+  "Same as ``ag-regexp-project'', but with the search regexp defaulting
+to the symbol under point."
+   (interactive (list (read-from-minibuffer "Search regexp: " (ag/dwim-at-point))))
+   (ag/search regexp (ag/project-root default-directory) t))
+
 ;; Taken from grep-filter, just changed the color regex.
 (defun ag-filter ()
   "Handle match highlighting escape sequences inserted by the ag process.
 This function is called from `compilation-filter-hook'."
-  (save-excursion
-    (forward-line 0)
-    (let ((end (point)) beg)
-      (goto-char compilation-filter-start)
+  (when ag-highlight-search
+    (save-excursion
       (forward-line 0)
-      (setq beg (point))
-      ;; Only operate on whole lines so we don't get caught with part of an
-      ;; escape sequence in one chunk and the rest in another.
-      (when (< (point) end)
-        (setq end (copy-marker end))
-        ;; Highlight grep matches and delete marking sequences.
-        (while (re-search-forward "\033\\[30;43m\\(.*?\\)\033\\[[0-9]*m" end 1)
-          (replace-match (propertize (match-string 1)
-                                     'face nil 'font-lock-face ag-match-face)
-                         t t))
-        ;; Delete all remaining escape sequences
-        (goto-char beg)
-        (while (re-search-forward "\033\\[[0-9;]*[mK]" end 1)
-          (replace-match "" t t))))))
+      (let ((end (point)) beg)
+        (goto-char compilation-filter-start)
+        (forward-line 0)
+        (setq beg (point))
+        ;; Only operate on whole lines so we don't get caught with part of an
+        ;; escape sequence in one chunk and the rest in another.
+        (when (< (point) end)
+          (setq end (copy-marker end))
+          ;; Highlight ag matches and delete marking sequences.
+          (while (re-search-forward "\033\\[30;43m\\(.*?\\)\033\\[[0-9]*m" end 1)
+            (replace-match (propertize (match-string 1)
+                                       'face nil 'font-lock-face ag-match-face)
+                           t t))
+          ;; Delete all remaining escape sequences
+          (goto-char beg)
+          (while (re-search-forward "\033\\[[0-9;]*[mK]" end 1)
+            (replace-match "" t t)))))))
 
 (provide 'ag)
+;;; ag.el ends here
