@@ -11,7 +11,7 @@
 ;;
 ;; Author: Jacob Helwig <jacob+ack@technosorcery.net>
 ;; Homepage: http://technosorcery.net
-;; Version: 1.1.1
+;; Version: 1.1.3
 ;; URL: https://github.com/jhelwig/ack-and-a-half
 ;;
 ;; This file is NOT part of GNU Emacs.
@@ -59,6 +59,8 @@
 ;; finding files.
 ;;
 
+;;; Code:
+
 (eval-when-compile (require 'cl))
 (require 'compile)
 (require 'grep)
@@ -76,6 +78,7 @@
         (pttrn '("^\\([^:\n]+?\\):\\([0-9]+\\):\\([0-9]+\\):" 1 2 3)))
     (set (make-local-variable 'compilation-error-regexp-alist) (list smbl))
     (set (make-local-variable 'compilation-error-regexp-alist-alist) (list (cons smbl pttrn))))
+  (set (make-local-variable 'compilation-process-setup-function) 'ack-and-a-half-mode-setup)
   (set (make-local-variable 'compilation-error-face) grep-hit-face))
 
 (defgroup ack-and-a-half nil "Yet another front end for ack."
@@ -84,12 +87,12 @@
 
 (defcustom ack-and-a-half-executable (or (executable-find "ack")
                                          (executable-find "ack-grep"))
-  "*The location of the ack executable"
+  "*The location of the ack executable."
   :group 'ack-and-a-half
   :type 'file)
 
 (defcustom ack-and-a-half-buffer-name "*Ack-and-a-half*"
-  "*The name of the ack-and-a-half buffer"
+  "*The name of the ack-and-a-half buffer."
   :group 'ack-and-a-half
   :type 'string)
 
@@ -101,7 +104,7 @@
   :type '(repeat (string)))
 
 (defcustom ack-and-a-half-mode-type-alist nil
-  "*File type(s) to search per major mode. (ack-and-a-half-same)
+  "*File type(s) to search per major mode.  (ack-and-a-half-same)
 This overrides values in `ack-and-a-half-mode-type-default-alist'.
 The car in each list element is a major mode, and the rest
 is a list of strings passed to the --type flag of ack when running
@@ -111,7 +114,7 @@ is a list of strings passed to the --type flag of ack when running
                        (repeat (string :tag "ack --type")))))
 
 (defcustom ack-and-a-half-mode-extension-alist nil
-  "*File extensions to search per major mode. (ack-and-a-half-same)
+  "*File extensions to search per major mode.  (ack-and-a-half-same)
 This overrides values in `ack-and-a-half-mode-extension-default-alist'.
 The car in each list element is a major mode, and the rest
 is a list of file extensions to be searched in addition to
@@ -122,7 +125,7 @@ running `ack-and-a-half-same'."
                        (repeat :tag "File extensions" (string)))))
 
 (defcustom ack-and-a-half-ignore-case 'smart
-  "*Ignore case when searching
+  "*Whether or not to ignore case when searching.
 The special value 'smart enables the ack option \"smart-case\"."
   :group 'ack-and-a-half
   :type '(choice (const :tag "Case sensitive" nil)
@@ -159,7 +162,7 @@ The directory is verified by the user depending on `ack-and-a-half-prompt-for-di
     "\\`.bzr\\'"
     "\\`_darcs\\'"
     "\\`.hg\\'")
-  "*List of file patterns for the project root (used by `ack-and-a-half-guess-project-root'.
+  "*List of file patterns for the project root (used by `ack-and-a-half-guess-project-root').
 Each element is a regular expression.  If a file matching any element is
 found in a directory, then that directory is assumed to be the project
 root by `ack-and-a-half-guess-project-root'."
@@ -168,8 +171,9 @@ root by `ack-and-a-half-guess-project-root'."
 
 (defcustom ack-and-a-half-prompt-for-directory 'unless-guessed
   "*Prompt for directory in which to run ack.
-If this is 'unless-guessed, then the value determined by `ack-and-a-half-root-directory-functions'
-is used without confirmation.  If it is nil, then the directory is never
+If this is 'unless-guessed, then the value determined by
+`ack-and-a-half-root-directory-functions' is used without
+confirmation.  If it is nil, then the directory is never
 confirmed.  If t, then always prompt for the directory to use."
   :group 'ack-and-a-half
   :type '(choice (const :tag "Don't prompt" nil)
@@ -348,8 +352,8 @@ This is intended to be used in `ack-and-a-half-root-directory-functions'."
 
 (defun ack-and-a-half-string-replace (from to string &optional re)
   "Replace all occurrences of FROM with TO in STRING.
-All arguments are strings.
-When optional fourth argument is non-nil, treat the from as a regular expression."
+All arguments are strings.  When optional fourth argument (RE) is
+non-nil, treat FROM as a regular expression."
   (let ((pos 0)
         (res "")
         (from (if re from (regexp-quote from))))
@@ -365,10 +369,6 @@ When optional fourth argument is non-nil, treat the from as a regular expression
           (setq pos (length string)))))
     res))
 
-(defun ack-and-a-half-shell-quote (string)
-  "Wrap in single quotes, and quote existing single quotes to make shell safe."
-  (concat "'" (ack-and-a-half-string-replace "'" "'\\''" string) "'"))
-
 (defun ack-and-a-half-run (directory regexp pattern &rest arguments)
   "Run ack in DIRECTORY with ARGUMENTS."
   (let ((default-directory (if directory
@@ -378,7 +378,7 @@ When optional fourth argument is non-nil, treat the from as a regular expression
                             (ack-and-a-half-arguments-from-options regexp)
                             arguments
                             (list "--")
-                            (list (ack-and-a-half-shell-quote pattern))
+                            (list (shell-quote-argument pattern))
                             ))
     (make-local-variable 'compilation-buffer-name-function)
     (let (compilation-buffer-name-function)
@@ -416,32 +416,49 @@ When optional fourth argument is non-nil, treat the from as a regular expression
     (re-search-forward " +")
     (buffer-substring (point) (point-at-eol))))
 
+(defun ack-and-a-half-mode-setup ()
+  "Setup compilation variables and buffer for `ack-and-a-half'.
+Set up `compilation-exit-message-function'."
+  (set (make-local-variable 'compilation-exit-message-function)
+       (lambda (status code msg)
+         (if (eq status 'exit)
+             (cond ((and (zerop code) (buffer-modified-p))
+                    '("finished (matches found)\n" . "matched"))
+                   ((not (buffer-modified-p))
+                    '("finished with no matches found\n" . "no match"))
+                   (t
+                    (cons msg code)))
+           (cons msg code)))))
+
 ;;; Public interface ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;###autoload
 (defun ack-and-a-half (pattern &optional regexp directory)
   "Run ack.
-PATTERN is interpreted as a regular expression, iff REGEXP is non-nil.  If
-called interactively, the value of REGEXP is determined by `ack-and-a-half-regexp-search'.
-A prefix arg toggles the behavior.
-DIRECTORY is the root directory.  If called interactively, it is determined by
-`ack-and-a-half-project-root-file-patterns'.  The user is only prompted, if
-`ack-and-a-half-prompt-for-directory' is set."
+PATTERN is interpreted as a regular expression, iff REGEXP is
+non-nil.  If called interactively, the value of REGEXP is
+determined by `ack-and-a-half-regexp-search'.  A prefix arg
+toggles the behavior.  DIRECTORY is the root directory.  If
+called interactively, it is determined by
+`ack-and-a-half-project-root-file-patterns'.  The user is only
+prompted, if `ack-and-a-half-prompt-for-directory' is set."
   (interactive (ack-and-a-half-interactive))
   (ack-and-a-half-run directory regexp pattern))
 
 ;;;###autoload
 (defun ack-and-a-half-same (pattern &optional regexp directory)
   "Run ack with --type matching the current `major-mode'.
-The types of files searched are determined by `ack-and-a-half-mode-type-alist' and
-`ack-and-a-half-mode-extension-alist'.  If no type is configured, the buffer's
-file extension is used for the search.
-PATTERN is interpreted as a regular expression, iff REGEXP is non-nil.  If
-called interactively, the value of REGEXP is determined by `ack-and-a-half-regexp-search'.
-A prefix arg toggles that value.
-DIRECTORY is the directory in which to start searching.  If called
-interactively, it is determined by `ack-and-a-half-project-root-file-patterns`.
-The user is only prompted, if `ack-and-a-half-prompt-for-directory' is set.`"
+The types of files searched are determined by
+`ack-and-a-half-mode-type-alist' and
+`ack-and-a-half-mode-extension-alist'.  If no type is configured,
+the buffer's file extension is used for the search.  PATTERN is
+interpreted as a regular expression, iff REGEXP is non-nil.  If
+called interactively, the value of REGEXP is determined by
+`ack-and-a-half-regexp-search'.  A prefix arg toggles that value.
+DIRECTORY is the directory in which to start searching.  If
+called interactively, it is determined by
+`ack-and-a-half-project-root-file-patterns`.  The user is only
+prompted, if `ack-and-a-half-prompt-for-directory' is set.`"
   (interactive (ack-and-a-half-interactive))
   (let ((type (ack-and-a-half-type)))
     (if type
