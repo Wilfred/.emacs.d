@@ -3,7 +3,7 @@
 ;; Copyright (C) 2012 Magnar Sveen
 
 ;; Author: Magnar Sveen <magnars@gmail.com>
-;; Version: 1.3.0
+;; Version: 1.3.1
 ;; Keywords: strings
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -47,9 +47,16 @@
   "Convert all adjacent whitespace characters to a single space."
   (replace-regexp-in-string "[ \t\n\r]+" " " s))
 
+(defun s-split (separators s &optional omit-nulls)
+  "Split S into substrings bounded by matches for SEPARATORS.
+If OMIT-NULLS is t, zeo-length substrins are ommitted.
+
+This is a simple wrapper around the built-in `split-string'."
+  (split-string s separators omit-nulls))
+
 (defun s-lines (s)
   "Splits S into a list of strings on newline characters."
-  (split-string s "\\(\r\n\\|[\n\r]\\)"))
+  (s-split "\\(\r\n\\|[\n\r]\\)" s))
 
 (defun s-join (separator strings)
   "Join all the strings in STRINGS with SEPARATOR in between."
@@ -224,11 +231,12 @@ This is a simple wrapper around the built-in `string-equal'."
 
 (defalias 's-equals-p 's-equals?)
 
-(defun s-matches? (regexp s)
+(defun s-matches? (regexp s &optional start)
   "Does REGEXP match S?
+If START is non-nil the search starts at that index.
 
 This is a simple wrapper around the built-in `string-match-p'."
-  (s--truthy? (string-match-p regexp s)))
+  (s--truthy? (string-match-p regexp s start)))
 
 (defalias 's-matches-p 's-matches?)
 
@@ -239,24 +247,30 @@ This is a simple wrapper around the built-in `string-match-p'."
 (defun s-lowercase? (s)
   "Are all the letters in S in lower case?"
   (let ((case-fold-search nil))
-    (not (string-match-p "[A-ZÆØÅ]" s))))
+    (not (string-match-p "[[:upper:]]" s))))
 
 (defun s-uppercase? (s)
   "Are all the letters in S in upper case?"
   (let ((case-fold-search nil))
-    (not (string-match-p "[a-zæøå]" s))))
+    (not (string-match-p "[[:lower:]]" s))))
 
 (defun s-mixedcase? (s)
   "Are there both lower case and upper case letters in S?"
   (let ((case-fold-search nil))
     (s--truthy?
-     (and (string-match-p "[a-zæøå]" s)
-          (string-match-p "[A-ZÆØÅ]" s)))))
+     (and (string-match-p "[[:lower:]]" s)
+          (string-match-p "[[:upper:]]" s)))))
+
+(defun s-capitalized? (s)
+  "In S, is the first letter upper case, and all other letters lower case?"
+  (let ((case-fold-search nil))
+    (s--truthy?
+     (string-match-p "^[A-ZÆØÅ][^A-ZÆØÅ]*$" s))))
 
 (defun s-numeric? (s)
   "Is S a number?"
   (s--truthy?
-   (string-match-p "[0-9]+" s)))
+   (string-match-p "^[0-9]+$" s)))
 
 (defun s-replace (old new s)
   "Replaces OLD with NEW in S."
@@ -309,28 +323,32 @@ attention to case differences."
   "Return the reverse of S."
   (apply 'string (nreverse (string-to-list s))))
 
-(defun s-match (regexp s)
+(defun s-match (regexp s &optional start)
   "When the given expression matches the string, this function returns a list
 of the whole matching string and a string for each matched subexpressions.
-If it did not match the returned value is an empty list (nil)."
-  (if (string-match regexp s)
-      (let ((match-data-list (match-data))
-            result)
-        (while match-data-list
-          (let* ((beg (car match-data-list))
-                 (end (cadr match-data-list))
-                 (subs (if (and beg end) (substring s beg end) nil)))
-            (setq result (cons subs result))
-            (setq match-data-list
-                  (cddr match-data-list))))
-        (nreverse result))))
+If it did not match the returned value is an empty list (nil).
+
+When START is non-nil the search will start at that index."
+  (save-match-data
+    (if (string-match regexp s start)
+        (let ((match-data-list (match-data))
+              result)
+          (while match-data-list
+            (let* ((beg (car match-data-list))
+                   (end (cadr match-data-list))
+                   (subs (if (and beg end) (substring s beg end) nil)))
+              (setq result (cons subs result))
+              (setq match-data-list
+                    (cddr match-data-list))))
+          (nreverse result)))))
 
 (defun s-split-words (s)
   "Split S into list of words."
-  (split-string
+  (s-split
+   "[^A-Za-z0-9]+"
    (let ((case-fold-search nil))
      (replace-regexp-in-string "\\([a-z]\\)\\([A-Z]\\)" "\\1 \\2" s))
-   "[^A-Za-z0-9]+" t))
+   t))
 
 (defun s--mapcar-head (fn-head fn-rest list)
   "Like MAPCAR, but applies a different function to the first element."
