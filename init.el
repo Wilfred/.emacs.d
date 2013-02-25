@@ -38,16 +38,13 @@ by (current-time)."
                 (symbol-name ,feature)
                 (time-difference ,timing-var (current-time))))))
 
-; for 3rd party code that we aren't modifying, we just install as
-; packages
-(when
-    (load
-     (expand-file-name "~/.emacs.d/elpa/package.el"))
-  (package-initialize))
-
 ; marmalade is a third party repo that anyone can submit to, so has
 ; many more packages
+(require 'package)
 (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+(add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
+
+(package-initialize)
 
 ; always close the minibuffer on C-x o:
 ; <jlf> wilfredh: you could before-advise other-window to quit first
