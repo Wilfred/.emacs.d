@@ -1,27 +1,37 @@
-;;; loop.el -- the missing loops of Emacs
+;;; loop.el -- modern friendly loop structures
 
 ;;; Commentary:
 
 ;; Emacs lisp is missing loop structures familiar to users of newer
-;; languages. This library adds a bigger selection of loop
-;; structures. Every loop structure can also be broken out of.
+;; languages. This library adds a selection of popular loop structures
+;; as well as break and continue.
 
 ;;; Todo:
 
 ;; * Implement
 ;; * Document
+;; * Examples
 ;; * Unit test
-;; * Add return from
-;; * Explore adding continue
 
-;; (loop-for (x 0 (< x 10) (incf x))
-(defmacro loop-for)
+;; Things to implement:
 
-(defmacro loop-for-in)
+;; loop-while, loop-for-each, loop-do-while, loop-for
+;; loop-break, loop-continue, loop-return
 
-(defmacro loop-while)
+(defmacro loop-while (condition &rest body)
+  `(catch 'loop-break
+     (while ,condition ,@body)))
 
-(defmacro loop-do-while)
+(defmacro loop-do-while (condition &rest body)
+  (let ((is-first-iteration-var (gensym)))
+    `(catch 'loop-break
+       (progn
+         ,@body
+         (while ,condition
+           ,@body)))))
+
+(defun loop-break (throw 'loop-break))
+
 
 (provide 'loop)
 ;;; loop.el ends here
