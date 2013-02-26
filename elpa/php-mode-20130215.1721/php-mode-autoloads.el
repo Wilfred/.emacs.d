@@ -3,11 +3,15 @@
 ;;; Code:
 
 
-;;;### (autoloads (php-mode php-file-patterns) "php-mode" "php-mode.el"
-;;;;;;  (20137 33655))
+;;;### (autoloads (php-mode php-file-patterns php) "php-mode" "php-mode.el"
+;;;;;;  (20779 37880))
 ;;; Generated autoloads from php-mode.el
 
-(defvar php-file-patterns '("\\.php[s34]?\\'" "\\.phtml\\'" "\\.inc\\'") "\
+(let ((loads (get 'php 'custom-loads))) (if (member '"php-mode" loads) nil (put 'php 'custom-loads (cons '"php-mode" loads))))
+
+(add-to-list 'interpreter-mode-alist (cons "php" 'php-mode))
+
+(defvar php-file-patterns '("\\.php[s345t]?\\'" "\\.phtml\\'" "\\.inc\\'") "\
 List of file patterns for which to automatically invoke `php-mode'.")
 
 (custom-autoload 'php-file-patterns "php-mode" nil)
@@ -21,7 +25,8 @@ Major mode for editing PHP code.
 
 ;;;***
 
-;;;### (autoloads nil nil ("php-mode-pkg.el") (20137 33655 752896))
+;;;### (autoloads nil nil ("php-mode-pkg.el" "php-mode-test.el")
+;;;;;;  (20779 37880 180529))
 
 ;;;***
 
