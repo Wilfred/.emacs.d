@@ -30,6 +30,19 @@
          (while ,condition
            ,@body)))))
 
+;; todo: support vectors and strings
+(defmacro loop-for-each (var-with-list &rest body)
+  (let ((var (car var-with-list))
+        (list (cadr var-with-list))
+        (list-var (gensym)))
+    `(catch 'loop-break
+       `(let ((,list-var ,list)
+              (,var))
+          (while ,list-var
+            (setq ,var (car ,list-var))
+            (setq ,list-var (cdr ,list-var))
+            ,@body)))))
+
 (defun loop-break (throw 'loop-break))
 
 
