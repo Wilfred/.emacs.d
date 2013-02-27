@@ -1,12 +1,12 @@
 ;;; highlight-symbol.el --- automatic and manual symbol highlighting
 ;;
-;; Copyright (C) 2007-2009 Nikolaj Schumacher
+;; Copyright (C) 2007-2009, 2013 Nikolaj Schumacher
 ;;
 ;; Author: Nikolaj Schumacher <bugs * nschum de>
-;; Version: 1.1
+;; Version: 1.2
 ;; Keywords: faces, matching
 ;; URL: http://nschum.de/src/emacs/highlight-symbol/
-;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x
+;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x, GNU Emacs 24.x
 ;;
 ;; This file is NOT part of GNU Emacs.
 ;;
@@ -47,6 +47,12 @@
 ;;
 ;;; Change Log:
 ;;
+;; 2013-01-10 (1.2)
+;;    `highlight-symbol-colors` may now contain faces in addition to colors.
+;;    No longer depend on hi-lock (to support the latest Emacs 24).
+;;    Added `highlight-symbol-list-all`.  (thanks to lewang)
+;;    Added `highlight-symbol-occur`.  (thanks to Jim Turner)
+;;
 ;; 2009-04-13 (1.1)
 ;;    Added `highlight-symbol-query-replace'.
 ;;
@@ -73,7 +79,7 @@
 ;;    Prevent calling `highlight-symbol-at-point' on nil.
 ;;
 ;; 2007-04-20 (0.9.1)
-;;    Fixed bug in `highlight-symbol-jump'.  (thanks to Per NordlÃ¶w)
+;;    Fixed bug in `highlight-symbol-jump'.  (thanks to Per Nordlöw)
 ;;
 ;; 2007-04-06 (0.9)
 ;;    Initial release.
@@ -81,7 +87,6 @@
 ;;; Code:
 
 (require 'thingatpt)
-(require 'hi-lock)
 (eval-when-compile (require 'cl))
 
 (push "^No symbol at point$" debug-ignored-errors)
@@ -96,7 +101,7 @@
      (:background "gray30"))
     (((class color) (background light))
      (:background "gray90")))
-  "*Face used by `highlight-symbol-mode'."
+  "Face used by `highlight-symbol-mode'."
   :group 'highlight-symbol)
 
 (defvar highlight-symbol-timer nil)
@@ -116,7 +121,7 @@
     (highlight-symbol-update-timer value)))
 
 (defcustom highlight-symbol-idle-delay 1.5
-  "*Number of seconds of idle time before highlighting the current symbol.
+  "Number of seconds of idle time before highlighting the current symbol.
 If this variable is set to 0, no idle time is required.
 Changing this does not take effect until `highlight-symbol-mode' has been
 disabled for all buffers."
@@ -127,13 +132,13 @@ disabled for all buffers."
 (defcustom highlight-symbol-colors
   '("yellow" "DeepPink" "cyan" "MediumPurple1" "SpringGreen1"
     "DarkOrange" "HotPink1" "RoyalBlue1" "OliveDrab")
-  "*Colors used by `highlight-symbol-at-point'.
-highlighting the symbols will use these colors in order."
-  :type '(repeat color)
+  "Colors and/or faces used by `highlight-symbol-at-point'.
+highlighting the symbols will use these colors/faces in order."
+  :type '(repeat (choice color face))
   :group 'highlight-symbol)
 
 (defcustom highlight-symbol-on-navigation-p nil
-  "*Wether or not to temporary highlight the symbol when using
+  "Whether or not to temporarily highlight the symbol when using
 `highlight-symbol-jump' family of functions."
   :type 'boolean
   :group 'highlight-symbol)
@@ -150,6 +155,11 @@ highlighting the symbols will use these colors in order."
 (defconst highlight-symbol-border-pattern
   (if (>= emacs-major-version 22) '("\\_<" . "\\_>") '("\\<" . "\\>")))
 
+(defcustom highlight-symbol-foreground-color "black"
+  "*Foreground color of highlighted symbols."
+  :type 'string
+  :group 'highlight-symbol)
+
 ;;;###autoload
 (define-minor-mode highlight-symbol-mode
   "Minor mode that highlights the symbol under point throughout the buffer.
@@ -157,8 +167,7 @@ Highlighting takes place after `highlight-symbol-idle-delay'."
   nil " hl-s" nil
   (if highlight-symbol-mode
       ;; on
-      (let ((hi-lock-archaic-interface-message-used t))
-        (unless hi-lock-mode (hi-lock-mode 1))
+      (progn
         (highlight-symbol-update-timer highlight-symbol-idle-delay)
         (add-hook 'post-command-hook 'highlight-symbol-mode-post-command nil t))
     ;; off
@@ -174,36 +183,63 @@ element in of `highlight-symbol-faces'."
   (interactive)
   (let ((symbol (highlight-symbol-get-symbol)))
     (unless symbol (error "No symbol at point"))
-    (unless hi-lock-mode (hi-lock-mode 1))
-    (if (member symbol highlight-symbol-list)
-        ;; remove
-        (progn
-          (setq highlight-symbol-list (delete symbol highlight-symbol-list))
-          (hi-lock-unface-buffer symbol))
-      ;; add
-      (when (equal symbol highlight-symbol)
-        (highlight-symbol-mode-remove-temp))
-      (let ((color (nth highlight-symbol-color-index
-                        highlight-symbol-colors)))
-        (if color ;; wrap
-            (incf highlight-symbol-color-index)
-          (setq highlight-symbol-color-index 1
-                color (car highlight-symbol-colors)))
+    (if (highlight-symbol-symbol-highlighted-p symbol)
+        (highlight-symbol-remove-symbol symbol)
+      (highlight-symbol-add-symbol symbol))))
+
+(defun highlight-symbol-symbol-highlighted-p (symbol)
+  "Test if the a symbol regexp is currently highlighted."
+  (member symbol highlight-symbol-list))
+
+(defun highlight-symbol-add-symbol (symbol)
+  (unless (highlight-symbol-symbol-highlighted-p symbol)
+    (when (equal symbol highlight-symbol)
+      (highlight-symbol-mode-remove-temp))
+    (let ((color (nth highlight-symbol-color-index
+                      highlight-symbol-colors)))
+      (if color ;; wrap
+          (incf highlight-symbol-color-index)
+        (setq highlight-symbol-color-index 1
+              color (car highlight-symbol-colors)))
+      (unless (facep color)
         (setq color `((background-color . ,color)
-                      (foreground-color . "black")))
-        ;; highlight
-        (with-no-warnings
-          (if (< emacs-major-version 22)
-              (hi-lock-set-pattern `(,symbol (0 (quote ,color) t)))
-            (hi-lock-set-pattern symbol color)))
-        (push symbol highlight-symbol-list)))))
+                      (foreground-color . ,highlight-symbol-foreground-color))))
+      ;; highlight
+      (highlight-symbol-add-symbol-with-face symbol color)
+      (push symbol highlight-symbol-list))))
+
+(defun highlight-symbol-add-symbol-with-face (symbol face)
+  (font-lock-add-keywords nil `((,symbol 0 ',face prepend)) 'append)
+  (font-lock-fontify-buffer))
+
+(defun highlight-symbol-remove-symbol (symbol)
+  (setq highlight-symbol-list (delete symbol highlight-symbol-list))
+  (let ((keywords (assoc symbol (highlight-symbol-uncompiled-keywords))))
+    (font-lock-remove-keywords nil (list keywords))
+    (font-lock-fontify-buffer)))
+
+(defun highlight-symbol-uncompiled-keywords ()
+  (if (eq t (car font-lock-keywords))
+      (cadr font-lock-keywords)
+    font-lock-keywords))
 
 ;;;###autoload
 (defun highlight-symbol-remove-all ()
   "Remove symbol highlighting in buffer."
   (interactive)
-  (mapc 'hi-lock-unface-buffer highlight-symbol-list)
-  (setq highlight-symbol-list nil))
+  (mapc 'highlight-symbol-remove-symbol highlight-symbol-list))
+
+;;;###autoload
+(defun highlight-symbol-list-all ()
+  "List all symbols highlighted in the buffer."
+  (interactive)
+  (message "%s" (mapconcat 'highlight-symbol-fontify-symbol highlight-symbol-list ", ")))
+
+(defun highlight-symbol-fontify-symbol (symbol)
+  (let ((prefix-length (length (car highlight-symbol-border-pattern)))
+        (suffix-length (length (cdr highlight-symbol-border-pattern))))
+    (propertize (substring symbol prefix-length (- (length symbol) suffix-length))
+                'face (assoc symbol (highlight-symbol-uncompiled-keywords)))))
 
 ;;;###autoload
 (defun highlight-symbol-next ()
@@ -235,7 +271,7 @@ element in of `highlight-symbol-faces'."
 
 ;;;###autoload
 (defun highlight-symbol-query-replace (replacement)
-  "*Replace the symbol at point."
+  "Replace the symbol at point with REPLACEMENT."
   (interactive (let ((symbol (or (thing-at-point 'symbol)
                                  (error "No symbol at point"))))
                  (highlight-symbol-temp-highlight)
@@ -248,8 +284,18 @@ element in of `highlight-symbol-faces'."
   (goto-char (beginning-of-thing 'symbol))
   (query-replace-regexp (highlight-symbol-get-symbol) replacement))
 
+;;;###autoload
+(defun highlight-symbol-occur (&optional nlines)
+  "Call `occur' with the symbol at point.
+Each line is displayed with NLINES lines before and after, or -NLINES
+before if NLINES is negative."
+  (interactive "P")
+  (if (thing-at-point 'symbol)
+      (occur (highlight-symbol-get-symbol) nlines)
+    (error "No symbol at point")))
+
 (defun highlight-symbol-get-symbol ()
-  "Return a regular expression dandifying the symbol at point."
+  "Return a regular expression identifying the symbol at point."
   (let ((symbol (thing-at-point 'symbol)))
     (when symbol (concat (car highlight-symbol-border-pattern)
                          (regexp-quote symbol)
@@ -260,16 +306,17 @@ element in of `highlight-symbol-faces'."
   (when highlight-symbol-mode
     (let ((symbol (highlight-symbol-get-symbol)))
       (unless (or (equal symbol highlight-symbol)
-                  (member symbol highlight-symbol-list))
+                  (highlight-symbol-symbol-highlighted-p symbol))
         (highlight-symbol-mode-remove-temp)
         (when symbol
           (setq highlight-symbol symbol)
-          (hi-lock-set-pattern symbol 'highlight-symbol-face))))))
+          (highlight-symbol-add-symbol-with-face symbol 'highlight-symbol-face)
+          (font-lock-fontify-buffer))))))
 
 (defun highlight-symbol-mode-remove-temp ()
   "Remove the temporary symbol highlighting."
   (when highlight-symbol
-    (hi-lock-unface-buffer highlight-symbol)
+    (highlight-symbol-remove-symbol highlight-symbol)
     (setq highlight-symbol nil)))
 
 (defun highlight-symbol-mode-post-command ()
