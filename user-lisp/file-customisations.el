@@ -64,6 +64,12 @@
     (set-buffer-modified-p nil)))
 
 (require 'find-file-in-repository)
+
+(defadvice find-file-in-repository (around disable-ido-flex-matching)
+  (let ((ido-enable-flex-matching nil))
+    ad-do-it))
+
+(ad-activate 'find-file-in-repository)
 (global-set-key (kbd "C-x C-g") 'find-file-in-repository)
 
 (provide 'file-customisations)
