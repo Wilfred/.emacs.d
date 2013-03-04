@@ -47,7 +47,7 @@
     (define-key map (kbd "p") 'eclim-project-update)
     (define-key map (kbd "g") 'eclim-project-mode-refresh)
     (define-key map (kbd "R") 'eclim-project-rename)
-    (define-key map (kbd "q") 'quit-window)
+    (define-key map (kbd "q") 'eclim-quit-window)
     map))
 
 
@@ -370,6 +370,13 @@
     (setq major-mode 'special-mode
           mode-name "eclim/project-info"
           buffer-read-only t)))
+
+(defun eclim-project-build ()
+  "Triggers a build of the current project"
+  (interactive)
+  (eclim/execute-command-async
+   (lambda (res) (message res))
+   "project_build" "-p"))
 
 (defun eclim-manage-projects ()
   (interactive)
