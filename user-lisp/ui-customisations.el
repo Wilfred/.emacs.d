@@ -81,6 +81,8 @@
   (add-hook 'ack-and-a-half-mode-hook (lambda () (scf-mode 1))))
 
 (defun toggle-frame-split ()
+  "If the frame is split vertically, split it horizontally or vice versa.
+Assumes that the frame is only split into two."
   (interactive)
   (unless (= (length (window-list)) 2) (error "Can only toggle a frame split in two"))
   (let ((split-vertically-p (window-combined-p)))
