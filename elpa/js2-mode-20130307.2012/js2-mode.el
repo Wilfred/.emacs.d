@@ -7,7 +7,7 @@
 ;;         Dmitry Gutov <dgutov@yandex.ru>
 ;; URL:  https://github.com/mooz/js2-mode/
 ;;       http://code.google.com/p/js2-mode/
-;; Version: 20130228
+;; Version: 20130307
 ;; Keywords: languages, javascript
 ;; Package-Requires: ((emacs "24.1"))
 
@@ -9593,11 +9593,10 @@ to a multiline declaration statement.  See `js2-pretty-multiline-declarations'."
                         (js2-backward-sws)
                         (or (eq (char-before) ?,)
                             (and (not (eq (char-before) ?\;))
-                                 (and
-                                  (prog2 (skip-chars-backward "[[:punct:]]")
-                                      (looking-at js2-indent-operator-re)
-                                    (js2-backward-sws))
-                                  (not (eq (char-before) ?\;))))
+                                 (prog2 (skip-syntax-backward ".")
+                                     (looking-at js2-indent-operator-re)
+                                   (js2-backward-sws))
+                                 (not (eq (char-before) ?\;)))
                             (js2-same-line pos)))))
           (condition-case err
               (backward-sexp)
