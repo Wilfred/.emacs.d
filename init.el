@@ -34,6 +34,9 @@ by (current-time)."
 (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
 
+;; load the packages we've installed. Note that package-install
+;; byte-compiles the packages, but .elc is ignored by git so we force recompilation here
+(byte-recompile-directory (expand-file-name "~/.emacs.d/elpa") 0)
 (package-initialize)
 
 ;; set exec-path according to the system's PATH
