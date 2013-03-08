@@ -3,8 +3,7 @@
 ;;; Code:
 
 
-;;;### (autoloads nil nil ("ht-pkg.el" "ht-tests.el" "ht.el") (20772
-;;;;;;  56496 323852))
+;;;### (autoloads nil nil ("ht-pkg.el" "ht.el") (20794 714 452956))
 
 ;;;***
 
