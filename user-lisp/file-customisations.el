@@ -66,7 +66,8 @@
 (require 'find-file-in-repository)
 
 (defadvice find-file-in-repository (around disable-ido-flex-matching)
-  (let ((ido-enable-flex-matching nil))
+  (let ((ido-enable-flex-matching nil)
+        (ido-case-fold t))
     ad-do-it))
 
 (ad-activate 'find-file-in-repository)
