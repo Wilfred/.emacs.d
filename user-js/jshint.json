@@ -9,6 +9,7 @@
   "sub": true, // don't force foo['bar'] to be rewritten as foo.bar
   "unused": true, // warn on variables that are declared but never used
   "regexp": true, // warn on unsafe . in regexps
+  "eqnull": true, // allow foo == null
   "smarttabs": true // allow mixed tabs and spaces (in some
                     // circumstances), it's not good but it's not
                     // going to misbehave. Note that the warning still
