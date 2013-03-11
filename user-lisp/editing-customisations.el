@@ -244,7 +244,6 @@ to the symbol at point."
 
 ;; multiple cursors
 ;; a good replacement for simple macros since you see the results instantly
-(add-to-list 'load-path "~/.emacs.d/third-party-lisp/multiple-cursors")
 (require 'multiple-cursors)
 (global-set-key (kbd "C->") 'mc/mark-next-like-this)
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
