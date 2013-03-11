@@ -138,6 +138,7 @@ by (current-time)."
 (require 'search-tools)
 
 (require 'ag)
+(setq ag-highlight-search 't)
 (global-set-key (kbd "<f5>") 'ag-project-at-point)
 
 (require 'conflicts)
