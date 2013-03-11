@@ -1,7 +1,13 @@
 ;; yasnippet, clever abbreviation expansion
-(add-to-list 'load-path "~/.emacs.d/third-party-lisp/yasnippet")
 (require 'yasnippet)
+
+;; yasnippet includes too many snippets, only use the ones I have picked:
+(setq yas-snippet-dirs '("~/.emacs.d/snippets"))
 (yas-global-mode 1)
+
+;; bind yas-expand to S-<TAB> (that's shift-tab), since TAB is used by ac-complete
+(define-key yas-minor-mode-map (kbd "<tab>") nil)
+(define-key yas-minor-mode-map (kbd "<backtab>") 'yas-expand)
 
 ;; dabbrev-expand should match case
 (setq dabbrev-case-fold-search nil)
