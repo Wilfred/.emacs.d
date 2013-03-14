@@ -4,9 +4,6 @@
 (add-to-list 'load-path "~/.emacs.d/third-party-lisp/")
 (add-to-list 'load-path "~/.emacs.d/user-lisp/")
 
-; some plugins (at least w3) install themselves here:
-(add-to-list 'load-path "/usr/share/emacs/site-lisp")
-
 (defun time-as-unixtime (most-sig-bits least-sig-bits microseconds)
   "Return the number of seconds since 1st of January 1970."
   (+ (lsh most-sig-bits 16) least-sig-bits
