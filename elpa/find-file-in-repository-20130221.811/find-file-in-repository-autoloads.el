@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (find-file-in-repository) "find-file-in-repository"
-;;;;;;  "find-file-in-repository.el" (20784 48306))
+;;;;;;  "find-file-in-repository.el" (20801 51460))
 ;;; Generated autoloads from find-file-in-repository.el
 
 (autoload 'find-file-in-repository "find-file-in-repository" "\
@@ -24,8 +24,8 @@ find-file-in-repository will autocomplete all files in the
 
 ;;;***
 
-;;;### (autoloads nil nil ("find-file-in-repository-pkg.el") (20784
-;;;;;;  48306 981172))
+;;;### (autoloads nil nil ("find-file-in-repository-pkg.el") (20801
+;;;;;;  51460 369845))
 
 ;;;***
 
