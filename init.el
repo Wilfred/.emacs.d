@@ -34,10 +34,32 @@ by (current-time)."
 (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
 
-;; load the packages we've installed. Note that package-install
-;; byte-compiles the packages, but .elc is ignored by git so we force recompilation here
-(byte-recompile-directory (expand-file-name "~/.emacs.d/elpa") 0)
 (package-initialize)
+
+;; load the packages we've installed on another system but pulled in with git, so they aren't compiled
+(eval-when-compile '(require 'cl))
+(require 'dash)
+(require 's)
+
+(defun was-compiled-p (path)
+  "Does the directory at PATH contain .elc files?"
+  (--any-p (s-ends-with-p ".elc" it) (directory-files path)))
+
+(defun no-dot-directories (directories)
+  "Exclude the . and .. directory from a list."
+  (--remove (or (string= "." (file-name-nondirectory it))
+                (string= ".." (file-name-nondirectory it)))
+            directories))
+
+(defun ensure-packages-compiled ()
+  "If any packages installed with package.el aren't compiled yet, compile them."
+  (let* ((package-files (no-dot-directories (directory-files package-user-dir t)))
+	 (package-directories (-filter 'file-directory-p package-files)))
+    (dolist (directory package-directories)
+      (unless (was-compiled-p directory)
+        (byte-recompile-directory directory 0)))))
+
+(ensure-packages-compiled)
 
 ;; set exec-path according to the system's PATH
 (exec-path-from-shell-initialize)
