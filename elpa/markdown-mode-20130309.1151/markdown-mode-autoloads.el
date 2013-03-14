@@ -3,14 +3,9 @@
 ;;; Code:
 
 
-;;;### (autoloads (gfm-mode markdown-mode markdown-cleanup-list-numbers)
-;;;;;;  "markdown-mode" "markdown-mode.el" (20788 46828))
+;;;### (autoloads (gfm-mode markdown-mode) "markdown-mode" "markdown-mode.el"
+;;;;;;  (20797 49773))
 ;;; Generated autoloads from markdown-mode.el
-
-(autoload 'markdown-cleanup-list-numbers "markdown-mode" "\
-Update the numbering of numbered markdown lists
-
-\(fn)" t nil)
 
 (autoload 'markdown-mode "markdown-mode" "\
 Major mode for editing Markdown files.
@@ -24,7 +19,7 @@ Major mode for editing GitHub Flavored Markdown files.
 
 ;;;***
 
-;;;### (autoloads nil nil ("markdown-mode-pkg.el") (20788 46828 116204))
+;;;### (autoloads nil nil ("markdown-mode-pkg.el") (20797 49773 720542))
 
 ;;;***
 
