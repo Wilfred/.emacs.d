@@ -8,9 +8,9 @@
   "Convenience for setting `python-shell-virtualenv-path'."
   (interactive)
   (let* ((virtualenv-names
-          (no-dot-directories (directory-files virtualenv-base-path)))
+          (no-dot-directories (directory-files virtualenvs-root)))
          (virtualenv-name (ido-completing-read "Virtualenv: " virtualenv-names))
-         (virtualenv-path (file-path-join virtualenv-base-path virtualenv-name)))
+         (virtualenv-path (file-path-join virtualenvs-root virtualenv-name)))
     (setq python-shell-virtualenv-path virtualenv-path)))
 
 (defun virtualenv-search ()
