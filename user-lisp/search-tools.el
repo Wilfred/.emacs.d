@@ -29,20 +29,4 @@ like source files."
                                                (symbol-name (symbol-at-point))))))
  (ack search-term nil (file-find-project-root default-directory)))
 
-(setq virtualenv-base-path "/home/wilfred/.py_envs")
-
-(require 'file-utils)
-(defun ag-in-virtualenv ()
-  "Search the soruce code in a virtual environment for
-a specific search string."
-  (interactive)
-  (let* ((virtualenv-names
-          (no-dot-directories (directory-files virtualenv-base-path)))
-         (virtualenv-name (ido-completing-read "Virtualenv: " virtualenv-names))
-         (virtualenv-path (concat virtualenv-base-path "/" virtualenv-name "/lib/python2.7/site-packages"))
-         (search-term (read-from-minibuffer "Search virtualenv for: "
-                                            (if (symbol-at-point)
-                                                (symbol-name (symbol-at-point))))))
-    (ag/search search-term virtualenv-path)))
-
 (provide 'search-tools)
