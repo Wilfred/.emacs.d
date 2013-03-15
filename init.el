@@ -154,7 +154,6 @@ by (current-time)."
 (require 'potato-customisations)
 
 (require 'git-customisations)
-(require 'search-tools)
 
 (require 'ag)
 (setq ag-highlight-search 't)
