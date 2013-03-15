@@ -1,4 +1,5 @@
 (require 'file-utils)
+(require 'ag)
 
 (defcustom virtualenvs-root (expand-file-name "~/.envs")
   "Absolute path to the directory that contains all the virtualenvs.")
@@ -24,3 +25,5 @@ a specific search string."
         (libraries-path
          (file-path-join python-shell-virtualenv-path "lib/python2.7/site-packages")))
     (ag/search search-term libraries-path)))
+
+(provide 'python-utils)

@@ -1,4 +1,5 @@
 (require 'python)
+(require 'python-utils)
 
 ;; TODO: properly highlight differently named self arguments (often seen in nested classes):
 
