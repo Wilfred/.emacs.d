@@ -60,6 +60,8 @@ returning the path where FILE-NAME can be found."
 
 (defun no-dot-directories (directories)
   "Exclude the . and .. directory from a list."
-  (--remove (or (equal "." it) (equal ".." it)) directories))
+  (--remove (or (string= "." (file-name-nondirectory it))
+                (string= ".." (file-name-nondirectory it)))
+            directories))
 
 (provide 'file-utils)
