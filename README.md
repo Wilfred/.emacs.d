@@ -33,24 +33,23 @@ I've moved the following packages to their own repos. These packages
 have been properly documented and don't depend on any convenience
 functions I've written.
 
-* [find-in-repo](https://github.com/Wilfred/find-in-repo.el)
 * [flymake-jshint](https://github.com/Wilfred/flymake-jshint.el)
+* [ag.el](https://github.com/Wilfred/ag.el)
+* [loop.el](https://github.com/Wilfred/loop.el)
 
 ### Major third party packages
 
-To avoid problems where code becomes abandoned or changes hosting,
-third party packages are included directly rather than as git
-submodules.
+Third party packages are installed from MELPA or Marmalade, but stored
+locally in the repo so there are no external dependencies for this
+repo. These are stored in `elpa/`.
 
-* [Magit](https://github.com/magit/magit)
-* [markdown-mode](http://jblevins.org/projects/markdown-mode/)
-* [auto-complete](http://cx4a.org/software/auto-complete/)
+Package that haven't been written by me but aren't available as
+package yet live in `third-party-lisp`. These include:
+
 * [dired+](http://www.emacswiki.org/cgi-bin/wiki/dired+.el)
 * [csv-mode](http://centaur.maths.qmul.ac.uk/Emacs/)
-* [zencoding-mode](https://github.com/rooney/zencoding)
 * [color-theme](http://www.nongnu.org/color-theme/) (note Tango theme is
   not part of the default collection)
-* autopair
 
 ### Flymake tools
 
