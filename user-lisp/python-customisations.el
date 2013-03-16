@@ -7,13 +7,11 @@
 ;;     def __init__(_self, *args):
 ;;         pass
 
-; use autopair for Python, since it doesn't really suit paredit
+;; use autopair for Python, since paredit is unsuitable and
+;; electric-pair-mode isn't smart enough
 (require 'autopair)
 (setq autopair-autowrap t)
 (add-hook 'python-mode-hook #'(lambda () (autopair-mode)))
-
-
-(add-hook 'python-mode-hook #'(lambda () (electric-pair-mode t)))
 
 ; set flymake to use pyflakes to check code (requires pyflakes installed and on $PATH)
 (require 'flymake-python-pyflakes)
