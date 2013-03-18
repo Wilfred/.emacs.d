@@ -1,6 +1,6 @@
 ;;; flymake-jshint.el --- making flymake work with JSHint
 
-;; Copyright (C) 2011 Wilfred Hughes <me@wilfred.me.uk>
+;; Copyright (C) 2012 Wilfred Hughes <me@wilfred.me.uk>
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 23 June 2011
