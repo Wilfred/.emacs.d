@@ -14,11 +14,11 @@
     (setq python-shell-virtualenv-path virtualenv-path)))
 
 (defun virtualenv-search ()
-  "Search the soruce code in the current virtualenv for
+  "Search the source code in the current virtualenv for
 a specific search string."
   (interactive)
   (unless python-shell-virtualenv-path
-    (error "Need to set `python-shell-virtualenv-path`, see `virtualenv-workon`"))
+    (error "Need to set `python-shell-virtualenv-path', see `virtualenv-workon'"))
   (let ((search-term (read-from-minibuffer "Search virtualenv for: "
                                            (if (symbol-at-point)
                                                (symbol-name (symbol-at-point)))))
