@@ -47,11 +47,13 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added `highlight-symbol-foreground-color'.  (thanks to rubikitch)
+;;
 ;; 2013-01-10 (1.2)
-;;    `highlight-symbol-colors` may now contain faces in addition to colors.
+;;    `highlight-symbol-colors' may now contain faces in addition to colors.
 ;;    No longer depend on hi-lock (to support the latest Emacs 24).
-;;    Added `highlight-symbol-list-all`.  (thanks to lewang)
-;;    Added `highlight-symbol-occur`.  (thanks to Jim Turner)
+;;    Added `highlight-symbol-list-all'.  (thanks to lewang)
+;;    Added `highlight-symbol-occur'.  (thanks to Jim Turner)
 ;;
 ;; 2009-04-13 (1.1)
 ;;    Added `highlight-symbol-query-replace'.
@@ -157,7 +159,8 @@ highlighting the symbols will use these colors/faces in order."
 
 (defcustom highlight-symbol-foreground-color "black"
   "*Foreground color of highlighted symbols."
-  :type 'string
+  :type '(choice color
+                 (const :tag "Keep original text color" nil))
   :group 'highlight-symbol)
 
 ;;;###autoload
