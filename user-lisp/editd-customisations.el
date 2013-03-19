@@ -34,3 +34,15 @@ inserting the results in BUFFER."
     (switch-to-buffer output-buffer)
     (delete-region (point-min) (point-max))
     (execute-in-buffer (format "git flow release start %s" next-version) output-buffer)))
+
+(defun git-flow-release-push ()
+  "After finishing a gitflow release, push it and move back to develop."
+  (interactive)
+  (let* ((output-buffer (get-buffer-create "*New release*"))
+         (project-root (vc-git-root (buffer-file-name)))
+         (next-version (get-next-version project-root)))
+    (switch-to-buffer output-buffer)
+    (delete-region (point-min) (point-max))
+    (execute-in-buffer "git push" output-buffer)
+    (execute-in-buffer "git push --tags" output-buffer)
+    (execute-in-buffer "git checkout develop" output-buffer)))
