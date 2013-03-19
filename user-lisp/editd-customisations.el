@@ -10,13 +10,27 @@ inserting the results in BUFFER."
          (args (cdr command-args-list)))
     (apply 'call-process command nil output-buffer t args)))
 
-(defun cut-new-release ()
-  "Increment the version number, use gitflow to mark a new release, and push it."
+(defun get-latest-version (repo-path)
+  "Find the last tagged version. Assumes GNU sort (BSD sort lacks --version-sort)."
+  (let ((default-directory repo-path))
+    (s-trim
+     (shell-command-to-string "git tag --list | sort --version-sort | tail -n 1"))))
+
+(defun get-next-version (repo-path)
+  "Increment the minor part of the current version."
+  (let* ((current-version (get-latest-version repo-path))
+         (minor-version-part (car (last (s-split "\\." current-version))))
+         (major-version-parts (s-join "." (butlast (s-split "\\." current-version))))
+         (minor-version-number (string-to-number minor-version-part)))
+    (format "%s.%s" major-version-parts (1+ minor-version-number))))
+
+(defun git-flow-release-start ()
+  "Use gitflow to mark a new release."
   (interactive)
-  ;; todo: get version number and increment
   ;; todo: check we're in an Editd buffer
-  (let ((output-buffer (get-buffer-create "*New release*")))
+  (let* ((output-buffer (get-buffer-create "*New release*"))
+         (project-root (vc-git-root (buffer-file-name)))
+         (next-version (get-next-version project-root)))
     (switch-to-buffer output-buffer)
     (delete-region (point-min) (point-max))
-    (execute-in-buffer "git push" output-buffer)
-    (execute-in-buffer "git push --tags" output-buffer)))
+    (execute-in-buffer (format "git flow release start %s" next-version) output-buffer)))
