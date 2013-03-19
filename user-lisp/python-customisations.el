@@ -22,9 +22,6 @@
  '(flymake-errline ((((class color)) (:underline "Red"))))
  '(flymake-warnline ((((class color)) (:underline "Orange")))))
 
-(define-key python-mode-map [(f7)] 'flymake-goto-prev-error)
-(define-key python-mode-map [(f8)] 'flymake-goto-next-error)
-
 (defun python-insert-init-function ()
   (interactive)
   
