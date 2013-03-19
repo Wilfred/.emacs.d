@@ -7,6 +7,8 @@
 (defun virtualenv-workon ()
   "Convenience for setting `python-shell-virtualenv-path'."
   (interactive)
+  (unless (file-exists-p virtualenvs-root)
+    (error "`virtualenvs-root' is set to %s, which doesn't exist" virtualenvs-root))
   (let* ((virtualenv-names
           (no-dot-directories (directory-files virtualenvs-root)))
          (virtualenv-name (ido-completing-read "Virtualenv: " virtualenv-names))
