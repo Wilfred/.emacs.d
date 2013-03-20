@@ -29,7 +29,7 @@ inserting the results in BUFFER."
   (interactive)
   ;; todo: check we're in an Editd buffer
   (let* ((output-buffer (get-buffer-create "*New release*"))
-         (project-root (vc-git-root (buffer-file-name)))
+         (project-root (vc-git-root default-directory))
          (next-version (get-next-version project-root)))
     (switch-to-buffer output-buffer)
     (delete-region (point-min) (point-max))
@@ -39,7 +39,7 @@ inserting the results in BUFFER."
   "After finishing a gitflow release, push it and move back to develop."
   (interactive)
   (let* ((output-buffer (get-buffer-create "*New release*"))
-         (project-root (vc-git-root (buffer-file-name)))
+         (project-root (vc-git-root default-directory))
          (next-version (get-next-version project-root)))
     (switch-to-buffer output-buffer)
     (delete-region (point-min) (point-max))
