@@ -8,6 +8,7 @@
   "strict": false, // don't require "use strict";
   "sub": true, // don't force foo['bar'] to be rewritten as foo.bar
   "unused": true, // warn on variables that are declared but never used
+  "undef": true, // warn on variables that aren't defined
   "regexp": true, // warn on unsafe . in regexps
   "maxerr": 10000, // keep reporting even if we find lots of issues
   "eqnull": true, // allow foo == null
