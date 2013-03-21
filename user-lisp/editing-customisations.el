@@ -179,7 +179,6 @@ are interchanged."
 (setq-default shift-select-mode nil)
 
 ;; use expand-region to grow the region according to the current mode's syntax
-(add-to-list 'load-path "~/.emacs.d/third-party-lisp/expand-region")
 (require 'expand-region)
 (global-set-key (kbd "C-=") 'er/expand-region)
 

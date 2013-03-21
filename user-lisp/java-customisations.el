@@ -1,6 +1,5 @@
 ;;; eclim, which lets us use eclispe as a server
 
-(add-to-list 'load-path (expand-file-name "~/.emacs.d/third-party-lisp/emacs-eclim"))
 (setq eclim-executable (expand-file-name "~/.eclipse/org.eclipse.platform_3.7.0_155965261/eclim"))
 (require 'eclim)
 
