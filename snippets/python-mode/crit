@@ -1,0 +1,5 @@
+# -*- coding: utf-8 -*-
+# name: crit
+# key: crit
+# --
+import logging; logging.critical("$1")

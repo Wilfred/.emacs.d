@@ -1,0 +1,5 @@
+# -*- coding: utf-8 -*-
+# name: ipdb
+# key: ipdb
+# --
+import ipdb; ipdb.set_trace()

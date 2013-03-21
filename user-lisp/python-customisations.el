@@ -22,25 +22,6 @@
  '(flymake-errline ((((class color)) (:underline "Red"))))
  '(flymake-warnline ((((class color)) (:underline "Orange")))))
 
-(defun python-insert-init-function ()
-  (interactive)
-  
-  (let* ((exact-position (split-string (which-function) (rx "."))) ; e.g. ("FooBar" "method")
-         (class-name (car exact-position))
-         (method-name (cdr exact-position)))
-
-    (newline-and-indent)
-    ; if we're currently after another method, we will end up one indent too deep
-    ; (assuming autopair is in use, replace the backspace command with equivalent otherwise)
-    (when method-name
-      (delete-char -4))
-    
-    (insert "def __init__(self, *args, **kwargs):")
-    (newline-and-indent)
-    (python-insert-super-function)
-    (move-end-of-line)
-    (newline-and-indent)))
-
 (defun python-insert-super-function ()
   "Insert a call to super for the current class and function."
   ;; TODO: automatically add arguments to the superclass's function based on the current arguements
@@ -59,23 +40,6 @@
     (insert (format "super(%s, self).%s()" class-name method-name))
     ;; backward one char so the user can enter the argument for the superclass's function
     (backward-char)))
-
-(defun python-insert-ipdb ()
-  "Insert ipdb break point on this line."
-  (interactive)
-  (move-beginning-of-line nil)
-  (newline-and-indent)
-  (previous-line)
-  (indent-for-tab-command)
-  (insert "import ipdb; ipdb.set_trace()"))
-
-(defun python-insert-logging-statement (statement)
-  (interactive "sWhat to log: ")
-  (let ((logging-statment
-         (concat "import logging; logging.critical(" statement ")")))
-    (insert logging-statment)))
-
-(define-key python-mode-map (kbd "<f1>") 'python-insert-logging-statement)
 
 (define-skeleton python-insert-docstring
   "Insert a Python docstring."
