@@ -11,7 +11,7 @@
 (defconst php-mode-version-number "1.10"
   "PHP Mode version number.")
 
-(defconst php-mode-modified "2013-02-15"
+(defconst php-mode-modified "2013-03-15"
   "PHP Mode build date.")
 
 ;;; License
@@ -198,16 +198,6 @@ You can replace \"en\" with your ISO language code."
 ;;;###autoload
 (add-to-list 'interpreter-mode-alist (cons "php" 'php-mode))
 
-;;;###autoload
-(defcustom php-file-patterns '("\\.php[s345t]?\\'" "\\.phtml\\'" "\\.inc\\'")
-  "List of file patterns for which to automatically invoke `php-mode'."
-  :type '(repeat (regexp :tag "Pattern"))
-  :set (lambda (sym val)
-         (set-default sym val)
-         (mapc (lambda (i) (add-to-list 'auto-mode-alist (cons i 'php-mode)))
-               val))
-  :group 'php)
-
 (defcustom php-mode-hook nil
   "List of functions to be executed on entry to `php-mode'."
   :type 'hook
@@ -252,8 +242,8 @@ This variable can take one of the following symbol values:
 
 `WordPress' - use coding styles preferred for working with WordPress projects."
   :type '(choice (const :tag "PEAR" pear)
-                                 (const :tag "Drupal" drupal)
-                                 (const :tag "WordPress" wordpress))
+                 (const :tag "Drupal" drupal)
+                 (const :tag "WordPress" wordpress))
   :group 'php
   :set 'php-mode-custom-coding-style-set
   :initialize 'custom-initialize-default)
@@ -262,11 +252,11 @@ This variable can take one of the following symbol values:
   (set         sym value)
   (set-default sym value)
   (cond ((eq value 'pear)
-                 (php-enable-pear-coding-style))
-                ((eq value 'drupal)
-                 (php-enable-drupal-coding-style))
-                ((eq value 'wordpress)
-                 (php-enable-wordpress-coding-style))))
+         (php-enable-pear-coding-style))
+        ((eq value 'drupal)
+         (php-enable-drupal-coding-style))
+        ((eq value 'wordpress)
+         (php-enable-wordpress-coding-style))))
 
 
 
@@ -275,7 +265,12 @@ This variable can take one of the following symbol values:
  '((c-basic-offset . 4)
    (c-offsets-alist . ((block-open . -)
                        (block-close . 0)
-                       (statement-cont . +)))))
+                       (topmost-intro-cont . c-lineup-cascaded-calls)
+                       (brace-list-intro . +)
+                       (brace-list-entry . c-lineup-cascaded-calls)
+                       (arglist-close . php-lineup-arglist-close)
+                       (arglist-intro . php-lineup-arglist-intro)
+                       (statement-cont . c-lineup-cascaded-calls)))))
 
 (defun php-enable-pear-coding-style ()
   "Sets up php-mode to use the coding styles preferred for PEAR
@@ -289,10 +284,13 @@ code and modules."
  "drupal"
  '((c-basic-offset . 2)
    (c-offsets-alist . ((case-label . +)
-                       (arglist-close . 0)
-                       (arglist-intro . +)
+                       (topmost-intro-cont . c-lineup-cascaded-calls)
+                       (brace-list-intro . +)
+                       (brace-list-entry . c-lineup-cascaded-calls)
+                       (arglist-close . php-lineup-arglist-close)
+                       (arglist-intro . php-lineup-arglist-intro)
                        (arglist-cont-nonempty . c-lineup-math)
-                       (statement-cont . +)))))
+                       (statement-cont . c-lineup-cascaded-calls)))))
 
 (defun php-enable-drupal-coding-style ()
   "Makes php-mode use coding styles that are preferable for
@@ -309,12 +307,16 @@ working with Drupal."
  "wordpress"
  '((c-basic-offset . 4)
    (c-offsets-alist . ((arglist-cont . 0)
-                       (arglist-intro . +)
+                       (arglist-intro . php-lineup-arglist-intro)
+                       (arglist-close . php-lineup-arglist-close)
+                       (topmost-intro-cont . c-lineup-cascaded-calls)
+                       (brace-list-intro . +)
+                       (brace-list-entry . c-lineup-cascaded-calls)
                        (case-label . 2)
                        (arglist-close . 0)
                        (defun-close . 0)
                        (defun-block-intro . +)
-                       (statement-cont . +)))))
+                       (statement-cont . c-lineup-cascaded-calls)))))
 
 (defun php-enable-wordpress-coding-style ()
   "Makes php-mode use coding styles that are preferable for
@@ -576,11 +578,6 @@ This is was done due to the problem reported here:
   (set (make-local-variable 'c-opt-cpp-start) php-tags-key)
   (set (make-local-variable 'c-opt-cpp-prefix) php-tags-key)
 
-  ;; These settings ensure that chained method calls line up correctly
-  ;; over multiple lines.
-  (c-set-offset 'topmost-intro-cont 'c-lineup-cascaded-calls)
-  (c-set-offset 'brace-list-entry 'c-lineup-cascaded-calls)
-
   (set (make-local-variable 'c-block-stmt-1-key) php-block-stmt-1-key)
   (set (make-local-variable 'c-block-stmt-2-key) php-block-stmt-2-key)
 
@@ -637,11 +634,14 @@ This is was done due to the problem reported here:
              nil t)
 
   (cond ((eq php-mode-coding-style 'pear)
-                 (run-hooks 'php-mode-pear-hook))
-                ((eq php-mode-coding-style 'drupal)
-                 (run-hooks 'php-mode-drupal-hook))
-                ((eq php-mode-coding-style 'wordpress)
-                 (run-hooks 'php-mode-wordpress-hook)))
+         (php-enable-pear-coding-style)
+         (run-hooks 'php-mode-pear-hook))
+        ((eq php-mode-coding-style 'drupal)
+         (php-enable-drupal-coding-style)
+         (run-hooks 'php-mode-drupal-hook))
+        ((eq php-mode-coding-style 'wordpress)
+         (php-enable-wordpress-coding-style)
+         (run-hooks 'php-mode-wordpress-hook)))
 
   (if (or php-mode-force-pear
           (and (stringp buffer-file-name)
@@ -1527,8 +1527,10 @@ searching the PHP website."
       (1 font-lock-keyword-face)
       (2 font-lock-function-name-face nil t))
 
-    ;; class hierarchy
-    '("\\<\\(self\\|parent\\)\\>" (1 font-lock-constant-face nil nil))
+    ;; self, parent, and static in class contexts
+    '("\\<\\(self\\)\\(?:::\\)" (1 font-lock-constant-face nil nil))
+    '("\\<\\(parent\\)\\(?:::\\|\\s-*(\\)" (1 font-lock-constant-face nil nil))
+    '("\\<\\(static\\)\\(?:::\\)" (1 font-lock-constant-face t nil))
 
     ;; method and variable features
     '("\\<\\(private\\|protected\\|public\\)\\s-+\\$?\\sw+"
@@ -1681,6 +1683,10 @@ The output will appear in the buffer *PHP*."
   '(font-lock-add-keywords 'php-mode '((php-annotations-font-lock-find-annotation (2 'php-annotations-annotation-face t)))))
 
 
+
+;;;###autoload
+(dolist (pattern '("\\.php[s345t]?\\'" "\\.phtml\\'"))
+  (add-to-list 'auto-mode-alist `(,pattern . php-mode)))
 
 (provide 'php-mode)
 
