@@ -47,12 +47,12 @@
   "Convert all adjacent whitespace characters to a single space."
   (replace-regexp-in-string "[ \t\n\r]+" " " s))
 
-(defun s-split (separators s &optional omit-nulls)
-  "Split S into substrings bounded by matches for SEPARATORS.
-If OMIT-NULLS is t, zeo-length substrins are ommitted.
+(defun s-split (separator s &optional omit-nulls)
+  "Split S into substrings bounded by matches for regexp SEPARATOR.
+If OMIT-NULLS is t, zero-length substrings are omitted.
 
 This is a simple wrapper around the built-in `split-string'."
-  (split-string s separators omit-nulls))
+  (split-string s separator omit-nulls))
 
 (defun s-lines (s)
   "Splits S into a list of strings on newline characters."
@@ -284,6 +284,15 @@ This is a simple wrapper around the built-in `string-match-p'."
   "Replaces OLD with NEW in S."
   (replace-regexp-in-string (regexp-quote old) new s t t))
 
+(defun s--aget (alist key)
+  (cdr (assoc key alist)))
+
+(defun s-replace-all (replacements s)
+  "REPLACEMENTS is a list of cons-cells. Each `car` is replaced with `cdr` in S."
+  (replace-regexp-in-string (regexp-opt (mapcar 'car replacements))
+                            (lambda (it) (s--aget replacements it))
+                            s))
+
 (defun s-downcase (s)
   "Convert S to lower case.
 
@@ -430,7 +439,7 @@ transformation."
                          ((eq replacer 'gethash)
                           (funcall replacer var extra))
                          ((eq replacer 'aget)
-                          (funcall replacer extra var))
+                          (funcall 's--aget extra var))
                          ((eq replacer 'elt)
                           (funcall replacer extra var))
                          (t
