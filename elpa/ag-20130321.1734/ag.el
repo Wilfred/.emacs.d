@@ -1,10 +1,10 @@
-;;; ag.el --- A front-end for ag, the C ack replacement.
+;;; ag.el --- A front-end for ag ('the silver searcher'), the C ack replacement.
 
 ;; Copyright (C) 2013 Wilfred Hughes <me@wilfred.me.uk>
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 January 2013
-;; Version: 0.15
+;; Version: 0.16
 
 ;;; Commentary
 
@@ -68,7 +68,6 @@ This requires the ag command to support --color-match, which is only in v0.14+"
 
 (define-compilation-mode ag-mode "Ag"
   "Ag results compilation mode"
-  (setq ag-last-buffer (current-buffer))
   (let ((smbl  'compilation-ag-nogroup)
         (pttrn '("^\\([^:\n]+?\\):\\([0-9]+\\):\\([0-9]+\\):" 1 2 3)))
     (set (make-local-variable 'compilation-error-regexp-alist) (list smbl))
