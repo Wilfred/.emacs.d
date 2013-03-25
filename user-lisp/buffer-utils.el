@@ -8,10 +8,11 @@
 
 (defun replace-in-buffer (from-string to-string)
   "Replace string FROM-STRING with TO-STRING."
-  (save-excursion
-    (save-match-data
-      (goto-char (point-min))
-      (while (search-forward (regexp-quote from-string) nil t)
-        (replace-match to-string nil t)))))
+  (let ((case-fold-search nil))
+    (save-excursion
+      (save-match-data
+        (goto-char (point-min))
+        (while (search-forward (regexp-quote from-string) nil t)
+          (replace-match to-string t t))))))
 
 (provide 'buffer-utils)
