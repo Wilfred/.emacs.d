@@ -11,7 +11,7 @@
   (save-excursion
     (save-match-data
       (goto-char (point-min))
-      (while (search-forward from-string nil t)
+      (while (search-forward (regexp-quote from-string) nil t)
         (replace-match to-string nil t)))))
 
 (provide 'buffer-utils)
