@@ -1,17 +1,4 @@
-(defun buffer-contains-string-p (string)
-  "Does the current buffer contain STRING? Case sensitive."
-  (let ((case-fold-search nil))
-    (save-excursion
-      (save-match-data
-        (goto-char (point-min))
-        (search-forward string nil t)))))
-
-(defun replace-in-buffer (from-string to-string)
-  (save-excursion
-    (save-match-data
-      (goto-char (point-min))
-      (while (search-forward from-string nil t)
-        (replace-match to-string nil t)))))
+(require 'buffer-utils)
 
 (defcustom potato-path "~/work/potato"
   "Path to directory containing all Potato projects."
