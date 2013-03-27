@@ -13,6 +13,13 @@
 (setq autopair-autowrap t)
 (add-hook 'python-mode-hook #'(lambda () (autopair-mode)))
 
+;; jedi provides autocompletion for python
+(setq jedi:setup-keys t)
+(require 'jedi)
+(setq jedi:server-command
+      (list "python2" jedi:server-script))
+(add-hook 'python-mode-hook 'jedi:setup)
+
 ; set flymake to use pyflakes to check code (requires pyflakes installed and on $PATH)
 (require 'flymake-python-pyflakes)
 (setq flymake-python-pyflakes-executable "~/.emacs.d/user-python/run-pyflakes")
