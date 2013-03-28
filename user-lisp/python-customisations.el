@@ -29,6 +29,8 @@
  '(flymake-errline ((((class color)) (:underline "Red"))))
  '(flymake-warnline ((((class color)) (:underline "Orange")))))
 
+(require 'which-func)
+
 (defun python-insert-super-function ()
   "Insert a call to super for the current class and function."
   ;; TODO: automatically add arguments to the superclass's function based on the current arguements
