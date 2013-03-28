@@ -33,7 +33,10 @@ inserting the results in BUFFER."
          (next-version (get-next-version project-root)))
     (switch-to-buffer output-buffer)
     (delete-region (point-min) (point-max))
-    (execute-in-buffer (format "git flow release start %s" next-version) output-buffer)))
+    (execute-in-buffer (format "git flow release start %s" next-version) output-buffer)
+
+    ;; copy the finish command to the kill ring and clipboard to save typing
+    (kill-new (format "git flow release finish %s" next-version))))
 
 (defun git-flow-release-push ()
   "After finishing a gitflow release, push it and move back to develop."
