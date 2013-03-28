@@ -1,9 +1,9 @@
-;;; with-namespace.el --- Poor-man's namespaces for elisp
+;;; with-namespace.el --- interoperable elisp namespaces
 
 ;; Copyright (C) 2013 Wilfred Hughes
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
-;; Version: 1.1
+;; Version: 20130323.7
 ;; Keywords: namespaces
 ;; Package-Requires: ((dash "1.1.0") (loop "1.1"))
 
@@ -22,26 +22,32 @@
 
 ;;; Commentary
 
-;; This is basic defun/defvar rewriting to get most of the benefits of
-;; namespaces (shorter symbols).
+;; Many elisp packages already use `my-project-foo' and
+;; `my-project--internal-bar' naming conventions. `with-namespace'
+;; allows you to define a collection of functions, variables etc
+;; without having to write the prefix in front of every symbol.
 
-;;; Usage
+;; It works by simply rewriting all the symbols of top-level
+;; definitions, so the following code:
 
 ;; (with-namespace "my-project"
-;;     (defun foo (x) (1+ x))
+;;     (defun foo () (-greet "world"))
+;;     (defun -greet (thing) (format "hello %s" thing))
 ;;     (defvar bar 3 "some docstring"))
 
-;; should compile to:
+;; compiles to:
 
-;; (defun my-project-foo (x) (1+ x))
+;; (defun my-project-foo () (my-project--greet "world"))
+;; (defun my-project--greet (thing) (format "hello %s" thing))
 ;; (defvar my-project-bar 3 "some docstring")
+
+;; By producing code that many elisp developers would write anyway,
+;; `with-namespace' does not require downstream users to even know
+;; about it.
 
 ;;; Todo
 
 ;; * Document
-;; * Unit test
-;; * Explore private functions (presumably using a separate namespace
-;;   separator i.e. --)
 ;; * Explore importing from other namespaces (everything, public only, named only)
 
 ;;; Changelog
