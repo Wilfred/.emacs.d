@@ -46,3 +46,5 @@ inserting the results in BUFFER."
     (execute-in-buffer "git push" output-buffer)
     (execute-in-buffer "git push --tags" output-buffer)
     (execute-in-buffer "git checkout develop" output-buffer)))
+
+(provide 'editd-customisations)
