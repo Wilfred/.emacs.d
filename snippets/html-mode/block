@@ -1,0 +1,5 @@
+# -*- coding: utf-8 -*-
+# name: block
+# key: block
+# --
+{% block $1 %}$2{% endblock %}
