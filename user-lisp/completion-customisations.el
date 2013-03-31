@@ -9,6 +9,10 @@
 (define-key yas-minor-mode-map (kbd "<tab>") nil)
 (define-key yas-minor-mode-map (kbd "SPC") 'yas-expand)
 
+;; since the above doesn't stop yasnippet using tab to change fields,
+;; only use ENTER for ac-complete
+(define-key ac-complete-mode-map (kbd "<tab>") nil)
+
 ;; dabbrev-expand should match case
 (setq dabbrev-case-fold-search nil)
 
