@@ -62,9 +62,6 @@
 (setq ac-sources
       (list ac-source-dabbrev))
 
-(require 'auto-complete-config)
-(ac-config-default)
-
 ;; don't try to complete after semicolon (is a pain in CSS)
 (setq ac-ignores '(";"))
 
