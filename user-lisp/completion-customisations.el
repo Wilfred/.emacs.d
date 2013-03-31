@@ -54,9 +54,7 @@
 ;; so we bind it to M-? instead of M-/
 (global-set-key (kbd "M-/") 'hippie-expand)
 
-
-; auto-completion with neat popup
-(add-to-list 'load-path "~/.emacs.d/third-party-lisp/auto-complete")
+;; auto-completion with neat popup
 (require 'auto-complete-config)
 (ac-config-default)
 ; using dabbrev as auto-completion source
@@ -65,7 +63,6 @@
       (list ac-source-dabbrev))
 
 (require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/third-party-lisp/auto-complete/dict")
 (ac-config-default)
 
 ;; don't try to complete after semicolon (is a pain in CSS)
