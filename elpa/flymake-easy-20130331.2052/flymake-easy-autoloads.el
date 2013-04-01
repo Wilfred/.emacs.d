@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads nil nil ("flymake-easy-pkg.el" "flymake-easy.el")
-;;;;;;  (20804 49909 641167))
+;;;;;;  (20825 32358 552163))
 
 ;;;***
 

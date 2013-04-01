@@ -4,7 +4,7 @@
 
 ;; Author: Steve Purcell <steve@sanityinc.com>
 ;; URL: https://github.com/purcell/flymake-easy
-;; Version: DEV
+;; Version: 20130331.2052
 ;; Keywords: convenience, internal
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,6 @@
 ;;; Code:
 
 (require 'flymake)
-(require 'cl)
 
 (defvar flymake-easy--active nil
   "Indicates when flymake-easy-load has successfully run in this buffer.")
