@@ -3,8 +3,8 @@
 ;;; Code:
 
 
-;;;### (autoloads nil nil ("popup-pkg.el" "popup.el") (20800 34171
-;;;;;;  969509))
+;;;### (autoloads nil nil ("popup-pkg.el" "popup.el") (20825 32662
+;;;;;;  394024))
 
 ;;;***
 
