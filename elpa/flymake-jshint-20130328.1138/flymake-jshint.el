@@ -4,8 +4,9 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 23 June 2011
-;; Version: 1.2
+;; Version: 20130328.1138
 ;; Keywords: flymake, jshint, javascript
+;; Package-Requires: ((flymake-easy "0.1"))
 
 ;; This file is not part of GNU Emacs.
 ;; However, it is distributed under the same license.
@@ -76,33 +77,43 @@
 ;; and you will see what is going wrong listed in the *Messages*
 ;; buffer.
 
-(require 'flymake)
+;;; Alternatives
 
+;; * https://github.com/illusori/emacs-flymake is a fork of flymake
+;;   that also supports JSHint (but does not support JSHint
+;;   configuration)
+;; * https://github.com/purcell/flymake-jslint will probably also
+;; work with JSHint
+
+;;; Changelog
+
+;; v1.3 -- Refactored to use flymake-easy
+
+(require 'flymake-easy)
+
+(defconst flymake-jshint-err-line-patterns
+  '(("^\\(.*\\): line \\([[:digit:]]+\\), col \\([[:digit:]]+\\), \\(.+\\)$"
+     1 2 3 4)))
 
 (defcustom jshint-configuration-path nil
   "Path to a JSON configuration file for JSHint."
-  :type 'string
+  :type 'file
   :group 'flymake-jshint)
 
-(defun flymake-jshint-init ()
-  (let* ((temp-file (flymake-init-create-temp-buffer-copy
-		     'flymake-create-temp-inplace)))
-    (if jshint-configuration-path
-        (list "jshint" (list temp-file "--config" (expand-file-name jshint-configuration-path)))
-   (list "jshint" (list temp-file)))))
+(defun flymake-jshint-command (filename)
+  "Construct a command that flymake can use to check javscript source."
+  (if jshint-configuration-path
+      (list "jshint" filename "--config" (expand-file-name jshint-configuration-path))
+    (list "jshint" filename)))
 
-(setq flymake-allowed-file-name-masks
-      (cons '(".+\\.js$"
-	      flymake-jshint-init
-	      flymake-simple-cleanup
-	      flymake-get-real-file-name)
-	    flymake-allowed-file-name-masks))
-
-(setq flymake-err-line-patterns 
-      (cons '("^\\(.*\\): line \\([[:digit:]]+\\), col \\([[:digit:]]+\\), \\(.+\\)$"
-	      1 2 3 4)
-	    flymake-err-line-patterns))
+(defun flymake-jshint-load ()
+  "Configure flymake mode to check the current buffer's JavaScript syntax."
+  (interactive)
+  (flymake-easy-load
+   'flymake-jshint-command
+   flymake-jshint-err-line-patterns
+   'tempdir
+   "js"))
 
 (provide 'flymake-jshint)
-
 ;;; flymake-jshint.el ends here
