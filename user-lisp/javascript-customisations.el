@@ -25,8 +25,7 @@
  '(jshint-configuration-path "~/.emacs.d/user-js/jshint.json")
  '(js2-strict-missing-semi-warning nil))
 
-(add-hook 'js-mode-hook 'flymake-mode)
-(add-hook 'js2-mode-hook 'flymake-mode)
-
+(add-hook 'js-mode-hook 'flymake-jshint-load)
+(add-hook 'js2-mode-hook 'flymake-jshint-load)
 
 (provide 'javascript-customisations)
