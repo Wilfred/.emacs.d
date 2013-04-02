@@ -44,7 +44,10 @@ inserting the results in BUFFER."
   (let* ((output-buffer (get-buffer-create "*New release*"))
          (project-root (vc-git-root default-directory))
          (next-version (get-next-version project-root)))
+    (unless project-root
+       (error "Not in a git project"))
     (switch-to-buffer output-buffer)
+    (setq default-directory project-root)
     (delete-region (point-min) (point-max))
     (execute-in-buffer "git push" output-buffer)
     (execute-in-buffer "git push --tags" output-buffer)
