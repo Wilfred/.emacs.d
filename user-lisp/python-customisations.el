@@ -11,7 +11,7 @@
 ;; electric-pair-mode isn't smart enough
 (require 'autopair)
 (setq autopair-autowrap t)
-(add-hook 'python-mode-hook #'(lambda () (autopair-mode)))
+(add-hook 'python-mode-hook 'autopair-mode)
 
 ;; jedi provides autocompletion for python
 (setq jedi:setup-keys t)
