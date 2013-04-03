@@ -7,6 +7,9 @@
 ;; eldoc displays the arguments to the function under cursor in the minibuffer
 (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
 
+;; C-M-x is swallowed by Gnome, so bind C-c e instead
+(define-key emacs-lisp-mode-map (kbd "C-c e") 'eval-defun)
+
 (require 'rainbow-delimiters)
 (add-hook 'clojure-mode-hook 'rainbow-delimiters-mode)
 (add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
