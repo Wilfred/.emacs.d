@@ -1,10 +1,10 @@
-; paredit for both clojure and elisp
-
+;; paredit for both clojure and elisp
 (autoload 'paredit-mode "paredit")
 (defun turn-on-paredit () (paredit-mode 1))
-
 (add-hook 'clojure-mode-hook 'turn-on-paredit)
 (add-hook 'emacs-lisp-mode-hook 'turn-on-paredit)
+
+;; eldoc displays the arguments to the function under cursor in the minibuffer
 (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
 
 (require 'rainbow-delimiters)
