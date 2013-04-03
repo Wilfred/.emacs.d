@@ -32,6 +32,7 @@ inserting the results in BUFFER."
          (project-root (vc-git-root default-directory))
          (next-version (get-next-version project-root)))
     (switch-to-buffer output-buffer)
+    (setq default-directory project-root)
     (delete-region (point-min) (point-max))
     (execute-in-buffer (format "git flow release start %s" next-version) output-buffer)
 
