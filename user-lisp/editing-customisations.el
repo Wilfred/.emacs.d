@@ -258,4 +258,17 @@ copy to the clipboard."
       (indent-rigidly (point-min) (point-max) 4)
       (clipboard-kill-region (point-min) (point-max)))))
 
+;; iy-go-to-char provides a handy command to go to the next occurence of a character
+(require 'iy-go-to-char)
+
+(global-set-key (kbd "C-c f") 'iy-go-to-char)
+
+(defadvice iy-go-to-char (around go-to-char-point-before)
+  "Go to the next character case sensitively, and put point before the character"
+  (let ((case-fold-search nil))
+    (forward-char)
+    ad-do-it
+    (backward-char)))
+(ad-activate 'iy-go-to-char)
+
 (provide 'editing-customisations)
