@@ -1,9 +1,12 @@
 
 
-; ido-mode -- fuzzy completion
+;; ido-mode -- fuzzy completion
 (setq ido-enable-flex-matching t)
 (setq ido-everywhere t)
 (ido-mode)
+
+;; use ido-mode for more things, such as C-h f
+(ido-ubiquitous-mode)
 
 ; reduce how often we get 'directory too big' problems:
 (setq ido-max-directory-size 100000)
