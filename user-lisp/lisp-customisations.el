@@ -11,6 +11,8 @@
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'eval-defun)
 ;; toggle-debug-on-error is too useful to not have a keybinding
 (define-key emacs-lisp-mode-map (kbd "C-c d") 'toggle-debug-on-error)
+;; evaluate macros step-by-step
+(define-key emacs-lisp-mode-map (kbd "C-c m") 'macrostep-expand)
 
 (require 'rainbow-delimiters)
 (add-hook 'clojure-mode-hook 'rainbow-delimiters-mode)
