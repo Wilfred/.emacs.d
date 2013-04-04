@@ -9,6 +9,8 @@
 
 ;; C-M-x is swallowed by Gnome, so bind C-c e instead
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'eval-defun)
+;; toggle-debug-on-error is too useful to not have a keybinding
+(define-key emacs-lisp-mode-map (kbd "C-c d") 'toggle-debug-on-error)
 
 (require 'rainbow-delimiters)
 (add-hook 'clojure-mode-hook 'rainbow-delimiters-mode)
