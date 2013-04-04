@@ -28,8 +28,8 @@ inserting the results in BUFFER."
   "Use gitflow to mark a new release."
   (interactive)
   ;; todo: check we're in an Editd buffer
-  (let* ((output-buffer (get-buffer-create "*New release*"))
-         (project-root (vc-git-root default-directory))
+  (let* ((project-root (vc-git-root default-directory))
+         (output-buffer (get-buffer-create (format "*New release %s*" project-root)))
          (next-version (get-next-version project-root)))
     (switch-to-buffer output-buffer)
     (setq default-directory project-root)
@@ -42,8 +42,8 @@ inserting the results in BUFFER."
 (defun git-flow-release-push ()
   "After finishing a gitflow release, push it and move back to develop."
   (interactive)
-  (let* ((output-buffer (get-buffer-create "*New release*"))
-         (project-root (vc-git-root default-directory))
+  (let* ((project-root (vc-git-root default-directory))
+         (output-buffer (get-buffer-create (format "*New release %s*" project-root)))
          (next-version (get-next-version project-root)))
     (unless project-root
        (error "Not in a git project"))
