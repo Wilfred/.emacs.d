@@ -14,7 +14,7 @@ inserting the results in BUFFER."
   "Find the last tagged version. Assumes GNU sort (BSD sort lacks --version-sort)."
   (let ((default-directory repo-path))
     (s-trim
-     (shell-command-to-string "git tag --list | grep -v vv | sort --version-sort | tail -n 1"))))
+     (shell-command-to-string "git tag --list | grep -v vv | grep -v version | sort --version-sort | tail -n 1"))))l
 
 (defun get-next-version (repo-path)
   "Increment the minor part of the current version."
