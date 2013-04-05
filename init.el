@@ -90,7 +90,6 @@
 
 (require 'git-customisations)
 
-(require 'ag)
 (setq ag-highlight-search 't)
 (global-set-key (kbd "<f5>") 'ag-project-at-point)
 
