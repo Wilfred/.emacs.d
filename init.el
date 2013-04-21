@@ -12,30 +12,8 @@
 
 (package-initialize)
 
-;; load the packages we've installed on another system but pulled in with git, so they aren't compiled
-(eval-when-compile '(require 'cl))
-(require 'dash)
-(require 's)
-
-(defun was-compiled-p (path)
-  "Does the directory at PATH contain .elc files?"
-  (--any-p (s-ends-with-p ".elc" it) (directory-files path)))
-
-(defun no-dot-directories (directories)
-  "Exclude the . and .. directory from a list."
-  (--remove (or (string= "." (file-name-nondirectory it))
-                (string= ".." (file-name-nondirectory it)))
-            directories))
-
-(defun ensure-packages-compiled ()
-  "If any packages installed with package.el aren't compiled yet, compile them."
-  (let* ((package-files (no-dot-directories (directory-files package-user-dir t)))
-	 (package-directories (-filter 'file-directory-p package-files)))
-    (dolist (directory package-directories)
-      (unless (was-compiled-p directory)
-        (byte-recompile-directory directory 0)))))
-
-(ensure-packages-compiled)
+;; If any packages installed with package.el aren't compiled yet, compile them.
+(byte-recompile-directory package-user-dir 0)
 
 ;; set exec-path according to the system's PATH
 (exec-path-from-shell-initialize)
