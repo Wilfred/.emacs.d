@@ -41,6 +41,7 @@
     (flet ((buffer-list () matching-buffers))
       (try-expand-dabbrev-all-buffers old))))
 
+;; fixme: we don't want lisp symbols on non-lisp modes
 (setq hippie-expand-try-functions-list
       '(try-expand-dabbrev
         try-expand-dabbrev-matching-buffers
@@ -54,8 +55,6 @@
         try-expand-line-all-buffers
         try-complete-lisp-symbol-partially
         try-complete-lisp-symbol))
-;; hippie-expand is over-eager but occasionally useful
-;; so we bind it to M-? instead of M-/
 (global-set-key (kbd "M-/") 'hippie-expand)
 
 ;; auto-completion with neat popup
