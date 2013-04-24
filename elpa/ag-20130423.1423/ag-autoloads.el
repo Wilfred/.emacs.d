@@ -4,12 +4,13 @@
 
 
 ;;;### (autoloads (ag-regexp-project-at-point ag-project-at-point
-;;;;;;  ag-project-regexp ag-project ag-regexp ag) "ag" "ag.el" (20825
-;;;;;;  32191))
+;;;;;;  ag-project-regexp ag-project ag-regexp ag) "ag" "ag.el" (20855
+;;;;;;  50630 822966 539000))
 ;;; Generated autoloads from ag.el
 
 (autoload 'ag "ag" "\
-Search using ag in a given directory for a given string.
+Search using ag in a given DIRECTORY for a given search STRING,
+with STRING defaulting to the symbol under point.
 
 \(fn STRING DIRECTORY)" t nil)
 
@@ -44,7 +45,7 @@ to the symbol under point.
 
 ;;;***
 
-;;;### (autoloads nil nil ("ag-pkg.el") (20825 32192 13412))
+;;;### (autoloads nil nil ("ag-pkg.el") (20855 50630 912682 80000))
 
 ;;;***
 

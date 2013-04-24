@@ -4,13 +4,14 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 January 2013
-;; Version: 20130328.1344
+;; Version: 20130423.1423
+;; X-Original-Version: 0.19
 
-;;; Commentary
+;;; Commentary:
 
 ;; This file is heavily based on the excellent ack-and-a-half.el.
 
-;;; Usage
+;; Usage:
 
 ;; Add you to your .emacs.d:
 
@@ -49,6 +50,8 @@
 ;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 ;; Boston, MA 02110-1301, USA.
 
+;;; Code:
+
 (defcustom ag-arguments
   (list "--smart-case" "--nogroup" "--column" "--")
   "Default arguments passed to ag."
@@ -71,7 +74,7 @@ This requires the ag command to support --color-match, which is only in v0.14+"
 (define-compilation-mode ag-mode "Ag"
   "Ag results compilation mode"
   (let ((smbl  'compilation-ag-nogroup)
-        (pttrn '("^\\([^:\n]+?\\):\\([0-9]+\\):\\([0-9]+\\):" 1 2 3)))
+        (pttrn '("^\\([^:\n]+?\\):\\([0-9]+\\):\\([0-9]+\\):" 1 2 3 0)))
     (set (make-local-variable 'compilation-error-regexp-alist) (list smbl))
     (set (make-local-variable 'compilation-error-regexp-alist-alist) (list (cons smbl pttrn))))
   (add-hook 'compilation-filter-hook 'ag-filter nil t))
@@ -85,12 +88,12 @@ This requires the ag command to support --color-match, which is only in v0.14+"
   (replace-regexp-in-string (regexp-quote old) new s t t))
 
 (defun ag/shell-quote (string)
-  "Wrap in single quotes, and quote existing single quotes to make shell safe."
+  "Wrap STRING in single quotes, and quote existing single quotes to make shell safe."
   (concat "'" (ag/s-replace "'" "'\\''" string) "'"))
 
 (defun ag/search (string directory &optional regexp)
-  "Run ag searching for the STRING given in DIRECTORY. If REGEXP
-is non-nil, treat STRING as a regular expression."
+  "Run ag searching for the STRING given in DIRECTORY.
+If REGEXP is non-nil, treat STRING as a regular expression."
   (let ((default-directory (file-name-as-directory directory))
         (arguments (if regexp
                        ag-arguments
@@ -106,8 +109,8 @@ is non-nil, treat STRING as a regular expression."
      'ag-mode)))
 
 (defun ag/dwim-at-point ()
-  "If there's an active selection, return that. Otherwise, get
-the symbol at point."
+  "If there's an active selection, return that.
+Otherwise, get the symbol at point."
   (if (use-region-p)
       (buffer-substring-no-properties (region-beginning) (region-end))
     (if (symbol-at-point)
@@ -117,16 +120,18 @@ the symbol at point."
 (autoload 'vc-svn-root "vc-svn")
 
 (defun ag/project-root (file-path)
-  "Guess the project root of the given file path."
+  "Guess the project root of the given FILE-PATH."
   (or (vc-git-root file-path)
       (vc-svn-root file-path)
       file-path))
 
 ;;;###autoload
 (defun ag (string directory)
-  "Search using ag in a given directory for a given string."
-  (interactive "sSearch string: \nDDirectory: ")
-  (ag/search string directory))
+  "Search using ag in a given DIRECTORY for a given search STRING,
+with STRING defaulting to the symbol under point."
+   (interactive (list (read-from-minibuffer "Search string: " (ag/dwim-at-point))
+                      (read-directory-name "Directory: ")))
+   (ag/search string directory))
 
 ;;;###autoload
 (defun ag-regexp (string directory)
@@ -162,6 +167,7 @@ to the symbol under point."
   "Same as ``ag-regexp-project'', but with the search regexp defaulting
 to the symbol under point."
    (interactive (list (read-from-minibuffer "Search regexp: " (ag/dwim-at-point))))
+   
    (ag/search regexp (ag/project-root default-directory) t))
 
 ;; Taken from grep-filter, just changed the color regex.
