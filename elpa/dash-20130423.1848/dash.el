@@ -3,7 +3,8 @@
 ;; Copyright (C) 2012 Magnar Sveen
 
 ;; Author: Magnar Sveen <magnars@gmail.com>
-;; Version: 1.1.0
+;; Version: 20130423.1848
+;; X-Original-Version: 1.1.0
 ;; Keywords: lists
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -214,8 +215,8 @@ through the REP function."
   `(apply 'append (--map ,form ,list)))
 
 (defun -mapcat (fn list)
-  "Returns the result of applying concat to the result of applying map to FN and LIST.
-Thus function FN should return a collection."
+  "Returns the concatenation of the result of mapping FN over LIST.
+Thus function FN should return a list."
   (--mapcat (funcall fn it) list))
 
 (defun -cons* (&rest args)
@@ -410,6 +411,11 @@ FROM or TO may be negative."
         (!cons (car list) result)
         (!cdr list)))
     (list (nreverse result) list)))
+
+(defun -insert-at (n x list)
+  "Returns a list with X inserted into LIST at position N."
+  (let ((split-list (-split-at n list)))
+    (append (car split-list) (cons x (cadr split-list)))))
 
 (defmacro --split-with (pred list)
   "Anaphoric form of `-split-with'."
@@ -682,6 +688,66 @@ in in second form, etc."
 (put '->> 'lisp-indent-function 1)
 (put '--> 'lisp-indent-function 1)
 
+(defmacro -when-let (var-val &rest body)
+  "If VAL evaluates to non-nil, bind it to VAR and execute body.
+VAR-VAL should be a (VAR VAL) pair."
+  (let ((var (car var-val))
+        (val (cadr var-val)))
+    `(let ((,var ,val))
+       (when ,var
+         ,@body))))
+
+(defmacro -when-let* (vars-vals &rest body)
+  "If all VALS evaluate to true, bind them to their corresponding
+  VARS and execute body. VARS-VALS should be a list of (VAR VAL)
+  pairs (corresponding to bindings of `let*')."
+  (if (= (length vars-vals) 1)
+      `(-when-let ,(car vars-vals)
+         ,@body)
+    `(-when-let ,(car vars-vals)
+       (-when-let* ,(cdr vars-vals)
+         ,@body))))
+
+(defmacro --when-let (val &rest body)
+  "If VAL evaluates to non-nil, bind it to `it' and execute
+body."
+  `(let ((it ,val))
+     (when it
+       ,@body)))
+
+(defmacro -if-let (var-val then &optional else)
+  "If VAL evaluates to non-nil, bind it to VAR and do THEN,
+otherwise do ELSE. VAR-VAL should be a (VAR VAL) pair."
+  (let ((var (car var-val))
+        (val (cadr var-val)))
+    `(let ((,var ,val))
+       (if ,var ,then ,else))))
+
+(defmacro -if-let* (vars-vals then &optional else)
+  "If all VALS evaluate to true, bind them to their corresponding
+  VARS and do THEN, otherwise do ELSE. VARS-VALS should be a list
+  of (VAR VAL) pairs (corresponding to the bindings of `let*')."
+  (let ((first-pair (car vars-vals))
+        (rest (cdr vars-vals)))
+    (if (= (length vars-vals) 1)
+        `(-if-let ,first-pair ,then ,else)
+      `(-if-let ,first-pair
+         (-if-let* ,rest ,then ,else)
+         ,else))))
+
+(defmacro --if-let (val then &optional else)
+  "If VAL evaluates to non-nil, bind it to `it' and do THEN,
+otherwise do ELSE."
+  `(let ((it ,val))
+     (if it ,then ,else)))
+
+(put '-when-let 'lisp-indent-function 1)
+(put '-when-let* 'lisp-indent-function 1)
+(put '--when-let 'lisp-indent-function 1)
+(put '-if-let 'lisp-indent-function 1)
+(put '-if-let* 'lisp-indent-function 1)
+(put '--if-let 'lisp-indent-function 1)
+
 (defun -distinct (list)
   "Return a new list with all duplicates removed.
 The test for equality is done with `equal',
@@ -808,6 +874,7 @@ Returns nil if N is less than 1."
                            "--drop-while"
                            "-drop-while"
                            "-split-at"
+                           "-insert-at"
                            "--split-with"
                            "-split-with"
                            "-partition"
@@ -826,6 +893,12 @@ Returns nil if N is less than 1."
                            "->"
                            "->>"
                            "-->"
+                           "-when-let"
+                           "-when-let*"
+                           "--when-let"
+                           "-if-let"
+                           "-if-let*"
+                           "--if-let"
                            "-distinct"
                            "-intersection"
                            "-difference"
