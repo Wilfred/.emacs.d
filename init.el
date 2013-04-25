@@ -90,7 +90,7 @@
 (add-to-list 'auto-mode-alist '("crontab.*?\\'" . crontab-mode))
 
 (require 'wiki)
-(setq default-major-mode 'text-mode)
+(setq major-mode 'text-mode)
 (setq wiki-directories (list (expand-file-name "~/Dropbox/Wiki/")))
 
 (setq ring-bell-function 'ignore)
