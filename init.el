@@ -63,7 +63,6 @@
 (require 'sh-customisations)
 (require 'coffee-customisations)
 
-(require 'potato-customisations)
 (require 'editd-customisations)
 
 (require 'git-customisations)
