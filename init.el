@@ -95,10 +95,6 @@
 
 (setq ring-bell-function 'ignore)
 
-; something in the above has switched on debugging. Switch it off.
-; TODO: find offending code
-(setq debug-on-error nil)
-
 ; suspend seems to crash on Gnome 3, and I don't use it anyway, so just disable it
 (setq cannot-suspend t)
 (defun suspend-emacs (&rest)
