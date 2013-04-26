@@ -63,6 +63,17 @@ clashes."
 (global-set-key (kbd "<f6>") 'etags-select-find-tag-at-point)
 (global-set-key (kbd "M-.") 'etags-select-find-tag)
 
+(defun etags-select-find-tag-other-window ()
+  "Equivalent to `etags-select-find-tag-at-point' but
+opening another window so the call site is still visible."
+  (interactive)
+  (delete-other-windows)
+  (split-window-right)
+  (other-window 1)
+  (etags-select-find-tag-at-point))
+
+(global-set-key (kbd "C-c M-.") 'etags-select-find-tag-other-window)
+
 ;; finding tags should be case sensitive
 (setq tags-case-fold-search nil)
 
