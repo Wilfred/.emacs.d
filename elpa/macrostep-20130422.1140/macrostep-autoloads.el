@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (macrostep-expand macrostep-mode) "macrostep" "macrostep.el"
-;;;;;;  (20829 44453 508747 131000))
+;;;;;;  (20860 59723))
 ;;; Generated autoloads from macrostep.el
 
 (autoload 'macrostep-mode "macrostep" "\
@@ -31,8 +31,7 @@ buffer and expand the next macro form found, if any.
 
 ;;;***
 
-;;;### (autoloads nil nil ("macrostep-pkg.el") (20829 44453 601297
-;;;;;;  878000))
+;;;### (autoloads nil nil ("macrostep-pkg.el") (20860 59723 697443))
 
 ;;;***
 
