@@ -3,8 +3,8 @@
 ;; Copyright (C) 2012 Magnar Sveen
 
 ;; Author: Magnar Sveen <magnars@gmail.com>
-;; Version: 20130423.1848
-;; X-Original-Version: 1.1.0
+;; Version: 20130424.943
+;; X-Original-Version: 1.2.0
 ;; Keywords: lists
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -415,7 +415,7 @@ FROM or TO may be negative."
 (defun -insert-at (n x list)
   "Returns a list with X inserted into LIST at position N."
   (let ((split-list (-split-at n list)))
-    (append (car split-list) (cons x (cadr split-list)))))
+    (nconc (car split-list) (cons x (cadr split-list)))))
 
 (defmacro --split-with (pred list)
   "Anaphoric form of `-split-with'."

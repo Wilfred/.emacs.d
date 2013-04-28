@@ -3,7 +3,8 @@
 ;; Copyright (C) 2012 Magnar Sveen
 
 ;; Author: Magnar Sveen <magnars@gmail.com>
-;; Version: 1.3.1
+;; Version: 20130420.1730
+;; X-Original-Version: 1.4.0
 ;; Keywords: strings
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -358,6 +359,16 @@ When START is non-nil the search will start at that index."
               (setq match-data-list
                     (cddr match-data-list))))
           (nreverse result)))))
+
+(defun s-slice-at (regexp s)
+  "Slices S up at every index matching REGEXP."
+  (save-match-data
+    (let (i)
+      (setq i (string-match regexp s 1))
+      (if i
+          (cons (substring s 0 i)
+                (s-slice-at regexp (substring s i)))
+        (list s)))))
 
 (defun s-split-words (s)
   "Split S into list of words."
