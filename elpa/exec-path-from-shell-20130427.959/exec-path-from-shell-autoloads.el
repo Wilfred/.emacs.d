@@ -3,9 +3,19 @@
 ;;; Code:
 
 
-;;;### (autoloads (exec-path-from-shell-initialize exec-path-from-shell-copy-env)
-;;;;;;  "exec-path-from-shell" "exec-path-from-shell.el" (20789 54670))
+;;;### (autoloads (exec-path-from-shell-initialize exec-path-from-shell-copy-env
+;;;;;;  exec-path-from-shell-copy-envs) "exec-path-from-shell" "exec-path-from-shell.el"
+;;;;;;  (20860 59773))
 ;;; Generated autoloads from exec-path-from-shell.el
+
+(autoload 'exec-path-from-shell-copy-envs "exec-path-from-shell" "\
+Set the environment variables with NAMES from the user's shell.
+
+As a special case, if the variable is $PATH, then `exec-path' and
+`eshell-path-env' are also set appropriately.  The result is an alist,
+as described by `exec-path-from-shell-getenvs'.
+
+\(fn NAMES)" nil nil)
 
 (autoload 'exec-path-from-shell-copy-env "exec-path-from-shell" "\
 Set the environment variable $NAME from the user's shell.
@@ -27,8 +37,8 @@ values used in the user's shell.
 
 ;;;***
 
-;;;### (autoloads nil nil ("exec-path-from-shell-pkg.el") (20789
-;;;;;;  54671 49702))
+;;;### (autoloads nil nil ("exec-path-from-shell-pkg.el") (20860
+;;;;;;  59774 112712))
 
 ;;;***
 
