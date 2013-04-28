@@ -21,11 +21,8 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to the
-;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-;; Boston, MA 02111-1307, USA.
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 ;;; Commentary:
 
 ;; Purpose:
@@ -272,7 +269,8 @@ Returns keywords suitable for `font-lock-keywords'."
 
          ;; We allow _ as the first char to fit GHC
          (varid "\\b[[:lower:]_][[:alnum:]'_]*\\b")
-         (conid "\\b[[:upper:]][[:alnum:]'_]*\\b")
+         ;; We allow ' preceding conids because of DataKinds/PolyKinds
+         (conid "\\b'?[[:upper:]][[:alnum:]'_]*\\b")
 	 (modid (concat "\\b" conid "\\(\\." conid "\\)*\\b"))
          (qvarid (concat modid "\\." varid))
          (qconid (concat modid "\\." conid))

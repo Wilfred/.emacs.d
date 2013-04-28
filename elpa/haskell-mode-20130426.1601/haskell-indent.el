@@ -22,11 +22,8 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to the
-;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-;; Boston, MA 02111-1307, USA.
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 ;;; Commentary:
 
 ;; Purpose:
@@ -654,7 +651,8 @@ Returns the location of the start of the comment, nil otherwise."
          (is-where
           (string-match "where[ \t]*" haskell-indent-current-line-first-ident))
          (diff-first                 ; not a function def with the same name
-          (not(string= valname-string haskell-indent-current-line-first-ident)))
+          (not(string= (haskell-trim valname-string)
+                       (haskell-trim haskell-indent-current-line-first-ident))))
          ;; (is-type-def
          ;;  (and rhs-sign (eq (char-after rhs-sign) ?\:)))
          (test (string

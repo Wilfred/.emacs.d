@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (ghc-core-mode ghc-core-create-core) "ghc-core"
-;;;;;;  "ghc-core.el" (20779 19142))
+;;;;;;  "ghc-core.el" (20860 59744))
 ;;; Generated autoloads from ghc-core.el
 
 (autoload 'ghc-core-create-core "ghc-core" "\
@@ -22,7 +22,7 @@ Major mode for GHC Core files.
 ;;;***
 
 ;;;### (autoloads (haskell-align-imports) "haskell-align-imports"
-;;;;;;  "haskell-align-imports.el" (20779 19142))
+;;;;;;  "haskell-align-imports.el" (20860 59744))
 ;;; Generated autoloads from haskell-align-imports.el
 
 (autoload 'haskell-align-imports "haskell-align-imports" "\
@@ -32,8 +32,8 @@ Align all the imports in the buffer.
 
 ;;;***
 
-;;;### (autoloads (haskell-c-mode) "haskell-c" "haskell-c.el" (20779
-;;;;;;  19142))
+;;;### (autoloads (haskell-c-mode) "haskell-c" "haskell-c.el" (20860
+;;;;;;  59744))
 ;;; Generated autoloads from haskell-c.el
 
 (add-to-list 'auto-mode-alist '("\\.hsc\\'" . haskell-c-mode))
@@ -46,7 +46,7 @@ Major mode for Haskell FFI files.
 ;;;***
 
 ;;;### (autoloads (haskell-cabal-get-dir haskell-cabal-mode) "haskell-cabal"
-;;;;;;  "haskell-cabal.el" (20779 19142))
+;;;;;;  "haskell-cabal.el" (20860 59744))
 ;;; Generated autoloads from haskell-cabal.el
 
 (add-to-list 'auto-mode-alist '("\\.cabal\\'" . haskell-cabal-mode))
@@ -65,7 +65,7 @@ Get the Cabal dir for a new project. Various ways of figuring this out,
 ;;;***
 
 ;;;### (autoloads (haskell-decl-scan-mode) "haskell-decl-scan" "haskell-decl-scan.el"
-;;;;;;  (20779 19142))
+;;;;;;  (20860 59745))
 ;;; Generated autoloads from haskell-decl-scan.el
 
 (autoload 'haskell-decl-scan-mode "haskell-decl-scan" "\
@@ -115,7 +115,7 @@ Invokes `haskell-decl-scan-mode-hook'.
 ;;;***
 
 ;;;### (autoloads (haskell-doc-show-type haskell-doc-mode) "haskell-doc"
-;;;;;;  "haskell-doc.el" (20779 19142))
+;;;;;;  "haskell-doc.el" (20860 59745))
 ;;; Generated autoloads from haskell-doc.el
 
 (autoload 'haskell-doc-mode "haskell-doc" "\
@@ -138,7 +138,7 @@ current buffer.
 ;;;***
 
 ;;;### (autoloads (haskell-indent-mode) "haskell-indent" "haskell-indent.el"
-;;;;;;  (20779 19142))
+;;;;;;  (20860 59745))
 ;;; Generated autoloads from haskell-indent.el
 
 (autoload 'haskell-indent-mode "haskell-indent" "\
@@ -170,7 +170,7 @@ Invokes `haskell-indent-hook' if not nil.
 ;;;***
 
 ;;;### (autoloads (haskell-indentation-mode) "haskell-indentation"
-;;;;;;  "haskell-indentation.el" (20779 19142))
+;;;;;;  "haskell-indentation.el" (20860 59745))
 ;;; Generated autoloads from haskell-indentation.el
 
 (autoload 'haskell-indentation-mode "haskell-indentation" "\
@@ -185,7 +185,7 @@ autofill-mode.
 
 ;;;### (autoloads (haskell-interactive-mode-echo haskell-interactive-switch
 ;;;;;;  haskell-interactive-bring haskell-interactive-mode) "haskell-interactive-mode"
-;;;;;;  "haskell-interactive-mode.el" (20779 19142))
+;;;;;;  "haskell-interactive-mode.el" (20860 59745))
 ;;; Generated autoloads from haskell-interactive-mode.el
 
 (autoload 'haskell-interactive-mode "haskell-interactive-mode" "\
@@ -214,7 +214,7 @@ Echo a read only piece of text before the prompt.
 ;;;***
 
 ;;;### (autoloads (haskell-menu) "haskell-menu" "haskell-menu.el"
-;;;;;;  (20779 19142))
+;;;;;;  (20860 59745))
 ;;; Generated autoloads from haskell-menu.el
 
 (autoload 'haskell-menu "haskell-menu" "\
@@ -225,7 +225,7 @@ Launch the Haskell sessions menu.
 ;;;***
 
 ;;;### (autoloads (haskell-hayoo haskell-hoogle literate-haskell-mode
-;;;;;;  haskell-mode) "haskell-mode" "haskell-mode.el" (20779 19142))
+;;;;;;  haskell-mode) "haskell-mode" "haskell-mode.el" (20860 59745))
 ;;; Generated autoloads from haskell-mode.el
 
 (when load-file-name (add-to-list 'load-path (file-name-directory load-file-name)))
@@ -294,7 +294,7 @@ Do a Hayoo search for QUERY.
 ;;;***
 
 ;;;### (autoloads (haskell-move-nested) "haskell-move-nested" "haskell-move-nested.el"
-;;;;;;  (20779 19143))
+;;;;;;  (20860 59745))
 ;;; Generated autoloads from haskell-move-nested.el
 
 (autoload 'haskell-move-nested "haskell-move-nested" "\
@@ -306,7 +306,7 @@ Do a Hayoo search for QUERY.
 
 ;;;### (autoloads (haskell-navigate-imports-return haskell-navigate-imports-go
 ;;;;;;  haskell-navigate-imports) "haskell-navigate-imports" "haskell-navigate-imports.el"
-;;;;;;  (20779 19143))
+;;;;;;  (20860 59745))
 ;;; Generated autoloads from haskell-navigate-imports.el
 
 (autoload 'haskell-navigate-imports "haskell-navigate-imports" "\
@@ -330,7 +330,7 @@ Return to the non-import point we were at before going to the module list.
 ;;;### (autoloads (haskell-process haskell-process-start haskell-process-cabal
 ;;;;;;  haskell-process-cabal-build haskell-process-load-or-reload
 ;;;;;;  haskell-process-reload-file haskell-process-load-file haskell-process-generate-tags)
-;;;;;;  "haskell-process" "haskell-process.el" (20779 19143))
+;;;;;;  "haskell-process" "haskell-process.el" (20860 59745))
 ;;; Generated autoloads from haskell-process.el
 
 (autoload 'haskell-process-generate-tags "haskell-process" "\
@@ -376,7 +376,7 @@ Get the current process from the current session.
 ;;;***
 
 ;;;### (autoloads (haskell-session-process haskell-session) "haskell-session"
-;;;;;;  "haskell-session.el" (20779 19143))
+;;;;;;  "haskell-session.el" (20860 59745))
 ;;; Generated autoloads from haskell-session.el
 
 (autoload 'haskell-session "haskell-session" "\
@@ -392,8 +392,8 @@ Get the session process.
 ;;;***
 
 ;;;### (autoloads (haskell-show-parse haskell-show-parse-and-insert
-;;;;;;  haskell-show-replace) "haskell-show" "haskell-show.el" (20779
-;;;;;;  19143))
+;;;;;;  haskell-show-replace) "haskell-show" "haskell-show.el" (20860
+;;;;;;  59746))
 ;;; Generated autoloads from haskell-show.el
 
 (autoload 'haskell-show-replace "haskell-show" "\
@@ -416,7 +416,7 @@ Parse the given input into a tree.
 ;;;***
 
 ;;;### (autoloads (haskell-sort-imports) "haskell-sort-imports" "haskell-sort-imports.el"
-;;;;;;  (20779 19143))
+;;;;;;  (20860 59746))
 ;;; Generated autoloads from haskell-sort-imports.el
 
 (autoload 'haskell-sort-imports "haskell-sort-imports" "\
@@ -427,7 +427,7 @@ Sort the import list at the point.
 ;;;***
 
 ;;;### (autoloads (haskell-is-prefix-of haskell-string-take haskell-trim)
-;;;;;;  "haskell-string" "haskell-string.el" (20779 19143))
+;;;;;;  "haskell-string" "haskell-string.el" (20860 59746))
 ;;; Generated autoloads from haskell-string.el
 
 (autoload 'haskell-trim "haskell-string" "\
@@ -451,7 +451,7 @@ Is x string a prefix of y string?
 ;;;;;;  inferior-haskell-info inferior-haskell-kind inferior-haskell-type
 ;;;;;;  inferior-haskell-send-decl inferior-haskell-load-and-run
 ;;;;;;  inferior-haskell-load-file switch-to-haskell) "inf-haskell"
-;;;;;;  "inf-haskell.el" (20779 19143))
+;;;;;;  "inf-haskell.el" (20860 59746))
 ;;; Generated autoloads from inf-haskell.el
 
 (defalias 'run-haskell 'switch-to-haskell)
@@ -522,7 +522,7 @@ we load it.
 ;;;### (autoloads nil nil ("haskell-checkers.el" "haskell-font-lock.el"
 ;;;;;;  "haskell-ghci.el" "haskell-hugs.el" "haskell-mode-pkg.el"
 ;;;;;;  "haskell-package.el" "haskell-simple-indent.el" "haskell-site-file.el")
-;;;;;;  (20779 19143 369050))
+;;;;;;  (20860 59746 507067))
 
 ;;;***
 
