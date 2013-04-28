@@ -3,9 +3,8 @@
 ;;; Code:
 
 
-;;;### (autoloads (ag-regexp-project-at-point ag-project-at-point
-;;;;;;  ag-project-regexp ag-project ag-regexp ag) "ag" "ag.el" (20855
-;;;;;;  50630 822966 539000))
+;;;### (autoloads (ag-regexp-project-at-point ag-project-regexp ag-project
+;;;;;;  ag-regexp ag) "ag" "ag.el" (20860 59783))
 ;;; Generated autoloads from ag.el
 
 (autoload 'ag "ag" "\
@@ -31,11 +30,7 @@ for the given regexp.
 
 \(fn REGEXP)" t nil)
 
-(autoload 'ag-project-at-point "ag" "\
-Same as ``ag-project'', but with the search string defaulting
-to the symbol under point.
-
-\(fn STRING)" t nil)
+(defalias 'ag-project-at-point 'ag-project)
 
 (autoload 'ag-regexp-project-at-point "ag" "\
 Same as ``ag-regexp-project'', but with the search regexp defaulting
@@ -45,7 +40,7 @@ to the symbol under point.
 
 ;;;***
 
-;;;### (autoloads nil nil ("ag-pkg.el") (20855 50630 912682 80000))
+;;;### (autoloads nil nil ("ag-pkg.el") (20860 59783 628104))
 
 ;;;***
 
