@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (er/expand-region) "expand-region" "expand-region.el"
-;;;;;;  (20819 17654 69281 246000))
+;;;;;;  (20860 59769))
 ;;; Generated autoloads from expand-region.el
 
 (autoload 'er/expand-region "expand-region" "\
@@ -24,7 +24,7 @@ before calling `er/expand-region' for the first time.
 ;;;;;;  expand-region-skip-whitespace expand-region-autocopy-register
 ;;;;;;  expand-region-guess-python-mode expand-region-preferred-python-mode
 ;;;;;;  expand-region) "expand-region-custom" "expand-region-custom.el"
-;;;;;;  (20819 17654 15947 786000))
+;;;;;;  (20860 59769))
 ;;; Generated autoloads from expand-region-custom.el
 
 (let ((loads (get 'expand-region 'custom-loads))) (if (member '"expand-region-custom" loads) nil (put 'expand-region 'custom-loads (cons '"expand-region-custom" loads))))
@@ -74,14 +74,15 @@ List of modes which derive from `text-mode' for which text mode expansions are n
 ;;;***
 
 ;;;### (autoloads nil nil ("cc-mode-expansions.el" "clojure-mode-expansions.el"
-;;;;;;  "cperl-mode-expansions.el" "css-mode-expansions.el" "erlang-mode-expansions.el"
-;;;;;;  "expand-region-core.el" "expand-region-pkg.el" "feature-mode-expansions.el"
-;;;;;;  "html-mode-expansions.el" "js-mode-expansions.el" "js2-mode-expansions.el"
-;;;;;;  "jsp-expansions.el" "latex-mode-expansions.el" "nxml-mode-expansions.el"
-;;;;;;  "octave-expansions.el" "org-mode-expansions.el" "python-el-expansions.el"
-;;;;;;  "python-el-fgallina-expansions.el" "python-mode-expansions.el"
-;;;;;;  "ruby-mode-expansions.el" "text-mode-expansions.el" "web-mode-expansions.el")
-;;;;;;  (20819 17654 509579 3000))
+;;;;;;  "cperl-mode-expansions.el" "css-mode-expansions.el" "er-basic-expansions.el"
+;;;;;;  "erlang-mode-expansions.el" "expand-region-core.el" "expand-region-pkg.el"
+;;;;;;  "feature-mode-expansions.el" "html-mode-expansions.el" "js-mode-expansions.el"
+;;;;;;  "js2-mode-expansions.el" "jsp-expansions.el" "latex-mode-expansions.el"
+;;;;;;  "nxml-mode-expansions.el" "octave-expansions.el" "org-mode-expansions.el"
+;;;;;;  "python-el-expansions.el" "python-el-fgallina-expansions.el"
+;;;;;;  "python-mode-expansions.el" "ruby-mode-expansions.el" "sml-mode-expansions.el"
+;;;;;;  "text-mode-expansions.el" "web-mode-expansions.el") (20860
+;;;;;;  59770 554289))
 
 ;;;***
 
