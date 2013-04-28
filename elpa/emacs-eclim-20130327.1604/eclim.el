@@ -463,9 +463,13 @@ FILENAME is given, return that file's  project name instead."
   (if eclim-mode
       (progn
         (when (and (featurep 'yasnippet) eclim-use-yasnippet)
-          (yas/load-directory eclim--snippet-directory)))
-    (kill-local-variable 'eclim--project-dir)
-    (kill-local-variable 'eclim--project-name)))
+          (yas/load-directory eclim--snippet-directory))
+        (kill-local-variable 'eclim--project-dir)
+        (kill-local-variable 'eclim--project-name)
+        (add-hook 'after-save-hook 'eclim--problems-update-maybe nil 't)
+        (add-hook 'after-save-hook 'eclim--after-save-hook nil 't))
+    (remove-hook 'after-save-hook 'eclim--problems-update-maybe 't)
+    (remove-hook 'after-save-hook 'eclim--after-save-hook 't)))
 
 (defcustom eclim-accepted-file-regexps
   '("\\.java" "\\.js" "\\.xml" "\\.rb" "\\.php")
@@ -520,12 +524,6 @@ the use of eclim to java and ant files."
     ;; mark the buffer as not modified
     (not-modified)
     (set-visited-file-modtime)))
-
-;; (setq revert-buffer-function 'revert-buffer-keep-history)
-
-(setq revert-buffer-function nil)
-
-(add-hook 'after-save-hook 'eclim--after-save-hook)
 
 (define-globalized-minor-mode global-eclim-mode eclim-mode
   (lambda ()
