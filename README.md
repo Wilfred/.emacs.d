@@ -53,7 +53,19 @@ package yet live in `third-party-lisp`. These include:
 
 ### External tools required
 
-* [Pyflakes](https://github.com/kevinw/pyflakes) (note not the PyPI
+[Pyflakes](https://github.com/kevinw/pyflakes) (note not the PyPI
   version, since that crashes on unfinished dicts: `{foo}`)
-* [JSHint](https://github.com/jshint/jshint/) (requires node.js to be installed)
-* [Jedi](https://github.com/davidhalter/jedi) (use `pip install -r elpa/jedi/requirements.txt`)
+  
+This is bundled with this repository.
+  
+[JSHint](https://github.com/jshint/jshint/)
+
+You need node.js installed, then simply:
+
+    $ sudo npm install -g jshint
+
+[Jedi](https://github.com/davidhalter/jedi)
+
+You can install this with:
+
+    $ pip install -r elpa/jedi*/requirements.txt
