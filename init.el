@@ -1,8 +1,9 @@
+
 (setq *emacs-load-start* (current-time))
 
+(add-to-list 'load-path "~/.emacs.d/user-lisp/")
 
 (add-to-list 'load-path "~/.emacs.d/third-party-lisp/")
-(add-to-list 'load-path "~/.emacs.d/user-lisp/")
 
 ; marmalade is a third party repo that anyone can submit to, so has
 ; many more packages
@@ -171,3 +172,4 @@
 ;; (require 'timing)
 ;; (message "Spent %.2f seconds executing .emacs.d/init.el."
 ;;          (time-difference *emacs-load-start* (current-time)))
+(put 'narrow-to-region 'disabled nil)
