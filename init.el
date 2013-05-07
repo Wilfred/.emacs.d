@@ -171,6 +171,8 @@
  '(ethan-wspace-face ((t (:background "#2e3434"))))
  '(flymake-errline ((((class color)) (:underline "Red"))))
  '(flymake-warnline ((((class color)) (:underline "Orange"))))
+ '(hl-line ((t (:background "gray14"))))
+ '(hl-sexp-face ((t (:background "gray14"))))
  '(js2-function-param-face ((((class color)) (:foreground "Green"))))
  '(smerge-refined-change ((t (:background "black")))))
 
