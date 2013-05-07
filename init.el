@@ -151,6 +151,11 @@
 (defun suspend-frame (&rest)
   (interactive))
 
+;; windmove allows S-<right> and S-<right> to switch between windows
+;; instead of `C-x o'
+(when (fboundp 'windmove-default-keybindings)
+  (windmove-default-keybindings))
+
 (custom-set-variables
   ;; custom-set-variables was added by Custom.
   ;; If you edit it by hand, you could mess it up, so be careful.
