@@ -8,7 +8,8 @@ expand a header by pressing `<TAB>' when point is on that header. You
 can expand all headers by pressing `C-u C-u C-u <TAB>'.
 
 You can edit any code block by putting point inside the block and
-pressing `C-c ''. To use normal code highlighting in the Org buffer, evaluate:
+pressing `C-c '' (press `C-c '' again to escape). To use normal code
+highlighting in the Org buffer, evaluate:
 
 #+BEGIN_SRC emacs-lisp
   (setq org-src-fontify-natively t)
