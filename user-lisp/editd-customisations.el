@@ -30,14 +30,17 @@ inserting the results in BUFFER."
   ;; todo: check we're in an Editd buffer
   (let* ((project-root (vc-git-root default-directory))
          (output-buffer (get-buffer-create (format "*New release %s*" project-root)))
-         (next-version (get-next-version project-root)))
+         (next-version (get-next-version project-root))
+         (next-command (format "git flow release finish %s" next-version)))
     (switch-to-buffer output-buffer)
     (setq default-directory project-root)
     (delete-region (point-min) (point-max))
     (execute-in-buffer (format "git flow release start %s" next-version) output-buffer)
 
     ;; copy the finish command to the kill ring and clipboard to save typing
-    (kill-new (format "git flow release finish %s" next-version))))
+    (message "Please run the command '%s' in your terminal.
+It has been copied to your clipboard for convenience." next-command)
+    (kill-new next-command)))
 
 (defun git-flow-release-push ()
   "After finishing a gitflow release, push it and move back to develop."
