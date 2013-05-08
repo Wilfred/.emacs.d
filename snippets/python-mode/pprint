@@ -1,0 +1,5 @@
+# -*- coding: utf-8 -*-
+# name: pprint
+# key: pprint
+# --
+from pprint import pprint; pprint($0)
