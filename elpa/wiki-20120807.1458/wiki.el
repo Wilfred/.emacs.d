@@ -4,7 +4,8 @@
 
 ;; Emacs Lisp Archive Entry
 ;; Filename: wiki.el
-;; Version: 2.1.10
+;; Version: 20120807.1458
+;; X-Original-Version: 2.1.10
 ;; Keywords: hypermedia
 ;; Author: Alex Schroeder <alex@gnu.org>
 ;; Maintainer: Alex Schroeder <alex@gnu.org>
