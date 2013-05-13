@@ -41,6 +41,27 @@
 ;; set exec-path according to the system's PATH
 (exec-path-from-shell-initialize)
 
+(add-to-list 'load-path "~/.emacs.d/third-party-lisp/color-theme")
+(require 'color-theme)
+
+(require 'color-theme-tangotango)
+;; load theme when we are started with $ emacsclient -c
+(add-hook 'after-make-frame-functions
+          '(lambda (f)
+             (with-selected-frame f
+               (when (window-system f)
+                 (color-theme-tangotango)))))
+;; load theme when we are started with $ emacs
+(when window-system
+  (color-theme-tangotango))
+
+;; hide toolbar and scrollbar
+(tool-bar-mode 0)
+(scroll-bar-mode 0)
+
+;; show x-position (ie column number) for point in buffer
+(column-number-mode 1)
+
 ; always close the minibuffer on C-x o:
 ; <jlf> wilfredh: you could before-advise other-window to quit first
 ; if the minibuffer is active.. but it would be better to break that

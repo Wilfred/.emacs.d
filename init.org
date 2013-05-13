@@ -115,6 +115,42 @@ Note this function comes from the package `exec-path-from-shell.el'.
   
 #+END_SRC
 
+*** UI
+
+**** Theme
+
+I like the tangotango theme, which depends on color-theme. In Emacs
+24, this isn't necessary (todo: update this).
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-to-list 'load-path "~/.emacs.d/third-party-lisp/color-theme")
+  (require 'color-theme)
+  
+  (require 'color-theme-tangotango)
+  ;; load theme when we are started with $ emacsclient -c
+  (add-hook 'after-make-frame-functions
+            '(lambda (f)
+               (with-selected-frame f
+                 (when (window-system f)
+                   (color-theme-tangotango)))))
+  ;; load theme when we are started with $ emacs
+  (when window-system
+    (color-theme-tangotango))
+  
+#+END_SRC
+
+**** Hiding and Showing
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  ;; hide toolbar and scrollbar
+  (tool-bar-mode 0)
+  (scroll-bar-mode 0)
+  
+  ;; show x-position (ie column number) for point in buffer
+  (column-number-mode 1)
+#+END_SRC
+
+
 *** Undocumented
 
 #+BEGIN_SRC emacs-lisp :tangle yes
