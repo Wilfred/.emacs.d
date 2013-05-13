@@ -38,6 +38,8 @@
 
 (ensure-packages-compiled)
 
+;; todo: clean up orphaned .elc files
+
 ;; set exec-path according to the system's PATH
 (exec-path-from-shell-initialize)
 

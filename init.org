@@ -98,6 +98,8 @@ every time. Instead, we compile directories that don't contain any
           (byte-recompile-directory directory 0)))))
   
   (ensure-packages-compiled)
+  
+  ;; todo: clean up orphaned .elc files
 #+END_SRC
 
 *** Paths
