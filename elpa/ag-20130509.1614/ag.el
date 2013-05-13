@@ -4,8 +4,8 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 January 2013
-;; Version: 20130424.1355
-;; X-Original-Version: 0.19
+;; Version: 20130509.1614
+;; X-Original-Version: 0.21
 
 ;;; Commentary:
 
@@ -67,16 +67,28 @@ This requires the ag command to support --color-match, which is only in v0.14+"
 
 (require 'compile)
 
-(defvar ag-match-face 'match
+;; Although ag results aren't exactly errors, we treat them as errors
+;; so `next-error' and `previous-error' work. However, we ensure our
+;; face inherits from `compilation-info-face' so the results are
+;; styled appropriately.
+(defvar ag-hit-face compilation-info-face
   "Face name to use for ag matches.")
 
+(defvar ag-match-face 'match
+  "Face name to use for ag matches.")
 
 (define-compilation-mode ag-mode "Ag"
   "Ag results compilation mode"
   (let ((smbl  'compilation-ag-nogroup)
-        (pttrn '("^\\([^:\n]+?\\):\\([0-9]+\\):\\([0-9]+\\):" 1 2 3 0)))
+        ;; Note that we want to use as tight a regexp as we can to try and
+        ;; handle weird file names (with colons in them) as well as possible.
+        ;; E.g. we use [1-9][0-9]* rather than [0-9]+ so as to accept ":034:"
+        ;; in file names.
+        (pttrn '("^\\([^:\n]+?\\):\\([1-9][0-9]*\\):\\([1-9][0-9]*\\):" 1 2 3)))
     (set (make-local-variable 'compilation-error-regexp-alist) (list smbl))
-    (set (make-local-variable 'compilation-error-regexp-alist-alist) (list (cons smbl pttrn))))
+    (set (make-local-variable 'compilation-error-regexp-alist-alist) (list (cons smbl pttrn)))
+    (set (make-local-variable 'compilation-error-face)
+         ag-hit-face))
   (add-hook 'compilation-filter-hook 'ag-filter nil t))
 
 (defun ag/s-join (separator strings)

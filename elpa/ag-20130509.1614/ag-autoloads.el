@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (ag-regexp-project-at-point ag-project-regexp ag-project
-;;;;;;  ag-regexp ag) "ag" "ag.el" (20860 59783))
+;;;;;;  ag-regexp ag) "ag" "ag.el" (20876 65516 101343 71000))
 ;;; Generated autoloads from ag.el
 
 (autoload 'ag "ag" "\
@@ -40,7 +40,7 @@ to the symbol under point.
 
 ;;;***
 
-;;;### (autoloads nil nil ("ag-pkg.el") (20860 59783 628104))
+;;;### (autoloads nil nil ("ag-pkg.el") (20876 65516 157479 996000))
 
 ;;;***
 
