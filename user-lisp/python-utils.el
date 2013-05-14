@@ -13,7 +13,15 @@
     (error "`virtualenvs-root' is set to %s, which doesn't exist" virtualenvs-root))
   (let* ((virtualenv-names
           (no-dot-directories (directory-files virtualenvs-root)))
-         (virtualenv-name (ido-completing-read "Virtualenv: " virtualenv-names))
+         
+         (virtualenv-name
+          (ido-completing-read
+           (format
+            "Virtualenv (currently %s): "
+            (if python-shell-virtualenv-path
+              (file-name-nondirectory python-shell-virtualenv-path)
+              "not set"))
+           virtualenv-names))
          (virtualenv-path (file-path-join virtualenvs-root virtualenv-name)))
     (setq python-shell-virtualenv-path virtualenv-path)))
 
