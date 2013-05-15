@@ -56,6 +56,10 @@ tags tables searched by Emacs."
 (global-set-key (kbd "<f6>") 'etags-select-find-tag-at-point)
 (global-set-key (kbd "M-.") 'etags-select-find-tag)
 
+(defadvice etags-select-find-tag (around case-sensitive-matching activate)
+  (let ((ido-case-fold nil))
+    ad-do-it))
+
 (defun etags-select-find-tag-other-window ()
   "Equivalent to `etags-select-find-tag-at-point' but
 opening another window so the call site is still visible."
