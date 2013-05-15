@@ -51,13 +51,6 @@ tags tables searched by Emacs."
     (tags-utils/regenerate project-root)
     (add-to-list 'tags-table-list (concat project-root "TAGS"))))
 
-(defun tags-clear-all ()
-  "A utility for forgetting all the tags tables we know
-about. Useful when we have loaded several project with name
-clashes."
-  (interactive)
-  (setq tags-table-list nil))
-
 (require 'etags-select)
 
 (global-set-key (kbd "<f6>") 'etags-select-find-tag-at-point)
