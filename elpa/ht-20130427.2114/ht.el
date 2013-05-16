@@ -3,8 +3,8 @@
 ;; Copyright (C) 2013 Wilfred Hughes
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
-;; Version: 20130411.2
-;; X-Original-Version: 0.8
+;; Version: 20130427.2114
+;; X-Original-Version: 1.1
 ;; Keywords: hash table, hash map, hash
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -101,6 +101,13 @@ If KEY isn't present, return DEFAULT (nil if not specified)."
   (puthash key value table)
   nil)
 
+(defun ht-update (table from-table)
+  "Update TABLE according to every key-value pair in FROM-TABLE."
+  (maphash
+   (lambda (key value) (puthash key value table))
+   from-table)
+  nil)
+
 (defun ht-remove (table key)
   "Remove KEY from TABLE."
   (remhash key table))
@@ -110,23 +117,43 @@ If KEY isn't present, return DEFAULT (nil if not specified)."
   (clrhash table)
   nil)
 
+(defun ht-map (function table)
+  "Apply FUNCTION to each key-value pair of TABLE, and make a list of the results.
+FUNCTION is called with two arguments, KEY and VALUE."
+  (let (results)
+    (maphash
+     (lambda (key value)
+       (push (funcall function key value) results))
+     table)
+    results))
+
+(defmacro ht-amap (form table)
+  "Anaphoric version of `ht-map'.
+For every key-value pair in TABLE, evaluate FORM with the
+variables KEY and VALUE bound."
+  `(ht-map (lambda (key value) ,form) ,table))
+
 (defun ht-keys (table)
   "Return a list of all the keys in TABLE."
-  (let ((keys))
-    (maphash (lambda (key value) (setq keys (cons key keys))) table)
-    keys))
+  (ht-amap key table))
 
 (defun ht-values (table)
   "Return a list of all the values in TABLE."
-  (let ((values))
-    (maphash (lambda (key value) (setq values (cons value values))) table)
-    values))
+  (ht-amap value table))
 
 (defun ht-items (table)
   "Return a list of two-element lists '(key value) from TABLE."
-    (let ((items))
-    (maphash (lambda (key value) (setq items (cons (list key value) items))) table)
-    items))
+  (ht-amap (list key value) table))
+
+(defalias 'ht-each 'maphash
+  "Apply FUNCTION to each key-value pair of TABLE.
+Returns nil, used for side-effects only.")
+
+(defmacro ht-aeach (form table)
+  "Anaphoric version of `ht-each'.
+For every key-value pair in TABLE, evaluate FORM with the
+variables key and value bound."
+  `(ht-map (lambda (key value) ,form) ,table))
 
 (defun ht-to-plist (table)
   "Return a flat list '(key1 value1 key2 value2...) from TABLE.
@@ -152,12 +179,13 @@ inverse of `ht-from-alist'.  The following is not guaranteed:
 \(let ((data '((a . b) (c . d))))
   (equalp data
           (ht-to-alist (ht-from-alist data))))"
-  (let ((alist '()))
-    (maphash (lambda (key value)
-               (setq alist (cons (cons key value) alist)))
-             table)
-    alist))
+  (ht-amap (cons key value) table))
 
+(defalias 'ht-p 'hash-table-p)
+
+(defun ht-contains-p (table key)
+  "Return 't if TABLE contains KEY."
+  (not (eq (ht-get table key 'ht--not-found) 'ht--not-found)))
 
 (provide 'ht)
 ;;; ht.el ends here
