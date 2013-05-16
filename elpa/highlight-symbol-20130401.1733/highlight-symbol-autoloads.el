@@ -7,7 +7,8 @@
 ;;;;;;  highlight-symbol-prev-in-defun highlight-symbol-next-in-defun
 ;;;;;;  highlight-symbol-prev highlight-symbol-next highlight-symbol-list-all
 ;;;;;;  highlight-symbol-remove-all highlight-symbol-at-point highlight-symbol-mode)
-;;;;;;  "highlight-symbol" "highlight-symbol.el" (20808 20985))
+;;;;;;  "highlight-symbol" "highlight-symbol.el" (20876 65496 968010
+;;;;;;  932000))
 ;;; Generated autoloads from highlight-symbol.el
 
 (autoload 'highlight-symbol-mode "highlight-symbol" "\
@@ -67,8 +68,8 @@ before if NLINES is negative.
 
 ;;;***
 
-;;;### (autoloads nil nil ("highlight-symbol-pkg.el") (20808 20985
-;;;;;;  598529))
+;;;### (autoloads nil nil ("highlight-symbol-pkg.el") (20876 65497
+;;;;;;  28399 587000))
 
 ;;;***
 
