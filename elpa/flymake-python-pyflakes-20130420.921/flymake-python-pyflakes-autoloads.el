@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (flymake-python-pyflakes-load) "flymake-python-pyflakes"
-;;;;;;  "flymake-python-pyflakes.el" (20804 49910))
+;;;;;;  "flymake-python-pyflakes.el" (20876 65502 368010 590000))
 ;;; Generated autoloads from flymake-python-pyflakes.el
 
 (autoload 'flymake-python-pyflakes-load "flymake-python-pyflakes" "\
@@ -14,8 +14,8 @@ Configure flymake mode to check the current buffer's python syntax using pyflake
 
 ;;;***
 
-;;;### (autoloads nil nil ("flymake-python-pyflakes-pkg.el") (20804
-;;;;;;  49910 167562))
+;;;### (autoloads nil nil ("flymake-python-pyflakes-pkg.el") (20876
+;;;;;;  65502 415243 560000))
 
 ;;;***
 
