@@ -211,7 +211,9 @@ at the top."
   :group 'jedi)
 
 (defcustom jedi:install-imenu nil
-  "[EXPERIMENTAL] If `t', use Jedi to create `imenu' index."
+  "[EXPERIMENTAL] If `t', use Jedi to create `imenu' index.
+To use this feature, you need to install the developmental
+version (\"dev\" branch) of Jedi."
   :group 'jedi)
 
 (defcustom jedi:setup-keys nil
@@ -281,8 +283,16 @@ avoid collision by something like this::
 `anything-jedi-related-names'."
   :group 'jedi)
 
+(defcustom jedi:key-goto-definition-pop-marker (kbd "C-,")
+  "Keybind for command `jedi:goto-definition-pop-marker'."
+  :group 'jedi)
+
 (defcustom jedi:import-python-el-settings t
   "Automatically import setting from python.el variables."
+  :group 'jedi)
+
+(defcustom jedi:goto-definition-marker-ring-length 16
+  "Length of marker ring to store `jedi:goto-definition' call positions"
   :group 'jedi)
 
 
@@ -290,6 +300,9 @@ avoid collision by something like this::
 
 (defvar jedi:get-in-function-call--d nil
   "Bounded to deferred object while requesting get-in-function-call.")
+
+(defvar jedi:defined-names--singleton-d nil
+  "Bounded to deferred object while requesting defined_names.")
 
 
 ;;; Jedi mode
@@ -329,6 +342,8 @@ toolitp when inside of function call.
     (define-key map jedi:key-complete        'jedi:complete)
     (define-key map jedi:key-goto-definition 'jedi:goto-definition)
     (define-key map jedi:key-show-doc        'jedi:show-doc)
+    (define-key map jedi:key-goto-definition-pop-marker
+      'jedi:goto-definition-pop-marker)
     (let ((command (cond
                     ((featurep 'helm) 'helm-jedi-related-names)
                     ((featurep 'anything) 'anything-jedi-related-names))))
@@ -426,7 +441,8 @@ later when it is needed."
     (message "Jedi server is already killed."))
   (setq jedi:epc nil)
   ;; It could be non-nil due to some error.  Rescue it in that case.
-  (setq jedi:get-in-function-call--d nil))
+  (setq jedi:get-in-function-call--d nil)
+  (setq jedi:defined-names--singleton-d nil))
 
 (defun jedi:get-epc ()
   (if (jedi:epc--live-p jedi:epc)
@@ -613,6 +629,9 @@ See also: `jedi:server-args'."
 
 (defvar jedi:goto-definition--index nil)
 (defvar jedi:goto-definition--cache nil)
+(defvar jedi:goto-definition--marker-ring
+  (make-ring jedi:goto-definition-marker-ring-length)
+  "Marker ring that stores `jedi:goto-definition' call positions")
 
 (defun jedi:goto-definition (&optional other-window deftype use-cache index)
   "Goto the definition of the object at point.
@@ -654,6 +673,22 @@ INDEX-th result."
         (lambda (reply)
           (jedi:goto-definition--callback reply other-window)))))))
 
+(defun jedi:goto-definition-push-marker ()
+  "Push point onto goto-definition marker ring."
+  (ring-insert jedi:goto-definition--marker-ring (point-marker)))
+
+(defun jedi:goto-definition-pop-marker ()
+  "Goto the last point where `jedi:goto-definition' was called."
+  (interactive)
+  (if (ring-empty-p jedi:goto-definition--marker-ring)
+      (error "Jedi marker ring is empty, can't pop")
+    (let ((marker (ring-remove jedi:goto-definition--marker-ring 0)))
+      (switch-to-buffer (or (marker-buffer marker)
+                            (error "Buffer has been deleted")))
+      (goto-char (marker-position marker))
+      ;; Cleanup the marker so as to avoid them piling up.
+      (set-marker marker nil nil))))
+
 (defun jedi:goto-definition-next (&optional other-window)
   "Goto the next cached definition.  See: `jedi:goto-definition'."
   (interactive "P")
@@ -693,7 +728,7 @@ INDEX-th result."
         (unless (and try-next (funcall next))
           (message "File '%s' does not exist." module_path)))
        (t
-        (push-mark)
+        (jedi:goto-definition-push-marker)
         (funcall (if other-window #'find-file-other-window #'find-file)
                  module_path)
         (jedi:goto--line-column line_nr column)
@@ -831,8 +866,17 @@ INDEX-th result."
     (lambda (reply)
       (setq jedi:defined-names--cache reply))))
 
+(defun jedi:defined-names--singleton-deferred ()
+  "Like `jedi:defined-names-deferred', but make sure that only
+one request at the time is emitted."
+  (unless jedi:defined-names--singleton-d
+    (setq jedi:defined-names--singleton-d
+          (deferred:watch (jedi:defined-names-deferred)
+            (lambda (_) (setq jedi:defined-names--singleton-d nil))))))
+
 (defun jedi:after-change-handler (&rest _)
-  (jedi:defined-names-deferred))
+  (unless (or (ac-menu-live-p) (ac-inline-live-p))
+    (jedi:defined-names--singleton-deferred)))
 
 (defun jedi:create-imenu-index-1 (def)
   (destructuring-bind (&key name line_nr column &allow-other-keys) def
