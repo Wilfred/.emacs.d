@@ -402,7 +402,9 @@ multiple cursors editing.")
   (define-key mc/keymap (kbd "C-g") 'mc/keyboard-quit)
   (define-key mc/keymap (kbd "<return>") 'multiple-cursors-mode)
   (when (fboundp 'phi-search)
-    (define-key mc/keymap (kbd "C-s") 'phi-search)))
+    (define-key mc/keymap (kbd "C-s") 'phi-search))
+  (when (fboundp 'phi-search-backward)
+    (define-key mc/keymap (kbd "C-r") 'phi-search-backward)))
 
 (defun mc--all-equal (entries)
   "Are all these entries equal?"
@@ -428,7 +430,7 @@ So you can paste it in later with `yank-rectangle'."
     (unless (mc--all-equal entries)
       (setq killed-rectangle entries))))
 
-(defvar mc/unsupported-minor-modes '(auto-complete-mode)
+(defvar mc/unsupported-minor-modes '(auto-complete-mode flyspell-mode)
   "List of minor-modes that does not play well with multiple-cursors.
 They are temporarily disabled when multiple-cursors are active.")
 
