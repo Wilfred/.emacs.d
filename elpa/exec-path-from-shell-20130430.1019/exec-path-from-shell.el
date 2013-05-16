@@ -5,7 +5,7 @@
 ;; Author: Steve Purcell <steve@sanityinc.com>
 ;; Keywords: environment
 ;; URL: https://github.com/purcell/exec-path-from-shell
-;; Version: 20130427.959
+;; Version: 20130430.1019
 ;; X-Original-Version: DEV
 
 ;; This file is not part of GNU Emacs.
@@ -114,7 +114,7 @@ variables such as `exec-path'."
   (setenv name value)
   (when (string-equal "PATH" name)
     (setq eshell-path-env value
-          exec-path (split-string value path-separator))))
+          exec-path (parse-colon-path value))))
 
 ;;;###autoload
 (defun exec-path-from-shell-copy-envs (names)
