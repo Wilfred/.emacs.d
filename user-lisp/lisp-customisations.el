@@ -7,6 +7,15 @@
 ;; use elint to check elisp
 (add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
 
+(add-hook 'emacs-lisp-mode-hook
+          (lambda ()
+            (setq use-hl-line nil)
+            (hl-sexp-mode)))
+(add-hook 'clojure-mode-hook
+          (lambda ()
+            (setq use-hl-line nil)
+            (hl-sexp-mode)))
+
 ;; eldoc displays the arguments to the function under cursor in the minibuffer
 (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
 
