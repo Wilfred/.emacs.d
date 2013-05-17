@@ -1,8 +1,7 @@
 * Emacs Configuration
 ** Introduction
 This file is a literate programming document. To generate init.el, run
-`M-x org-babel-tangle'. To generate init.html, run `M-x
-org-export-as-html'.
+`M-x org-babel-tangle'. To generate init.html, run `M-x org-export-as-html'.
 
 By default, all the sections in this document are collapsed. You can
 expand a header by pressing `<TAB>' when point is on that header. You
