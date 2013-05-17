@@ -4,6 +4,9 @@
 (add-hook 'clojure-mode-hook 'turn-on-paredit)
 (add-hook 'emacs-lisp-mode-hook 'turn-on-paredit)
 
+;; use elint to check elisp
+(add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
+
 ;; eldoc displays the arguments to the function under cursor in the minibuffer
 (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
 
