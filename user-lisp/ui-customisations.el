@@ -4,8 +4,24 @@
 ; always highlight matching parentheses
 (show-paren-mode 1)
 
-; always highlight line that cursor is on
-(global-hl-line-mode 1)
+;; always highlight line that cursor is on, unless a mode has set d
+(defvar use-hl-line t
+  "Whether we should use `hl-line-mode' in this buffer.
+Defaults to `t'.")
+(make-variable-buffer-local 'use-hl-line)
+
+(defun activate-hl-line ()
+  "Enable `hl-line-mode' unless `use-hl-line` says otherwise."
+  (when use-hl-line
+    (hl-line-mode)))
+
+(add-hook 'after-change-major-mode-hook 'activate-hl-line)
+
+;; don't use hl-line in the minibuffer, it's not useful
+;; FIXME: doesn't work
+(add-hook 'minibuffer-setup-hook
+          (lambda ()
+            (setq use-hl-line nil)))
 
 ; always truncate lines (i.e. don't wrap lines)
 (setq-default truncate-lines t)
