@@ -1,3 +1,7 @@
+This file is being rewritten as literate elisp, please see http://www.wilfred.me.uk/.emacs.d/init.html
+
+-----
+
 This is the Emacs environment I (Wilfred Hughes) use for development.
 
 I'm aiming to keep this as portable as possible, and
@@ -50,22 +54,3 @@ package yet live in `third-party-lisp`. These include:
 * [csv-mode](http://centaur.maths.qmul.ac.uk/Emacs/)
 * [color-theme](http://www.nongnu.org/color-theme/) (note Tango theme is
   not part of the default collection)
-
-### External tools required
-
-[Pyflakes](https://github.com/kevinw/pyflakes) (note not the PyPI
-  version, since that crashes on unfinished dicts: `{foo}`)
-  
-This is bundled with this repository.
-  
-[JSHint](https://github.com/jshint/jshint/)
-
-You need node.js installed, then simply:
-
-    $ sudo npm install -g jshint
-
-[Jedi](https://github.com/davidhalter/jedi)
-
-You can install this with:
-
-    $ pip install -r elpa/jedi*/requirements.txt

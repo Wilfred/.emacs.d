@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
                "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<title>org-init</title>
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
-<meta name="title" content="org-init"/>
+<title>init</title>
+<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
+<meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-05-01T13:21+0100"/>
+<meta name="generated" content="2013-05-17T22:41+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -115,7 +115,7 @@ for the JavaScript code in this tag.
 </div>
 
 <div id="content">
-<h1 class="title">org-init</h1>
+<h1 class="title">init</h1>
 
 
 <div id="table-of-contents">
@@ -125,13 +125,21 @@ for the JavaScript code in this tag.
 <li><a href="#sec-1">1 Emacs Configuration</a>
 <ul>
 <li><a href="#sec-1-1">1.1 Introduction</a></li>
-<li><a href="#sec-1-2">1.2 Installing locally</a></li>
+<li><a href="#sec-1-2">1.2 Installing locally</a>
+<ul>
+<li><a href="#sec-1-2-1">1.2.1 Emacs 24</a></li>
+<li><a href="#sec-1-2-2">1.2.2 Python</a></li>
+<li><a href="#sec-1-2-3">1.2.3 JavaScript</a></li>
+</ul>
+</li>
 <li><a href="#sec-1-3">1.3 Contents</a>
 <ul>
 <li><a href="#sec-1-3-1">1.3.1 Timing</a></li>
 <li><a href="#sec-1-3-2">1.3.2 Folder Structure</a></li>
 <li><a href="#sec-1-3-3">1.3.3 Packages</a></li>
-<li><a href="#sec-1-3-4">1.3.4 Undocumented</a></li>
+<li><a href="#sec-1-3-4">1.3.4 Paths</a></li>
+<li><a href="#sec-1-3-5">1.3.5 UI</a></li>
+<li><a href="#sec-1-3-6">1.3.6 Undocumented</a></li>
 </ul>
 </li>
 </ul>
@@ -152,7 +160,7 @@ for the JavaScript code in this tag.
 <div class="outline-text-3" id="text-1-1">
 
 <p>This file is a literate programming document. To generate init.el, run
-`M-x org-babel-tangle'.
+`M-x org-babel-tangle'. To generate init.html, run 
 </p>
 <p>
 By default, all the sections in this document are collapsed. You can
@@ -161,7 +169,8 @@ can expand all headers by pressing `C-u C-u C-u &lt;TAB&gt;'.
 </p>
 <p>
 You can edit any code block by putting point inside the block and
-pressing `C-c ''. To use normal code highlighting in the Org buffer, evaluate:
+pressing `C-c '' (press `C-c '' again to escape). To use normal code
+highlighting in the Org buffer, evaluate:
 </p>
 
 
@@ -180,8 +189,66 @@ pressing `C-c ''. To use normal code highlighting in the Org buffer, evaluate:
 
 
 <p>
-TODOC: steal from readme
+This repository seeks to be as self-contained as possible. However, you will require:
 </p>
+
+</div>
+
+<div id="outline-container-1-2-1" class="outline-4">
+<h4 id="sec-1-2-1"><span class="section-number-4">1.2.1</span> Emacs 24</h4>
+<div class="outline-text-4" id="text-1-2-1">
+
+
+<p>
+I use this repository with Emacs 24. Most code works with Emacs 23 but
+I don't test it often.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-1-2-2" class="outline-4">
+<h4 id="sec-1-2-2"><span class="section-number-4">1.2.2</span> Python</h4>
+<div class="outline-text-4" id="text-1-2-2">
+
+
+<p>
+We include a copy of pyflakes. This copy requires `python2' to be available
+on `$PATH'. This is from this fork of pyflakes:
+<a href="https://github.com/kevinw/pyflakes">https://github.com/kevinw/pyflakes</a> since it's less prone to crashing
+on invalid syntax (`{foo}' was a particular nuisance).
+</p>
+<p>
+I also use Jedi, which has some dependencies you can install with:
+</p>
+
+
+
+<pre class="src src-sh">pip install -r elpa/jedi*/requirements.txt
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-1-2-3" class="outline-4">
+<h4 id="sec-1-2-3"><span class="section-number-4">1.2.3</span> JavaScript</h4>
+<div class="outline-text-4" id="text-1-2-3">
+
+
+<p>
+I use JSHint, which requires you to have node.js installed. To
+install JSHint, run:
+</p>
+
+
+
+<pre class="src src-sh">sudo npm install -g jshint
+</pre>
+
+
+</div>
 </div>
 
 </div>
@@ -308,6 +375,8 @@ every time. Instead, we compile directories that don't contain any
         (byte-recompile-directory directory 0)))))
 
 (ensure-packages-compiled)
+
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">todo: clean up orphaned .elc files</span>
 </pre>
 
 
@@ -316,17 +385,97 @@ every time. Instead, we compile directories that don't contain any
 </div>
 
 <div id="outline-container-1-3-4" class="outline-4">
-<h4 id="sec-1-3-4"><span class="section-number-4">1.3.4</span> Undocumented</h4>
+<h4 id="sec-1-3-4"><span class="section-number-4">1.3.4</span> Paths</h4>
 <div class="outline-text-4" id="text-1-3-4">
 
 
+<p>
+We set up Emacs' exec-path based on PATH in a shell. This is primarily
+for OS X, where starting Emacs in GUI mode doesn't inherit the shell's
+environment. This ensures that any command we can call from a shell,
+we can call inside Emacs.
+</p>
+<p>
+Note this function comes from the package `exec-path-from-shell.el'.
+</p>
 
 
 
 <pre class="src src-emacs-lisp"><span style="color: #888a85;">;; </span><span style="color: #888a85;">set exec-path according to the system's PATH</span>
 (exec-path-from-shell-initialize)
 
-<span style="color: #888a85;">; </span><span style="color: #888a85;">always close the minibuffer on C-x o:</span>
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-1-3-5" class="outline-4">
+<h4 id="sec-1-3-5"><span class="section-number-4">1.3.5</span> UI</h4>
+<div class="outline-text-4" id="text-1-3-5">
+
+
+<ul>
+<li id="sec-1-3-5-1">Theme<br/>
+
+<p>
+I like the tangotango theme, which depends on color-theme. In Emacs
+24, this isn't necessary (todo: update this).
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(add-to-list 'load-path <span style="color: #ad7fa8; font-style: italic;">"~/.emacs.d/third-party-lisp/color-theme"</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">color-theme</span>)
+
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">color-theme-tangotango</span>)
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">load theme when we are started with $ emacsclient -c</span>
+(add-hook 'after-make-frame-functions
+          '(<span style="color: #729fcf; font-weight: bold;">lambda</span> (f)
+             (<span style="color: #729fcf; font-weight: bold;">with-selected-frame</span> f
+               (<span style="color: #729fcf; font-weight: bold;">when</span> (window-system f)
+                 (color-theme-tangotango)))))
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">load theme when we are started with $ emacs</span>
+(<span style="color: #729fcf; font-weight: bold;">when</span> window-system
+  (color-theme-tangotango))
+
+</pre>
+
+
+</li>
+</ul>
+<ul>
+<li id="sec-1-3-5-2">Hiding and Showing<br/>
+
+
+
+
+<pre class="src src-emacs-lisp"><span style="color: #888a85;">;; </span><span style="color: #888a85;">hide toolbar and scrollbar</span>
+(tool-bar-mode 0)
+(scroll-bar-mode 0)
+
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">show x-position (ie column number) for point in buffer</span>
+(column-number-mode 1)
+</pre>
+
+
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1-3-6" class="outline-4">
+<h4 id="sec-1-3-6"><span class="section-number-4">1.3.6</span> Undocumented</h4>
+<div class="outline-text-4" id="text-1-3-6">
+
+
+
+
+
+<pre class="src src-emacs-lisp"><span style="color: #888a85;">; </span><span style="color: #888a85;">always close the minibuffer on C-x o:</span>
 <span style="color: #888a85;">; </span><span style="color: #888a85;">&lt;jlf&gt; wilfredh: you could before-advise other-window to quit first</span>
 <span style="color: #888a85;">; </span><span style="color: #888a85;">if the minibuffer is active.. but it would be better to break that</span>
 <span style="color: #888a85;">; </span><span style="color: #888a85;">habit :)</span>
@@ -436,6 +585,11 @@ every time. Instead, we compile directories that don't contain any
 (<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">suspend-frame</span> (<span style="color: #8ae234; font-weight: bold;">&amp;rest</span>)
   (interactive))
 
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">windmove allows S-&lt;right&gt; and S-&lt;right&gt; to switch between windows</span>
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">instead of `C-x o'</span>
+(<span style="color: #729fcf; font-weight: bold;">when</span> (fboundp 'windmove-default-keybindings)
+  (windmove-default-keybindings))
+
 (custom-set-variables
   <span style="color: #888a85;">;; </span><span style="color: #888a85;">custom-set-variables was added by Custom.</span>
   <span style="color: #888a85;">;; </span><span style="color: #888a85;">If you edit it by hand, you could mess it up, so be careful.</span>
@@ -451,6 +605,8 @@ every time. Instead, we compile directories that don't contain any
  '(ethan-wspace-face ((t (<span style="color: #729fcf;">:background</span> <span style="color: #ad7fa8; font-style: italic;">"#2e3434"</span>))))
  '(flymake-errline ((((class color)) (<span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Red"</span>))))
  '(flymake-warnline ((((class color)) (<span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Orange"</span>))))
+ '(hl-line ((t (<span style="color: #729fcf;">:background</span> <span style="color: #ad7fa8; font-style: italic;">"gray14"</span>))))
+ '(hl-sexp-face ((t (<span style="color: #729fcf;">:background</span> <span style="color: #ad7fa8; font-style: italic;">"gray14"</span>))))
  '(js2-function-param-face ((((class color)) (<span style="color: #729fcf;">:foreground</span> <span style="color: #ad7fa8; font-style: italic;">"Green"</span>))))
  '(smerge-refined-change ((t (<span style="color: #729fcf;">:background</span> <span style="color: #ad7fa8; font-style: italic;">"black"</span>)))))
 
@@ -458,7 +614,6 @@ every time. Instead, we compile directories that don't contain any
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">(message "Spent %.2f seconds executing .emacs.d/init.el."</span>
 <span style="color: #888a85;">;;          </span><span style="color: #888a85;">(time-difference *emacs-load-start* (current-time)))</span>
 (put 'narrow-to-region 'disabled nil)
-
 </pre>
 
 </div>
@@ -468,7 +623,7 @@ every time. Instead, we compile directories that don't contain any
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-05-01T13:21+0100</p>
+<p class="date">Date: 2013-05-17T22:41+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
