@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>org-init</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<meta name="title" content="org-init"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2013-05-01T13:21+0100"/>
+<meta name="author" content="Wilfred Hughes"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
+  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
+  .center {margin-left:auto; margin-right:auto; text-align:center;}
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top;  }
+  th.right  { text-align:center;  }
+  th.left   { text-align:center;   }
+  th.center { text-align:center; }
+  td.right  { text-align:right;  }
+  td.left   { text-align:left;   }
+  td.center { text-align:center; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  div.inlinetask {
+    padding:10px;
+    border:2px solid gray;
+    margin:10px;
+    background: #ffffcc;
+  }
+  textarea { overflow-x: auto; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+
+</head>
+<body>
+
+<div id="preamble">
+
+</div>
+
+<div id="content">
+<h1 class="title">org-init</h1>
+
+
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1 Emacs Configuration</a>
+<ul>
+<li><a href="#sec-1-1">1.1 Introduction</a></li>
+<li><a href="#sec-1-2">1.2 Installing locally</a></li>
+<li><a href="#sec-1-3">1.3 Contents</a>
+<ul>
+<li><a href="#sec-1-3-1">1.3.1 Timing</a></li>
+<li><a href="#sec-1-3-2">1.3.2 Folder Structure</a></li>
+<li><a href="#sec-1-3-3">1.3.3 Packages</a></li>
+<li><a href="#sec-1-3-4">1.3.4 Undocumented</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Emacs Configuration</h2>
+<div class="outline-text-2" id="text-1">
+
+
+</div>
+
+<div id="outline-container-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Introduction</h3>
+<div class="outline-text-3" id="text-1-1">
+
+<p>This file is a literate programming document. To generate init.el, run
+`M-x org-babel-tangle'.
+</p>
+<p>
+By default, all the sections in this document are collapsed. You can
+expand a header by pressing `&lt;TAB&gt;' when point is on that header. You
+can expand all headers by pressing `C-u C-u C-u &lt;TAB&gt;'.
+</p>
+<p>
+You can edit any code block by putting point inside the block and
+pressing `C-c ''. To use normal code highlighting in the Org buffer, evaluate:
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(setq org-src-fontify-natively t)
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Installing locally</h3>
+<div class="outline-text-3" id="text-1-2">
+
+
+<p>
+TODOC: steal from readme
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> Contents</h3>
+<div class="outline-text-3" id="text-1-3">
+
+
+
+</div>
+
+<div id="outline-container-1-3-1" class="outline-4">
+<h4 id="sec-1-3-1"><span class="section-number-4">1.3.1</span> Timing</h4>
+<div class="outline-text-4" id="text-1-3-1">
+
+<p>To keep Emacs startup fast, it's helpful to measure how fast it is.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(setq *emacs-load-start* (current-time))
+</pre>
+
+
+<p>
+See the end of this document for where we use this data.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-1-3-2" class="outline-4">
+<h4 id="sec-1-3-2"><span class="section-number-4">1.3.2</span> Folder Structure</h4>
+<div class="outline-text-4" id="text-1-3-2">
+
+
+<p>
+Code I've written lives in user-lisp. This includes packages that I
+haven't polished enough to release yet, small convenience functions,
+and package customisations.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(add-to-list 'load-path <span style="color: #ad7fa8; font-style: italic;">"~/.emacs.d/user-lisp/"</span>)
+</pre>
+
+
+<p>
+Code that I haven't written lives in third-party-lisp. This directory
+should ultimately disappear once all these packages live in MELPA.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(add-to-list 'load-path <span style="color: #ad7fa8; font-style: italic;">"~/.emacs.d/third-party-lisp/"</span>)
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-1-3-3" class="outline-4">
+<h4 id="sec-1-3-3"><span class="section-number-4">1.3.3</span> Packages</h4>
+<div class="outline-text-4" id="text-1-3-3">
+
+
+<p>
+I use ELPA packages heavily for functionality, primarily the MELPA
+repository. We initalize all the packages here, so we can use them
+later.
+</p>
+
+
+
+<pre class="src src-emacs-lisp"><span style="color: #888a85;">; </span><span style="color: #888a85;">marmalade is a third party repo that anyone can submit to, so has</span>
+<span style="color: #888a85;">; </span><span style="color: #888a85;">many more packages</span>
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">package</span>)
+(add-to-list 'package-archives '(<span style="color: #ad7fa8; font-style: italic;">"marmalade"</span> . <span style="color: #ad7fa8; font-style: italic;">"http://marmalade-repo.org/packages/"</span>))
+(add-to-list 'package-archives '(<span style="color: #ad7fa8; font-style: italic;">"melpa"</span> . <span style="color: #ad7fa8; font-style: italic;">"http://melpa.milkbox.net/packages/"</span>) t)
+
+(package-initialize)
+</pre>
+
+
+<p>
+When a package is installed, it's byte-compiled. However, git is set
+up to ignore .elc files (see the .gitignore file). The system that
+installs the file therefore has .elc files, but other systems need to
+byte-compile those directories.
+</p>
+<p>
+To make matters worse, we can't just compile on startup any package
+files that aren't compiled already, since some files fail compilation
+every time. Instead, we compile directories that don't contain any
+.elc files.
+</p>
+
+
+
+<pre class="src src-emacs-lisp"><span style="color: #888a85;">;; </span><span style="color: #888a85;">load the packages we've installed on another system but pulled in with git, so they aren't compiled</span>
+(<span style="color: #729fcf; font-weight: bold;">eval-when-compile</span> '(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">cl</span>))
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">dash</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">s</span>)
+
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">was-compiled-p</span> (path)
+  <span style="color: #888a85;">"Does the directory at PATH contain any .elc files?"</span>
+  (<span style="color: #729fcf; font-weight: bold;">--any-p</span> (s-ends-with-p <span style="color: #ad7fa8; font-style: italic;">".elc"</span> <span style="color: #ff6347;">it</span>) (directory-files path)))
+
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">no-dot-directories</span> (directories)
+  <span style="color: #888a85;">"Exclude the . and .. directory from a list."</span>
+  (<span style="color: #729fcf; font-weight: bold;">--remove</span> (or (string= <span style="color: #ad7fa8; font-style: italic;">"."</span> (file-name-nondirectory <span style="color: #ff6347;">it</span>))
+                (string= <span style="color: #ad7fa8; font-style: italic;">".."</span> (file-name-nondirectory <span style="color: #ff6347;">it</span>)))
+            directories))
+
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">ensure-packages-compiled</span> ()
+  <span style="color: #888a85;">"If any packages installed with package.el aren't compiled yet, compile them."</span>
+  (<span style="color: #729fcf; font-weight: bold;">let*</span> ((package-files (no-dot-directories (directory-files package-user-dir t)))
+         (package-directories (<span style="color: #729fcf; font-weight: bold;">-filter</span> 'file-directory-p package-files)))
+    (<span style="color: #729fcf; font-weight: bold;">dolist</span> (directory package-directories)
+      (<span style="color: #729fcf; font-weight: bold;">unless</span> (was-compiled-p directory)
+        (byte-recompile-directory directory 0)))))
+
+(ensure-packages-compiled)
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-1-3-4" class="outline-4">
+<h4 id="sec-1-3-4"><span class="section-number-4">1.3.4</span> Undocumented</h4>
+<div class="outline-text-4" id="text-1-3-4">
+
+
+
+
+
+<pre class="src src-emacs-lisp"><span style="color: #888a85;">;; </span><span style="color: #888a85;">set exec-path according to the system's PATH</span>
+(exec-path-from-shell-initialize)
+
+<span style="color: #888a85;">; </span><span style="color: #888a85;">always close the minibuffer on C-x o:</span>
+<span style="color: #888a85;">; </span><span style="color: #888a85;">&lt;jlf&gt; wilfredh: you could before-advise other-window to quit first</span>
+<span style="color: #888a85;">; </span><span style="color: #888a85;">if the minibuffer is active.. but it would be better to break that</span>
+<span style="color: #888a85;">; </span><span style="color: #888a85;">habit :)</span>
+
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">ui-customisations</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">startup-customisations</span>)
+
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">file-customisations</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">editing-customisations</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">kill-ring-customisations</span>)
+
+(<span style="color: #729fcf; font-weight: bold;">if</span> (eq system-type 'darwin)
+    (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">os-x-fixes</span>))
+
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">start-scratch-file</span> (file-name)
+  <span style="color: #888a85;">"Create a file in ~/scratch for the given file name."</span>
+  (interactive <span style="color: #ad7fa8; font-style: italic;">"sName of scratch file: "</span>)
+  (find-file
+   (format <span style="color: #ad7fa8; font-style: italic;">"~/scratch/%s"</span> file-name)))
+
+<span style="color: #888a85;">; </span><span style="color: #888a85;">TODO: increase kill ring size</span>
+
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">ido-customisations</span>)
+
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">make re-builder use the same regexp format as regexp-replace (no double escaping)</span>
+(setq reb-re-syntax 'string)
+
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">treat space charcters as matching space characters, not like PCRE's '\s+'</span>
+(setq search-whitespace-regexp nil)
+
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">completion-customisations</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">structured-text-customisations</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">isearch-customisations</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">html-customisations</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">css-customisations</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">python-customisations</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">javascript-customisations</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">xml-customisations</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">lisp-customisations</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">haskell-customisations</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">c-customisations</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">sh-customisations</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">coffee-customisations</span>)
+
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">editd-customisations</span>)
+
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">git-customisations</span>)
+
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">stolen from http://demonastery.org/2013/04/emacs-narrow-to-region-indirect/</span>
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">narrow-to-region-indirect</span> (start end)
+  <span style="color: #888a85;">"Restrict editing in this buffer to the current region, indirectly."</span>
+  (interactive <span style="color: #ad7fa8; font-style: italic;">"r"</span>)
+  (<span style="color: #729fcf; font-weight: bold;">let</span> ((buf (clone-indirect-buffer nil nil)))
+    (<span style="color: #729fcf; font-weight: bold;">with-current-buffer</span> buf
+      (narrow-to-region start end))
+    (switch-to-buffer buf)))
+
+(setq ag-highlight-search 't)
+(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f5&gt;"</span>) 'ag-project-at-point)
+
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">stolen from http://whattheemacsd.com/setup-dired.el-02.html</span>
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">dired-back-to-top</span> ()
+  (interactive)
+  (beginning-of-buffer)
+  (dired-next-line (<span style="color: #729fcf; font-weight: bold;">if</span> dired-omit-mode 2 4)))
+
+(define-key dired-mode-map
+  (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
+
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">dired-jump-to-bottom</span> ()
+  (interactive)
+  (end-of-buffer)
+  (dired-next-line -1))
+
+(define-key dired-mode-map
+  (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
+
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">conflicts</span>)
+
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">tags-utils</span>)
+
+(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f8&gt;"</span>) 'flymake-goto-prev-error)
+(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f9&gt;"</span>) 'flymake-goto-next-error)
+
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">flymake-error-at-point</span> ()
+  <span style="color: #888a85;">"Show the flymake error in the minibuffer when point is on an invalid line."</span>
+  (<span style="color: #729fcf; font-weight: bold;">when</span> (get-char-property (point) 'flymake-overlay)
+    (<span style="color: #729fcf; font-weight: bold;">let</span> ((help (get-char-property (point) 'help-echo)))
+      (<span style="color: #729fcf; font-weight: bold;">if</span> help (message <span style="color: #ad7fa8; font-style: italic;">"%s"</span> help)))))
+
+(add-hook 'post-command-hook 'flymake-error-at-point)
+
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">crontab mode for files named</span>
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">crontab-mode</span>)
+(add-to-list 'auto-mode-alist '(<span style="color: #ad7fa8; font-style: italic;">"crontab.*?\\'"</span> . crontab-mode))
+
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">wiki</span>)
+(setq major-mode 'text-mode)
+(setq wiki-directories (list (expand-file-name <span style="color: #ad7fa8; font-style: italic;">"~/Dropbox/Wiki/"</span>)))
+
+(setq ring-bell-function 'ignore)
+
+<span style="color: #888a85;">; </span><span style="color: #888a85;">suspend seems to crash on Gnome 3, and I don't use it anyway, so just disable it</span>
+(setq cannot-suspend t)
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">suspend-emacs</span> (<span style="color: #8ae234; font-weight: bold;">&amp;rest</span>)
+  (interactive))
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">suspend-frame</span> (<span style="color: #8ae234; font-weight: bold;">&amp;rest</span>)
+  (interactive))
+
+(custom-set-variables
+  <span style="color: #888a85;">;; </span><span style="color: #888a85;">custom-set-variables was added by Custom.</span>
+  <span style="color: #888a85;">;; </span><span style="color: #888a85;">If you edit it by hand, you could mess it up, so be careful.</span>
+  <span style="color: #888a85;">;; </span><span style="color: #888a85;">Your init file should contain only one such instance.</span>
+  <span style="color: #888a85;">;; </span><span style="color: #888a85;">If there is more than one, they won't work right.</span>
+ '(frame-background-mode (quote dark)))
+(custom-set-faces
+ <span style="color: #888a85;">;; </span><span style="color: #888a85;">custom-set-faces was added by Custom.</span>
+ <span style="color: #888a85;">;; </span><span style="color: #888a85;">If you edit it by hand, you could mess it up, so be careful.</span>
+ <span style="color: #888a85;">;; </span><span style="color: #888a85;">Your init file should contain only one such instance.</span>
+ <span style="color: #888a85;">;; </span><span style="color: #888a85;">If there is more than one, they won't work right.</span>
+ '(ahs-plugin-defalt-face ((t nil)))
+ '(ethan-wspace-face ((t (<span style="color: #729fcf;">:background</span> <span style="color: #ad7fa8; font-style: italic;">"#2e3434"</span>))))
+ '(flymake-errline ((((class color)) (<span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Red"</span>))))
+ '(flymake-warnline ((((class color)) (<span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Orange"</span>))))
+ '(js2-function-param-face ((((class color)) (<span style="color: #729fcf;">:foreground</span> <span style="color: #ad7fa8; font-style: italic;">"Green"</span>))))
+ '(smerge-refined-change ((t (<span style="color: #729fcf;">:background</span> <span style="color: #ad7fa8; font-style: italic;">"black"</span>)))))
+
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">(require 'timing)</span>
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">(message "Spent %.2f seconds executing .emacs.d/init.el."</span>
+<span style="color: #888a85;">;;          </span><span style="color: #888a85;">(time-difference *emacs-load-start* (current-time)))</span>
+(put 'narrow-to-region 'disabled nil)
+
+</pre>
+
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="postamble">
+<p class="date">Date: 2013-05-01T13:21+0100</p>
+<p class="author">Author: Wilfred Hughes</p>
+<p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
+<a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
+
+</div>
+</body>
+</html>
