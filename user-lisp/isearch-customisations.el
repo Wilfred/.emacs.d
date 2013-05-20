@@ -6,9 +6,6 @@
 ;; no delay before highlighting
 (setq highlight-symbol-idle-delay 0)
 
-(global-set-key (kbd "M-n") 'highlight-symbol-next)
-(global-set-key (kbd "M-p") 'highlight-symbol-prev)
-
 (eval-after-load "isearch" '(require 'isearch+))
 
 (provide 'isearch-customisations)
