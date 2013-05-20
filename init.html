@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-05-17T22:46+0100"/>
+<meta name="generated" content="2013-05-20T15:38+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -139,7 +139,8 @@ for the JavaScript code in this tag.
 <li><a href="#sec-1-3-3">1.3.3 Packages</a></li>
 <li><a href="#sec-1-3-4">1.3.4 Paths</a></li>
 <li><a href="#sec-1-3-5">1.3.5 UI</a></li>
-<li><a href="#sec-1-3-6">1.3.6 Undocumented</a></li>
+<li><a href="#sec-1-3-6">1.3.6 Moving around</a></li>
+<li><a href="#sec-1-3-7">1.3.7 Undocumented</a></li>
 </ul>
 </li>
 </ul>
@@ -460,7 +461,6 @@ I like the tangotango theme, which depends on color-theme. In Emacs
 </pre>
 
 
-
 </li>
 </ul>
 </div>
@@ -468,8 +468,51 @@ I like the tangotango theme, which depends on color-theme. In Emacs
 </div>
 
 <div id="outline-container-1-3-6" class="outline-4">
-<h4 id="sec-1-3-6"><span class="section-number-4">1.3.6</span> Undocumented</h4>
+<h4 id="sec-1-3-6"><span class="section-number-4">1.3.6</span> Moving around</h4>
 <div class="outline-text-4" id="text-1-3-6">
+
+
+<p>
+It's extremely useful to be able to move between different occurrences
+of the same symbol.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"M-n"</span>) 'highlight-symbol-next)
+(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"M-p"</span>) 'highlight-symbol-prev)
+</pre>
+
+
+<p>
+Jumping to the first occurrence of the symbol is handy for finding
+where a symbol was imported.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">highlight-symbol-first</span> ()
+  <span style="color: #888a85;">"Jump to the first location of symbol at point."</span>
+  (interactive)
+  (eval
+   `(<span style="color: #729fcf; font-weight: bold;">progn</span>
+      (goto-char (point-min))
+      (search-forward-regexp
+       (rx symbol-start ,(thing-at-point 'symbol) symbol-end)
+       nil t)
+      (beginning-of-thing 'symbol))))
+
+(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"M-S-p"</span>) 'highlight-symbol-prev)
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-1-3-7" class="outline-4">
+<h4 id="sec-1-3-7"><span class="section-number-4">1.3.7</span> Undocumented</h4>
+<div class="outline-text-4" id="text-1-3-7">
 
 
 
@@ -623,7 +666,7 @@ I like the tangotango theme, which depends on color-theme. In Emacs
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-05-17T22:46+0100</p>
+<p class="date">Date: 2013-05-20T15:38+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

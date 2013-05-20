@@ -64,6 +64,22 @@
 ;; show x-position (ie column number) for point in buffer
 (column-number-mode 1)
 
+(global-set-key (kbd "M-n") 'highlight-symbol-next)
+(global-set-key (kbd "M-p") 'highlight-symbol-prev)
+
+(defun highlight-symbol-first ()
+  "Jump to the first location of symbol at point."
+  (interactive)
+  (eval
+   `(progn
+      (goto-char (point-min))
+      (search-forward-regexp
+       (rx symbol-start ,(thing-at-point 'symbol) symbol-end)
+       nil t)
+      (beginning-of-thing 'symbol))))
+
+(global-set-key (kbd "M-S-p") 'highlight-symbol-prev)
+
 ; always close the minibuffer on C-x o:
 ; <jlf> wilfredh: you could before-advise other-window to quit first
 ; if the minibuffer is active.. but it would be better to break that
