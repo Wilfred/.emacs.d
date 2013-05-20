@@ -3,7 +3,7 @@
 ;; Copyright (C) 2012 Magnar Sveen
 
 ;; Author: Magnar Sveen <magnars@gmail.com>
-;; Version: 20130420.1730
+;; Version: 20130509.1352
 ;; X-Original-Version: 1.4.0
 ;; Keywords: strings
 
@@ -341,6 +341,26 @@ attention to case differences."
   "Return the reverse of S."
   (apply 'string (nreverse (string-to-list s))))
 
+(defun s-match-strings-all (regex string)
+  "Return a list of every match for REGEX in STRING.
+
+Each element itself is a list of matches, as per `match-string'."
+  (let (all-strings
+        (i 0))
+    (while (and (< i (length string))
+                (string-match regex string i))
+      (if (= (match-end 0) i)
+          (setq i (1+ i))
+        (setq i (match-end 0)))
+      (let (strings
+            (num-matches (/ (length (match-data)) 2))
+            (match 0))
+        (while (/= match num-matches)
+          (push (match-string match string) strings)
+          (setq match (1+ match)))
+        (push (nreverse strings) all-strings)))
+    (nreverse all-strings)))
+
 (defun s-match (regexp s &optional start)
   "When the given expression matches the string, this function returns a list
 of the whole matching string and a string for each matched subexpressions.
@@ -461,6 +481,57 @@ transformation."
                    (if v v (signal 's-format-resolve md)))
                (set-match-data replacer-match-data)))) template)
       (set-match-data saved-match-data))))
+
+(defvar s-lex-value-as-lisp nil
+  "If `t' interpolate lisp values as lisp.
+
+`s-lex-format' inserts values with (format \"%S\").")
+
+(defvar s-lex-value-when-dynamic :symbol-value
+  "What to do in `s-lex-format' when not lexical.
+
+This variables can be in one of the following states:
+
+ `:error' - using the macro causes an error to be signalled
+ `:symbol-value' - uses `symbol-value' to look up the dynamic value
+ `t' - uses the name of the variable reference
+
+Let bind this variable to change the behaviour of
+`s-lex-format'.")
+
+(defmacro s-lex-format (format-str)
+  "`s-format' with the lexical environment.
+
+FORMAT-STR may use the `s-format' variable reference to refer to
+any lexical variable:
+
+ (let ((x 1))
+   (s-lex-format \"x is: ${x}\"))
+
+The values of the lexical variables are interpolated with \"%s\"
+unless the variable `s-lex-value-as-lisp' is `t' and then they
+are interpolated with \"%S\".
+
+If the macro is used in a non-lexical-binding context then it's
+behaviour depends on the variable `'"
+  (let ((pv (make-symbol "pv")))
+    `(let ((,pv (lambda ())))
+       (s-format
+        ,format-str
+        (lambda (var-name)
+          (let ((value
+                 (if (eq 'closure (car ,pv))
+                     (let ((value 
+                            (assoc (intern var-name) (cadr ,pv))))
+                       (when value (cdr value)))
+                     (case s-lex-value-when-dynamic
+                       (:error (error "not in a lexical environment"))
+                       (:symbol-value (symbol-value
+                                       (intern var-name)))
+                       (t var-name)))))
+            (if s-lex-value-as-lisp
+                (format "%S" value)
+                (format "%s" value))))))))
 
 (provide 's)
 ;;; s.el ends here
