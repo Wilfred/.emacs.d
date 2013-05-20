@@ -179,6 +179,33 @@ I like the tangotango theme, which depends on color-theme. In Emacs
   (column-number-mode 1)
 #+END_SRC
 
+*** Moving around
+
+It's extremely useful to be able to move between different occurrences
+of the same symbol.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (global-set-key (kbd "M-n") 'highlight-symbol-next)
+  (global-set-key (kbd "M-p") 'highlight-symbol-prev)
+#+END_SRC
+
+Jumping to the first occurrence of the symbol is handy for finding
+where a symbol was imported.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defun highlight-symbol-first ()
+    "Jump to the first location of symbol at point."
+    (interactive)
+    (eval
+     `(progn
+        (goto-char (point-min))
+        (search-forward-regexp
+         (rx symbol-start ,(thing-at-point 'symbol) symbol-end)
+         nil t)
+        (beginning-of-thing 'symbol))))
+  
+  (global-set-key (kbd "M-S-p") 'highlight-symbol-prev)
+#+END_SRC
 
 *** Undocumented
 
