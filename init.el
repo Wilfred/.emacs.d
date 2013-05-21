@@ -80,6 +80,18 @@
 
 (global-set-key (kbd "M-S-p") 'highlight-symbol-prev)
 
+(require 'flymake)
+(global-set-key (kbd "<f8>") 'flymake-goto-prev-error)
+(global-set-key (kbd "<f9>") 'flymake-goto-next-error)
+
+(defun flymake-error-at-point ()
+  "Show the flymake error in the minibuffer when point is on an invalid line."
+  (when (get-char-property (point) 'flymake-overlay)
+    (let ((help (get-char-property (point) 'help-echo)))
+      (if help (message "%s" help)))))
+
+(add-hook 'post-command-hook 'flymake-error-at-point)
+
 ; always close the minibuffer on C-x o:
 ; <jlf> wilfredh: you could before-advise other-window to quit first
 ; if the minibuffer is active.. but it would be better to break that
@@ -161,17 +173,6 @@
 (require 'conflicts)
 
 (require 'tags-utils)
-
-(global-set-key (kbd "<f8>") 'flymake-goto-prev-error)
-(global-set-key (kbd "<f9>") 'flymake-goto-next-error)
-
-(defun flymake-error-at-point ()
-  "Show the flymake error in the minibuffer when point is on an invalid line."
-  (when (get-char-property (point) 'flymake-overlay)
-    (let ((help (get-char-property (point) 'help-echo)))
-      (if help (message "%s" help)))))
-
-(add-hook 'post-command-hook 'flymake-error-at-point)
 
 ;; crontab mode for files named
 (require 'crontab-mode)
