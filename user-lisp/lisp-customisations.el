@@ -8,6 +8,7 @@
 (add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
 
 ;; don't bother running checkdoc, it's annoying for quick hacks
+(require 'flycheck)
 (setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers))
 
 (add-hook 'emacs-lisp-mode-hook

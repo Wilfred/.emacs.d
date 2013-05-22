@@ -204,7 +204,7 @@ where a symbol was imported.
          nil t)
         (beginning-of-thing 'symbol))))
   
-  (global-set-key (kbd "M-S-p") 'highlight-symbol-org)
+  (global-set-key (kbd "M-S-p") 'highlight-symbol-first)
 #+END_SRC
 
 *** Flymake
