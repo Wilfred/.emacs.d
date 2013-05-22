@@ -78,7 +78,7 @@
        nil t)
       (beginning-of-thing 'symbol))))
 
-(global-set-key (kbd "M-S-p") 'highlight-symbol-org)
+(global-set-key (kbd "M-S-p") 'highlight-symbol-first)
 
 (require 'flymake)
 (global-set-key (kbd "<f8>") 'flymake-goto-prev-error)
