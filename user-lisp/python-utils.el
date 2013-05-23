@@ -2,8 +2,11 @@
 (require 'ag)
 (require 'dash)
 (require 's)
+(require 'python)
 
 (defcustom virtualenvs-root (expand-file-name "~/.envs")
+  :type 'file
+  :group 'python
   "Absolute path to the directory that contains all the virtualenvs.")
 
 (defun virtualenv-workon ()
