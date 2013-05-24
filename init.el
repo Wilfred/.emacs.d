@@ -80,6 +80,17 @@
 
 (global-set-key (kbd "M-S-p") 'highlight-symbol-first)
 
+(key-chord-mode 1)
+(key-chord-define-global "df" 'iy-go-to-char-backward)
+(key-chord-define-global "jk" 'iy-go-to-char)
+
+(defadvice iy-go-to-char (around go-to-char-point-before activate)
+  "Go to the next character case sensitively, and put point before the character."
+  (let ((case-fold-search nil))
+    (forward-char)
+    ad-do-it
+    (backward-char)))
+
 (require 'recentf)
 
 ;; offer recently accessed files from the menu

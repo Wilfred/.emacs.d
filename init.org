@@ -179,7 +179,9 @@ I like the tangotango theme, which depends on color-theme. In Emacs
   (column-number-mode 1)
 #+END_SRC
 
-*** Moving around
+*** Moving Around
+
+**** By Symbol
 
 It's extremely useful to be able to move between different occurrences
 of the same symbol.
@@ -206,6 +208,37 @@ where a symbol was imported.
   
   (global-set-key (kbd "M-S-p") 'highlight-symbol-first)
 #+END_SRC
+
+**** By Character
+
+Vim has a handy command where you can type `f' to jump to the next
+occurrence of a character on a line.
+
+We can do this with `iy-go-to-char' without the constraint that the
+character must be on the current line. This command needs to be
+accessible with a short shortcut, so we use keychords. The keys may be
+typed in either order, (i.e. `df' and `fd' both work), so we've chosen
+letter combinations that occur rarely, and are easily typed.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (key-chord-mode 1)
+  (key-chord-define-global "df" 'iy-go-to-char-backward)
+  (key-chord-define-global "jk" 'iy-go-to-char)
+#+END_SRC
+
+Out of the box, `iy-go-to-char' is case-insensitive. It also puts
+point after the mark, which is less helpful. We fix those
+shortcomings.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defadvice iy-go-to-char (around go-to-char-point-before activate)
+    "Go to the next character case sensitively, and put point before the character."
+    (let ((case-fold-search nil))
+      (forward-char)
+      ad-do-it
+      (backward-char)))
+#+END_SRC
+
 
 *** Files
 
