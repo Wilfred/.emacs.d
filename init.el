@@ -97,6 +97,15 @@
 
 (global-set-key (kbd "C-x C-r") 'ido-recentf-open)
 
+(require 'find-file-in-repository)
+
+(defadvice find-file-in-repository (around disable-ido-flex-matching activate)
+  (let ((ido-enable-flex-matching nil)
+        (ido-case-fold t))
+    ad-do-it))
+
+(global-set-key (kbd "C-x C-g") 'find-file-in-repository)
+
 (require 'dired+)
 
 (setq delete-by-moving-to-trash t)
