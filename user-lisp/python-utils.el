@@ -5,9 +5,9 @@
 (require 'python)
 
 (defcustom virtualenvs-root (expand-file-name "~/.envs")
+  "Absolute path to the directory that contains all the virtualenvs."
   :type 'file
-  :group 'python
-  "Absolute path to the directory that contains all the virtualenvs.")
+  :group 'python)
 
 (defun virtualenv-workon ()
   "Convenience for setting `python-shell-virtualenv-path'."
