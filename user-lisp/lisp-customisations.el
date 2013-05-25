@@ -20,6 +20,12 @@
             (setq use-hl-line nil)
             (hl-sexp-mode)))
 
+;; rather than using TAGS, jump to function definitions that we have
+;; loaded
+(require 'elisp-slime-nav)
+(dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook))
+  (add-hook hook 'elisp-slime-nav-mode))
+
 ;; eldoc displays the arguments to the function under cursor in the minibuffer
 (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
 
