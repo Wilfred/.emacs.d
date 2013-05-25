@@ -80,6 +80,36 @@
 
 (global-set-key (kbd "M-S-p") 'highlight-symbol-first)
 
+(require 'recentf)
+
+;; offer recently accessed files from the menu
+(recentf-mode t)
+
+;; remember this many files
+(setq recentf-max-saved-items 200)
+
+(defun ido-recentf-open ()
+  "Use `ido-completing-read' to \\[find-file] a recent file"
+  (interactive)
+  (if (find-file (ido-completing-read "Find recent file: " recentf-list))
+      (message "Opening file...")
+    (message "Aborting")))
+
+(global-set-key (kbd "C-x C-r") 'ido-recentf-open)
+
+(require 'dired+)
+
+(setq delete-by-moving-to-trash t)
+
+(setq
+   backup-by-copying t      ; don't clobber symlinks
+   backup-directory-alist
+    '(("." . "~/.saves"))    ; don't litter my fs tree
+   delete-old-versions t
+   kept-new-versions 6
+   kept-old-versions 2
+   version-control t)       ; use versioned backups
+
 (require 'flymake)
 (global-set-key (kbd "<f8>") 'flymake-goto-prev-error)
 (global-set-key (kbd "<f9>") 'flymake-goto-next-error)

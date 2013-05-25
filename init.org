@@ -207,6 +207,71 @@ where a symbol was imported.
   (global-set-key (kbd "M-S-p") 'highlight-symbol-first)
 #+END_SRC
 
+*** Files
+
+**** Opening
+
+It's useful to be able to quickly open files that we opened before. We
+define a function for this:
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'recentf)
+  
+  ;; offer recently accessed files from the menu
+  (recentf-mode t)
+  
+  ;; remember this many files
+  (setq recentf-max-saved-items 200)
+  
+  (defun ido-recentf-open ()
+    "Use `ido-completing-read' to \\[find-file] a recent file"
+    (interactive)
+    (if (find-file (ido-completing-read "Find recent file: " recentf-list))
+        (message "Opening file...")
+      (message "Aborting")))
+#+END_SRC
+
+We bind this to `C-x C-r' (mnemonic: recent). By default, `C-x C-r' is bound to
+`find-file-read-only', which isn't very useful. (You can set any file
+as read only with `read-only-mode', mapped to `C-x C-q'.)
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (global-set-key (kbd "C-x C-r") 'ido-recentf-open)
+#+END_SRC
+
+**** Dired
+
+Dired isn't very colourful by default, but `dired+' has helpful
+highlighting.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'dired+)
+#+END_SRC
+
+**** Deleting and Backups
+
+When we delete a file, it should go to the recycle bin rather than
+just acting like shell:rm.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq delete-by-moving-to-trash t)
+#+END_SRC
+
+Emacs' backup behaviour is helpful, so we increase the number of
+backups. However, rather than writing foo~1~ files everywhere, we
+store all our backups in `~/.saves`.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq
+     backup-by-copying t      ; don't clobber symlinks
+     backup-directory-alist
+      '(("." . "~/.saves"))    ; don't litter my fs tree
+     delete-old-versions t
+     kept-new-versions 6
+     kept-old-versions 2
+     version-control t)       ; use versioned backups
+#+END_SRC
+
 *** Flymake
 
 #+BEGIN_SRC emacs-lisp :tangle yes

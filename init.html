@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-05-22T19:04+0100"/>
+<meta name="generated" content="2013-05-25T21:51+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -140,8 +140,9 @@ for the JavaScript code in this tag.
 <li><a href="#sec-1-3-4">1.3.4 Paths</a></li>
 <li><a href="#sec-1-3-5">1.3.5 UI</a></li>
 <li><a href="#sec-1-3-6">1.3.6 Moving around</a></li>
-<li><a href="#sec-1-3-7">1.3.7 Flymake</a></li>
-<li><a href="#sec-1-3-8">1.3.8 Undocumented</a></li>
+<li><a href="#sec-1-3-7">1.3.7 Files</a></li>
+<li><a href="#sec-1-3-8">1.3.8 Flymake</a></li>
+<li><a href="#sec-1-3-9">1.3.9 Undocumented</a></li>
 </ul>
 </li>
 </ul>
@@ -512,8 +513,109 @@ where a symbol was imported.
 </div>
 
 <div id="outline-container-1-3-7" class="outline-4">
-<h4 id="sec-1-3-7"><span class="section-number-4">1.3.7</span> Flymake</h4>
+<h4 id="sec-1-3-7"><span class="section-number-4">1.3.7</span> Files</h4>
 <div class="outline-text-4" id="text-1-3-7">
+
+
+<ul>
+<li id="sec-1-3-7-1">Opening<br/>
+
+<p>
+It's useful to be able to quickly open files that we opened before. We
+define a function for this:
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">recentf</span>)
+
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">offer recently accessed files from the menu</span>
+(recentf-mode t)
+
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">remember this many files</span>
+(setq recentf-max-saved-items 200)
+
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">ido-recentf-open</span> ()
+  <span style="color: #888a85;">"Use `</span><span style="color: #8ae234;">ido-completing-read</span><span style="color: #888a85;">' to \\[</span><span style="color: #8ae234;">find-file</span><span style="color: #888a85;">] a recent file"</span>
+  (interactive)
+  (<span style="color: #729fcf; font-weight: bold;">if</span> (find-file (ido-completing-read <span style="color: #ad7fa8; font-style: italic;">"Find recent file: "</span> recentf-list))
+      (message <span style="color: #ad7fa8; font-style: italic;">"Opening file..."</span>)
+    (message <span style="color: #ad7fa8; font-style: italic;">"Aborting"</span>)))
+</pre>
+
+
+<p>
+We bind this to `C-x C-r' (mnemonic: recent). By default, `C-x C-r' is bound to
+`find-file-read-only', which isn't very useful. (You can set any file
+as read only with `read-only-mode', mapped to `C-x C-q'.)
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"C-x C-r"</span>) 'ido-recentf-open)
+</pre>
+
+
+</li>
+</ul>
+<ul>
+<li id="sec-1-3-7-2">Dired<br/>
+
+<p>
+Dired isn't very colourful by default, but `dired+' has helpful
+highlighting.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">dired+</span>)
+</pre>
+
+
+</li>
+</ul>
+<ul>
+<li id="sec-1-3-7-3">Deleting and Backups<br/>
+
+<p>
+When we delete a file, it should go to the recycle bin rather than
+just acting like <i>&lt;shell:rm&gt;</i>.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(setq delete-by-moving-to-trash t)
+</pre>
+
+
+<p>
+Emacs' backup behaviour is helpful, so we increase the number of
+backups. However, rather than writing foo~1~ files everywhere, we
+store all our backups in `~/.saves`.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(setq
+   backup-by-copying t      <span style="color: #888a85;">; </span><span style="color: #888a85;">don't clobber symlinks</span>
+   backup-directory-alist
+    '((<span style="color: #ad7fa8; font-style: italic;">"."</span> . <span style="color: #ad7fa8; font-style: italic;">"~/.saves"</span>))    <span style="color: #888a85;">; </span><span style="color: #888a85;">don't litter my fs tree</span>
+   delete-old-versions t
+   kept-new-versions 6
+   kept-old-versions 2
+   version-control t)       <span style="color: #888a85;">; </span><span style="color: #888a85;">use versioned backups</span>
+</pre>
+
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1-3-8" class="outline-4">
+<h4 id="sec-1-3-8"><span class="section-number-4">1.3.8</span> Flymake</h4>
+<div class="outline-text-4" id="text-1-3-8">
 
 
 
@@ -537,9 +639,9 @@ where a symbol was imported.
 
 </div>
 
-<div id="outline-container-1-3-8" class="outline-4">
-<h4 id="sec-1-3-8"><span class="section-number-4">1.3.8</span> Undocumented</h4>
-<div class="outline-text-4" id="text-1-3-8">
+<div id="outline-container-1-3-9" class="outline-4">
+<h4 id="sec-1-3-9"><span class="section-number-4">1.3.9</span> Undocumented</h4>
+<div class="outline-text-4" id="text-1-3-9">
 
 
 
@@ -682,7 +784,7 @@ where a symbol was imported.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-05-22T19:04+0100</p>
+<p class="date">Date: 2013-05-25T21:51+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
