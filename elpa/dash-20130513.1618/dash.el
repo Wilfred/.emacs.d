@@ -3,8 +3,8 @@
 ;; Copyright (C) 2012 Magnar Sveen
 
 ;; Author: Magnar Sveen <magnars@gmail.com>
-;; Version: 20130424.943
-;; X-Original-Version: 1.2.0
+;; Version: 20130513.1618
+;; X-Original-Version: 1.3.2
 ;; Keywords: lists
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -38,6 +38,7 @@
 
 (defmacro --each (list &rest body)
   "Anaphoric form of `-each'."
+  (declare (debug t))
   (let ((l (make-symbol "list")))
     `(let ((,l ,list)
            (it-index 0))
@@ -90,6 +91,7 @@ Returns nil, used for side-effects only."
 
 (defmacro --map (form list)
   "Anaphoric form of `-map'."
+  (declare (debug t))
   `(mapcar (lambda (it) ,form) ,list))
 
 (defmacro --reduce-from (form initial-value list)
@@ -147,6 +149,7 @@ Alias: `-select'"
 
 (defmacro --remove (form list)
   "Anaphoric form of `-remove'."
+  (declare (debug t))
   `(--filter (not ,form) ,list))
 
 (defun -remove (pred list)
@@ -212,6 +215,7 @@ through the REP function."
 
 (defmacro --mapcat (form list)
   "Anaphoric form of `-mapcat'."
+  (declare (debug t))
   `(apply 'append (--map ,form ,list)))
 
 (defun -mapcat (fn list)
@@ -449,31 +453,41 @@ FROM or TO may be negative."
   "Returns a list of ((-filter PRED LIST) (-remove PRED LIST)), in one pass through the list."
   (--separate (funcall pred it) list))
 
-(defun -partition (n list)
-  "Returns a new list with the items in LIST grouped into N-sized sublists.
-If there are not enough items to make the last group N-sized,
-those items are discarded."
+(defun ---partition-all-in-steps-reversed (n step list)
+  "Private: Used by -partition-all-in-steps and -partition-in-steps."
+  (when (< step 1)
+    (error "Step must be a positive number, or you're looking at some juicy infinite loops."))
   (let ((result nil)
-        (sublist nil)
         (len 0))
     (while list
-      (!cons (car list) sublist)
-      (setq len (1+ len))
-      (when (= len n)
-        (!cons (nreverse sublist) result)
-        (setq sublist nil)
-        (setq len 0))
-      (!cdr list))
+      (!cons (-take n list) result)
+      (setq list (-drop step list)))
+    result))
+
+(defun -partition-all-in-steps (n step list)
+  "Returns a new list with the items in LIST grouped into N-sized sublists at offsets STEP apart.
+The last groups may contain less than N items."
+  (nreverse (---partition-all-in-steps-reversed n step list)))
+
+(defun -partition-in-steps (n step list)
+  "Returns a new list with the items in LIST grouped into N-sized sublists at offsets STEP apart.
+If there are not enough items to make the last group N-sized,
+those items are discarded."
+  (let ((result (---partition-all-in-steps-reversed n step list)))
+    (while (and result (< (length (car result)) n))
+      (!cdr result))
     (nreverse result)))
 
 (defun -partition-all (n list)
   "Returns a new list with the items in LIST grouped into N-sized sublists.
 The last group may contain less than N items."
-  (let (result)
-    (while list
-      (!cons (-take n list) result)
-      (setq list (-drop n list)))
-    (nreverse result)))
+  (-partition-all-in-steps n n list))
+
+(defun -partition (n list)
+  "Returns a new list with the items in LIST grouped into N-sized sublists.
+If there are not enough items to make the last group N-sized,
+those items are discarded."
+  (-partition-in-steps n n list))
 
 (defmacro --partition-by (form list)
   "Anaphoric form of `-partition-by'."
@@ -878,12 +892,16 @@ Returns nil if N is less than 1."
                            "--split-with"
                            "-split-with"
                            "-partition"
+                           "-partition-in-steps"
                            "-partition-all"
+                           "-partition-all-in-steps"
                            "-interpose"
                            "-interleave"
                            "--zip-with"
                            "-zip-with"
                            "-zip"
+                           "--map-indexed"
+                           "-map-indexed"
                            "--map-when"
                            "-map-when"
                            "--replace-where"
