@@ -22,21 +22,9 @@ possible. No trailing slash. Returns nil otherwise."
     (write-region (point-min) (point-max) path)))
 
 ;;;; path searching
-(defun find-containing-parent-directory (path file-name)
-  "Search PATH and all parent directories for file FILE-NAME,
-returning the first containing diretory found or nil."
-  (let* ((canonical-path (expand-file-name path))
-         (absolute-file-path (file-path-join canonical-path file-name)))
-    (cond ((file-exists-p absolute-file-path)
-           ;; success -- we've found it!
-           canonical-path)
-          ((string= canonical-path "/")
-           ;; reached root, the file doesn't exist in any ancestor directory
-           nil)
-          (t
-           ;; recurse
-           (find-containing-parent-directory
-            (parent-directory canonical-path) file-name)))))
+
+;; fixme: this is just locate-dominating-file
+(defalias 'find-containing-parent-directory 'locate-dominating-file)
 
 (defun find-path-parent-directory (path file-name)
   "Search PATH and all parent directories for file FILE-NAME,
