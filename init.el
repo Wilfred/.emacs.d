@@ -160,8 +160,11 @@
 (defun start-scratch-file (file-name)
   "Create a file in ~/scratch for the given file name."
   (interactive "sName of scratch file: ")
-  (find-file
-   (format "~/scratch/%s" file-name)))
+  (let ((path (expand-file-name (format "~/scratch/%s" file-name))))
+    ;; create directories as necessary
+    (when (s-contains-p "/" file-name)
+      (make-directory (file-name-directory path) t))
+    (find-file path)))
 
 ; TODO: increase kill ring size
 
