@@ -8,7 +8,7 @@ inserting the results in BUFFER."
   (let* ((command-args-list (s-split " " command-with-args))
          (command (car command-args-list))
          (args (cdr command-args-list)))
-    (apply 'call-process command nil output-buffer t args)))
+    (apply 'call-process command nil buffer t args)))
 
 (defun get-latest-version (repo-path)
   "Find the last tagged version. Assumes GNU sort (BSD sort lacks --version-sort)."
