@@ -34,8 +34,8 @@ inserting the results in BUFFER."
          (next-command (format "git flow release finish %s" next-version)))
     (switch-to-buffer output-buffer)
     (setq default-directory project-root)
-    (delete-region (point-min) (point-max))
-    (execute-in-buffer (format "git flow release start %s" next-version) output-buffer)
+    (erase-buffer)
+    (execute-commands output-buffer (format "git flow release start %s" next-version))
 
     ;; copy the finish command to the kill ring and clipboard to save typing
     (message "Please run the command '%s' in your terminal.
@@ -52,9 +52,10 @@ It has been copied to your clipboard for convenience." next-command)
        (error "Not in a git project"))
     (switch-to-buffer output-buffer)
     (setq default-directory project-root)
-    (delete-region (point-min) (point-max))
-    (execute-in-buffer "git push" output-buffer)
-    (execute-in-buffer "git push --tags" output-buffer)
-    (execute-in-buffer "git checkout develop" output-buffer)))
+    (erase-buffer)
+    (execute-commands output-buffer
+                      "git push"
+                      "git push --tags"
+                      "git checkout develop")))
 
 (provide 'editd-customisations)
