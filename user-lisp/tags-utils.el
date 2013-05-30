@@ -54,6 +54,7 @@ tags tables searched by Emacs."
 
 (global-set-key (kbd "<f6>") 'etags-select-find-tag-at-point)
 (global-set-key (kbd "M-.") 'etags-select-find-tag)
+(global-set-key (kbd "M-,") 'pop-tag-mark)
 
 (defadvice etags-select-find-tag (around case-sensitive-matching activate)
   (let ((ido-case-fold nil))
