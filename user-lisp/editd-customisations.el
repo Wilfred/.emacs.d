@@ -1,14 +1,5 @@
 (require 's)
-
-(defun execute-in-buffer (command-with-args buffer)
-  "Execute a string COMMAND-WITH-ARGS representing a shell command with arguments,
-inserting the results in BUFFER."
-  (switch-to-buffer buffer)
-  (insert (format ">>> %s\n" command-with-args))
-  (let* ((command-args-list (s-split " " command-with-args))
-         (command (car command-args-list))
-         (args (cdr command-args-list)))
-    (apply 'call-process command nil buffer t args)))
+(require 'execute-commands)
 
 (defun get-latest-version (repo-path)
   "Find the last tagged version. Assumes GNU sort (BSD sort lacks --version-sort)."
