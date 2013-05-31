@@ -142,6 +142,9 @@
 
 (add-hook 'post-command-hook 'flymake-error-at-point)
 
+(require 'undo-tree)
+(global-undo-tree-mode)
+
 ; always close the minibuffer on C-x o:
 ; <jlf> wilfredh: you could before-advise other-window to quit first
 ; if the minibuffer is active.. but it would be better to break that

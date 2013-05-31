@@ -348,6 +348,16 @@ store all our backups in `~/.saves`.
   (add-hook 'post-command-hook 'flymake-error-at-point)
 #+END_SRC
 
+*** Undoing
+
+Emacs' undo facility is excellent, but undo-tree is even better.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'undo-tree)
+  (global-undo-tree-mode)
+#+END_SRC
+
+
 *** Undocumented
 
 #+BEGIN_SRC emacs-lisp :tangle yes
