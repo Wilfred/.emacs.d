@@ -376,6 +376,39 @@ Emacs' undo facility is excellent, but undo-tree is even better.
   (global-undo-tree-mode)
 #+END_SRC
 
+*** Python
+
+Having brackets and quotation marks closed is very useful in
+Python. Paredit isn't well suited for Python, and `electric-pair-mode`
+isn't very smart. Autopair works nicely.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'autopair)
+  (require 'python)
+  (setq autopair-autowrap t)
+  (add-hook 'python-mode-hook 'autopair-mode)
+#+END_SRC
+
+Python is too dynamic for a perfect autocomplete, but Jedi is an
+excellent static analysis tool that gets us close. It gives us
+autocompletion and a pop-up showing docstrings and arguments for
+functions it knows about.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq jedi:setup-keys t)
+  (require 'jedi)
+  (setq jedi:server-command
+        (list "python2" jedi:server-script))
+  (add-hook 'python-mode-hook 'jedi:setup)
+#+END_SRC
+
+We use pyflakes with flymake to check for coding errors.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'flymake-python-pyflakes)
+  (setq flymake-python-pyflakes-executable "~/.emacs.d/user-python/run-pyflakes")
+  (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
+#+END_SRC
 
 *** Undocumented
 

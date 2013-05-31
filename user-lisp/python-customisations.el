@@ -8,24 +8,6 @@
 ;;     def __init__(_self, *args):
 ;;         pass
 
-;; use autopair for Python, since paredit is unsuitable and
-;; electric-pair-mode isn't smart enough
-(require 'autopair)
-(setq autopair-autowrap t)
-(add-hook 'python-mode-hook 'autopair-mode)
-
-;; jedi provides autocompletion for python
-(setq jedi:setup-keys t)
-(require 'jedi)
-(setq jedi:server-command
-      (list "python2" jedi:server-script))
-(add-hook 'python-mode-hook 'jedi:setup)
-
-; set flymake to use pyflakes to check code (requires pyflakes installed and on $PATH)
-(require 'flymake-python-pyflakes)
-(setq flymake-python-pyflakes-executable "~/.emacs.d/user-python/run-pyflakes")
-(add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
-
 (require 'which-func)
 
 (defun* python-insert-super-function (&aux start-pos)

@@ -142,8 +142,27 @@
 
 (add-hook 'post-command-hook 'flymake-error-at-point)
 
+(custom-set-faces
+ '(flymake-errline ((((class color)) (:underline "Red"))))
+ '(flymake-warnline ((((class color)) (:underline "Orange")))))
+
 (require 'undo-tree)
 (global-undo-tree-mode)
+
+(require 'autopair)
+(require 'python)
+(setq autopair-autowrap t)
+(add-hook 'python-mode-hook 'autopair-mode)
+
+(setq jedi:setup-keys t)
+(require 'jedi)
+(setq jedi:server-command
+      (list "python2" jedi:server-script))
+(add-hook 'python-mode-hook 'jedi:setup)
+
+(require 'flymake-python-pyflakes)
+(setq flymake-python-pyflakes-executable "~/.emacs.d/user-python/run-pyflakes")
+(add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
 
 ; always close the minibuffer on C-x o:
 ; <jlf> wilfredh: you could before-advise other-window to quit first
