@@ -1,5 +1,4 @@
-* Emacs Configuration
-** Introduction
+* Introduction
 This file is a literate programming document. To generate init.el, run
 `M-x org-babel-tangle'. To generate init.html, run `M-x org-export-as-html'.
 
@@ -15,16 +14,16 @@ highlighting in the Org buffer, evaluate:
   (setq org-src-fontify-natively t)
 #+END_SRC
 
-** Installing locally
+* Installing locally
 
 This repository seeks to be as self-contained as possible. However, you will require:
 
-*** Emacs 24
+** Emacs 24
 
 I use this repository with Emacs 24. Most code works with Emacs 23 but
 I don't test it often.
 
-*** Python
+** Python
 
 We include a copy of pyflakes. This copy requires `python2' to be available
 on `$PATH'. This is from this fork of pyflakes:
@@ -37,7 +36,7 @@ I also use Jedi, which has some dependencies you can install with:
   pip install -r elpa/jedi*/requirements.txt
 #+END_SRC
 
-*** JavaScript
+** JavaScript
 
 I use JSHint, which requires you to have node.js installed. To
 install JSHint, run:
@@ -46,9 +45,9 @@ install JSHint, run:
   sudo npm install -g jshint
 #+END_SRC
 
-** Contents
+* Contents
 
-*** Timing
+** Timing
 To keep Emacs startup fast, it's helpful to measure how fast it is.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -57,7 +56,7 @@ To keep Emacs startup fast, it's helpful to measure how fast it is.
 
 See the end of this document for where we use this data.
 
-*** Folder Structure
+** Folder Structure
 
 Code I've written lives in user-lisp. This includes packages that I
 haven't polished enough to release yet, small convenience functions,
@@ -74,7 +73,7 @@ should ultimately disappear once all these packages live in MELPA.
   (add-to-list 'load-path "~/.emacs.d/third-party-lisp/")
 #+END_SRC
 
-*** Packages
+** Packages
 
 I use ELPA packages heavily for functionality, primarily the MELPA
 repository. We initalize all the packages here, so we can use them
@@ -129,7 +128,7 @@ every time. Instead, we compile directories that don't contain any
   ;; todo: clean up orphaned .elc files
 #+END_SRC
 
-*** Paths
+** Paths
 
 We set up Emacs' exec-path based on PATH in a shell. This is primarily
 for OS X, where starting Emacs in GUI mode doesn't inherit the shell's
@@ -144,9 +143,9 @@ Note this function comes from the package `exec-path-from-shell.el'.
   
 #+END_SRC
 
-*** UI
+** UI
 
-**** Theme
+*** Theme
 
 I like the tangotango theme, which depends on color-theme. In Emacs
 24, this isn't necessary (todo: update this).
@@ -168,7 +167,7 @@ I like the tangotango theme, which depends on color-theme. In Emacs
   
 #+END_SRC
 
-**** Hiding and Showing
+*** Hiding and Showing
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   ;; hide toolbar and scrollbar
@@ -179,9 +178,9 @@ I like the tangotango theme, which depends on color-theme. In Emacs
   (column-number-mode 1)
 #+END_SRC
 
-*** Moving Around
+** Moving Around
 
-**** By Symbol
+*** By Symbol
 
 It's extremely useful to be able to move between different occurrences
 of the same symbol.
@@ -209,7 +208,7 @@ where a symbol was imported.
   (global-set-key (kbd "M-S-p") 'highlight-symbol-first)
 #+END_SRC
 
-**** By Character
+*** By Character
 
 Vim has a handy command where you can type `f' to jump to the next
 occurrence of a character on a line.
@@ -240,9 +239,9 @@ shortcomings.
 #+END_SRC
 
 
-*** Files
+** Files
 
-**** Opening
+*** Opening
 
 It's useful to be able to quickly open files that we opened before. We
 define a function for this:
@@ -299,7 +298,7 @@ Alternatives worth mentioning are `projectile' and
 
 
 
-**** Dired
+*** Dired
 
 Dired isn't very colourful by default, but `dired+' has helpful
 highlighting.
@@ -308,7 +307,7 @@ highlighting.
   (require 'dired+)
 #+END_SRC
 
-**** Deleting and Backups
+*** Deleting and Backups
 
 When we delete a file, it should go to the recycle bin rather than
 just acting like shell:rm.
@@ -332,7 +331,7 @@ store all our backups in `~/.saves`.
      version-control t)       ; use versioned backups
 #+END_SRC
 
-*** Flymake
+** Flymake
 
 (Note that there's language-specific flymake configuration too.)
 
@@ -367,7 +366,7 @@ I prefer my error underlined.
    '(flymake-warnline ((((class color)) (:underline "Orange")))))
 #+END_SRC
     
-*** Undoing
+** Undoing
 
 Emacs' undo facility is excellent, but undo-tree is even better.
 
@@ -376,7 +375,7 @@ Emacs' undo facility is excellent, but undo-tree is even better.
   (global-undo-tree-mode)
 #+END_SRC
 
-*** Python
+** Python
 
 Having brackets and quotation marks closed is very useful in
 Python. Paredit isn't well suited for Python, and `electric-pair-mode`
@@ -406,11 +405,11 @@ We use pyflakes with flymake to check for coding errors.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (require 'flymake-python-pyflakes)
-  (setq flymake-python-pyflakes-executable "~/.emacs.d/user-python/run-pyflakes")
+  (setq flymake-python-pyflakes-executable "pyflakes")
   (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
 #+END_SRC
 
-*** Undocumented
+** Undocumented
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   ; always close the minibuffer on C-x o:

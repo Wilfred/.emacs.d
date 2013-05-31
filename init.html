@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-05-31T14:46+0100"/>
+<meta name="generated" content="2013-05-31T15:26+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -122,31 +122,43 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#sec-1">1 Emacs Configuration</a>
+<li><a href="#sec-1">1 Introduction</a></li>
+<li><a href="#sec-2">2 Installing locally</a>
 <ul>
-<li><a href="#sec-1-1">1.1 Introduction</a></li>
-<li><a href="#sec-1-2">1.2 Installing locally</a>
-<ul>
-<li><a href="#sec-1-2-1">1.2.1 Emacs 24</a></li>
-<li><a href="#sec-1-2-2">1.2.2 Python</a></li>
-<li><a href="#sec-1-2-3">1.2.3 JavaScript</a></li>
+<li><a href="#sec-2-1">2.1 Emacs 24</a></li>
+<li><a href="#sec-2-2">2.2 Python</a></li>
+<li><a href="#sec-2-3">2.3 JavaScript</a></li>
 </ul>
 </li>
-<li><a href="#sec-1-3">1.3 Contents</a>
+<li><a href="#sec-3">3 Contents</a>
 <ul>
-<li><a href="#sec-1-3-1">1.3.1 Timing</a></li>
-<li><a href="#sec-1-3-2">1.3.2 Folder Structure</a></li>
-<li><a href="#sec-1-3-3">1.3.3 Packages</a></li>
-<li><a href="#sec-1-3-4">1.3.4 Paths</a></li>
-<li><a href="#sec-1-3-5">1.3.5 UI</a></li>
-<li><a href="#sec-1-3-6">1.3.6 Moving Around</a></li>
-<li><a href="#sec-1-3-7">1.3.7 Files</a></li>
-<li><a href="#sec-1-3-8">1.3.8 Flymake</a></li>
-<li><a href="#sec-1-3-9">1.3.9 Undoing</a></li>
-<li><a href="#sec-1-3-10">1.3.10 Python</a></li>
-<li><a href="#sec-1-3-11">1.3.11 Undocumented</a></li>
+<li><a href="#sec-3-1">3.1 Timing</a></li>
+<li><a href="#sec-3-2">3.2 Folder Structure</a></li>
+<li><a href="#sec-3-3">3.3 Packages</a></li>
+<li><a href="#sec-3-4">3.4 Paths</a></li>
+<li><a href="#sec-3-5">3.5 UI</a>
+<ul>
+<li><a href="#sec-3-5-1">3.5.1 Theme</a></li>
+<li><a href="#sec-3-5-2">3.5.2 Hiding and Showing</a></li>
 </ul>
 </li>
+<li><a href="#sec-3-6">3.6 Moving Around</a>
+<ul>
+<li><a href="#sec-3-6-1">3.6.1 By Symbol</a></li>
+<li><a href="#sec-3-6-2">3.6.2 By Character</a></li>
+</ul>
+</li>
+<li><a href="#sec-3-7">3.7 Files</a>
+<ul>
+<li><a href="#sec-3-7-1">3.7.1 Opening</a></li>
+<li><a href="#sec-3-7-2">3.7.2 Dired</a></li>
+<li><a href="#sec-3-7-3">3.7.3 Deleting and Backups</a></li>
+</ul>
+</li>
+<li><a href="#sec-3-8">3.8 Flymake</a></li>
+<li><a href="#sec-3-9">3.9 Undoing</a></li>
+<li><a href="#sec-3-10">3.10 Python</a></li>
+<li><a href="#sec-3-11">3.11 Undocumented</a></li>
 </ul>
 </li>
 </ul>
@@ -154,15 +166,8 @@ for the JavaScript code in this tag.
 </div>
 
 <div id="outline-container-1" class="outline-2">
-<h2 id="sec-1"><span class="section-number-2">1</span> Emacs Configuration</h2>
+<h2 id="sec-1"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
-
-
-</div>
-
-<div id="outline-container-1-1" class="outline-3">
-<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Introduction</h3>
-<div class="outline-text-3" id="text-1-1">
 
 <p>This file is a literate programming document. To generate init.el, run
 `M-x org-babel-tangle'. To generate init.html, run `M-x org-export-as-html'.
@@ -188,9 +193,9 @@ highlighting in the Org buffer, evaluate:
 
 </div>
 
-<div id="outline-container-1-2" class="outline-3">
-<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Installing locally</h3>
-<div class="outline-text-3" id="text-1-2">
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Installing locally</h2>
+<div class="outline-text-2" id="text-2">
 
 
 <p>
@@ -199,9 +204,9 @@ This repository seeks to be as self-contained as possible. However, you will req
 
 </div>
 
-<div id="outline-container-1-2-1" class="outline-4">
-<h4 id="sec-1-2-1"><span class="section-number-4">1.2.1</span> Emacs 24</h4>
-<div class="outline-text-4" id="text-1-2-1">
+<div id="outline-container-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Emacs 24</h3>
+<div class="outline-text-3" id="text-2-1">
 
 
 <p>
@@ -212,9 +217,9 @@ I don't test it often.
 
 </div>
 
-<div id="outline-container-1-2-2" class="outline-4">
-<h4 id="sec-1-2-2"><span class="section-number-4">1.2.2</span> Python</h4>
-<div class="outline-text-4" id="text-1-2-2">
+<div id="outline-container-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Python</h3>
+<div class="outline-text-3" id="text-2-2">
 
 
 <p>
@@ -237,9 +242,9 @@ I also use Jedi, which has some dependencies you can install with:
 
 </div>
 
-<div id="outline-container-1-2-3" class="outline-4">
-<h4 id="sec-1-2-3"><span class="section-number-4">1.2.3</span> JavaScript</h4>
-<div class="outline-text-4" id="text-1-2-3">
+<div id="outline-container-2-3" class="outline-3">
+<h3 id="sec-2-3"><span class="section-number-3">2.3</span> JavaScript</h3>
+<div class="outline-text-3" id="text-2-3">
 
 
 <p>
@@ -258,17 +263,17 @@ install JSHint, run:
 
 </div>
 
-<div id="outline-container-1-3" class="outline-3">
-<h3 id="sec-1-3"><span class="section-number-3">1.3</span> Contents</h3>
-<div class="outline-text-3" id="text-1-3">
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Contents</h2>
+<div class="outline-text-2" id="text-3">
 
 
 
 </div>
 
-<div id="outline-container-1-3-1" class="outline-4">
-<h4 id="sec-1-3-1"><span class="section-number-4">1.3.1</span> Timing</h4>
-<div class="outline-text-4" id="text-1-3-1">
+<div id="outline-container-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> Timing</h3>
+<div class="outline-text-3" id="text-3-1">
 
 <p>To keep Emacs startup fast, it's helpful to measure how fast it is.
 </p>
@@ -286,9 +291,9 @@ See the end of this document for where we use this data.
 
 </div>
 
-<div id="outline-container-1-3-2" class="outline-4">
-<h4 id="sec-1-3-2"><span class="section-number-4">1.3.2</span> Folder Structure</h4>
-<div class="outline-text-4" id="text-1-3-2">
+<div id="outline-container-3-2" class="outline-3">
+<h3 id="sec-3-2"><span class="section-number-3">3.2</span> Folder Structure</h3>
+<div class="outline-text-3" id="text-3-2">
 
 
 <p>
@@ -318,9 +323,9 @@ should ultimately disappear once all these packages live in MELPA.
 
 </div>
 
-<div id="outline-container-1-3-3" class="outline-4">
-<h4 id="sec-1-3-3"><span class="section-number-4">1.3.3</span> Packages</h4>
-<div class="outline-text-4" id="text-1-3-3">
+<div id="outline-container-3-3" class="outline-3">
+<h3 id="sec-3-3"><span class="section-number-3">3.3</span> Packages</h3>
+<div class="outline-text-3" id="text-3-3">
 
 
 <p>
@@ -389,9 +394,9 @@ every time. Instead, we compile directories that don't contain any
 
 </div>
 
-<div id="outline-container-1-3-4" class="outline-4">
-<h4 id="sec-1-3-4"><span class="section-number-4">1.3.4</span> Paths</h4>
-<div class="outline-text-4" id="text-1-3-4">
+<div id="outline-container-3-4" class="outline-3">
+<h3 id="sec-3-4"><span class="section-number-3">3.4</span> Paths</h3>
+<div class="outline-text-3" id="text-3-4">
 
 
 <p>
@@ -416,13 +421,18 @@ Note this function comes from the package `exec-path-from-shell.el'.
 
 </div>
 
-<div id="outline-container-1-3-5" class="outline-4">
-<h4 id="sec-1-3-5"><span class="section-number-4">1.3.5</span> UI</h4>
-<div class="outline-text-4" id="text-1-3-5">
+<div id="outline-container-3-5" class="outline-3">
+<h3 id="sec-3-5"><span class="section-number-3">3.5</span> UI</h3>
+<div class="outline-text-3" id="text-3-5">
 
 
-<ul>
-<li id="sec-1-3-5-1">Theme<br/>
+
+</div>
+
+<div id="outline-container-3-5-1" class="outline-4">
+<h4 id="sec-3-5-1"><span class="section-number-4">3.5.1</span> Theme</h4>
+<div class="outline-text-4" id="text-3-5-1">
+
 
 <p>
 I like the tangotango theme, which depends on color-theme. In Emacs
@@ -448,10 +458,14 @@ I like the tangotango theme, which depends on color-theme. In Emacs
 </pre>
 
 
-</li>
-</ul>
-<ul>
-<li id="sec-1-3-5-2">Hiding and Showing<br/>
+</div>
+
+</div>
+
+<div id="outline-container-3-5-2" class="outline-4">
+<h4 id="sec-3-5-2"><span class="section-number-4">3.5.2</span> Hiding and Showing</h4>
+<div class="outline-text-4" id="text-3-5-2">
+
 
 
 
@@ -465,19 +479,23 @@ I like the tangotango theme, which depends on color-theme. In Emacs
 </pre>
 
 
-</li>
-</ul>
+</div>
 </div>
 
 </div>
 
-<div id="outline-container-1-3-6" class="outline-4">
-<h4 id="sec-1-3-6"><span class="section-number-4">1.3.6</span> Moving Around</h4>
-<div class="outline-text-4" id="text-1-3-6">
+<div id="outline-container-3-6" class="outline-3">
+<h3 id="sec-3-6"><span class="section-number-3">3.6</span> Moving Around</h3>
+<div class="outline-text-3" id="text-3-6">
 
 
-<ul>
-<li id="sec-1-3-6-1">By Symbol<br/>
+
+</div>
+
+<div id="outline-container-3-6-1" class="outline-4">
+<h4 id="sec-3-6-1"><span class="section-number-4">3.6.1</span> By Symbol</h4>
+<div class="outline-text-4" id="text-3-6-1">
+
 
 <p>
 It's extremely useful to be able to move between different occurrences
@@ -513,10 +531,14 @@ where a symbol was imported.
 </pre>
 
 
-</li>
-</ul>
-<ul>
-<li id="sec-1-3-6-2">By Character<br/>
+</div>
+
+</div>
+
+<div id="outline-container-3-6-2" class="outline-4">
+<h4 id="sec-3-6-2"><span class="section-number-4">3.6.2</span> By Character</h4>
+<div class="outline-text-4" id="text-3-6-2">
+
 
 <p>
 Vim has a handy command where you can type `f' to jump to the next
@@ -556,19 +578,23 @@ shortcomings.
 
 
 
-</li>
-</ul>
+</div>
 </div>
 
 </div>
 
-<div id="outline-container-1-3-7" class="outline-4">
-<h4 id="sec-1-3-7"><span class="section-number-4">1.3.7</span> Files</h4>
-<div class="outline-text-4" id="text-1-3-7">
+<div id="outline-container-3-7" class="outline-3">
+<h3 id="sec-3-7"><span class="section-number-3">3.7</span> Files</h3>
+<div class="outline-text-3" id="text-3-7">
 
 
-<ul>
-<li id="sec-1-3-7-1">Opening<br/>
+
+</div>
+
+<div id="outline-container-3-7-1" class="outline-4">
+<h4 id="sec-3-7-1"><span class="section-number-4">3.7.1</span> Opening</h4>
+<div class="outline-text-4" id="text-3-7-1">
+
 
 <p>
 It's useful to be able to quickly open files that we opened before. We
@@ -639,10 +665,14 @@ Alternatives worth mentioning are `projectile' and
 
 
 
-</li>
-</ul>
-<ul>
-<li id="sec-1-3-7-2">Dired<br/>
+</div>
+
+</div>
+
+<div id="outline-container-3-7-2" class="outline-4">
+<h4 id="sec-3-7-2"><span class="section-number-4">3.7.2</span> Dired</h4>
+<div class="outline-text-4" id="text-3-7-2">
+
 
 <p>
 Dired isn't very colourful by default, but `dired+' has helpful
@@ -655,10 +685,14 @@ highlighting.
 </pre>
 
 
-</li>
-</ul>
-<ul>
-<li id="sec-1-3-7-3">Deleting and Backups<br/>
+</div>
+
+</div>
+
+<div id="outline-container-3-7-3" class="outline-4">
+<h4 id="sec-3-7-3"><span class="section-number-4">3.7.3</span> Deleting and Backups</h4>
+<div class="outline-text-4" id="text-3-7-3">
+
 
 <p>
 When we delete a file, it should go to the recycle bin rather than
@@ -690,15 +724,14 @@ store all our backups in `~/.saves`.
 </pre>
 
 
-</li>
-</ul>
+</div>
 </div>
 
 </div>
 
-<div id="outline-container-1-3-8" class="outline-4">
-<h4 id="sec-1-3-8"><span class="section-number-4">1.3.8</span> Flymake</h4>
-<div class="outline-text-4" id="text-1-3-8">
+<div id="outline-container-3-8" class="outline-3">
+<h3 id="sec-3-8"><span class="section-number-3">3.8</span> Flymake</h3>
+<div class="outline-text-3" id="text-3-8">
 
 
 <p>
@@ -751,9 +784,9 @@ I prefer my error underlined.
 
 </div>
 
-<div id="outline-container-1-3-9" class="outline-4">
-<h4 id="sec-1-3-9"><span class="section-number-4">1.3.9</span> Undoing</h4>
-<div class="outline-text-4" id="text-1-3-9">
+<div id="outline-container-3-9" class="outline-3">
+<h3 id="sec-3-9"><span class="section-number-3">3.9</span> Undoing</h3>
+<div class="outline-text-3" id="text-3-9">
 
 
 <p>
@@ -771,9 +804,9 @@ Emacs' undo facility is excellent, but undo-tree is even better.
 
 </div>
 
-<div id="outline-container-1-3-10" class="outline-4">
-<h4 id="sec-1-3-10"><span class="section-number-4">1.3.10</span> Python</h4>
-<div class="outline-text-4" id="text-1-3-10">
+<div id="outline-container-3-10" class="outline-3">
+<h3 id="sec-3-10"><span class="section-number-3">3.10</span> Python</h3>
+<div class="outline-text-3" id="text-3-10">
 
 
 <p>
@@ -815,7 +848,7 @@ We use pyflakes with flymake to check for coding errors.
 
 
 <pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">flymake-python-pyflakes</span>)
-(setq flymake-python-pyflakes-executable <span style="color: #ad7fa8; font-style: italic;">"~/.emacs.d/user-python/run-pyflakes"</span>)
+(setq flymake-python-pyflakes-executable <span style="color: #ad7fa8; font-style: italic;">"pyflakes"</span>)
 (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
 </pre>
 
@@ -824,9 +857,9 @@ We use pyflakes with flymake to check for coding errors.
 
 </div>
 
-<div id="outline-container-1-3-11" class="outline-4">
-<h4 id="sec-1-3-11"><span class="section-number-4">1.3.11</span> Undocumented</h4>
-<div class="outline-text-4" id="text-1-3-11">
+<div id="outline-container-3-11" class="outline-3">
+<h3 id="sec-3-11"><span class="section-number-3">3.11</span> Undocumented</h3>
+<div class="outline-text-3" id="text-3-11">
 
 
 
@@ -969,10 +1002,9 @@ We use pyflakes with flymake to check for coding errors.
 </div>
 </div>
 </div>
-</div>
 
 <div id="postamble">
-<p class="date">Date: 2013-05-31T14:46+0100</p>
+<p class="date">Date: 2013-05-31T15:26+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
