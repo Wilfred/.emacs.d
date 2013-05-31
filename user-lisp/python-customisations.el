@@ -26,10 +26,6 @@
 (setq flymake-python-pyflakes-executable "~/.emacs.d/user-python/run-pyflakes")
 (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
 
-(custom-set-faces
- '(flymake-errline ((((class color)) (:underline "Red"))))
- '(flymake-warnline ((((class color)) (:underline "Orange")))))
-
 (require 'which-func)
 
 (defun* python-insert-super-function (&aux start-pos)
