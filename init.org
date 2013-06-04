@@ -25,10 +25,11 @@ I don't test it often.
 
 ** Python
 
-We include a copy of pyflakes. This copy requires `python2' to be available
-on `$PATH'. This is from this fork of pyflakes:
-https://github.com/kevinw/pyflakes since it's less prone to crashing
-on invalid syntax (`{foo}' was a particular nuisance).
+I use pyflakes, which is available on PyPI. You can install it with:
+
+#+BEGIN_SRC sh
+  sudo pip install pyflakes
+#+END_SRC
 
 I also use Jedi, which has some dependencies you can install with:
 
@@ -407,6 +408,13 @@ We use pyflakes with flymake to check for coding errors.
   (require 'flymake-python-pyflakes)
   (setq flymake-python-pyflakes-executable "pyflakes")
   (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
+#+END_SRC
+
+I prefer to write docstrings with example usage that aren't quite
+valid doctests, so we switch off doctest checks.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setenv "PYFLAKES_NODOCTEST" "y")
 #+END_SRC
 
 ** Undocumented
