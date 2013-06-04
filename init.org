@@ -206,7 +206,7 @@ where a symbol was imported.
          nil t)
         (beginning-of-thing 'symbol))))
   
-  (global-set-key (kbd "M-S-p") 'highlight-symbol-first)
+  (global-set-key (kbd "M-P") 'highlight-symbol-first)
 #+END_SRC
 
 *** By Character
