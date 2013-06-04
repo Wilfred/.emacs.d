@@ -78,7 +78,7 @@
        nil t)
       (beginning-of-thing 'symbol))))
 
-(global-set-key (kbd "M-S-p") 'highlight-symbol-first)
+(global-set-key (kbd "M-P") 'highlight-symbol-first)
 
 (key-chord-mode 1)
 (key-chord-define-global "df" 'iy-go-to-char-backward)
@@ -161,8 +161,10 @@
 (add-hook 'python-mode-hook 'jedi:setup)
 
 (require 'flymake-python-pyflakes)
-(setq flymake-python-pyflakes-executable "~/.emacs.d/user-python/run-pyflakes")
+(setq flymake-python-pyflakes-executable "pyflakes")
 (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
+
+(setenv "PYFLAKES_NODOCTEST" "y")
 
 ; always close the minibuffer on C-x o:
 ; <jlf> wilfredh: you could before-advise other-window to quit first
@@ -295,3 +297,13 @@
 ;; (message "Spent %.2f seconds executing .emacs.d/init.el."
 ;;          (time-difference *emacs-load-start* (current-time)))
 (put 'narrow-to-region 'disabled nil)
+
+(defun kill-or-delete-region (beg end prefix)
+  "Delete the region, storing it in the kill-ring.
+If a prefix argument is given, don't change the kill-ring."
+  (interactive "r\nP")
+  (if prefix
+      (delete-region beg end)
+    (kill-region beg end)))
+
+(global-set-key (kbd "C-w") 'kill-or-delete-region)

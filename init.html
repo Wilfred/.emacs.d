@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-05-31T15:26+0100"/>
+<meta name="generated" content="2013-06-04T18:33+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -223,11 +223,15 @@ I don't test it often.
 
 
 <p>
-We include a copy of pyflakes. This copy requires `python2' to be available
-on `$PATH'. This is from this fork of pyflakes:
-<a href="https://github.com/kevinw/pyflakes">https://github.com/kevinw/pyflakes</a> since it's less prone to crashing
-on invalid syntax (`{foo}' was a particular nuisance).
+I use pyflakes, which is available on PyPI. You can install it with:
 </p>
+
+
+
+<pre class="src src-sh">sudo pip install pyflakes
+</pre>
+
+
 <p>
 I also use Jedi, which has some dependencies you can install with:
 </p>
@@ -527,7 +531,7 @@ where a symbol was imported.
        nil t)
       (beginning-of-thing 'symbol))))
 
-(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"M-S-p"</span>) 'highlight-symbol-first)
+(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"M-P"</span>) 'highlight-symbol-first)
 </pre>
 
 
@@ -853,6 +857,17 @@ We use pyflakes with flymake to check for coding errors.
 </pre>
 
 
+<p>
+I prefer to write docstrings with example usage that aren't quite
+valid doctests, so we switch off doctest checks.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(setenv <span style="color: #ad7fa8; font-style: italic;">"PYFLAKES_NODOCTEST"</span> <span style="color: #ad7fa8; font-style: italic;">"y"</span>)
+</pre>
+
+
 </div>
 
 </div>
@@ -996,6 +1011,16 @@ We use pyflakes with flymake to check for coding errors.
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">(message "Spent %.2f seconds executing .emacs.d/init.el."</span>
 <span style="color: #888a85;">;;          </span><span style="color: #888a85;">(time-difference *emacs-load-start* (current-time)))</span>
 (put 'narrow-to-region 'disabled nil)
+
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">kill-or-delete-region</span> (beg end prefix)
+  <span style="color: #888a85;">"Delete the region, storing it in the kill-ring.</span>
+<span style="color: #888a85;">If a prefix argument is given, don't change the kill-ring."</span>
+  (interactive <span style="color: #ad7fa8; font-style: italic;">"r\nP"</span>)
+  (<span style="color: #729fcf; font-weight: bold;">if</span> prefix
+      (delete-region beg end)
+    (kill-region beg end)))
+
+(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"C-w"</span>) 'kill-or-delete-region)
 </pre>
 
 </div>
@@ -1004,7 +1029,7 @@ We use pyflakes with flymake to check for coding errors.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-05-31T15:26+0100</p>
+<p class="date">Date: 2013-06-04T18:33+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
