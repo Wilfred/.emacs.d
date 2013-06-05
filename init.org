@@ -7,13 +7,7 @@ expand a header by pressing `<TAB>' when point is on that header. You
 can expand all headers by pressing `C-u C-u C-u <TAB>'.
 
 You can edit any code block by putting point inside the block and
-pressing `C-c '' (press `C-c '' again to escape). To use normal code
-highlighting in the Org buffer, evaluate:
-
-#+BEGIN_SRC emacs-lisp
-  (setq org-src-fontify-natively t)
-#+END_SRC
-
+pressing `C-c '' (press `C-c '' again to escape). 
 * Installing locally
 
 This repository seeks to be as self-contained as possible. However, you will require:
@@ -416,6 +410,16 @@ valid doctests, so we switch off doctest checks.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setenv "PYFLAKES_NODOCTEST" "y")
 #+END_SRC
+
+** Org-mode
+
+We often use code snippets in org-mode files, so syntax highlight
+them.
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-src-fontify-natively t)
+#+END_SRC
+
 
 ** Undocumented
 
