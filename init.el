@@ -1,6 +1,4 @@
 
-(setq *emacs-load-start* (current-time))
-
 (add-to-list 'load-path "~/.emacs.d/user-lisp/")
 
 (add-to-list 'load-path "~/.emacs.d/third-party-lisp/")

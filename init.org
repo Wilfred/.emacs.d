@@ -42,15 +42,6 @@ install JSHint, run:
 
 * Contents
 
-** Timing
-To keep Emacs startup fast, it's helpful to measure how fast it is.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (setq *emacs-load-start* (current-time))
-#+END_SRC
-
-See the end of this document for where we use this data.
-
 ** Folder Structure
 
 Code I've written lives in user-lisp. This includes packages that I
