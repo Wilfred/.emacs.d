@@ -68,6 +68,7 @@ command-line).")
       ("-pr" "Pickaxe regex" "--pickaxe-regex")
       ("-n" "Name only" "--name-only")
       ("-am" "All match" "--all-match")
+      ("-ab" "All branches" "--branches")
       ("-al" "All" "--all"))
      (arguments
       ("=r" "Relative" "--relative=" read-directory-name)
@@ -76,7 +77,9 @@ command-line).")
       ("=<" "Before" "--before=" read-from-minibuffer)
       ("=s" "Pickaxe search" "-S" read-from-minibuffer)
       ("=a" "Author" "--author=" read-from-minibuffer)
-      ("=g" "Grep" "--grep=" read-from-minibuffer)))
+      ("=g" "Grep" "--grep=" read-from-minibuffer)
+      ("=b" "Branches" "--branches=" read-from-minibuffer)
+      ("=R" "Remotes" "--remotes=" read-from-minibuffer)))
 
     (running
      (actions
@@ -142,7 +145,8 @@ command-line).")
      (man-page "git-tag")
      (actions
       ("t" "Lightweight" magit-tag)
-      ("a" "Annotated" magit-annotated-tag))
+      ("a" "Annotated" magit-annotated-tag)
+      ("k" "Delete" magit-delete-tag))
      (switches
       ("-f" "Force" "-f")))
 
@@ -370,17 +374,15 @@ that brought up the key-mode window, so it can be used by the
 command that's eventually invoked.")
 
 (defun magit-key-mode-command (func)
-  (let ((args '()))
-    ;; why can't maphash return a list?!
+  (let ((current-prefix-arg (or current-prefix-arg magit-key-mode-prefix))
+        (magit-custom-options magit-key-mode-current-options))
     (maphash (lambda (k v)
-               (push (concat k (shell-quote-argument v)) args))
+               (push (concat k v) magit-custom-options))
              magit-key-mode-current-args)
-    (let ((magit-custom-options (append args magit-key-mode-current-options))
-          (current-prefix-arg (or current-prefix-arg magit-key-mode-prefix)))
-      (set-window-configuration magit-log-mode-window-conf)
-      (when func
-        (call-interactively func))
-      (magit-key-mode-kill-buffer))))
+    (set-window-configuration magit-log-mode-window-conf)
+    (kill-buffer magit-key-mode-last-buffer)
+    (when func
+      (call-interactively func))))
 
 (defun magit-key-mode-add-argument (for-group arg-name input-func)
   (let ((input (funcall input-func (concat arg-name ": "))))
@@ -389,15 +391,11 @@ command that's eventually invoked.")
 
 (defun magit-key-mode-add-option (for-group option-name)
   "Toggles the appearance of OPTION-NAME in `magit-key-mode-current-options'."
-  (if (not (member option-name magit-key-mode-current-options))
-      (add-to-list 'magit-key-mode-current-options option-name)
-    (setq magit-key-mode-current-options
-          (delete option-name magit-key-mode-current-options)))
+  (if (member option-name magit-key-mode-current-options)
+      (setq magit-key-mode-current-options
+            (delete option-name magit-key-mode-current-options))
+    (add-to-list 'magit-key-mode-current-options option-name))
   (magit-key-mode-redraw for-group))
-
-(defun magit-key-mode-kill-buffer ()
-  (interactive)
-  (kill-buffer magit-key-mode-last-buffer))
 
 (defun magit-key-mode (for-group &optional original-opts)
   "Mode for magit key selection.
@@ -412,7 +410,6 @@ the key combination highlighted before the description."
   (let ((buf (get-buffer-create (format magit-key-mode-buf-name
                                         (symbol-name for-group)))))
     (setq magit-key-mode-last-buffer buf)
-    (delete-other-windows)
     (split-window-vertically)
     (other-window 1)
     (switch-to-buffer buf)

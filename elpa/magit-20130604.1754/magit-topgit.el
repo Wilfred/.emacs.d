@@ -78,7 +78,7 @@
   (when (magit-topgit-in-topic-p)
     (let* ((remote (magit-get "topgit" "remote"))
            (remote-update (if (or current-prefix-arg (not remote))
-                              (magit-read-remote)
+                              (magit-read-remote "Update remote")
                             remote)))
       (if (and (not remote)
                (not current-prefix-arg))
@@ -133,13 +133,13 @@
                         "Topics:" 'magit-topgit-wash-topics
                         "summary"))
 
-(magit-add-action (item info "discard")
+(magit-add-action-clauses (item info "discard")
   ((topic)
    (when (yes-or-no-p "Discard topic? ")
      (magit-run* (list magit-topgit-executable "delete" "-f" info)
                  nil nil nil t))))
 
-(magit-add-action (item info "visit")
+(magit-add-action-clauses (item info "visit")
   ((topic)
    (magit-checkout info)))
 
