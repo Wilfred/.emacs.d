@@ -41,18 +41,17 @@
 (defun re-find-all (regexp string)
   "Find all matches of REGEXP in STRING, return a list of the
  matching substrings. Case sensitive."
-  (re--find-all regexp string 0))
+  (let ((offset 0)
+        (matches nil)
+        (case-fold-search nil))
+    (while (string-match regexp string offset)
+      (push (substring string
+                       (match-beginning 0)
+                       (match-end 0))
+            matches)
+      (setq offset (match-end 0)))
+    matches))
 
-(defun re--find-all (regexp string offset)
-  "Recursively find all matches of REGEXP in STRING, return a
-list of the matching substrings."
-  (let* ((case-fold-search nil)
-         (match-start-index (string-match regexp string offset)))
-    (if match-start-index
-        (cons
-         (substring string (match-beginning 0) (match-end 0))
-         (re--find-all regexp string (match-end 0)))
-      nil)))
 
 (defun re-split (regexp string)
   "Split STRING at separators REGEXP."
