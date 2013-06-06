@@ -2,7 +2,8 @@
 
 ;; Copyright (C) 2010 Chris Wanstrath
 
-;; Version: 0.4.1
+;; Version: 20130502.1632
+;; X-Original-Version: 0.4.1
 ;; Keywords: CoffeeScript major mode
 ;; Author: Chris Wanstrath <chris@ozmm.org>
 ;; URL: http://github.com/defunkt/coffee-mode
@@ -158,7 +159,10 @@
   :group 'coffee)
 
 (defcustom coffee-js-directory ""
-  "The directory for compiled JavaScript files output"
+  "The directory for compiled JavaScript files output. This can
+be an absolute path starting with a `/`, or it can be path
+relative to the directory containing the coffeescript sources to
+be compiled."
   :type 'string
   :group 'coffee)
 
@@ -179,6 +183,11 @@
 
 (defcustom coffee-compiled-buffer-name "*coffee-compiled*"
   "The name of the scratch buffer used for compiled CoffeeScript."
+  :type 'string
+  :group 'coffee)
+
+(defcustom coffee-repl-buffer "*CoffeeREPL*"
+  "The name of the CoffeeREPL buffer."
   :type 'string
   :group 'coffee)
 
@@ -231,6 +240,9 @@ with CoffeeScript."
     (define-key map "\177" 'coffee-dedent-line-backspace)
     (define-key map (kbd "C-c C-<") 'coffee-indent-shift-left)
     (define-key map (kbd "C-c C->") 'coffee-indent-shift-right)
+    (define-key map (kbd "C-c C-l") 'coffee-send-line)
+    (define-key map (kbd "C-c C-r") 'coffee-send-region)
+    (define-key map (kbd "C-c C-b") 'coffee-send-buffer)
     (define-key map (kbd "<backtab>") 'coffee-indent-shift-left)
     map)
   "Keymap for CoffeeScript major mode.")
@@ -238,29 +250,42 @@ with CoffeeScript."
 ;;
 ;; Commands
 ;;
-
 (defun coffee-repl ()
   "Launch a CoffeeScript REPL using `coffee-command' as an inferior mode."
   (interactive)
 
-  (unless (comint-check-proc "*CoffeeREPL*")
+  (unless (comint-check-proc coffee-repl-buffer)
     (set-buffer
      (apply 'make-comint "CoffeeREPL"
             "env"
-            nil (append (list "NODE_NO_READLINE=1" coffee-command) coffee-args-repl))))
+            nil (append (list "NODE_NO_READLINE=1" coffee-command) coffee-args-repl)))
 
-  (pop-to-buffer "*CoffeeREPL*"))
+    ;; Workaround: https://github.com/defunkt/coffee-mode/issues/30
+    (set (make-local-variable 'comint-preoutput-filter-functions)
+         (cons (lambda (string)
+                 (replace-regexp-in-string "\x1b\\[.[GJK]" "" string)) nil)))
+
+  (pop-to-buffer coffee-repl-buffer))
 
 (defun coffee-compiled-file-name (&optional filename)
   (let ((working-on-file (expand-file-name (or filename (buffer-file-name)))))
     (unless (string= coffee-js-directory "")
       (setq working-on-file
-            (expand-file-name (concat (file-name-directory working-on-file)
-                                      coffee-js-directory
-                                      (file-name-nondirectory working-on-file)))))
+            (expand-file-name
+             (concat (if (not (string-match "^/" coffee-js-directory))
+                         (concat (file-name-directory working-on-file) "/"))
+                     coffee-js-directory "/"
+                     (file-name-nondirectory working-on-file)))))
     ;; Returns the name of the JavaScript file compiled from a CoffeeScript file.
     ;; If FILENAME is omitted, the current buffer's file name is used.
     (concat (file-name-sans-extension working-on-file) ".js")))
+
+(defun coffee-revert-buffer-compiled-file (file-name)
+  "Revert a buffer of compiled file when the buffer exist and is not modified."
+  (let ((buffer (find-buffer-visiting file-name)))
+    (when (and buffer (not (buffer-modified-p buffer)))
+      (with-current-buffer buffer
+        (revert-buffer nil t)))))
 
 (defun coffee-compile-file ()
   "Compiles and saves the current file to disk in a file of the same
@@ -272,7 +297,9 @@ If there are compilation errors, point is moved to the first
   (interactive)
   (let ((compiler-output (shell-command-to-string (coffee-command-compile (buffer-file-name)))))
     (if (string= compiler-output "")
-        (message "Compiled and saved %s" (coffee-compiled-file-name))
+        (let ((file-name (coffee-compiled-file-name)))
+          (message "Compiled and saved %s" file-name)
+          (coffee-revert-buffer-compiled-file file-name))
       (let* ((msg (car (split-string compiler-output "[\n\r]+")))
              (line (and (string-match "on line \\([0-9]+\\)" msg)
                         (string-to-number (match-string 1 msg)))))
@@ -307,6 +334,27 @@ called `coffee-compiled-buffer-name'."
     (display-buffer buffer)
     (with-current-buffer buffer
       (let ((buffer-file-name "tmp.js")) (set-auto-mode)))))
+
+(defun coffee-get-repl-proc ()
+  (unless (comint-check-proc coffee-repl-buffer)
+    (coffee-repl))
+  (get-buffer-process coffee-repl-buffer))
+
+(defun coffee-send-line ()
+  "Send the current line to the inferior Coffee process."
+  (interactive)
+  (coffee-send-region (line-beginning-position) (line-end-position)))
+
+(defun coffee-send-region (start end)
+  "Send the current region to the inferior Coffee process."
+  (interactive "r")
+  (comint-simple-send (coffee-get-repl-proc)
+                      (buffer-substring-no-properties start end)))
+
+(defun coffee-send-buffer ()
+  "Send the current buffer to the inferior Coffee process."
+  (interactive)
+  (coffee-send-region (point-min) (point-max)))
 
 (defun coffee-js2coffee-replace-region (start end)
   "Convert JavaScript in the region into CoffeeScript."
@@ -352,20 +400,17 @@ called `coffee-compiled-buffer-name'."
 ;; Define Language Syntax
 ;;
 
-;; String literals
-(defvar coffee-string-regexp "\"\\([^\\]\\|\\\\.\\)*?\"\\|'\\([^\\]\\|\\\\.\\)*?'")
-
 ;; Instance variables (implicit this)
-(defvar coffee-this-regexp "@\\(\\w\\|_\\)*\\|this")
+(defvar coffee-this-regexp "\\(?:@\\w+\\|\\<this\\)\\>")
 
 ;; Prototype::access
-(defvar coffee-prototype-regexp "\\(\\(\\w\\|\\.\\|_\\| \\|$\\)+?\\)::\\(\\(\\w\\|\\.\\|_\\| \\|$\\)+?\\):")
+(defvar coffee-prototype-regexp "\\(\\(\\w\\|\\.\\| \\|$\\)+?\\)::\\(\\(\\w\\|\\.\\| \\|$\\)+?\\):")
 
 ;; Assignment
-(defvar coffee-assign-regexp "\\(\\(\\w\\|\\.\\|_\\|$\\)+?\s*\\):")
+(defvar coffee-assign-regexp "\\(\\(\\w\\|\\.\\|$\\)+?\s*\\):")
 
 ;; Local Assignment
-(defvar coffee-local-assign-regexp "\\(\\(_\\|\\w\\|\\$\\)+\\)\s+=")
+(defvar coffee-local-assign-regexp "\\(?:^\\|\\s-\\)\\(\\(\\w\\|\\$\\)+\\)\s+=[^>]")
 
 ;; Lambda
 (defvar coffee-lambda-regexp "\\((.+)\\)?\\s *\\(->\\|=>\\)")
@@ -376,9 +421,11 @@ called `coffee-compiled-buffer-name'."
 ;; Booleans
 (defvar coffee-boolean-regexp "\\b\\(true\\|false\\|yes\\|no\\|on\\|off\\|null\\|undefined\\)\\b")
 
-;; Regular Expressions
-(defvar coffee-regexp-regexp "\\/\\(\\\\.\\|\\[\\(\\\\.\\|.\\)+?\\]\\|[^/
-]\\)+?\\/")
+;; Regular expressions
+(defvar coffee-regexp-regexp "\\s$.*\\s$")
+
+;; String Interpolation(This regexp is taken from ruby-mode)
+(defvar coffee-string-interpolation-regexp "#{[^}\n\\\\]*\\(?:\\\\.[^}\n\\\\]*\\)*}")
 
 ;; JavaScript Keywords
 (defvar coffee-js-keywords
@@ -405,12 +452,11 @@ called `coffee-compiled-buffer-name'."
 ;; Regular expression combining the above three lists.
 (defvar coffee-keywords-regexp
   ;; keywords can be member names.
-  (concat "[^.]"
-	  (regexp-opt (append coffee-js-reserved
-			      coffee-js-keywords
-			      coffee-cs-keywords
-			      iced-coffee-cs-keywords) 'words)))
-
+  (format "\\<%s\\>"
+          (regexp-opt (append coffee-js-reserved
+                              coffee-js-keywords
+                              coffee-cs-keywords
+                              iced-coffee-cs-keywords) 'words)))
 
 ;; Create the list for font-lock. Each class of keyword is given a
 ;; particular face.
@@ -418,15 +464,15 @@ called `coffee-compiled-buffer-name'."
   ;; *Note*: order below matters. `coffee-keywords-regexp' goes last
   ;; because otherwise the keyword "state" in the function
   ;; "state_entry" would be highlighted.
-  `((,coffee-string-regexp . font-lock-string-face)
+  `((,coffee-regexp-regexp . font-lock-constant-face)
     (,coffee-this-regexp . font-lock-variable-name-face)
     (,coffee-prototype-regexp . font-lock-variable-name-face)
     (,coffee-assign-regexp . font-lock-type-face)
     (,coffee-local-assign-regexp 1 font-lock-variable-name-face)
-    (,coffee-regexp-regexp . font-lock-constant-face)
     (,coffee-boolean-regexp . font-lock-constant-face)
-    (,coffee-lambda-regexp . (2 font-lock-function-name-face))
-    (,coffee-keywords-regexp 1 font-lock-keyword-face)))
+    (,coffee-lambda-regexp 2 font-lock-function-name-face)
+    (,coffee-keywords-regexp 1 font-lock-keyword-face)
+    (,coffee-string-interpolation-regexp 0 font-lock-variable-name-face t)))
 
 ;;
 ;; Helper Functions
@@ -442,19 +488,26 @@ For details, see `comment-dwim'."
 
 (defun coffee-command-compile (file-name)
   "Run `coffee-command' to compile FILE."
-  (let (
-	(full-file-name
-	 (expand-file-name file-name))
-	(output-directory
-	 (concat " -o " (file-name-directory (expand-file-name file-name)) coffee-js-directory)))
-    (mapconcat 'identity (append (list coffee-command) coffee-args-compile (list output-directory) (list full-file-name)) " ")))
+  (let* ((full-file-name
+          (expand-file-name file-name))
+         (output-dir
+          (file-name-directory
+           (coffee-compiled-file-name full-file-name))))
+    (if (not (file-exists-p output-dir))
+        (make-directory output-dir t))
+    (mapconcat 'identity (append (list (shell-quote-argument coffee-command))
+                                 coffee-args-compile
+                                 (list "-o" (shell-quote-argument output-dir))
+                                 (list (shell-quote-argument full-file-name)))
+               " ")))
 
 (defun coffee-run-cmd (args)
   "Run `coffee-command' with the given arguments, and display the
 output in a compilation buffer."
   (interactive "sArguments: ")
-  (let ((compilation-buffer-name-function (lambda (this-mode)
-                                            (generate-new-buffer-name coffee-compiled-buffer-name))))
+  (let ((compilation-buffer-name-function
+         (lambda (this-mode)
+           (generate-new-buffer-name coffee-compiled-buffer-name))))
     (compile (concat coffee-command " " args))))
 
 ;;
@@ -723,21 +776,21 @@ previous line."
 ;;      ;; Consider property for the last char if in a fenced string.
 ;;      ((= n 3)
 ;;       (let* ((font-lock-syntactic-keywords nil)
-;; 	     (syntax (syntax-ppss)))
-;; 	(when (eq t (nth 3 syntax))	; after unclosed fence
-;; 	  (goto-char (nth 8 syntax))	; fence position
-;; 	  ;; (skip-chars-forward "uUrR")	; skip any prefix
-;; 	  ;; Is it a matching sequence?
-;; 	  (if (eq (char-after) (char-after (match-beginning 2)))
-;; 	      (eval-when-compile (string-to-syntax "|"))))))
+;;         (syntax (syntax-ppss)))
+;;    (when (eq t (nth 3 syntax))   ; after unclosed fence
+;;      (goto-char (nth 8 syntax))   ; fence position
+;;      ;; (skip-chars-forward "uUrR")   ; skip any prefix
+;;      ;; Is it a matching sequence?
+;;      (if (eq (char-after) (char-after (match-beginning 2)))
+;;          (eval-when-compile (string-to-syntax "|"))))))
 ;;      ;; Consider property for initial char, accounting for prefixes.
-;;      ((or (and (= n 2)			; leading quote (not prefix)
-;; 	       (not (match-end 1)))     ; prefix is null
-;; 	  (and (= n 1)			; prefix
-;; 	       (match-end 1)))          ; non-empty
+;;      ((or (and (= n 2)         ; leading quote (not prefix)
+;;           (not (match-end 1)))     ; prefix is null
+;;      (and (= n 1)         ; prefix
+;;           (match-end 1)))          ; non-empty
 ;;       (let ((font-lock-syntactic-keywords nil))
-;; 	(unless (eq 'string (syntax-ppss-context (syntax-ppss)))
-;; 	  (eval-when-compile (string-to-syntax "|")))))
+;;    (unless (eq 'string (syntax-ppss-context (syntax-ppss)))
+;;      (eval-when-compile (string-to-syntax "|")))))
 ;;      ;; Otherwise (we're in a non-matching string) the property is
 ;;      ;; nil, which is OK.
 ;;      )))
@@ -832,7 +885,8 @@ END lie."
     (save-excursion
       (progn
         (goto-char start)
-        (let ((match (re-search-forward "^[[:space:]]*###\\([[:space:]]+.*\\)?$" end t)))
+        (let ((match (re-search-forward
+                      "^[[:space:]]*###\\([[:space:]]+.*\\)?$" end t)))
           (if match
               (progn
                 (coffee-block-comment-delimiter match)
@@ -840,9 +894,12 @@ END lie."
                 (forward-line)
                 (coffee-propertize-function (point) end))))))))
 
+;; For compatibility with Emacs < 24, derive conditionally
+(defalias 'coffee-parent-mode
+  (if (fboundp 'prog-mode) 'prog-mode 'fundamental-mode))
+
 ;;;###autoload
-(define-derived-mode coffee-mode fundamental-mode
-  "Coffee"
+(define-derived-mode coffee-mode coffee-parent-mode "Coffee"
   "Major mode for editing CoffeeScript."
 
   ;; code for syntax highlighting
@@ -854,6 +911,9 @@ END lie."
   ;; perl style comment: "# ..."
   (modify-syntax-entry ?# "< b" coffee-mode-syntax-table)
   (modify-syntax-entry ?\n "> b" coffee-mode-syntax-table)
+
+  ;; Treat slashes as paired delimiters; useful for finding regexps.
+  (modify-syntax-entry ?/ "$" coffee-mode-syntax-table)
 
   (set (make-local-variable 'comment-start) "#")
 
@@ -877,6 +937,10 @@ END lie."
 
   ;; imenu
   (set (make-local-variable 'imenu-create-index-function) #'coffee-imenu-create-index)
+
+  ;; Don't let electric-indent-mode break coffee-mode.
+  (set (make-local-variable 'electric-indent-functions)
+       (list (lambda (arg) 'no-indent)))
 
   ;; no tabs
   (setq indent-tabs-mode nil))
@@ -913,4 +977,7 @@ it on by default."
 (add-to-list 'auto-mode-alist '("\\.iced\\'" . coffee-mode))
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("Cakefile\\'" . coffee-mode))
+;;;###autoload
+(add-to-list 'interpreter-mode-alist '("coffee" . coffee-mode))
+
 ;;; coffee-mode.el ends here
