@@ -4,12 +4,16 @@
 (add-hook 'clojure-mode-hook 'turn-on-paredit)
 (add-hook 'emacs-lisp-mode-hook 'turn-on-paredit)
 
-;; use elint to check elisp
+;; byte-compile elisp files to check for errors
 (add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
 
 ;; don't bother running checkdoc, it's annoying for quick hacks
 (require 'flycheck)
 (setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers))
+
+;; bind our usual flymake movement keys for flycheck too
+(define-key flycheck-mode-map (kbd "<f8>") 'flycheck-previous-error)
+(define-key flycheck-mode-map (kbd "<f9>") 'flycheck-next-error)
 
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
