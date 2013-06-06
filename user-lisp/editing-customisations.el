@@ -1,4 +1,5 @@
 ;;;; Editing customisations -- general text munging when typing.
+(require 'dash)
 
 ;; highlight region whenever mark is active
 (transient-mark-mode t)
@@ -214,10 +215,10 @@ to the symbol at point."
                 (read-from-minibuffer "With what? ")))
 
   ;; if we currently have point on a symbol we're replacing, go back
-  (and-let* ((current-symbol (symbol-at-point))
-            (current-symbol-name (symbol-name current-symbol)))
-           (if (string-equal current-symbol-name from-string)
-               (forward-symbol -1)))
+  (-when-let* ((current-symbol (symbol-at-point))
+               (current-symbol-name (symbol-name current-symbol))
+               (string-matches (string-equal current-symbol-name from-string)))
+    (forward-symbol -1))
 
   (add-to-list 'query-replace/history
                (list (format "%s -> %s" from-string to-string)
