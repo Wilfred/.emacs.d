@@ -40,6 +40,15 @@ install JSHint, run:
   sudo npm install -g jshint
 #+END_SRC
 
+** Less
+
+I use lessc to check the syntax of `.less' files. You can install it
+with:
+
+#+BEGIN_SRC sh
+  sudo npm install -g less
+#+END_SRC
+
 * Contents
 
 ** Folder Structure
@@ -400,6 +409,16 @@ valid doctests, so we switch off doctest checks.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setenv "PYFLAKES_NODOCTEST" "y")
+#+END_SRC
+
+** Less (CSS)
+
+The less compiler doesn't give much feedback, but it does gives us a
+syntax check.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'less-css-mode)
+  (add-hook 'less-css-mode-hook 'flymake-mode)
 #+END_SRC
 
 ** Org-mode

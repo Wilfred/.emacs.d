@@ -164,6 +164,9 @@
 
 (setenv "PYFLAKES_NODOCTEST" "y")
 
+(require 'less-css-mode)
+(add-hook 'less-css-mode-hook 'flymake-mode)
+
 ; always close the minibuffer on C-x o:
 ; <jlf> wilfredh: you could before-advise other-window to quit first
 ; if the minibuffer is active.. but it would be better to break that
