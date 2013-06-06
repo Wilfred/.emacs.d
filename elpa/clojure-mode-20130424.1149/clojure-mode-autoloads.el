@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (clojure-mode) "clojure-mode" "clojure-mode.el"
-;;;;;;  (20825 32449))
+;;;;;;  (20876 65512 458009 962000))
 ;;; Generated autoloads from clojure-mode.el
 
 (autoload 'clojure-mode "clojure-mode" "\
@@ -27,6 +27,8 @@ if that value is non-nil.
 
 (add-to-list 'auto-mode-alist '("\\.clj\\'" . clojure-mode))
 
+(add-to-list 'auto-mode-alist '("\\.cljs\\'" . clojure-mode))
+
 (add-to-list 'auto-mode-alist '("\\.dtm\\'" . clojure-mode))
 
 (add-to-list 'auto-mode-alist '("\\.edn\\'" . clojure-mode))
@@ -37,7 +39,8 @@ if that value is non-nil.
 
 ;;;***
 
-;;;### (autoloads nil nil ("clojure-mode-pkg.el") (20825 32449 928091))
+;;;### (autoloads nil nil ("clojure-mode-pkg.el") (20876 65512 545786
+;;;;;;  989000))
 
 ;;;***
 
