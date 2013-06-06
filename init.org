@@ -440,7 +440,6 @@ them.
   ; habit :)
   
   (require 'ui-customisations)
-  (require 'startup-customisations)
   
   (require 'file-customisations)
   (require 'editing-customisations)
@@ -481,6 +480,8 @@ them.
   (require 'c-customisations)
   (require 'sh-customisations)
   (require 'coffee-customisations)
+  
+  (require 'startup-customisations)
   
   (require 'editd-customisations)
   
