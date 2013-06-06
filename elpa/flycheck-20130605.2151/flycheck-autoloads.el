@@ -5,7 +5,7 @@
 
 ;;;### (autoloads (flycheck-info flycheck-def-option-var flycheck-def-config-file-var
 ;;;;;;  flycheck-declare-checker global-flycheck-mode flycheck-mode)
-;;;;;;  "flycheck" "flycheck.el" (20884 46263 294142 632000))
+;;;;;;  "flycheck" "flycheck.el" (20912 32288 504545 823000))
 ;;; Generated autoloads from flycheck.el
 
 (defconst flycheck-mode-line-lighter " FlyC" "\
@@ -90,9 +90,10 @@ of `flycheck-error' objects parsed from OUTPUT.
 `:modes' A major mode symbol or a list thereof.  If present the
 checker is only used in these modes.
 
-`:predicate' An Emacs Lisp form.  If present the checker is only
-used if the form evaluates to a non-nil result in the buffer to
-check.
+`:predicate' An Emacs Lisp form.  If present the syntax checker
+is only used if this form returns a non-nil result when evaluated
+in the buffer to check.  The form is wrapped into a `lambda'
+function to support byte compilation.
 
 `:next-checkers' A list where each element is either a checker
 symbol to run after this checker or a cons cell (PREDICATE
@@ -155,8 +156,8 @@ Open the Flycheck manual.
 
 ;;;***
 
-;;;### (autoloads nil nil ("flycheck-pkg.el") (20884 46263 469223
-;;;;;;  703000))
+;;;### (autoloads nil nil ("flycheck-pkg.el") (20912 32288 675094
+;;;;;;  907000))
 
 ;;;***
 
