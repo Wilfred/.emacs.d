@@ -188,11 +188,8 @@ are interchanged."
 (global-set-key (kbd "<M-down>") 'move-text-down)
 
 ;; ace-jump-mode -- jump to an arbitrary word quickly
-(autoload
-  'ace-jump-mode
-  "ace-jump-mode"
-  "Emacs quick move minor mode"
-  t)
+(require 'ace-jump-mode)
+(setq act-jump-case-fold nil)
 (define-key global-map (kbd "<f11>") 'ace-jump-mode)
 
 (defun dwim-at-point ()
