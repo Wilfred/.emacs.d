@@ -192,6 +192,7 @@ where a symbol was imported.
   (defun highlight-symbol-first ()
     "Jump to the first location of symbol at point."
     (interactive)
+    (push-mark)
     (eval
      `(progn
         (goto-char (point-min))
