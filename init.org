@@ -235,6 +235,46 @@ shortcomings.
 #+END_SRC
 
 
+** Killing
+
+Most of the time, I use `C-k' to delete lines that I don't want again,
+so I don't want them in the kill-ring.
+
+I also prefer to delete the trailing newline rather than having to
+press twice. Emacs provides the variable `kill-whole-line' and a
+function `kill-whole-line' for this.
+
+I've written a function that meets both criteria, and use it with the
+default `kill-ring' keybinding.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defun delete-whole-line (&optional arg)
+    "Delete the current line including newline, without modifying the kill-ring.
+  Prefix ARG is treated the same as `kill-whole-line'."
+    (interactive "p")
+    (let ((kill-ring kill-ring))
+      (kill-whole-line arg)))
+  
+  (global-set-key (kbd "C-k") 'delete-whole-line)
+#+END_SRC
+
+Similarly, I sometimes want to simply delete a region, rather than
+saving it to the kill-ring. I've added a function that allows me to
+type `C-u C-w' to delete the region, whilst `C-w' works as normal.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defun kill-or-delete-region (beg end prefix)
+    "Delete the region, storing it in the kill-ring.
+  If a prefix argument is given, don't change the kill-ring."
+    (interactive "r\nP")
+    (if prefix
+        (delete-region beg end)
+      (kill-region beg end)))
+  
+  (global-set-key (kbd "C-w") 'kill-or-delete-region)
+  
+#+END_SRC
+
 ** Files
 
 *** Opening
@@ -567,24 +607,4 @@ them.
   ;; (message "Spent %.2f seconds executing .emacs.d/init.el."
   ;;          (time-difference *emacs-load-start* (current-time)))
   (put 'narrow-to-region 'disabled nil)
-  
-  (defun kill-or-delete-region (beg end prefix)
-    "Delete the region, storing it in the kill-ring.
-  If a prefix argument is given, don't change the kill-ring."
-    (interactive "r\nP")
-    (if prefix
-        (delete-region beg end)
-      (kill-region beg end)))
-  
-  (global-set-key (kbd "C-w") 'kill-or-delete-region)
-  
-  (defun kill-whole-line-ruthlessly (&optional arg)
-    "Delete the current line including newline, without modifying the kill-ring.
-  Prefix ARG is treated the same as `kill-whole-line'."
-    (interactive "p")
-    (let ((kill-ring kill-ring))
-      (kill-whole-line arg)))
-  
-  (global-set-key (kbd "C-k") 'kill-whole-line-ruthlessly)
-  
 #+END_SRC

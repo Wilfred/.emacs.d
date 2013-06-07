@@ -90,6 +90,25 @@
     ad-do-it
     (backward-char)))
 
+(defun delete-whole-line (&optional arg)
+  "Delete the current line including newline, without modifying the kill-ring.
+Prefix ARG is treated the same as `kill-whole-line'."
+  (interactive "p")
+  (let ((kill-ring kill-ring))
+    (kill-whole-line arg)))
+
+(global-set-key (kbd "C-k") 'delete-whole-line)
+
+(defun kill-or-delete-region (beg end prefix)
+  "Delete the region, storing it in the kill-ring.
+If a prefix argument is given, don't change the kill-ring."
+  (interactive "r\nP")
+  (if prefix
+      (delete-region beg end)
+    (kill-region beg end)))
+
+(global-set-key (kbd "C-w") 'kill-or-delete-region)
+
 (require 'recentf)
 
 ;; offer recently accessed files from the menu
@@ -300,22 +319,3 @@
 ;; (message "Spent %.2f seconds executing .emacs.d/init.el."
 ;;          (time-difference *emacs-load-start* (current-time)))
 (put 'narrow-to-region 'disabled nil)
-
-(defun kill-or-delete-region (beg end prefix)
-  "Delete the region, storing it in the kill-ring.
-If a prefix argument is given, don't change the kill-ring."
-  (interactive "r\nP")
-  (if prefix
-      (delete-region beg end)
-    (kill-region beg end)))
-
-(global-set-key (kbd "C-w") 'kill-or-delete-region)
-
-(defun kill-whole-line-ruthlessly (&optional arg)
-  "Delete the current line including newline, without modifying the kill-ring.
-Prefix ARG is treated the same as `kill-whole-line'."
-  (interactive "p")
-  (let ((kill-ring kill-ring))
-    (kill-whole-line arg)))
-
-(global-set-key (kbd "C-k") 'kill-whole-line-ruthlessly)
