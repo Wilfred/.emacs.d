@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-06-05T15:55+0100"/>
+<meta name="generated" content="2013-06-07T16:21+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -128,6 +128,7 @@ for the JavaScript code in this tag.
 <li><a href="#sec-2-1">2.1 Emacs 24</a></li>
 <li><a href="#sec-2-2">2.2 Python</a></li>
 <li><a href="#sec-2-3">2.3 JavaScript</a></li>
+<li><a href="#sec-2-4">2.4 Less</a></li>
 </ul>
 </li>
 <li><a href="#sec-3">3 Contents</a>
@@ -157,8 +158,9 @@ for the JavaScript code in this tag.
 <li><a href="#sec-3-7">3.7 Flymake</a></li>
 <li><a href="#sec-3-8">3.8 Undoing</a></li>
 <li><a href="#sec-3-9">3.9 Python</a></li>
-<li><a href="#sec-3-10">3.10 Org-mode</a></li>
-<li><a href="#sec-3-11">3.11 Undocumented</a></li>
+<li><a href="#sec-3-10">3.10 Less (CSS)</a></li>
+<li><a href="#sec-3-11">3.11 Org-mode</a></li>
+<li><a href="#sec-3-12">3.12 Undocumented</a></li>
 </ul>
 </li>
 </ul>
@@ -250,6 +252,26 @@ install JSHint, run:
 
 
 <pre class="src src-sh">sudo npm install -g jshint
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-2-4" class="outline-3">
+<h3 id="sec-2-4"><span class="section-number-3">2.4</span> Less</h3>
+<div class="outline-text-3" id="text-2-4">
+
+
+<p>
+I use lessc to check the syntax of `.less' files. You can install it
+with:
+</p>
+
+
+
+<pre class="src src-sh">sudo npm install -g less
 </pre>
 
 
@@ -494,6 +516,7 @@ where a symbol was imported.
 <pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">highlight-symbol-first</span> ()
   <span style="color: #888a85;">"Jump to the first location of symbol at point."</span>
   (interactive)
+  (push-mark)
   (eval
    `(<span style="color: #729fcf; font-weight: bold;">progn</span>
       (goto-char (point-min))
@@ -844,8 +867,29 @@ valid doctests, so we switch off doctest checks.
 </div>
 
 <div id="outline-container-3-10" class="outline-3">
-<h3 id="sec-3-10"><span class="section-number-3">3.10</span> Org-mode</h3>
+<h3 id="sec-3-10"><span class="section-number-3">3.10</span> Less (CSS)</h3>
 <div class="outline-text-3" id="text-3-10">
+
+
+<p>
+The less compiler doesn't give much feedback, but it does gives us a
+syntax check.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">less-css-mode</span>)
+(add-hook 'less-css-mode-hook 'flymake-mode)
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-11" class="outline-3">
+<h3 id="sec-3-11"><span class="section-number-3">3.11</span> Org-mode</h3>
+<div class="outline-text-3" id="text-3-11">
 
 
 <p>
@@ -855,7 +899,8 @@ them.
 
 
 
-<pre class="src src-emacs-lisp">(setq org-src-fontify-natively t)
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">eval-after-load</span> <span style="color: #ad7fa8; font-style: italic;">"org"</span> 
+ '(setq org-src-fontify-natively t))
 </pre>
 
 
@@ -864,9 +909,9 @@ them.
 
 </div>
 
-<div id="outline-container-3-11" class="outline-3">
-<h3 id="sec-3-11"><span class="section-number-3">3.11</span> Undocumented</h3>
-<div class="outline-text-3" id="text-3-11">
+<div id="outline-container-3-12" class="outline-3">
+<h3 id="sec-3-12"><span class="section-number-3">3.12</span> Undocumented</h3>
+<div class="outline-text-3" id="text-3-12">
 
 
 
@@ -878,7 +923,6 @@ them.
 <span style="color: #888a85;">; </span><span style="color: #888a85;">habit :)</span>
 
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">ui-customisations</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">startup-customisations</span>)
 
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">file-customisations</span>)
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">editing-customisations</span>)
@@ -919,6 +963,8 @@ them.
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">c-customisations</span>)
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">sh-customisations</span>)
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">coffee-customisations</span>)
+
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">startup-customisations</span>)
 
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">editd-customisations</span>)
 
@@ -1013,6 +1059,16 @@ them.
     (kill-region beg end)))
 
 (global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"C-w"</span>) 'kill-or-delete-region)
+
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">kill-whole-line-ruthlessly</span> (<span style="color: #8ae234; font-weight: bold;">&amp;optional</span> arg)
+  <span style="color: #888a85;">"Delete the current line including newline, without modifying the kill-ring.</span>
+<span style="color: #888a85;">Prefix ARG is treated the same as `</span><span style="color: #8ae234;">kill-whole-line</span><span style="color: #888a85;">'."</span>
+  (interactive <span style="color: #ad7fa8; font-style: italic;">"p"</span>)
+  (<span style="color: #729fcf; font-weight: bold;">let</span> ((kill-ring kill-ring))
+    (kill-whole-line arg)))
+
+(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"C-k"</span>) 'kill-whole-line-ruthlessly)
+
 </pre>
 
 </div>
@@ -1021,7 +1077,7 @@ them.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-06-05T15:55+0100</p>
+<p class="date">Date: 2013-06-07T16:21+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

@@ -68,6 +68,7 @@
 (defun highlight-symbol-first ()
   "Jump to the first location of symbol at point."
   (interactive)
+  (push-mark)
   (eval
    `(progn
       (goto-char (point-min))
@@ -173,7 +174,6 @@
 ; habit :)
 
 (require 'ui-customisations)
-(require 'startup-customisations)
 
 (require 'file-customisations)
 (require 'editing-customisations)
@@ -214,6 +214,8 @@
 (require 'c-customisations)
 (require 'sh-customisations)
 (require 'coffee-customisations)
+
+(require 'startup-customisations)
 
 (require 'editd-customisations)
 
@@ -308,3 +310,12 @@ If a prefix argument is given, don't change the kill-ring."
     (kill-region beg end)))
 
 (global-set-key (kbd "C-w") 'kill-or-delete-region)
+
+(defun kill-whole-line-ruthlessly (&optional arg)
+  "Delete the current line including newline, without modifying the kill-ring.
+Prefix ARG is treated the same as `kill-whole-line'."
+  (interactive "p")
+  (let ((kill-ring kill-ring))
+    (kill-whole-line arg)))
+
+(global-set-key (kbd "C-k") 'kill-whole-line-ruthlessly)

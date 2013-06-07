@@ -577,4 +577,14 @@ them.
       (kill-region beg end)))
   
   (global-set-key (kbd "C-w") 'kill-or-delete-region)
+  
+  (defun kill-whole-line-ruthlessly (&optional arg)
+    "Delete the current line including newline, without modifying the kill-ring.
+  Prefix ARG is treated the same as `kill-whole-line'."
+    (interactive "p")
+    (let ((kill-ring kill-ring))
+      (kill-whole-line arg)))
+  
+  (global-set-key (kbd "C-k") 'kill-whole-line-ruthlessly)
+  
 #+END_SRC
