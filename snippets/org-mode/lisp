@@ -3,6 +3,6 @@
 # key: lisp
 # --
 #+BEGIN_SRC emacs-lisp :tangle yes
-  $0
+$0
 #+END_SRC
 
