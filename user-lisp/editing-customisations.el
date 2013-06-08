@@ -200,8 +200,6 @@ the symbol at point."
     (if (symbol-at-point)
         (symbol-name (symbol-at-point)))))
 
-(require 'and-let)
-
 ;; todo: investigate whether we're reinventing the wheel, since query-replace-history already exists
 (defvar query-replace/history nil)
 (defun query-replace-at-point (from-string to-string)
