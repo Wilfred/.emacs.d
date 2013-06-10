@@ -1,4 +1,6 @@
-; indent CSS with tabs
+(require 'css-mode)
+
+;; indent CSS with tabs
 (add-hook 'css-mode-hook
           (function
            (lambda ()
