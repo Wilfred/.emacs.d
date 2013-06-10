@@ -238,24 +238,22 @@ shortcomings.
 ** Killing
 
 Most of the time, I use `C-k' to delete lines that I don't want again,
-so I don't want them in the kill-ring.
-
-I also prefer to delete the trailing newline rather than having to
-press twice. Emacs provides the variable `kill-whole-line' and a
-function `kill-whole-line' for this.
+so I don't want them in the kill-ring. I also prefer to delete the
+trailing newline rather than having to press twice.
 
 I've written a function that meets both criteria, and use it with the
 default `kill-ring' keybinding.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (defun delete-whole-line (&optional arg)
-    "Delete the current line including newline, without modifying the kill-ring.
-  Prefix ARG is treated the same as `kill-whole-line'."
-    (interactive "p")
-    (let ((kill-ring kill-ring))
-      (kill-whole-line arg)))
+  (defun delete-line ()
+    "Delete the current line, without modifying the kill-ring.
+  If we are at the beginning of line, also delete the trailing newline."
+    (interactive)
+    (let ((kill-whole-line t)
+          (kill-ring kill-ring))
+      (kill-line)))
   
-  (global-set-key (kbd "C-k") 'delete-whole-line)
+  (global-set-key (kbd "C-k") 'delete-line)
 #+END_SRC
 
 Similarly, I sometimes want to simply delete a region, rather than
