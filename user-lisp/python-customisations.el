@@ -22,7 +22,6 @@
   (let* ((exact-position (split-string (which-function) (rx "."))) ; e.g. ("FooBar" "method")
          (class-name (first exact-position))
          (method-name (second exact-position))
-         args-list-start
          args-start
          args-end)
     ;; remove 'pass'
@@ -33,25 +32,19 @@
 
     (loop until (looking-at "(")
           do (forward-char))
-    (setq args-list-start (point))
-    
-    ;; move beyond `self,'
-    (loop until (looking-at ",")
-          do (forward-char))
-    ;; move to start of next argument regardless of whitespace
-    (forward-word)
-    (backward-word)
-    (setq args-start (point))
+    (setq args-start (1+ (point)))
 
-    ;; find the end of the argument list
-    (goto-char args-list-start)
     (forward-sexp)
     (setq args-end (1- (point)))
-
+    
     ;; reset point to where we started
     (goto-char start-pos)
 
-    (let ((args (buffer-substring args-start args-end)))
+    (let ((args (s-trim (buffer-substring args-start args-end))))
+      
+      ;; remove 'self'
+      (setq args (s-trim (s-chop-prefixes '("self," "self") args)))
+
       (insert (format "super(%s, self).%s(%s)" class-name method-name args)))
 
     ;; backward one char so the user can enter the argument for the superclass's function
