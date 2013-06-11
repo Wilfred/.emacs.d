@@ -1,4 +1,5 @@
 (require 's)
+(require 'vc-git)
 (require 'execute-commands)
 
 (defun get-latest-version (repo-path)
@@ -15,36 +16,23 @@
          (minor-version-number (string-to-number minor-version-part)))
     (format "%s.%s" major-version-parts (1+ minor-version-number))))
 
-(defun git-flow-release-start ()
+(defun git-flow-release (tag-message)
   "Use gitflow to mark a new release."
-  (interactive)
+  (interactive "sTag message: ")
   ;; todo: check we're in an Editd buffer
   (let* ((project-root (vc-git-root default-directory))
          (output-buffer (get-buffer-create (format "*New release %s*" project-root)))
          (next-version (get-next-version project-root))
-         (next-command (format "git flow release finish %s" next-version)))
+         (process-environment process-environment)) ;; temporary environment change
     (switch-to-buffer output-buffer)
     (setq default-directory project-root)
     (erase-buffer)
-    (execute-commands output-buffer (format "git flow release start %s" next-version))
 
-    ;; copy the finish command to the kill ring and clipboard to save typing
-    (message "Please run the command '%s' in your terminal.
-It has been copied to your clipboard for convenience." next-command)
-    (kill-new next-command)))
+    (setenv "GIT_MERGE_AUTOEDIT" "no")
 
-(defun git-flow-release-push ()
-  "After finishing a gitflow release, push it and move back to develop."
-  (interactive)
-  (let* ((project-root (vc-git-root default-directory))
-         (output-buffer (get-buffer-create (format "*New release %s*" project-root)))
-         (next-version (get-next-version project-root)))
-    (unless project-root
-       (error "Not in a git project"))
-    (switch-to-buffer output-buffer)
-    (setq default-directory project-root)
-    (erase-buffer)
     (execute-commands output-buffer
+                      (format "git flow release start %s" next-version)
+                      (format "git flow release finish %s -m \"%s\"" next-version tag-message)
                       "git push"
                       "git push --tags"
                       "git checkout develop")))
