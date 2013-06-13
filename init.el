@@ -90,15 +90,13 @@
     ad-do-it
     (backward-char)))
 
-(defun delete-line ()
-  "Delete the current line, without modifying the kill-ring.
-If we are at the beginning of line, also delete the trailing newline."
+(defun kill-line-newline ()
+  "Kill the line, and if we are at the beginning of line, also delete the trailing newline."
   (interactive)
-  (let ((kill-whole-line t)
-        (kill-ring kill-ring))
+  (let ((kill-whole-line t))
     (kill-line)))
 
-(global-set-key (kbd "C-k") 'delete-line)
+(global-set-key (kbd "C-k") 'kill-line-newline)
 
 (defun kill-or-delete-region (beg end prefix)
   "Delete the region, storing it in the kill-ring.
