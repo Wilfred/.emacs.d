@@ -32,7 +32,7 @@
 
     (execute-commands output-buffer
                       (format "git flow release start %s" next-version)
-                      (format "git flow release finish %s -m \"%s\"" next-version tag-message)
+                      (format "git flow release finish -m \"%s\" %s" tag-message next-version)
                       "git push"
                       "git push --tags"
                       "git checkout develop")))
