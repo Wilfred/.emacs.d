@@ -4,8 +4,8 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 January 2013
-;; Version: 20130509.1614
-;; X-Original-Version: 0.21
+;; Version: 20130613.1057
+;; X-Original-Version: 0.23
 
 ;;; Commentary:
 
@@ -91,6 +91,9 @@ This requires the ag command to support --color-match, which is only in v0.14+"
          ag-hit-face))
   (add-hook 'compilation-filter-hook 'ag-filter nil t))
 
+(define-key ag-mode-map (kbd "p") 'compilation-previous-error)
+(define-key ag-mode-map (kbd "n") 'compilation-next-error)
+
 (defun ag/s-join (separator strings)
   "Join all the strings in STRINGS with SEPARATOR in between."
   (mapconcat 'identity strings separator))
@@ -130,11 +133,13 @@ Otherwise, get the symbol at point."
 
 (autoload 'vc-git-root "vc-git")
 (autoload 'vc-svn-root "vc-svn")
+(autoload 'vc-hg-root "vc-hg")
 
 (defun ag/project-root (file-path)
   "Guess the project root of the given FILE-PATH."
   (or (vc-git-root file-path)
       (vc-svn-root file-path)
+      (vc-hg-root file-path)
       file-path))
 
 ;;;###autoload
@@ -175,7 +180,7 @@ for the given regexp."
   "Same as ``ag-regexp-project'', but with the search regexp defaulting
 to the symbol under point."
    (interactive (list (read-from-minibuffer "Search regexp: " (ag/dwim-at-point))))
-   
+
    (ag/search regexp (ag/project-root default-directory) t))
 
 ;; Taken from grep-filter, just changed the color regex.
