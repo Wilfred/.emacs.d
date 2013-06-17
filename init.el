@@ -79,24 +79,14 @@
 
 (global-set-key (kbd "M-P") 'highlight-symbol-first)
 
-(key-chord-mode 1)
-(key-chord-define-global "df" 'iy-go-to-char-backward)
-(key-chord-define-global "jk" 'iy-go-to-char)
+(require 'jump-char)
 
-(defadvice iy-go-to-char (around go-to-char-point-before activate)
-  "Go to the next character case sensitively, and put point before the character."
-  (let ((case-fold-search nil))
-    (forward-char)
-    ad-do-it
-    (backward-char)))
+(global-set-key [(meta m)] 'jump-char-forward)
+(global-set-key [(shift meta m)] 'jump-char-backward)
 
-(defun kill-line-newline ()
-  "Kill the line, and if we are at the beginning of line, also delete the trailing newline."
-  (interactive)
+(defadvice kill-line (around kill-line-remove-newline activate)
   (let ((kill-whole-line t))
-    (kill-line)))
-
-(global-set-key (kbd "C-k") 'kill-line-newline)
+    ad-do-it))
 
 (defun kill-or-delete-region (beg end prefix)
   "Delete the region, storing it in the kill-ring.

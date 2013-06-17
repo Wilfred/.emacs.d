@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-06-13T14:54+0100"/>
+<meta name="generated" content="2013-06-17T16:56+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -544,35 +544,20 @@ Vim has a handy command where you can type `f' to jump to the next
 occurrence of a character on a line.
 </p>
 <p>
-We can do this with `iy-go-to-char' without the constraint that the
+We can do this with `jump-char' without the constraint that the
 character must be on the current line. This command needs to be
-accessible with a short shortcut, so we use keychords. The keys may be
-typed in either order, (i.e. `df' and `fd' both work), so we've chosen
-letter combinations that occur rarely, and are easily typed.
+accessible with a short shortcut, so we use `M-m'. `M-m' is bound to
+`back-to-indentation' by default, but our `C-a' behaviour makes it
+redundant.
 </p>
 
 
 
-<pre class="src src-emacs-lisp">(key-chord-mode 1)
-(key-chord-define-global <span style="color: #ad7fa8; font-style: italic;">"df"</span> 'iy-go-to-char-backward)
-(key-chord-define-global <span style="color: #ad7fa8; font-style: italic;">"jk"</span> 'iy-go-to-char)
-</pre>
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">jump-char</span>)
 
+(global-set-key [(meta m)] 'jump-char-forward)
+(global-set-key [(shift meta m)] 'jump-char-backward)
 
-<p>
-Out of the box, `iy-go-to-char' is case-insensitive. It also puts
-point after the mark, which is less helpful. We fix those
-shortcomings.
-</p>
-
-
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defadvice</span> <span style="color: #edd400; font-weight: bold;">iy-go-to-char</span> (around go-to-char-point-before activate)
-  <span style="color: #888a85;">"Go to the next character case sensitively, and put point before the character."</span>
-  (<span style="color: #729fcf; font-weight: bold;">let</span> ((case-fold-search nil))
-    (forward-char)
-    ad-do-it
-    (backward-char)))
 </pre>
 
 
@@ -593,13 +578,9 @@ It's handy to also delete the trailing newline when using `C-k'.
 
 
 
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">kill-line-newline</span> ()
-  <span style="color: #888a85;">"Kill the line, and if we are at the beginning of line, also delete the trailing newline."</span>
-  (interactive)
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defadvice</span> <span style="color: #edd400; font-weight: bold;">kill-line</span> (around kill-line-remove-newline activate)
   (<span style="color: #729fcf; font-weight: bold;">let</span> ((kill-whole-line t))
-    (kill-line)))
-
-(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"C-k"</span>) 'kill-line-newline)
+    ad-do-it))
 </pre>
 
 
@@ -1103,7 +1084,7 @@ them.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-06-13T14:54+0100</p>
+<p class="date">Date: 2013-06-17T16:56+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
