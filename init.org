@@ -253,13 +253,9 @@ redundant.
 It's handy to also delete the trailing newline when using `C-k'.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (defun kill-line-newline ()
-    "Kill the line, and if we are at the beginning of line, also delete the trailing newline."
-    (interactive)
+  (defadvice kill-line (around kill-line-remove-newline activate)
     (let ((kill-whole-line t))
-      (kill-line)))
-  
-  (global-set-key (kbd "C-k") 'kill-line-newline)
+      ad-do-it))
 #+END_SRC
 
 I sometimes want to simply delete a region, rather than
