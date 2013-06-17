@@ -204,6 +204,30 @@ where a symbol was imported.
   (global-set-key (kbd "M-P") 'highlight-symbol-first)
 #+END_SRC
 
+*** By indentation
+
+`C-a' normally moves us to the beginning of the line
+unconditionally. This version is more useful, as it moves to the
+first non-whitespace character if we're already at the beginning of
+the line. Repeated use of `C-a' toggles between these two positions.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defun beginning-of-line-dwim ()
+    "Toggles between moving point to the first non-whitespace character, and
+  the start of the line."
+    (interactive)
+    (let ((start-position (point)))
+      ;; see if going to the beginning of the line changes our position
+      (move-beginning-of-line nil)
+  
+      (when (= (point) start-position)
+          ;; we're already at the beginning of the line, so go to the
+          ;; first non-whitespace character
+          (back-to-indentation))))
+  
+  (global-set-key (kbd "C-a") 'beginning-of-line-dwim)
+#+END_SRC
+    
 *** By Character
 
 Vim has a handy command where you can type `f' to jump to the next

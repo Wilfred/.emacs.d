@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-06-17T16:56+0100"/>
+<meta name="generated" content="2013-06-17T17:00+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -145,7 +145,8 @@ for the JavaScript code in this tag.
 <li><a href="#sec-3-5">3.5 Moving Around</a>
 <ul>
 <li><a href="#sec-3-5-1">3.5.1 By Symbol</a></li>
-<li><a href="#sec-3-5-2">3.5.2 By Character</a></li>
+<li><a href="#sec-3-5-2">3.5.2 By indentation</a></li>
+<li><a href="#sec-3-5-3">3.5.3 By Character</a></li>
 </ul>
 </li>
 <li><a href="#sec-3-6">3.6 Killing</a></li>
@@ -535,8 +536,43 @@ where a symbol was imported.
 </div>
 
 <div id="outline-container-3-5-2" class="outline-4">
-<h4 id="sec-3-5-2"><span class="section-number-4">3.5.2</span> By Character</h4>
+<h4 id="sec-3-5-2"><span class="section-number-4">3.5.2</span> By indentation</h4>
 <div class="outline-text-4" id="text-3-5-2">
+
+
+<p>
+`C-a' normally moves us to the beginning of the line
+unconditionally. This version is more useful, as it moves to the
+first non-whitespace character if we're already at the beginning of
+the line. Repeated use of `C-a' toggles between these two positions.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">beginning-of-line-dwim</span> ()
+  <span style="color: #888a85;">"Toggles between moving point to the first non-whitespace character, and</span>
+<span style="color: #888a85;">the start of the line."</span>
+  (interactive)
+  (<span style="color: #729fcf; font-weight: bold;">let</span> ((start-position (point)))
+    <span style="color: #888a85;">;; </span><span style="color: #888a85;">see if going to the beginning of the line changes our position</span>
+    (move-beginning-of-line nil)
+
+    (<span style="color: #729fcf; font-weight: bold;">when</span> (= (point) start-position)
+        <span style="color: #888a85;">;; </span><span style="color: #888a85;">we're already at the beginning of the line, so go to the</span>
+        <span style="color: #888a85;">;; </span><span style="color: #888a85;">first non-whitespace character</span>
+        (back-to-indentation))))
+
+(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"C-a"</span>) 'beginning-of-line-dwim)
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-5-3" class="outline-4">
+<h4 id="sec-3-5-3"><span class="section-number-4">3.5.3</span> By Character</h4>
+<div class="outline-text-4" id="text-3-5-3">
 
 
 <p>
@@ -1084,7 +1120,7 @@ them.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-06-17T16:56+0100</p>
+<p class="date">Date: 2013-06-17T17:00+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
