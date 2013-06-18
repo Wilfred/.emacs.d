@@ -5,7 +5,7 @@
 ;; Author: Steve Purcell <steve@sanityinc.com>
 ;; URL: https://github.com/purcell/less-css-mode
 ;; Keywords: less css mode
-;; Version: 20130322.1259
+;; Version: 20130610.1645
 ;; X-Original-Version: DEV
 ;;
 ;; This program is free software; you can redistribute it and/or
@@ -25,13 +25,17 @@
 ;; to .css files at the time they are saved: use
 ;; `less-css-compile-at-save' to enable the latter.
 ;;
-;; Command line utility "lessc" is required if enabling flymake or
-;; setting `less-css-compile-at-save' to t.  To install "lessc" using
-;; the Node.js package manager, run "npm install less"
+;; Command line utility "lessc" is required if setting
+;; `less-css-compile-at-save' to t.  To install "lessc" using the
+;; Node.js package manager, run "npm install less"
 ;;
 ;; Also make sure the "lessc" executable is in emacs' PATH, example:
 ;; (setq exec-path (cons (expand-file-name "~/.gem/ruby/1.8/bin") exec-path))
 ;; or customize `less-css-lessc-command' to point to your "lessc" executable.
+;;
+;; We target lessc >= 1.4.0, and thus use the `--no-color' flag by
+;; default.  You may want to adjust `less-css-lessc-options' for
+;; compatibility with older versions.
 ;;
 ;; `less-css-mode' is derived from `css-mode', and indentation of
 ;; nested blocks may not work correctly with versions of `css-mode'
@@ -44,10 +48,8 @@
 ;; // -*- less-css-compile-at-save: t; less-css-output-directory: "../css" -*-
 ;;
 ;; If you don't need CSS output but would like to be warned of any
-;; syntax errors in your .less source, enable `flymake-mode': support
-;; is provided for .less files, but note that the less compiler is a
-;; little slow, so there can be a delay of several seconds between
-;; editing and receiving feedback on any error.
+;; syntax errors in your .less source, consider using `flymake-less':
+;; https://github.com/purcell/flymake-less
 ;;
 ;;; Credits
 ;;
@@ -59,7 +61,6 @@
 
 (require 'derived)
 (require 'compile)
-(require 'flymake)
 
 ;; There are at least three css-mode.el implementations, but we need
 ;; the right one in order to work as expected, not the versions by
@@ -85,7 +86,7 @@
   :type 'boolean
   :group 'less-css)
 
-(defcustom less-css-lessc-options '()
+(defcustom less-css-lessc-options '("--no-color")
   "Command line options for less executable.
 
 Use \"-x\" to minify output."
@@ -112,7 +113,7 @@ default.")
 (make-variable-buffer-local 'less-css-output-file-name)
 
 (defconst less-css-default-error-regex
-  "\e\\[31m\\(.*\\)\e\\[39m\e\\[31m in \e\\[39m\\([^ \r\n\t\e]+\\)\e\\[90m:\\([0-9]+\\):\\([0-9]+\\)")
+  "^\\(?:\e\\[31m\\)?\\([^\e\n]*\\|FileError:.*\n\\)\\(?:\e\\[39m\e\\[31m\\)? in \\(?:\e\\[39m\\)?\\([^ \r\n\t\e]+\\)\\(?:\e\\[90m\\)?\\(?::\\| on line \\)\\([0-9]+\\)\\(?::\\|, column \\)\\([0-9]+\\):?\\(?:\e\\[39m\\)?")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -196,25 +197,6 @@ Special commands:
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.less" . less-css-mode))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Wiring for `flymake-mode'
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;###autoload
-(defun flymake-less-css-init ()
-  "Flymake support for LESS files"
-  (let* ((temp-file   (flymake-init-create-temp-buffer-copy
-                       'flymake-create-temp-inplace))
-         (local-file  (file-relative-name
-                       temp-file
-                       (file-name-directory buffer-file-name))))
-    (list less-css-lessc-command (append less-css-lessc-options (list local-file)))))
-
-(push '(".+\\.less$" flymake-less-css-init) flymake-allowed-file-name-masks)
-
-(push (list less-css-default-error-regex 2 3 4 1) flymake-err-line-patterns)
 
 
 (provide 'less-css-mode)
