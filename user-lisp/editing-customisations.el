@@ -138,6 +138,8 @@ are interchanged."
 ;; bind it to the usual transpose-word key combination
 (global-set-key (kbd "M-t") 'transpose-symbols)
 
+;; based on my-increment-number-decimal from http://www.emacswiki.org/emacs/IncrementNumber
+;; unlike that version, we only change the number if point is on a number
 (defun increment-number-decimal (&optional arg)
   "Increment the number forward from point by ARG."
   (interactive "p*")
@@ -146,7 +148,7 @@ are interchanged."
       (let (inc-by field-width answer)
         (setq inc-by (if arg arg 1))
         (skip-chars-backward "0123456789")
-        (when (re-search-forward "[0-9]+" nil t)
+        (when (looking-at "[0-9]+")
           (setq field-width (- (match-end 0) (match-beginning 0)))
           (setq answer (+ (string-to-number (match-string 0) 10) inc-by))
           (when (< answer 0)
