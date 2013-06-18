@@ -16,6 +16,10 @@
          (minor-version-number (string-to-number minor-version-part)))
     (format "%s.%s" major-version-parts (1+ minor-version-number))))
 
+;; ideally, we'd let bind this in `git-flow-release'. This doesn't work
+;; because `execute-commands' is asynchronous
+(setenv "GIT_MERGE_AUTOEDIT" "no")
+
 (defun git-flow-release (tag-message)
   "Use gitflow to mark a new release."
   (interactive "sTag message: ")
@@ -27,8 +31,6 @@
     (switch-to-buffer output-buffer)
     (setq default-directory project-root)
     (erase-buffer)
-
-    (setenv "GIT_MERGE_AUTOEDIT" "no")
 
     (execute-commands output-buffer
                       (format "git flow release start %s" next-version)
