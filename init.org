@@ -25,12 +25,6 @@ I use pyflakes, which is available on PyPI. You can install it with:
   sudo pip install pyflakes
 #+END_SRC
 
-I also use Jedi, which has some dependencies you can install with:
-
-#+BEGIN_SRC sh
-  pip install -r elpa/jedi*/requirements.txt
-#+END_SRC
-
 ** JavaScript
 
 I use JSHint, which requires you to have node.js installed. To
@@ -422,19 +416,6 @@ isn't very smart. Autopair works nicely.
   (require 'python)
   (setq autopair-autowrap t)
   (add-hook 'python-mode-hook 'autopair-mode)
-#+END_SRC
-
-Python is too dynamic for a perfect autocomplete, but Jedi is an
-excellent static analysis tool that gets us close. It gives us
-autocompletion and a pop-up showing docstrings and arguments for
-functions it knows about.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (setq jedi:setup-keys t)
-  (require 'jedi)
-  (setq jedi:server-command
-        (list "python2" jedi:server-script))
-  (add-hook 'python-mode-hook 'jedi:setup)
 #+END_SRC
 
 We use pyflakes with flymake to check for coding errors.

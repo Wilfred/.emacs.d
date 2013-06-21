@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-06-17T17:00+0100"/>
+<meta name="generated" content="2013-06-21T15:32+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -224,16 +224,6 @@ I use pyflakes, which is available on PyPI. You can install it with:
 
 
 <pre class="src src-sh">sudo pip install pyflakes
-</pre>
-
-
-<p>
-I also use Jedi, which has some dependencies you can install with:
-</p>
-
-
-
-<pre class="src src-sh">pip install -r elpa/jedi*/requirements.txt
 </pre>
 
 
@@ -887,23 +877,6 @@ isn't very smart. Autopair works nicely.
 
 
 <p>
-Python is too dynamic for a perfect autocomplete, but Jedi is an
-excellent static analysis tool that gets us close. It gives us
-autocompletion and a pop-up showing docstrings and arguments for
-functions it knows about.
-</p>
-
-
-
-<pre class="src src-emacs-lisp">(setq jedi:setup-keys t)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">jedi</span>)
-(setq jedi:server-command
-      (list <span style="color: #ad7fa8; font-style: italic;">"python2"</span> jedi:server-script))
-(add-hook 'python-mode-hook 'jedi:setup)
-</pre>
-
-
-<p>
 We use pyflakes with flymake to check for coding errors.
 </p>
 
@@ -1112,6 +1085,32 @@ them.
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">(message "Spent %.2f seconds executing .emacs.d/init.el."</span>
 <span style="color: #888a85;">;;          </span><span style="color: #888a85;">(time-difference *emacs-load-start* (current-time)))</span>
 (put 'narrow-to-region 'disabled nil)
+
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">http://emacsredux.com/blog/2013/03/26/smarter-open-line/  </span>
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">smart-open-line</span> ()
+  <span style="color: #888a85;">"Insert an empty line after the current line.</span>
+<span style="color: #888a85;">Position the cursor at its beginning, according to the current mode."</span>
+  (interactive)
+  (move-end-of-line nil)
+  (newline-and-indent))
+
+(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"M-o"</span>) 'smart-open-line)
+
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">smart-open-line-above</span> ()
+  <span style="color: #888a85;">"Insert an empty line above the current line.</span>
+<span style="color: #888a85;">Position the cursor at it's beginning, according to the current mode."</span>
+  (interactive)
+  (move-beginning-of-line nil)
+  (newline-and-indent)
+  (forward-line -1)
+  (indent-according-to-mode))
+
+(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"M-O"</span>) 'smart-open-line-above)
+
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">indent-buffer</span> ()
+  <span style="color: #888a85;">"Indent the everything in the current buffer."</span>
+  (interactive)
+  (indent-region (point-min) (point-max)))
 </pre>
 
 </div>
@@ -1120,7 +1119,7 @@ them.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-06-17T17:00+0100</p>
+<p class="date">Date: 2013-06-21T15:32+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

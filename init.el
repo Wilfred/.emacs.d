@@ -176,12 +176,6 @@ If a prefix argument is given, don't change the kill-ring."
 (setq autopair-autowrap t)
 (add-hook 'python-mode-hook 'autopair-mode)
 
-(setq jedi:setup-keys t)
-(require 'jedi)
-(setq jedi:server-command
-      (list "python2" jedi:server-script))
-(add-hook 'python-mode-hook 'jedi:setup)
-
 (require 'flymake-python-pyflakes)
 (setq flymake-python-pyflakes-executable "pyflakes")
 (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
@@ -323,3 +317,29 @@ If a prefix argument is given, don't change the kill-ring."
 ;; (message "Spent %.2f seconds executing .emacs.d/init.el."
 ;;          (time-difference *emacs-load-start* (current-time)))
 (put 'narrow-to-region 'disabled nil)
+
+;; http://emacsredux.com/blog/2013/03/26/smarter-open-line/  
+(defun smart-open-line ()
+  "Insert an empty line after the current line.
+Position the cursor at its beginning, according to the current mode."
+  (interactive)
+  (move-end-of-line nil)
+  (newline-and-indent))
+
+(global-set-key (kbd "M-o") 'smart-open-line)
+
+(defun smart-open-line-above ()
+  "Insert an empty line above the current line.
+Position the cursor at it's beginning, according to the current mode."
+  (interactive)
+  (move-beginning-of-line nil)
+  (newline-and-indent)
+  (forward-line -1)
+  (indent-according-to-mode))
+
+(global-set-key (kbd "M-O") 'smart-open-line-above)
+
+(defun indent-buffer ()
+  "Indent the everything in the current buffer."
+  (interactive)
+  (indent-region (point-min) (point-max)))
