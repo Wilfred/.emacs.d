@@ -629,4 +629,8 @@ them.
   
   (global-set-key (kbd "M-O") 'smart-open-line-above)
   
+  (defun indent-buffer ()
+    "Indent the everything in the current buffer."
+    (interactive)
+    (indent-region (point-min) (point-max)))
 #+END_SRC
