@@ -1,12 +1,12 @@
 ;;; csv-mode.el --- Major mode for editing comma/char separated values  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2003, 2004, 2012  Free Software Foundation, Inc
+;; Copyright (C) 2003, 2004, 2012, 2013  Free Software Foundation, Inc
 
 ;; Author: Francis J. Wright <F.J.Wright at qmul.ac.uk>
 ;; Time-stamp: <23 August 2004>
 ;; URL: http://centaur.maths.qmul.ac.uk/Emacs/
-;; Version: 20121022.1758
-;; X-Original-Version: 1.1
+;; Version: 20130424.1528
+;; X-Original-Version: 1.2
 ;; Keywords: convenience
 
 ;; This package is free software; you can redistribute it and/or modify
@@ -845,21 +845,18 @@ and END specify the region to process."
 	(csv-kill-one-column (car fields)))))
   (setq csv-killed-fields (nreverse csv-killed-fields)))
 
-(defmacro csv-kill-one-field (field killed-fields)
+(defun csv-kill-one-field (field)
   "Kill field with index FIELD in current line.
-Save killed field by `push'ing onto KILLED-FIELDS.
-Assumes point is at beginning of line.
-Called by `csv-kill-one-column' and `csv-kill-many-columns'."
-  `(progn
-     ;; Move to start of field to kill:
-     (csv-sort-skip-fields ,field)
-     ;; Kill to end of field (cf. `kill-region'):
-     (push (delete-and-extract-region
-	    (point)
-	    (progn (csv-end-of-field) (point)))
-	   ,killed-fields)
-     (if (eolp) (delete-char -1)    ; delete trailing separator at eol
-       (delete-char 1))))	    ; or following separator otherwise
+Return killed text.  Assumes point is at beginning of line."
+  ;; Move to start of field to kill:
+  (csv-sort-skip-fields field)
+  ;; Kill to end of field (cf. `kill-region'):
+  (prog1 (delete-and-extract-region
+          (point)
+          (progn (csv-end-of-field) (point)))
+    (if (eolp)
+        (unless (bolp) (delete-char -1)) ; Delete trailing separator at eol
+      (delete-char 1))))                 ; or following separator otherwise.
 
 (defun csv-kill-one-column (field)
   "Kill field with index FIELD in all lines in (narrowed) buffer.
@@ -868,7 +865,7 @@ Assumes point is at `point-min'.  Called by `csv-kill-fields'.
 Ignore blank and comment lines."
   (while (not (eobp))
     (or (csv-not-looking-at-record)
-	(csv-kill-one-field field csv-killed-fields))
+	(push (csv-kill-one-field field) csv-killed-fields))
     (forward-line)))
 
 (defun csv-kill-many-columns (fields)
@@ -913,7 +910,7 @@ Ignore blank and comment lines."
 	    (setq field (car fields)
 		  fields (cdr fields))
 	    (beginning-of-line)
-	    (csv-kill-one-field field killed-fields))
+	    (push (csv-kill-one-field field) killed-fields))
 	  (push (mapconcat 'identity killed-fields (car csv-separators))
 		csv-killed-fields)))
     (forward-line)))

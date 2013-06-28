@@ -3,8 +3,8 @@
 ;;; Code:
 
 
-;;;### (autoloads (csv-mode) "csv-mode" "csv-mode.el" (20836 3431
-;;;;;;  723597 131000))
+;;;### (autoloads (csv-mode) "csv-mode" "csv-mode.el" (20876 65510
+;;;;;;  468010 85000))
 ;;; Generated autoloads from csv-mode.el
 
 (autoload 'csv-mode "csv-mode" "\
@@ -49,8 +49,8 @@ CSV mode provides the following specific keyboard key bindings:
 
 ;;;***
 
-;;;### (autoloads nil nil ("csv-mode-pkg.el") (20836 3431 822219
-;;;;;;  624000))
+;;;### (autoloads nil nil ("csv-mode-pkg.el") (20876 65510 614945
+;;;;;;  900000))
 
 ;;;***
 
