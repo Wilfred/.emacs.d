@@ -388,7 +388,7 @@ that line in the minibuffer.
   (add-hook 'post-command-hook 'flymake-error-at-point)
 #+END_SRC
 
-I prefer my error underlined.
+I prefer my errors underlined.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (custom-set-faces
