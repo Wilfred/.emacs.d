@@ -361,6 +361,15 @@ store all our backups in `~/.saves`.
      version-control t)       ; use versioned backups
 #+END_SRC
 
+However, Emacs isn't aggressive enough with backups. We use
+backup-each-save to ensure we have a copy of state of every file we've
+modified.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'backup-each-save)
+  (add-hook 'after-save-hook 'backup-each-save)
+#+END_SRC
+
 ** Flymake
 
 (Note that there's language-specific flymake configuration too.)

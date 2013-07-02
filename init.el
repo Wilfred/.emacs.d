@@ -152,6 +152,9 @@ If a prefix argument is given, don't change the kill-ring."
    kept-old-versions 2
    version-control t)       ; use versioned backups
 
+(require 'backup-each-save)
+(add-hook 'after-save-hook 'backup-each-save)
+
 (require 'flymake)
 (global-set-key (kbd "<f8>") 'flymake-goto-prev-error)
 (global-set-key (kbd "<f9>") 'flymake-goto-next-error)
