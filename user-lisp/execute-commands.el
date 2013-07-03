@@ -35,16 +35,20 @@
 (defun execute-commands (buffer &rest commands)
   "Execute a list of shell commands sequentially"
   (with-current-buffer buffer
+    (setq buffer-read-only t)
     (set (make-local-variable 'commands-list) commands)
     (start-next-command)))
 
 (defun start-next-command ()
   "Run the first command in the list"
   (if (null commands-list)
-      (insert "\nDone.")
+      ;; todo: factor out this as a function, and make it insert at the end regardless of point
+      (let (buffer-read-only)
+        (insert "\nDone."))
     (let ((command  (car commands-list)))
       (setq commands-list (cdr commands-list))
-      (insert (format ">>> %s\n" command))
+      (let (buffer-read-only)
+        (insert (format ">>> %s\n" command)))
       (let ((process (start-process-shell-command command (current-buffer) command)))
         (set-process-sentinel process 'sentinel)))))
 
