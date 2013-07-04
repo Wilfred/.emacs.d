@@ -30,7 +30,8 @@
          (process-environment process-environment)) ;; temporary environment change
     (switch-to-buffer output-buffer)
     (setq default-directory project-root)
-    (erase-buffer)
+    (let (buffer-read-only)
+      (erase-buffer))
 
     (execute-commands output-buffer
                       (format "git flow release start %s" next-version)
