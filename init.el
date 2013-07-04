@@ -188,6 +188,8 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'less-css-mode)
 (add-hook 'less-css-mode-hook 'flymake-mode)
 
+(setq gc-cons-threshold (* 10 1024 1024))
+
 ; always close the minibuffer on C-x o:
 ; <jlf> wilfredh: you could before-advise other-window to quit first
 ; if the minibuffer is active.. but it would be better to break that

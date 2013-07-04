@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-07-02T17:17+0100"/>
+<meta name="generated" content="2013-07-04T15:44+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -162,7 +162,8 @@ for the JavaScript code in this tag.
 <li><a href="#sec-3-10">3.10 Python</a></li>
 <li><a href="#sec-3-11">3.11 Less (CSS)</a></li>
 <li><a href="#sec-3-12">3.12 Org-mode</a></li>
-<li><a href="#sec-3-13">3.13 Undocumented</a></li>
+<li><a href="#sec-3-13">3.13 Performance</a></li>
+<li><a href="#sec-3-14">3.14 Undocumented</a></li>
 </ul>
 </li>
 </ul>
@@ -789,8 +790,6 @@ modified.
 </pre>
 
 
-
-
 </div>
 </div>
 
@@ -955,14 +954,35 @@ them.
 </pre>
 
 
-
 </div>
 
 </div>
 
 <div id="outline-container-3-13" class="outline-3">
-<h3 id="sec-3-13"><span class="section-number-3">3.13</span> Undocumented</h3>
+<h3 id="sec-3-13"><span class="section-number-3">3.13</span> Performance</h3>
 <div class="outline-text-3" id="text-3-13">
+
+
+<p>
+Emacs will run garbage collection after `gc-cons-threshold' bytes of
+consing. The default value is 800,000 bytes, or ~ 0.7 MiB. By
+increasing to 10 MiB we reduce the number of pauses due to garbage collection.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(setq gc-cons-threshold (* 10 1024 1024))
+</pre>
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-14" class="outline-3">
+<h3 id="sec-3-14"><span class="section-number-3">3.14</span> Undocumented</h3>
+<div class="outline-text-3" id="text-3-14">
 
 
 
@@ -1134,7 +1154,7 @@ them.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-07-02T17:17+0100</p>
+<p class="date">Date: 2013-07-04T15:44+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
