@@ -20,6 +20,10 @@
 ;; because `execute-commands' is asynchronous
 (setenv "GIT_MERGE_AUTOEDIT" "no")
 
+(defun git-flow-shell-quote (string)
+  "Wrap STRING in single quotes, and quote existing single quotes to make shell safe."
+  (concat "'" (s-replace "'" "'\\''" string) "'"))
+
 (defun git-flow-release (tag-message)
   "Use gitflow to mark a new release."
   (interactive "sTag message: ")
@@ -35,7 +39,7 @@
 
     (execute-commands output-buffer
                       (format "git flow release start %s" next-version)
-                      (format "git flow release finish -m \"%s\" %s" tag-message next-version)
+                      (format "git flow release finish -m %s %s" (git-flow-shell-quote tag-message) next-version)
                       "git push"
                       "git push --tags"
                       "git checkout develop")))
