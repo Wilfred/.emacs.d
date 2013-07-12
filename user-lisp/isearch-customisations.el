@@ -9,8 +9,6 @@
 ;; no delay before highlighting
 (setq highlight-symbol-idle-delay 0)
 
-(eval-after-load "isearch" '(require 'isearch+))
-
 ;; http://www.emacswiki.org/emacs/ZapToISearch , via Steve Purcell
 (defun zap-to-isearch (rbeg rend)
   "Kill the region between the mark and the closest portion of
