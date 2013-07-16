@@ -370,6 +370,23 @@ modified.
   (add-hook 'after-save-hook 'backup-each-save)
 #+END_SRC
 
+*** Scratch Files
+
+It's often useful to create a throwaway file to write a minimal
+testcase for some language or library feature.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defun start-scratch-file (file-name)
+    "Create a file in ~/scratch for the given file name."
+    (interactive "sName of scratch file: ")
+    (let ((path (expand-file-name (format "~/scratch/%s" file-name))))
+      ;; create directories as necessary
+      (when (s-contains-p "/" file-name)
+        (make-directory (file-name-directory path) t))
+      (find-file path)))
+#+END_SRC
+
+
 ** Flymake
 
 (Note that there's language-specific flymake configuration too.)
@@ -488,15 +505,6 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
   
   (if (eq system-type 'darwin)
       (require 'os-x-fixes))
-  
-  (defun start-scratch-file (file-name)
-    "Create a file in ~/scratch for the given file name."
-    (interactive "sName of scratch file: ")
-    (let ((path (expand-file-name (format "~/scratch/%s" file-name))))
-      ;; create directories as necessary
-      (when (s-contains-p "/" file-name)
-        (make-directory (file-name-directory path) t))
-      (find-file path)))
   
   ; TODO: increase kill ring size
   

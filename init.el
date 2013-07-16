@@ -155,6 +155,15 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'backup-each-save)
 (add-hook 'after-save-hook 'backup-each-save)
 
+(defun start-scratch-file (file-name)
+  "Create a file in ~/scratch for the given file name."
+  (interactive "sName of scratch file: ")
+  (let ((path (expand-file-name (format "~/scratch/%s" file-name))))
+    ;; create directories as necessary
+    (when (s-contains-p "/" file-name)
+      (make-directory (file-name-directory path) t))
+    (find-file path)))
+
 (require 'flymake)
 (global-set-key (kbd "<f8>") 'flymake-goto-prev-error)
 (global-set-key (kbd "<f9>") 'flymake-goto-next-error)
@@ -203,15 +212,6 @@ If a prefix argument is given, don't change the kill-ring."
 
 (if (eq system-type 'darwin)
     (require 'os-x-fixes))
-
-(defun start-scratch-file (file-name)
-  "Create a file in ~/scratch for the given file name."
-  (interactive "sName of scratch file: ")
-  (let ((path (expand-file-name (format "~/scratch/%s" file-name))))
-    ;; create directories as necessary
-    (when (s-contains-p "/" file-name)
-      (make-directory (file-name-directory path) t))
-    (find-file path)))
 
 ; TODO: increase kill ring size
 
