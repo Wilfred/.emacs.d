@@ -164,6 +164,24 @@ If a prefix argument is given, don't change the kill-ring."
       (make-directory (file-name-directory path) t))
     (find-file path)))
 
+(defun start-scratch-html-file (file-name)
+  "Create a test HTML file in ~/scratch to play around with."
+  (interactive "sName of scratch HTML file: ")
+  (start-scratch-file file-name)
+  (erase-buffer)
+  (insert "<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+        </title>
+    </head>
+    <body>
+        
+    </body>
+</html>")
+  (forward-line -2)
+  (move-end-of-line nil))
+
 (require 'flymake)
 (global-set-key (kbd "<f8>") 'flymake-goto-prev-error)
 (global-set-key (kbd "<f9>") 'flymake-goto-next-error)

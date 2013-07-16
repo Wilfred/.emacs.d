@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-07-16T11:45+0100"/>
+<meta name="generated" content="2013-07-16T11:53+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -818,6 +818,33 @@ testcase for some language or library feature.
 </pre>
 
 
+<p>
+It's also useful to quickly generate a minimal HTML page to play with.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">start-scratch-html-file</span> (file-name)
+  <span style="color: #888a85;">"Create a test HTML file in ~/scratch to play around with."</span>
+  (interactive <span style="color: #ad7fa8; font-style: italic;">"sName of scratch HTML file: "</span>)
+  (start-scratch-file file-name)
+  (erase-buffer)
+  (insert <span style="color: #ad7fa8; font-style: italic;">"&lt;!DOCTYPE html&gt;</span>
+<span style="color: #ad7fa8; font-style: italic;">&lt;html&gt;</span>
+<span style="color: #ad7fa8; font-style: italic;">    &lt;head&gt;</span>
+<span style="color: #ad7fa8; font-style: italic;">        &lt;title&gt;</span>
+<span style="color: #ad7fa8; font-style: italic;">        &lt;/title&gt;</span>
+<span style="color: #ad7fa8; font-style: italic;">    &lt;/head&gt;</span>
+<span style="color: #ad7fa8; font-style: italic;">    &lt;body&gt;</span>
+
+<span style="color: #ad7fa8; font-style: italic;">    &lt;/body&gt;</span>
+<span style="color: #ad7fa8; font-style: italic;">&lt;/html&gt;"</span>)
+  (forward-line -2)
+  (move-end-of-line nil))
+</pre>
+
+
+
 
 </div>
 </div>
@@ -1174,7 +1201,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-07-16T11:45+0100</p>
+<p class="date">Date: 2013-07-16T11:53+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
