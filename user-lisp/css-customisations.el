@@ -8,9 +8,6 @@
                (setq css-indent-offset 4)
                (setq indent-tabs-mode nil)))))
 
-;; automatically close brackets and quotes
-(add-hook 'css-mode-hook 'electric-pair-mode)
-
 ; highlight colours as themselves
 (defvar hexcolour-keywords
   '(("#[abcdef[:digit:]]\\{6\\}"
