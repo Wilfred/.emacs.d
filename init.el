@@ -99,6 +99,26 @@ the start of the line."
 (global-set-key [(meta m)] 'jump-char-forward)
 (global-set-key [(shift meta m)] 'jump-char-backward)
 
+(defun smart-open-line ()
+  "Insert an empty line after the current line.
+Position the cursor at its beginning, according to the current mode."
+  (interactive)
+  (move-end-of-line nil)
+  (newline-and-indent))
+
+(global-set-key (kbd "M-o") 'smart-open-line)
+
+(defun smart-open-line-above ()
+  "Insert an empty line above the current line.
+Position the cursor at it's beginning, according to the current mode."
+  (interactive)
+  (move-beginning-of-line nil)
+  (newline-and-indent)
+  (forward-line -1)
+  (indent-according-to-mode))
+
+(global-set-key (kbd "M-O") 'smart-open-line-above)
+
 (defadvice kill-line (around kill-line-remove-newline activate)
   (let ((kill-whole-line t))
     ad-do-it))
@@ -340,27 +360,6 @@ If a prefix argument is given, don't change the kill-ring."
 ;; (message "Spent %.2f seconds executing .emacs.d/init.el."
 ;;          (time-difference *emacs-load-start* (current-time)))
 (put 'narrow-to-region 'disabled nil)
-
-;; http://emacsredux.com/blog/2013/03/26/smarter-open-line/  
-(defun smart-open-line ()
-  "Insert an empty line after the current line.
-Position the cursor at its beginning, according to the current mode."
-  (interactive)
-  (move-end-of-line nil)
-  (newline-and-indent))
-
-(global-set-key (kbd "M-o") 'smart-open-line)
-
-(defun smart-open-line-above ()
-  "Insert an empty line above the current line.
-Position the cursor at it's beginning, according to the current mode."
-  (interactive)
-  (move-beginning-of-line nil)
-  (newline-and-indent)
-  (forward-line -1)
-  (indent-according-to-mode))
-
-(global-set-key (kbd "M-O") 'smart-open-line-above)
 
 (defun indent-buffer ()
   "Indent the everything in the current buffer."
