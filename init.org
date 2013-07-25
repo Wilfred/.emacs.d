@@ -167,6 +167,23 @@ I like the tangotango theme, which depends on color-theme. In Emacs
   (column-number-mode 1)
 #+END_SRC
 
+*** Recursive Editing
+
+We can make the minibuffer much more useful by enabling recursive
+usage. This means that when the minibuffer is active we can still call
+commands that require the minibuffer.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq enable-recursive-minibuffers t)
+#+END_SRC
+    
+It's easy to lose track of whether we're in a recursive minibuffer or
+not. We display the recursion level in the minibuffer to avoid confusion.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (minibuffer-depth-indicate-mode 1)
+#+END_SRC
+
 ** Moving Around
 
 *** By Symbol

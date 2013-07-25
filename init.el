@@ -62,6 +62,10 @@
 ;; show x-position (ie column number) for point in buffer
 (column-number-mode 1)
 
+(setq enable-recursive-minibuffers t)
+
+(minibuffer-depth-indicate-mode 1)
+
 (global-set-key (kbd "M-n") 'highlight-symbol-next)
 (global-set-key (kbd "M-p") 'highlight-symbol-prev)
 
