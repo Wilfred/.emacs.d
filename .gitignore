@@ -3,6 +3,7 @@
 *.elc
 image-dired
 tramp
+bookmarks
 session.*
 url/cookies
 ac-comphist.dat
