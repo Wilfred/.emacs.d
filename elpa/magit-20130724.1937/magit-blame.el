@@ -1,12 +1,12 @@
 ;;; magit-blame.el --- blame support for Magit
 
-;; Copyright (C) 2012  Rüdiger Sonderfeld
-;; Copyright (C) 2012  Yann Hodique
-;; Copyright (C) 2011  byplayer
-;; Copyright (C) 2010  Alexander Prusov
-;; Copyright (C) 2009  Tim Moore
 ;; Copyright (C) 2008  Linh Dang
 ;; Copyright (C) 2008  Marius Vollmer
+;; Copyright (C) 2009  Tim Moore
+;; Copyright (C) 2010  Alexander Prusov
+;; Copyright (C) 2011  byplayer
+;; Copyright (C) 2012  Rüdiger Sonderfeld
+;; Copyright (C) 2012  Yann Hodique
 
 ;; Author: Yann Hodique <yann.hodique@gmail.com>
 
@@ -84,8 +84,7 @@
     "---"
     ["Quit" magit-blame-mode t]))
 
-(defvar magit-blame-buffer-read-only)
-(make-variable-buffer-local 'magit-blame-buffer-read-only)
+(defvar-local magit-blame-buffer-read-only nil)
 
 ;;;###autoload
 (define-minor-mode magit-blame-mode

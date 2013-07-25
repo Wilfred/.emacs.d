@@ -1,4 +1,4 @@
-This is /home/melpa/melpa/working/magit-20130621.140/magit.info,
+This is /home/melpa/melpa/working/magit-20130724.1937/magit.info,
 produced by makeinfo version 4.13 from
 /home/melpa/melpa/working/magit/magit.texi.
 
@@ -53,6 +53,7 @@ compatibility are still welcome.
 * Rewriting::
 * Pushing and Pulling::
 * Bisecting::
+* Finding commits not merged upstream::
 * Submodules::
 * Using Magit Extensions::
 * Using Git Directly::
@@ -895,7 +896,7 @@ branch, Magit shows them in a section called _Unpulled changes_.  Typing
 `F F' will fetch and merge them into the current branch.
 
 
-File: magit.info,  Node: Submodules,  Next: Using Magit Extensions,  Prev: Bisecting,  Up: Top
+File: magit.info,  Node: Submodules,  Next: Using Magit Extensions,  Prev: Finding commits not merged upstream,  Up: Top
 
 21 Submodules
 *************
@@ -914,7 +915,7 @@ File: magit.info,  Node: Submodules,  Next: Using Magit Extensions,  Prev: Bisec
      value specified in .gitmodules.
 
 
-File: magit.info,  Node: Bisecting,  Next: Submodules,  Prev: Pushing and Pulling,  Up: Top
+File: magit.info,  Node: Bisecting,  Next: Finding commits not merged upstream,  Prev: Pushing and Pulling,  Up: Top
 
 22 Bisecting
 ************
@@ -944,9 +945,35 @@ their state.
 r'.
 
 
+File: magit.info,  Node: Finding commits not merged upstream,  Next: Submodules,  Prev: Bisecting,  Up: Top
+
+23 Finding commits not merged upstream
+**************************************
+
+One of the comforts of git is that it can tell you which commits have
+been merged upstream but not locally and vice versa.  Git's sub-command
+for this is `cherry' (not to be confused with `cherry-pick').  Magit
+has support for this by invoking `magit-cherry' which is bound to `y'
+by default.
+
+   Magit will then ask you first for the upstream revision (which
+defaults to the currently tracked remote branch if any) and the head
+revision (which defaults to the current branch) to use in the
+comparison.  You will then see a new buffer in which all commits are
+listed with a directional marker, their revision and the commit
+message's first line.  The directional marker is either `+' indicating
+a commit that's present in upstream but not in head or `-' which
+indicates a commit present in head but not in upstream.
+
+   From this list you can use the usual key bindings for cherry-picking
+individual commits (`a' for cherry-picking without committing and `A'
+for the same plus the automatic commit).  The buffer is refreshed
+automatically after each cherry-pick.
+
+
 File: magit.info,  Node: Using Magit Extensions,  Next: Using Git Directly,  Prev: Submodules,  Up: Top
 
-23 Magit Extensions
+24 Magit Extensions
 *******************
 
 * Menu:
@@ -960,7 +987,7 @@ File: magit.info,  Node: Using Magit Extensions,  Next: Using Git Directly,  Pre
 
 File: magit.info,  Node: Activating extensions,  Next: Interfacing with Subversion,  Up: Using Magit Extensions
 
-23.1 Activating extensions
+24.1 Activating extensions
 ==========================
 
 Magit comes with a couple of shipped extensions that allow interaction
@@ -998,7 +1025,7 @@ line in the `config' file.
 
 File: magit.info,  Node: Interfacing with Subversion,  Next: Interfacing with Topgit,  Prev: Activating extensions,  Up: Using Magit Extensions
 
-23.2 Interfacing with Subversion
+24.2 Interfacing with Subversion
 ================================
 
 Typing `N r' runs `git svn rebase', typing `N c' runs `git svn dcommit'
@@ -1012,7 +1039,7 @@ the user will also be prompted for a branch to search in.
 
 File: magit.info,  Node: Interfacing with Topgit,  Next: Interfacing with StGit,  Prev: Interfacing with Subversion,  Up: Using Magit Extensions
 
-23.3 Interfacing with Topgit
+24.3 Interfacing with Topgit
 ============================
 
 Topgit (http://repo.or.cz/r/topgit.git) is a patch queue manager that
@@ -1036,7 +1063,7 @@ in case of conflicts.
 
 File: magit.info,  Node: Interfacing with StGit,  Next: Developing Extensions,  Prev: Interfacing with Topgit,  Up: Using Magit Extensions
 
-23.4 Interfacing with StGit
+24.4 Interfacing with StGit
 ===========================
 
 StGit (http://www.procode.org/stgit) is a Python application providing
@@ -1059,7 +1086,7 @@ commands let you perform the respective StGit operations.
 
 File: magit.info,  Node: Developing Extensions,  Prev: Interfacing with StGit,  Up: Using Magit Extensions
 
-23.5 Developing Extensions
+24.5 Developing Extensions
 ==========================
 
 Magit provides a generic mechanism to allow cooperation with Git-related
@@ -1156,7 +1183,7 @@ interactively, so that the relevant sections can be shown or hidden.
 
 File: magit.info,  Node: Using Git Directly,  Next: Customization,  Prev: Using Magit Extensions,  Up: Top
 
-24 Using Git Directly
+25 Using Git Directly
 *********************
 
 For situations when Magit doesn't do everything you need, you can run
@@ -1167,7 +1194,7 @@ it, and refresh the status buffer.  The output can be viewed by typing
 
 File: magit.info,  Node: Customization,  Next: Frequently Asked Questions,  Prev: Using Git Directly,  Up: Top
 
-25 Customization
+26 Customization
 ****************
 
 The following variables can be used to adapt Magit to your workflow:
@@ -1303,7 +1330,7 @@ The following variables can be used to adapt Magit to your workflow:
 
 File: magit.info,  Node: Frequently Asked Questions,  Next: GNU Free Documentation License,  Prev: Customization,  Up: Top
 
-26 Frequently Asked Questions
+27 Frequently Asked Questions
 *****************************
 
 * Menu:
@@ -1315,7 +1342,7 @@ File: magit.info,  Node: Frequently Asked Questions,  Next: GNU Free Documentati
 
 File: magit.info,  Node: FAQ - Changes,  Next: FAQ 1 - Troubleshooting,  Up: Frequently Asked Questions
 
-26.1 Changes
+27.1 Changes
 ============
 
    * v1.1: Changed the way extensions work.  Previously, they were
@@ -1327,7 +1354,7 @@ File: magit.info,  Node: FAQ - Changes,  Next: FAQ 1 - Troubleshooting,  Up: Fre
 
 File: magit.info,  Node: FAQ 1 - Troubleshooting,  Next: FAQ 2 - Display issues,  Prev: FAQ - Changes,  Up: Frequently Asked Questions
 
-26.2 Troubleshooting
+27.2 Troubleshooting
 ====================
 
 * Menu:
@@ -1337,7 +1364,7 @@ File: magit.info,  Node: FAQ 1 - Troubleshooting,  Next: FAQ 2 - Display issues,
 
 File: magit.info,  Node: FAQ 1-1,  Up: FAQ 1 - Troubleshooting
 
-26.2.1 Question 1.1
+27.2.1 Question 1.1
 -------------------
 
 How do I get raw error messages from git?
@@ -1351,7 +1378,7 @@ buffer.  There, the entire trace for the latest operation is available.
 
 File: magit.info,  Node: FAQ 2 - Display issues,  Prev: FAQ 1 - Troubleshooting,  Up: Frequently Asked Questions
 
-26.3 Display issues
+27.3 Display issues
 ===================
 
 * Menu:
@@ -1361,7 +1388,7 @@ File: magit.info,  Node: FAQ 2 - Display issues,  Prev: FAQ 1 - Troubleshooting,
 
 File: magit.info,  Node: FAQ 2-1,  Up: FAQ 2 - Display issues
 
-26.3.1 Question 2.1
+27.3.1 Question 2.1
 -------------------
 
 How do I fix international characters display?
@@ -1817,48 +1844,49 @@ permit their use in free software.
 
 
 Tag Table:
-Node: Top802
-Node: Introduction1778
-Node: Acknowledgments3250
-Node: Sections3930
-Node: Status6480
-Node: Untracked files9219
-Node: Staging and Committing10424
-Node: History14540
-Node: Reflogs17722
-Node: Commit Buffer18126
-Node: Diffing19452
-Node: Tagging20439
-Node: Resetting20889
-Node: Stashing22413
-Node: Branches and Remotes23484
-Node: Branches Popup24305
-Node: Remotes Popup25567
-Node: Branches in the Branch Manager25918
-Node: Remotes in the Branch Manager27090
-Node: Wazzup27651
-Node: Merging28444
-Node: Rebasing29494
-Node: Interactive Rebasing30320
-Node: Rewriting31615
-Node: Pushing and Pulling34640
-Node: Submodules36569
-Node: Bisecting36989
-Node: Using Magit Extensions38208
-Node: Activating extensions38505
-Node: Interfacing with Subversion39890
-Node: Interfacing with Topgit40490
-Node: Interfacing with StGit41521
-Node: Developing Extensions42520
-Node: Using Git Directly46301
-Node: Customization46672
-Node: Frequently Asked Questions51250
-Node: FAQ - Changes51520
-Node: FAQ 1 - Troubleshooting51931
-Node: FAQ 1-152179
-Node: FAQ 2 - Display issues52484
-Node: FAQ 2-152713
-Node: GNU Free Documentation License53338
+Node: Top803
+Node: Introduction1819
+Node: Acknowledgments3291
+Node: Sections3971
+Node: Status6521
+Node: Untracked files9260
+Node: Staging and Committing10465
+Node: History14581
+Node: Reflogs17763
+Node: Commit Buffer18167
+Node: Diffing19493
+Node: Tagging20480
+Node: Resetting20930
+Node: Stashing22454
+Node: Branches and Remotes23525
+Node: Branches Popup24346
+Node: Remotes Popup25608
+Node: Branches in the Branch Manager25959
+Node: Remotes in the Branch Manager27131
+Node: Wazzup27692
+Node: Merging28485
+Node: Rebasing29535
+Node: Interactive Rebasing30361
+Node: Rewriting31656
+Node: Pushing and Pulling34681
+Node: Submodules36610
+Node: Bisecting37056
+Node: Finding commits not merged upstream38300
+Node: Using Magit Extensions39554
+Node: Activating extensions39851
+Node: Interfacing with Subversion41236
+Node: Interfacing with Topgit41836
+Node: Interfacing with StGit42867
+Node: Developing Extensions43866
+Node: Using Git Directly47647
+Node: Customization48018
+Node: Frequently Asked Questions52596
+Node: FAQ - Changes52866
+Node: FAQ 1 - Troubleshooting53277
+Node: FAQ 1-153525
+Node: FAQ 2 - Display issues53830
+Node: FAQ 2-154059
+Node: GNU Free Documentation License54684
 
 End Tag Table
 

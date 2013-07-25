@@ -1,6 +1,8 @@
 ;;; magit-stgit.el --- StGit plug-in for Magit
 
-;; Copyright (C) 2011  Lluis Vilanova
+;; Copyright (C) 2011  Lluís Vilanova
+
+;; Author: Lluís Vilanova <vilanova@ac.upc.edu>
 
 ;; Magit is free software; you can redistribute it and/or modify it
 ;; under the terms of the GNU General Public License as published by
@@ -76,9 +78,8 @@
 
 ;;; Common code:
 
-(defvar magit-stgit--enabled nil
+(defvar-local magit-stgit--enabled nil
   "Whether this buffer has StGit support.")
-(make-variable-buffer-local 'magit-stgit--enabled)
 
 (defvar magit-stgit-mode)
 
@@ -100,9 +101,8 @@
   "Reset the StGit enabled state."
   (kill-local-variable 'magit-stgit--enabled))
 
-(defvar magit-stgit--marked-patch nil
+(defvar-local magit-stgit--marked-patch nil
   "The (per-buffer) currently marked patch in an StGit series.")
-(make-variable-buffer-local 'magit-stgit--marked-patch)
 
 ;;; Menu:
 
