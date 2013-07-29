@@ -1,4 +1,4 @@
-This is /home/melpa/melpa/working/flycheck-20130605.2151/flycheck.info,
+This is /home/melpa/melpa/working/flycheck-20130728.1724/flycheck.info,
 produced by makeinfo version 4.13 from
 /home/melpa/melpa/working/flycheck/doc/flycheck.texi.
 
@@ -113,11 +113,15 @@ File: flycheck.info,  Node: Features,  Next: Installation,  Prev: Introduction, 
 
         * Haml
 
+        * Haskell (using `ghc', `hdevtools' and `hlint')
+
         * HTML (using `tidy')
 
         * Javascript (using `jshint')
 
         * JSON (using `jsonlint')
+
+        * LESS (using `lessc')
 
         * Lua
 
@@ -386,7 +390,7 @@ By default Flycheck automatically selects a suitable syntax checker from
      buffer.  A syntax checker is suitable, if
         * it may be used for the current major mode,
 
-        * it's predicate matches,
+        * its predicate matches,
 
         * and if the syntax checking tool exists.
 
@@ -452,6 +456,28 @@ File: flycheck.info,  Node: Configuration,  Next: Reporting,  Prev: Selection,  
 Some syntax checkers can be configured via options.  The following
 options are provided by Flycheck (use `C-h v' or `M-x
 describe-variable' on the variable name for detailed help):
+
+ -- User Option: flycheck-emacs-lisp-initialize-packages
+     Whether to initialize packages (see `package-initialize') before
+     invoking the byte compiler in the `emacs-lisp' syntax checker.
+
+     When `nil', never initialize packages.  When `auto', initialize
+     packages only when checking files from the user's Emacs
+     configuration in `user-emacs-directory'.  For any other non-nil
+     value, always initialize packages.
+
+ -- User Option: flycheck-emacs-lisp-load-path
+     The `load-path' to use while checking with `emacs-lisp'.
+
+     The directory of the file being checked is always added to
+     `load-path', regardless of the value of this variable.
+
+     Note that changing this variable can lead to wrong results of the
+     syntax check, e.g. if an unexpected version of a required library
+     is used.
+
+ -- User Option: flycheck-emacs-lisp-package-user-dir
+     The package directory for the `emacs-lisp' syntax checker.
 
  -- User Option: flycheck-flake8-maximum-complexity
      The maximum McCabe complexity the `python-flake8' syntax checker
@@ -623,10 +649,41 @@ Flycheck:
 `M-x flycheck-list-errors'
      List all errors in the current buffer in a separate buffer.
 
-   To view an error message, either hover the mouse of the highlighted
-error, or move the point to the highlighted error and wait for a short
-moment to see the error message in the echo area.  You can also copy the
-error message into kill ring, or google it straight from Emacs:
+     With prefix arg, list only errors at point.
+
+   If you hover a highlighted error with the mouse, a tooltip with the
+top-most error message will be shown.
+
+   Flycheck also displays errors under point, via
+`flycheck-display-errors-function':
+
+ -- User Option: flycheck-display-errors-function
+     A function to display errors under point.
+
+     If set to a function, call the function with a list of all errors
+     to show.  If set to nil, to not display errors at all.
+
+     The default function is `flycheck-display-error-messages'.
+
+   The following display functions are available:
+`flycheck-display-error-messages'
+     Show error messages separated by empty lines in the echo area.  If
+     the error messages are too long for the echo area, show the error
+     messages in a popup buffer instead.
+
+     See `display-message-or-buffer' for details on when popup buffers
+     are used.
+
+`flycheck-display-errors-in-list'
+     Show errors in the error list from `flycheck-list-errors' or `C-c
+     ! l'.
+
+     Note that this function does not actually show the error list
+     itself, but only adds the errors at point to it.  You need to open
+     the error list manually with `C-c ! l' first.
+
+   You can also work with the error messages at point, and copy them
+into the kill ring or search them on Google:
 
 `C-c ! C-w'
 `M-x flycheck-copy-messages-as-kill'
@@ -737,46 +794,46 @@ File: flycheck.info,  Node: Extending,  Next: API,  Prev: Usage,  Up: Top
 3 Extending
 ***********
 
-Flycheck is extensible with new syntax checkers.  This chapter explains
-how to do so, and provides examples for common use cases.
+This chapter explains how to add new syntax checkers to Flycheck, and
+provides examples for common use cases.
 
-   If you implement new syntax checkers, please consider contributing
-these.  *Note Contributing syntax checkers::, for more information.
+   If you define a new syntax checker, _please_ contribute it to
+Flycheck to make it available to other users, too.  *Note Contributing
+syntax checkers::, for more information.
 
 * Menu:
 
-* Declaration::         How to declare syntax checkers
+* Definition::          How to define syntax checkers
 * Error parsers::       Built-in error parsers
 * Option filters::      Built-in option filters
-* Examples::            Examples on how to declare syntax checkers
+* Examples::            Examples on how to define syntax checkers
 
 
-File: flycheck.info,  Node: Declaration,  Next: Error parsers,  Prev: Extending,  Up: Extending
+File: flycheck.info,  Node: Definition,  Next: Error parsers,  Prev: Extending,  Up: Extending
 
-3.1 Declaration of syntax checkers
-==================================
+3.1 Definition of syntax checkers
+=================================
 
-Checkers are declared with `flycheck-declare-checker':
+You define new syntax checkers with `flycheck-define-checker':
 
- -- Macro: flycheck-declare-checker symbol docstring &rest properties
-     Declare SYMBOL as new syntax checker with PROPERTIES.
+ -- Macro: flycheck-define-checker symbol docstring &rest properties
+     Define SYMBOL as new syntax checker with DOCSTRING and PROPERTIES.
 
-     DOCSTRING provides documentation for the syntax checker.
+     DOCSTRING provides documentation for the syntax checker.  Use `C-c
+     ! ?' or `M-x flycheck-describe-checker' to view the documentation
+     of a syntax checker.
 
-     The PROPERTIES specify the new syntax checker:
+     The following PROPERTIES constitute a syntax checker:
 
-    `:command '(EXECUTABLE ARGUMENTS...)'
-          A list providing the command to execute.  The command
-          consists of an EXECUTABLE specified as string in the `car',
-          and the ARGUMENTS for this executable in the `cdr'.  *Note
-          List elements: (elisp)List elements, for more information
-          about the elements of a list.
+    `:command (COMMAND ARG ...)'
+          An unquoted list describing the syntax checker command to
+          execute.
 
-          The EXECUTABLE is checked for existence with
-          `executable-find' before executing the syntax checker.
+          COMMAND is checked for existence with `executable-find'
+          before executing a syntax checker.
 
-          In ARGUMENTS, various special symbols are substituted before
-          executing the syntax checker:
+          In COMMAND and ARG, the following special symbols and sexps
+          are substituted before executing the syntax checker:
 
          `source'
                This symbol is substituted with the file to check.  This
@@ -788,10 +845,10 @@ Checkers are declared with `flycheck-declare-checker':
                file will be the same as in the buffer's file name, to
                support languages which enforce specific rules on the
                file name (e.g. the file must be named after the
-               containing class).
+               containing feature, class, etc.).
 
                If the buffer to check has no file name, the name of the
-               temporary file will be random.
+               temporary file is random.
 
                This symbol is the preferred way to pass the input file
                to your syntax checker.
@@ -818,13 +875,14 @@ Checkers are declared with `flycheck-declare-checker':
 
                It should never be used as primary input to the syntax
                checker, unless both `source' and `source-original' are
-               totally not applicable.  In this case, be sure to add a
-               predicate to your syntax checker that inhibits the
+               absolutely not applicable.  In this case, be sure to add
+               a predicate to your syntax checker that inhibits the
                syntax check, if the buffer has no file name, or was
                modified, for otherwise the syntax check will fail or
                return out-dated errors:
 
-                    :predicate (and (buffer-file-name) (not (buffer-modified-p)))
+                    :predicate (lambda () (and (buffer-file-name)
+                                               (not (buffer-modified-p)))
 
          `temporary-directory'
                This symbol is substituted with the path of an existing
@@ -881,6 +939,16 @@ Checkers are declared with `flycheck-declare-checker':
                An OPTION ending with a `=' character is treated like in
                a `config-file' cell.
 
+         `(option-list OPTION VARIABLE [FILTER])'
+               This cell is similar to `option', but for option lists.
+
+               The value of VARIABLE must be a list, and OPTION is
+               prepend to each non-nil item in the list.  FILTER is an
+               optional function to be applied to each item in the list
+               before substitution.  Items for which the filter returns
+               nil are dropped.  *Note Option filters::, for a list of
+               built-in option filters.
+
          `(eval FORM)'
                This cell is substituted with a result of evaluating
                FORM.  FORM must either return a string or a list of
@@ -890,124 +958,127 @@ Checkers are declared with `flycheck-declare-checker':
                performed, neither in FORM before it is evaluated, nor
                in the result of evaluating FORM.
 
+          Note that substitution is not recursive.  No symbols or cells
+          are substituted within the body of cells!
+
           This property is mandatory.
 
-    `:error-parser 'PARSER'
-          An error parser to use for parsing the output of the syntax
-          checker.
+    `:error-patterns ((LEVEL SEXP) ...)'
+          An unquoted list of one or more error patterns to parse the
+          output of the syntax checker `:command'.
 
-          The PARSER is a function symbol.  *Note Error parsers::, for
-          more information about error parsers, including a list of
-          built-in error parsers.
+          LEVEL is either `warning' or `error' and denotes the severity
+          of errors matched by the pattern.
 
-          Using a error parser is preferred if a syntax checker
-          provides a structured output format like XML or JSON.  If
-          possible, re-use one of the built-in error parsers listed in
-          *note Error parsers::.
+          The LEVEL is followed by one or more `rx' SEXP elements.  See
+          the docstring of the function `rx' for more information.  In
+          addition to the standard forms of `rx', Flycheck supports the
+          following additional forms to make specific parts of the
+          error output available to Flycheck:
 
-          An error parser takes precedence over `:error-patterns'.  To
-          use an error parser together with patterns, you must manually
-          call `flycheck-parse-output-with-patterns' in your error
-          parser to parse with error patterns first.  You can the
-          post-process the errors returned by this function.
+         `line'
+               Matches the line number the error refers to, as a
+               sequence of one or more digits.
 
-    `:error-patterns '((REGEXP LEVEL)...)'
-          A list of one or more error patterns to parse the output of
-          `:command'.
+         `column'
+               Matches a column number the error refers to, as a
+               sequence of one or more digits.
 
-          The REGEXP is a regular expression matching a single error or
-          warning.  The LEVEL is either `error' or `warning' and
-          classifies the severity of the matched error message.
+         `(file-name SEXP ...)'
+               Matches the file name the error refers to.  SEXP matches
+               the name of the file.  If no SEXP is given, use a
+               default body of `(minimal-match (one-or-more
+               not-newline))', which is equivalent to `".+?"'.
 
-          Do not use error patterns if you can use an error parser.
+         `(message SEXP ...)'
+               Matches the error message to be shown to the user.  SEXP
+               matches the text of the message.  If no SEXP is given,
+               use a default body of `(one-or-more not-newline)', which
+               is equivalent to `".+"'.
 
-          The REGEXP may provide the following match groups:
-
-         _Group 1_
-               The file name.
-
-         _Group 2_
-               The line number.
-
-         _Group 3_
-               The column number.
-
-         _Group 4_
-               The error text.
-
-          Each of these groups is optional, however error messages
-          without line numbers will be ignored.  Use explicitly
-          numbered groups to make sure that the group numbering is
-          correct.  *Note Regexp Backslash: (elisp)Regexp Backslash,
-          for more information about regular expression groups.
+          Each of these items is optional, however error messages
+          without a `line' will be ignored and are not shown in the
+          buffer.
 
           The patterns are applied in the order of declaration to the
           whole output of the syntax checker.  Output already matched
           by a pattern will not be matched by subsequent patterns.  In
           other words, the first pattern wins.
 
-    `:modes 'MAJOR-MODE'
-    `:modes '(MAJOR-MODE...)'
-          A single MAJOR-MODE, or a list thereof.
+    `:error-parser FUNCTION'
+    `:error-parser (lambda (ouptut checker buffer) BODY ...)'
+          A function to parse the output of the syntax checker, either
+          as unquoted function symbol or `lambda' form.
 
-          MAJOR-MODE is a symbol referring to a major mode.  If given
-          the syntax checker will only be used in buffers with any of
-          the given major modes.
+          The function must accept three arguments OUTPUT, CHECKER and
+          BUFFER, where OUTPUT is the output of the syntax checker as
+          string, CHECKER the syntax checker that was used, and
+          `buffer' a buffer object representing the checker buffer.
 
-    `:predicate FORM'
-          A predicate that determines whether the syntax checker may be
-          used.
+          The function must return a list of `flycheck-error' objects
+          parsed from OUTPUT.  *Note Error API::, for information about
+          `flycheck-error'.  *Note Error parsers::, for a list of
+          built-in error parsers.
 
-          FORM is a quoted Emacs Lisp form.  The FORM is wrapped into a
-          function and compiled during byte compiled.  This function is
-          called before each syntax check to determine whether the
-          syntax checker may be used for the current buffer.  If FORM
-          returns nil, the syntax checker is not used.
+          If this property is given, it takes precedence over
+          `:error-patterns'.  To use an error parser together with
+          patterns, you must manually call
+          `flycheck-parse-output-with-patterns' in your error parser to
+          apply the error patterns.  You can then manipulate the
+          `flycheck-error' objects returned by this function.
 
-          If :MODES is given, FORM is only called if the major mode
-          matches.  Otherwise the syntax checker is not used.
+    `:modes MODE'
+    `:modes (MODE...)'
+          An unquoted major mode symbol or an unquoted list thereof.
 
-    `:next-checker '(ITEM...)'
-          A list of syntax checker to run after this syntax checker.
+          If given, this syntax checker is only used, if the major mode
+          of the buffer to check is equal (as in `eq') to any given
+          MODE.
 
-          Each ITEM is either a single syntax checker symbol, or a cons
-          cell `(PREDICATE . CHECKER)'.  Each ITEM is tried on the
-          order of declaration.
+    `:predicate FUNCTION'
+    `:error-parser (lambda () BODY ...)'
+          A function to determines whether to use this syntax checker
+          in the current buffer, either as unquoted function symbol or
+          as `lambda' form.  The syntax checker is only used if this
+          function returns non-nil when called in the buffer to check.
 
-          If the ITEM is a syntax checker symbol, determine whether it
-          is usable and registered (i.e. contained in
-          `flycheck-checkers').  If so start a new syntax check with
-          that syntax checker, and merged its results with the results
-          of this syntax checker.  If not, try the next ITEM.
+          If :MODES is given, the function is only called in matching
+          major modes.  That means, if both `:modes' and `:predicate'
+          are given, both must match for this syntax checker to be used.
 
-          If ITEM is a cons cell, PREDICATE specifies whether to run
-          the CHECKER depending on the results of this syntax checker:
+    `:next-checker (ITEM ...)'
+          An unquoted list defining the syntax checker to run after
+          this checker.
+
+          Each ITEM is either a syntax checker symbol or a cons cell
+          `(PREDICATE . CHECKER)'.  In the former case, the syntax
+          checker is always considered.  In the later case, CHECKER is
+          only considered if the PREDICATE matches.
+
+          PREDICATE is either `no-errors' or `warnings-only':
 
          `no-errors'
-               The CHECKER is only used if this syntax checker resulted
-               in no errors at all.
+               The syntax CHECKER is only considered if this syntax
+               checker reported no errors at all.
 
          `warnings-only'
-               The CHECKER is only used if this syntax checker did not
-               result in error messages of severity `error'.
+               The syntax CHECKER is only considered if this syntax
+               checker only reported warnings, but no errors.
 
-          If the predicate matches, and CHECKER is usable and
-          registered, start a new syntax checker with CHECKER and
-          merged its results with the results of this syntax checker.
-          If not, try the next ITEM.
+     `:command' is mandatory.  A syntax checker must also have at least
+     one of `:modes' and `:predicate', and at least one of
+     `:error-patterns' or `:error-parser' are present, an error is
+     signaled.  If `:predicate' and `:modes' are given, both must match
+     for the syntax checker to be used.  `:next-checkers' is entirely
+     optional.
 
-          If there is no further ITEM, finish the syntax check.
+     If any property has an invalid value, a (compile-time) error is
+     signaled.
 
-     At least on of `:modes' and `:predicate' must be present.  If both
-     are present, both must match for the syntax checker to be used.
-
-     Either `:error-patterns' or `:error-parser' must be present.  If
-     both are present, an error is signaled.
-
-   A syntax checker declared with `flycheck-declare-checker' is already
+   A syntax checker define with `flycheck-define-checker' is already
 suitable for manual checker selection with `flycheck-select-checker'.
-For automatic selection the syntax checker must be registered by adding
-it to `flycheck-checkers'.  *Note Selection::.
+To make the syntax checker available for automatic selection, add it to
+`flycheck-checkers'.  *Note Selection::.
 
  -- Macro: flycheck-def-config-file-var SYMBOL CHECKER &optional
           FILENAME
@@ -1042,13 +1113,14 @@ it to `flycheck-checkers'.  *Note Selection::.
      syntax checker.
 
 
-File: flycheck.info,  Node: Error parsers,  Next: Option filters,  Prev: Declaration,  Up: Extending
+File: flycheck.info,  Node: Error parsers,  Next: Option filters,  Prev: Definition,  Up: Extending
 
 3.2 Error parsers
 =================
 
 Syntax checkers may use more sophisticated error parsing by using the
-`:error-parser' property.  *Note Declaration::.
+`:error-parser' property.  *Note Definition::, for information about
+syntax checker definition.
 
    Flycheck provides the following error parsers for use by syntax
 checkers:
@@ -1099,7 +1171,7 @@ File: flycheck.info,  Node: Examples,  Prev: Option filters,  Up: Extending
 
 * Menu:
 
-* Simple example::              How to declare basic syntax checkers
+* Simple example::              How to define a basic syntax checker
 * Predicate example::           How to control syntax checker usage
 * Configuration example::       How to configure syntax checkers
 * Chaining example::            How to execute more than one syntax checker
@@ -1111,18 +1183,18 @@ File: flycheck.info,  Node: Simple example,  Next: Predicate example,  Prev: Exa
 ---------------------------
 
 As explained in the previous chapter *note Extending:: a syntax checker
-is declared with `flycheck-declare-checker'.
+is declared with `flycheck-define-checker'.
 
-   We will use this function to declare a syntax checker using the
+   We will use this function to define a syntax checker using the PHP
 CodeSniffer utility for the PHP programming language:
 
-     (flycheck-declare-checker php-phpcs
+     (flycheck-define-checker php-phpcs
        "A PHP syntax checker using PHP_CodeSniffer.
 
      See URL `http://pear.php.net/package/PHP_CodeSniffer/'."
-       :command '("phpcs" "--report=checkstyle" source)
-       :error-parser 'flycheck-parse-checkstyle
-       :modes 'php-mode)
+       :command ("phpcs" "--report=checkstyle" source)
+       :error-parser flycheck-parse-checkstyle
+       :modes php-mode)
 
    First we specify the `:command' to execute.  The first element of
 the command list is the name of the executable, `phpcs' in our case.
@@ -1147,16 +1219,20 @@ format, we have to parse the error messages from the textual output.  To
 do so, we can use _error patterns_, like in the Pylint syntax checker
 for the Python programming language:
 
-     (flycheck-declare-checker python-pylint
-       "A Python syntax and style checker using the pylint utility.
+     (flycheck-define-checker python-pylint
+       "A Python syntax and style checker using Pylint.
 
      See URL `http://pypi.python.org/pypi/pylint'."
-       :command '("epylint" source-inplace)
+       :command ("epylint" source-inplace)
        :error-patterns
-       '(("^\\(?1:.*\\):\\(?2:[0-9]+\\): Warning (W.*): \\(?4:.*\\)$" warning)
-         ("^\\(?1:.*\\):\\(?2:[0-9]+\\): Error (E.*): \\(?4:.*\\)$" error)
-         ("^\\(?1:.*\\):\\(?2:[0-9]+\\): \\[F\\] \\(?4:.*\\)$" error))
-       :modes 'python-mode)
+       ((warning line-start (file-name) ":" line
+                 ": Warning (W" (zero-or-more not-newline) "): "
+                 (message) line-end)
+        (error line-start (file-name) ":" line
+               ": Error (E" (zero-or-more not-newline) "): "
+               (message) line-end)
+        (error line-start (file-name) ":" line ": [F] " (message) line-end))
+       :modes python-mode)
 
    Again, there is a `:command', however we use the `source-inplace'
 symbol this time.  This symbol causes the temporary file to be created
@@ -1164,7 +1240,7 @@ in the same directory as the original file, making information from the
 source code tree available to the syntax checker.  In case of Pylint,
 these are the Python packages from the source code tree.
 
-   Next we give the list of _error patterns_ to parse errors.  These
+   Next we give the list of `:error-patterns' to parse errors.  These
 patterns extract the error location and the error message from the
 output of `epylint'.  An error pattern is a list containing a regular
 expression with match groups to extract the error information, and an
@@ -1184,14 +1260,15 @@ Emacs provides a single mode only for shell scripting in various Shell
 languages.  A syntax checker for a specific shell must check whether the
 edited shell script is written for the right shell:
 
-     (flycheck-declare-checker zsh
-       "A Zsh syntax checker using the zsh executable.
+     (flycheck-define-checker zsh
+       "A Zsh syntax checker using the Zsh shell.
 
      See URL `http://www.zsh.org/'."
-       :command '("zsh" "-n" "-d" "-f" source)
-       :error-patterns '(("^\\(?1:.*\\):\\(?2:[0-9]+\\): \\(?4:.*\\)$" error))
-       :modes 'sh-mode
-       :predicate '(eq sh-shell 'zsh))
+       :command ("zsh" "-n" "-d" "-f" source)
+       :error-patterns
+       ((error line-start (file-name) ":" line ": " (message) line-end))
+       :modes sh-mode
+       :predicate (lambda () (eq sh-shell 'zsh)))
 
    This syntax checker for the Zsh shell is enabled in `sh-mode' as
 specified by `:modes', however it specifies an additional `:predicate'
@@ -1204,18 +1281,25 @@ For instance, there is no special JSON mode, but syntax checking JSON is
 still desirable.  Hence a JSON syntax checker may use the `:predicate'
 to check the file extension:
 
-     (flycheck-declare-checker json-jsonlint
+     (flycheck-define-checker json-jsonlint
        "A JSON syntax and style checker using jsonlint.
 
      See URL `https://github.com/zaach/jsonlint'."
-       :command '("jsonlint" "-c" "-q" source)
+       :command ("jsonlint" "-c" "-q" source)
        :error-patterns
-       '(("^\\(?1:.+\\)\: line \\(?2:[0-9]+\\), col \\(?3:[0-9]+\\), \\(?4:.+\\)$"
-          error))
-       :predicate '(and buffer-file-name
-                        (string= "json" (file-name-extension buffer-file-name)))))
+       ((error line-start
+               (file-name)
+               ": line " line
+               ", col " column ", "
+               (message) line-end))
+       :predicate
+       (lambda ()
+         (or
+          (eq major-mode 'json-mode)
+          (and buffer-file-name
+               (string= "json" (file-name-extension buffer-file-name))))))
 
-   This syntax checker is now used whenever a file ends with .json,
+   This syntax checker is now used whenever a file ends with `.json',
 regardless of the major mode.
 
 
@@ -1230,16 +1314,16 @@ configuration files:
 
      (flycheck-def-config-file-var flycheck-jshintrc javascript-jshint ".jshintrc")
 
-     (flycheck-declare-checker javascript-jshint
+     (flycheck-define-checker javascript-jshint
        "A JavaScript syntax and style checker using jshint.
 
      See URL `http://www.jshint.com'."
-       :command '("jshint" "--checkstyle-reporter"
-                  (config-file "--config" flycheck-jshintrc) source)
-       :error-parser 'flycheck-parse-checkstyle
-       :modes '(js-mode js2-mode js3-mode))
+       :command ("jshint" "--checkstyle-reporter"
+                 (config-file "--config" flycheck-jshintrc) source)
+       :error-parser flycheck-parse-checkstyle
+       :modes (js-mode js2-mode js3-mode))
 
-   As you can see, we declare a syntax checker for Javascript, using the
+   As you can see, we define a syntax checker for Javascript, using the
 `jshint' utility.  This utility accepts a configuration file via the
 `--config' option.
 
@@ -1295,17 +1379,17 @@ CodeSniffer.
 `:next-checkers'.  The standard PHP syntax checker uses this to run PHP
 CodeSniffer if there are no syntax errors:
 
-     (flycheck-declare-checker php
-       "A PHP syntax checker using the PHP command line.
+     (flycheck-define-checker php
+       "A PHP syntax checker using the PHP command line interpreter.
 
      See URL `http://php.net/manual/en/features.commandline.php'."
-       :command '("php" "-l" "-d" "error_reporting=E_ALL" "-d" "display_errors=1"
-                  "-d" "log_errors=0" source)
+       :command ("php" "-l" "-d" "error_reporting=E_ALL" "-d" "display_errors=1"
+                 "-d" "log_errors=0" source)
        :error-patterns
-       '(("\\(?:Parse\\|Fatal\\|syntax\\) error[:,] \\(?4:.*\\) in \\(?1:.*\\) on line \\(?2:[0-9]+\\)"
-         error))
-       :modes 'php-mode
-       :next-checkers '((warnings-only . php-phpcs)))
+       ((error line-start (or "Parse" "Fatal" "syntax") " error" (any ":" ",") " "
+               (message) " in " (file-name) " on line " line line-end))
+       :modes (php-mode php+-mode)
+       :next-checkers ((warnings-only . php-phpcs)))
 
    Now PHP CodeSniffer will check the coding style, whenever a PHP
 syntax check did not result in any errors, if PHP CodeSniffer syntax
@@ -1593,8 +1677,8 @@ using the *note ERT: (ert)Top. library.
    * Familiarize yourself with the test suite in
      `flycheck-testsuite.el'.
 
-   * Add your tests to the appropriate file.  Create a new test file if
-     necessary.
+   * Add your tests at the appropriate.  Keep the order of tests
+     corresponding to the order of declarations in `flycheck.el'.
 
    * Extend the provisioning script `vagrant/provision.sh' with the
      dependencies of your tests, if necessary.  This includes syntax
@@ -1624,6 +1708,7 @@ This appendix provides a comprehensive changelog of all releases:
 * Menu:
 
 * master        :: unreleased
+* 0.13          :: Jun 28, 2013
 * 0.12          :: May 18, 2013
 * 0.11          :: May 01, 2013
 * 0.10          :: Apr 21, 2013
@@ -2101,7 +2186,7 @@ File: flycheck.info,  Node: 0.11,  Next: 0.12,  Prev: 0.10,  Up: Changes
 
 
 
-File: flycheck.info,  Node: 0.12,  Next: master,  Prev: 0.11,  Up: Changes
+File: flycheck.info,  Node: 0.12,  Next: 0.13,  Prev: 0.11,  Up: Changes
 
 0.12 (May 18, 2013)
 ===================
@@ -2139,15 +2224,17 @@ File: flycheck.info,  Node: 0.12,  Next: master,  Prev: 0.11,  Up: Changes
 
 
 
-File: flycheck.info,  Node: master,  Prev: 0.12,  Up: Changes
+File: flycheck.info,  Node: 0.13,  Next: master,  Prev: 0.12,  Up: Changes
 
-master (unreleased)
+0.13 (Jun 28, 2013)
 ===================
 
    * Breaking changes:
 
         * Obsolete `flycheck-warning-face' and `flycheck-error-face' in
           favor `flycheck-warning' and `flycheck-error' respectively
+
+        * Obsolete `:predicate' forms in favor of `:predicate' functions
 
    * New features:
 
@@ -2164,6 +2251,10 @@ master (unreleased)
         * Make the delay before starting a syntax check customizable
           via `flycheck-idle-change-delay'
           (https://github.com/lunaryorn/flycheck/issues/144)
+
+        * Make display of errors under point customizable via
+          `flycheck-display-errors-function'
+          (https://github.com/lunaryorn/flycheck/issues/156)
 
    * Improvements
 
@@ -2186,6 +2277,9 @@ master (unreleased)
         * Predicate forms are now wrapped into functions and compiled
           into functions during byte compilation
 
+        * Copy each message separately in
+          `flycheck-copy-messages-as-kill'
+
    * Bug fixes:
 
         * Fix error when searching for a configuration file outside a
@@ -2205,6 +2299,80 @@ master (unreleased)
 
         * Fix compatibility with Emacs 24.2 and earlier
           (https://github.com/lunaryorn/flycheck/issues/150)
+
+        * Fix version information on Emacs trunk builds
+
+
+
+File: flycheck.info,  Node: master,  Prev: 0.13,  Up: Changes
+
+master (unreleased)
+===================
+
+   * Breaking changes:
+
+        * Introduce `flycheck-define-checker' and obsolete
+          `flycheck-declare-checker'
+          (https://github.com/lunaryorn/flycheck/issues/163)
+
+        * Remove the obsolete `flycheck-error-face' and
+          `flycheck-warning-face'
+
+        * Do not initialize packages by default in `emacs-lisp' syntax
+          checker for non-configuration files
+          (https://github.com/lunaryorn/flycheck/issues/176)
+
+   * New features:
+
+        * List errors at point only with prefix arg to
+          `flycheck-list-errors'
+          (https://github.com/lunaryorn/flycheck/issues/166)
+
+        * Add new display function `flycheck-display-errors-in-list' to
+          display errors at point in the error list
+          (https://github.com/lunaryorn/flycheck/issues/166)
+
+        * New `option-list' argument cell to pass option lists to a
+          syntax checker
+
+        * New `flycheck-emacs-lisp-load-path' option to customize the
+          `load-path' used by the `emacs-lisp' syntax checker
+          (https://github.com/lunaryorn/flycheck/issues/174)
+
+        * New `flycheck-emacs-lisp-initialize-packages' option to
+          initialize packages in the `emacs-lisp' syntax checker
+          (https://github.com/lunaryorn/flycheck/issues/176)
+
+        * New `flycheck-emacs-lisp-package-user-dir' option to
+          configure the package directory for the `emacs-lisp' syntax
+          checker (https://github.com/lunaryorn/flycheck/issues/176)
+
+   * New syntax checkers:
+
+        * LESS (https://github.com/lunaryorn/flycheck/issues/160)
+
+        * Haskell with `ghc', `hdevtools' and `hlint'
+          (https://github.com/lunaryorn/flycheck/issues/162)
+
+   * Improvements:
+
+        * Support Web Mode in `html-tidy' syntax checker
+          (https://github.com/lunaryorn/flycheck/issues/157)
+
+        * Support Rubocop 0.9 and drop support for older Rubocop
+          releases (https://github.com/lunaryorn/flycheck/issues/159)
+
+   * Bug fixes:
+
+        * Fix warnings about flawed definitions in `emacs-lisp' and
+          `emacs-lisp-checkdoc', caused by faulty formatting of sexps
+
+        * Refresh error lists when pressing `g'
+          (https://github.com/lunaryorn/flycheck/issues/166)
+
+        * Do not obscure active minibuffer input when displaying errors
+          in the echo area
+          (https://github.com/lunaryorn/flycheck/issues/175)
 
 
 
@@ -2254,6 +2422,9 @@ their support and patches are greatly appreciated.
    * Peter Vasil (https://github.com/ptrv) contributed syntax checkers
      for XML, Lua and Go (using `go build' and `go test'), added unit
      tests and did valuable testing.
+
+   * Robert Dallas Gray (https://github.com/rdallasgray) made error
+     display customizable with `flycheck-display-errors-function'.
 
    * Robert Zaremba (https://github.com/robert-zaremba) added Go syntax
      checker using `gofmt'.
@@ -2801,11 +2972,19 @@ order of their appearance in the default value of `flycheck-checkers':
 
    * `haml'
 
+   * `haskell-hdevtools'
+
+   * `haskell-ghc'
+
+   * `haskell-hlint'
+
    * `html-tidy'
 
    * `javascript-jshint'
 
    * `json-jsonlint'
+
+   * `less'
 
    * `lua'
 
@@ -2871,16 +3050,22 @@ Type, Function and Variable Definition Index
 * flycheck-check-syntax-automatically:   Syntax checking.     (line  18)
 * flycheck-checker:                      Selection.           (line  44)
 * flycheck-checkers:                     Selection.           (line  10)
-* flycheck-chktexrc:                     Configuration.       (line  26)
-* flycheck-clear:                        Reporting.           (line 113)
-* flycheck-coffeelintrc:                 Configuration.       (line  29)
-* flycheck-copy-messages-as-kill:        Reporting.           (line  96)
+* flycheck-chktexrc:                     Configuration.       (line  48)
+* flycheck-clear:                        Reporting.           (line 144)
+* flycheck-coffeelintrc:                 Configuration.       (line  51)
+* flycheck-copy-messages-as-kill:        Reporting.           (line 127)
 * flycheck-count-errors:                 Error API.           (line 110)
 * flycheck-current-errors:               Error API.           (line 106)
-* flycheck-declare-checker:              Declaration.         (line   9)
-* flycheck-def-config-file-var:          Declaration.         (line 261)
-* flycheck-def-option-var:               Declaration.         (line 277)
+* flycheck-def-config-file-var:          Definition.          (line 274)
+* flycheck-def-option-var:               Definition.          (line 290)
+* flycheck-define-checker:               Definition.          (line   9)
 * flycheck-describe-checker:             Selection.           (line  72)
+* flycheck-display-error-messages:       Reporting.           (line 107)
+* flycheck-display-errors-function:      Reporting.           (line  98)
+* flycheck-display-errors-in-list:       Reporting.           (line 115)
+* flycheck-emacs-lisp-initialize-packages: Configuration.     (line  11)
+* flycheck-emacs-lisp-load-path:         Configuration.       (line  20)
+* flycheck-emacs-lisp-package-user-dir:  Configuration.       (line  30)
 * flycheck-error <1>:                    Error API.           (line  11)
 * flycheck-error:                        Reporting.           (line  17)
 * flycheck-error-column-region:          Error API.           (line  81)
@@ -2891,28 +3076,28 @@ Type, Function and Variable Definition Index
 * flycheck-error-pos:                    Error API.           (line  94)
 * flycheck-error-sexp-region:            Error API.           (line  87)
 * flycheck-error-with-buffer:            Error API.           (line  74)
-* flycheck-flake8-maximum-complexity:    Configuration.       (line  11)
-* flycheck-flake8-maximum-line-length:   Configuration.       (line  15)
-* flycheck-flake8rc:                     Configuration.       (line  32)
+* flycheck-flake8-maximum-complexity:    Configuration.       (line  33)
+* flycheck-flake8-maximum-line-length:   Configuration.       (line  37)
+* flycheck-flake8rc:                     Configuration.       (line  54)
 * flycheck-fringe-error:                 Reporting.           (line  53)
 * flycheck-fringe-warning:               Reporting.           (line  54)
-* flycheck-google-messages:              Reporting.           (line 101)
+* flycheck-google-messages:              Reporting.           (line 132)
 * flycheck-has-errors-p:                 Error API.           (line 115)
 * flycheck-highlighting-mode:            Reporting.           (line  31)
 * flycheck-idle-change-delay:            Syntax checking.     (line  47)
 * flycheck-indication-mode:              Reporting.           (line  58)
-* flycheck-jshintrc:                     Configuration.       (line  35)
+* flycheck-jshintrc:                     Configuration.       (line  57)
 * flycheck-list-errors:                  Reporting.           (line  87)
-* flycheck-locate-config-file-functions: Configuration.       (line  59)
+* flycheck-locate-config-file-functions: Configuration.       (line  81)
 * flycheck-next-error:                   Navigation.          (line  23)
 * flycheck-parse-xml-string:             Error parser API.    (line   7)
-* flycheck-phpcs-standard:               Configuration.       (line  19)
+* flycheck-phpcs-standard:               Configuration.       (line  41)
 * flycheck-previous-error:               Navigation.          (line  31)
 * flycheck-process-error-functions:      Reporting.           (line  71)
-* flycheck-rubocoprc:                    Configuration.       (line  38)
+* flycheck-rubocoprc:                    Configuration.       (line  60)
 * flycheck-select-checker:               Selection.           (line  34)
 * flycheck-syntax-check-failed-hook:     Syntax checking.     (line 120)
-* flycheck-tidyrc:                       Configuration.       (line  41)
+* flycheck-tidyrc:                       Configuration.       (line  63)
 * flycheck-warning:                      Reporting.           (line  18)
 
 
@@ -2921,51 +3106,52 @@ Tag Table:
 Node: Top836
 Node: Introduction2203
 Node: Features3144
-Node: Installation5185
-Node: Activation6611
-Node: Usage6962
-Node: Syntax checking7585
-Node: Selection12051
-Node: Configuration14658
-Node: Reporting18200
-Node: Navigation22613
-Node: Mode line24422
-Node: Extending25328
-Node: Declaration25927
-Node: Error parsers38614
-Node: Option filters39700
-Node: Examples40039
-Node: Simple example40471
-Node: Predicate example43522
-Node: Configuration example45503
-Node: Chaining example48151
-Node: API49525
-Node: Error API50313
-Node: Error parser API54510
-Node: Contribution54736
-Node: Reporting issues55414
-Node: Contributing syntax checkers56227
-Node: Contributing code57024
-Node: Unit tests58371
-Node: Changes59665
-Node: 0.160345
-Node: 0.260635
-Node: 0.360914
-Node: 0.461150
-Node: 0.561932
-Node: 0.663158
-Node: 0.6.166026
-Node: 0.766175
-Node: 0.7.167196
-Node: 0.867916
-Node: 0.969439
-Node: 0.1069938
-Node: 0.1172005
-Node: 0.1273197
-Node: master74211
-Node: Credits76409
-Node: GNU Free Documentation License79458
-Node: Syntax checkers104631
-Node: Definition Index105708
+Node: Installation5275
+Node: Activation6701
+Node: Usage7052
+Node: Syntax checking7675
+Node: Selection12141
+Node: Configuration14747
+Node: Reporting19236
+Node: Navigation24690
+Node: Mode line26499
+Node: Extending27405
+Node: Definition28021
+Node: Error parsers41722
+Node: Option filters42855
+Node: Examples43194
+Node: Simple example43626
+Node: Predicate example46807
+Node: Configuration example48931
+Node: Chaining example51573
+Node: API53000
+Node: Error API53788
+Node: Error parser API57985
+Node: Contribution58211
+Node: Reporting issues58889
+Node: Contributing syntax checkers59702
+Node: Contributing code60499
+Node: Unit tests61846
+Node: Changes63183
+Node: 0.163895
+Node: 0.264185
+Node: 0.364464
+Node: 0.464700
+Node: 0.565482
+Node: 0.666708
+Node: 0.6.169576
+Node: 0.769725
+Node: 0.7.170746
+Node: 0.871466
+Node: 0.972989
+Node: 0.1073488
+Node: 0.1175555
+Node: 0.1276747
+Node: 0.1377759
+Node: master80356
+Node: Credits82867
+Node: GNU Free Documentation License86052
+Node: Syntax checkers111225
+Node: Definition Index112383
 
 End Tag Table

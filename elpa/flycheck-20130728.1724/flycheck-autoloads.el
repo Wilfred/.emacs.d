@@ -5,7 +5,7 @@
 
 ;;;### (autoloads (flycheck-info flycheck-def-option-var flycheck-def-config-file-var
 ;;;;;;  flycheck-declare-checker global-flycheck-mode flycheck-mode)
-;;;;;;  "flycheck" "flycheck.el" (20912 32288 504545 823000))
+;;;;;;  "flycheck" "flycheck.el" (20982 16993 743595 623000))
 ;;; Generated autoloads from flycheck.el
 
 (defconst flycheck-mode-line-lighter " FlyC" "\
@@ -90,10 +90,11 @@ of `flycheck-error' objects parsed from OUTPUT.
 `:modes' A major mode symbol or a list thereof.  If present the
 checker is only used in these modes.
 
-`:predicate' An Emacs Lisp form.  If present the syntax checker
-is only used if this form returns a non-nil result when evaluated
-in the buffer to check.  The form is wrapped into a `lambda'
-function to support byte compilation.
+`:predicate' A function symbol or lambda expression.  If present
+the syntax checker is only used if this function returns non-nil
+when called in the buffer to check.
+
+May also be a form, but this usage is obsolete.
 
 `:next-checkers' A list where each element is either a checker
 symbol to run after this checker or a cons cell (PREDICATE
@@ -105,10 +106,10 @@ checker returned no errors at all.  If PREDICATE is
 returned only warnings.  Only the first usable and
 registered (see `flycheck-registered-checker-p') is run.
 
-A checker must have a `:command' property, either
-`:error-patterns' or `:error-parser' (but not both), and at least
-one of `:predicate' and `:modes'.  If `:predicate' and `:modes'
-are present, both must match for the checker to be used.
+A checker must have a `:command' property, at least one of
+`:error-patterns' or `:error-parser', and at least one of
+`:predicate' and `:modes'.  If `:predicate' and `:modes' are
+present, both must match for the checker to be used.
 
 \(fn SYMBOL DOCSTRING &rest PROPERTIES)" nil t)
 
@@ -156,8 +157,8 @@ Open the Flycheck manual.
 
 ;;;***
 
-;;;### (autoloads nil nil ("flycheck-pkg.el") (20912 32288 675094
-;;;;;;  907000))
+;;;### (autoloads nil nil ("flycheck-pkg.el") (20982 16993 924367
+;;;;;;  953000))
 
 ;;;***
 

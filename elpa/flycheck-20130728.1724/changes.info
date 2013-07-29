@@ -1,4 +1,4 @@
-This is /home/melpa/melpa/working/flycheck-20130605.2151/changes.info,
+This is /home/melpa/melpa/working/flycheck-20130728.1724/changes.info,
 produced by makeinfo version 4.13 from
 /home/melpa/melpa/working/flycheck/doc/changes.texi.
 
@@ -13,6 +13,7 @@ Top
 * Menu:
 
 * master        :: unreleased
+* 0.13          :: Jun 28, 2013
 * 0.12          :: May 18, 2013
 * 0.11          :: May 01, 2013
 * 0.10          :: Apr 21, 2013
