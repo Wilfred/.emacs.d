@@ -4,7 +4,7 @@
 
 ;; Author: Fabián E. Gallina <fabian@anue.biz>
 ;; URL: https://github.com/fgallina/python-django.el
-;; Version: 20130317.1317
+;; Version: 20130526.1059
 ;; X-Original-Version: 0.1
 ;; Maintainer: FSF
 ;; Created: Jul 2011
@@ -508,7 +508,7 @@ non-nil the cached value is invalidated."
                         python-django-info-imports-code
                         (concat
                          "print(simplejson.dumps("
-                         "dict([(name, getattr(settings, name)) "
+                         "dict([(name, getattr(settings, name, None)) "
                          "for name in ("
                          (mapconcat
                           #'(lambda (str) (concat "'" str "'"))
