@@ -369,3 +369,5 @@ If a prefix argument is given, don't change the kill-ring."
   "Indent the everything in the current buffer."
   (interactive)
   (indent-region (point-min) (point-max)))
+
+(add-hook 'magit-log-edit-mode-hook 'auto-fill-mode)

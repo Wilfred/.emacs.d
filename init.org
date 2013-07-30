@@ -682,9 +682,11 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
   ;; (message "Spent %.2f seconds executing .emacs.d/init.el."
   ;;          (time-difference *emacs-load-start* (current-time)))
   (put 'narrow-to-region 'disabled nil)
-
+  
   (defun indent-buffer ()
     "Indent the everything in the current buffer."
     (interactive)
     (indent-region (point-min) (point-max)))
+  
+  (add-hook 'magit-log-edit-mode-hook 'auto-fill-mode)
 #+END_SRC
