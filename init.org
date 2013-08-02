@@ -535,6 +535,20 @@ valid doctests, so we switch off doctest checks.
   (setenv "PYFLAKES_NODOCTEST" "y")
 #+END_SRC
 
+I often write triple-quoted docstrings, so it's convenient to have a
+shortcut for inserting them.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'python)
+  
+  (define-skeleton python-insert-docstring
+    "Insert a Python docstring."
+    "This string is ignored!"
+    "\"\"\"" - "\"\"\"")
+  
+  (define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
+#+END_SRC
+
 ** Less (CSS)
 
 The less compiler doesn't give much feedback, but it does gives us a

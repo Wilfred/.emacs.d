@@ -236,6 +236,15 @@ If a prefix argument is given, don't change the kill-ring."
 
 (setenv "PYFLAKES_NODOCTEST" "y")
 
+(require 'python)
+
+(define-skeleton python-insert-docstring
+  "Insert a Python docstring."
+  "This string is ignored!"
+  "\"\"\"" - "\"\"\"")
+
+(define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
+
 (require 'less-css-mode)
 (add-hook 'less-css-mode-hook 'flymake-mode)
 

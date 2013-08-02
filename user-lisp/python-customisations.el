@@ -50,11 +50,4 @@
     ;; backward one char so the user can enter the argument for the superclass's function
     (backward-char)))
 
-(define-skeleton python-insert-docstring
-  "Insert a Python docstring."
-  "This string is ignored!"
-  "\"\"\"" - "\"\"\"")
-
-(define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
-
 (provide 'python-customisations)
