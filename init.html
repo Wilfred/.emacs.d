@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-07-30T12:19+0100"/>
+<meta name="generated" content="2013-08-02T14:35+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -771,24 +771,41 @@ makes it very fast, and ensures that files ignored by git are ignored.
 </p>
 <p>
 Alternatives worth mentioning are `projectile' and
-`find-file-in-project'. Todo: say why.
+`find-file-in-project'. `projectile' seems to have the most users, but
+I've found it to be a little bit slower, even with external
+commands. `find-file-in-project' seems unmaintained.
 </p>
 
 
 
 <pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">find-file-in-repository</span>)
-
-(<span style="color: #729fcf; font-weight: bold;">defadvice</span> <span style="color: #edd400; font-weight: bold;">find-file-in-repository</span> (around disable-ido-flex-matching activate)
-  (<span style="color: #729fcf; font-weight: bold;">let</span> ((ido-enable-flex-matching nil)
-        (ido-case-fold t))
-    ad-do-it))
-
-(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"C-x C-g"</span>) 'find-file-in-repository)
-
-
 </pre>
 
 
+<p>
+Ido can become very slow with large lists. This is largely due to
+flexible matching, used when there isn't an exact substring match. We
+switch off flexible matching with `find-file-in-repository'.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defadvice</span> <span style="color: #edd400; font-weight: bold;">find-file-in-repository</span> (around disable-ido-flex-matching activate)
+  (<span style="color: #729fcf; font-weight: bold;">let</span> ((ido-enable-flex-matching nil)
+        (ido-case-fold t))
+    ad-do-it))
+</pre>
+
+
+<p>
+Finally, we bind `find-file-in-repository' to `C-x C-g', as we use it
+a lot and it's right next to `C-x C-f'.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"C-x C-g"</span>) 'find-file-in-repository)
+</pre>
 
 
 </div>
@@ -1254,7 +1271,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-07-30T12:19+0100</p>
+<p class="date">Date: 2013-08-02T14:35+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

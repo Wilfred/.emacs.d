@@ -355,22 +355,31 @@ ls-files` (see elisp:ffir-repository types for the full list). This
 makes it very fast, and ensures that files ignored by git are ignored.
 
 Alternatives worth mentioning are `projectile' and
-`find-file-in-project'. Todo: say why.
+`find-file-in-project'. `projectile' seems to have the most users, but
+I've found it to be a little bit slower, even with external
+commands. `find-file-in-project' seems unmaintained.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (require 'find-file-in-repository)
-  
+#+END_SRC
+
+Ido can become very slow with large lists. This is largely due to
+flexible matching, used when there isn't an exact substring match. We
+switch off flexible matching with `find-file-in-repository'.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
   (defadvice find-file-in-repository (around disable-ido-flex-matching activate)
     (let ((ido-enable-flex-matching nil)
           (ido-case-fold t))
       ad-do-it))
-  
-  (global-set-key (kbd "C-x C-g") 'find-file-in-repository)
-  
-  
 #+END_SRC
 
+Finally, we bind `find-file-in-repository' to `C-x C-g', as we use it
+a lot and it's right next to `C-x C-f'.
 
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (global-set-key (kbd "C-x C-g") 'find-file-in-repository)
+#+END_SRC
 
 *** Dired
 
