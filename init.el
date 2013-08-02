@@ -222,6 +222,13 @@ If a prefix argument is given, don't change the kill-ring."
  '(flymake-errline ((((class color)) (:underline "Red"))))
  '(flymake-warnline ((((class color)) (:underline "Orange")))))
 
+(setq flycheck-idle-change-delay 2.0)
+(setq flycheck-highlighting-mode 'lines)
+
+(custom-set-faces
+ '(flycheck-error ((((class color)) (:underline "Red"))))
+ '(flycheck-warning ((((class color)) (:underline "Orange")))))
+
 (require 'undo-tree)
 (global-undo-tree-mode)
 

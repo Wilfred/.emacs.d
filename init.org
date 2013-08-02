@@ -463,7 +463,9 @@ It's also useful to quickly generate a minimal HTML page to play with.
 
 
 
-** Flymake
+** As-you-type Checks
+
+*** Flymake
 
 (Note that there's language-specific flymake configuration too.)
 
@@ -497,7 +499,31 @@ I prefer my errors underlined.
    '(flymake-errline ((((class color)) (:underline "Red"))))
    '(flymake-warnline ((((class color)) (:underline "Orange")))))
 #+END_SRC
-    
+
+*** Flycheck
+
+Flycheck is an excellent on-the-fly checker that provides many
+additional features and languages. Flymake is part of stock Emacs,
+flychcks is third-party.
+
+Flycheck can be quite slow with a large number of errors. We reduce
+how often we run it. We also change the highlighting to simply
+highlight the whole line, as it's much faster. See
+https://github.com/lunaryorn/flycheck/issues/153#issuecomment-19450255
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq flycheck-idle-change-delay 2.0)
+  (setq flycheck-highlighting-mode 'lines)
+#+END_SRC
+
+Style flycheck errors consistently with flymake.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (custom-set-faces
+   '(flycheck-error ((((class color)) (:underline "Red"))))
+   '(flycheck-warning ((((class color)) (:underline "Orange")))))
+#+END_SRC
+
 ** Undoing
 
 Emacs' undo facility is excellent, but undo-tree is even better.

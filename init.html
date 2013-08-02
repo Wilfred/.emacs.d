@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-08-02T15:03+0100"/>
+<meta name="generated" content="2013-08-02T17:30+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -160,7 +160,12 @@ for the JavaScript code in this tag.
 <li><a href="#sec-3-8-4">3.8.4 Scratch Files</a></li>
 </ul>
 </li>
-<li><a href="#sec-3-9">3.9 Flymake</a></li>
+<li><a href="#sec-3-9">3.9 As-you-type Checks</a>
+<ul>
+<li><a href="#sec-3-9-1">3.9.1 Flymake</a></li>
+<li><a href="#sec-3-9-2">3.9.2 Flycheck</a></li>
+</ul>
+</li>
 <li><a href="#sec-3-10">3.10 Undoing</a></li>
 <li><a href="#sec-3-11">3.11 Python</a></li>
 <li><a href="#sec-3-12">3.12 Less (CSS)</a></li>
@@ -222,12 +227,12 @@ I don't test it often.
 
 
 <p>
-I use pyflakes, which is available on PyPI. You can install it with:
+I use flake8, which is available on PyPI. You can install it with:
 </p>
 
 
 
-<pre class="src src-sh">sudo pip install pyflakes
+<pre class="src src-sh">sudo pip install flake8
 </pre>
 
 
@@ -941,8 +946,16 @@ It's also useful to quickly generate a minimal HTML page to play with.
 </div>
 
 <div id="outline-container-3-9" class="outline-3">
-<h3 id="sec-3-9"><span class="section-number-3">3.9</span> Flymake</h3>
+<h3 id="sec-3-9"><span class="section-number-3">3.9</span> As-you-type Checks</h3>
 <div class="outline-text-3" id="text-3-9">
+
+
+
+</div>
+
+<div id="outline-container-3-9-1" class="outline-4">
+<h4 id="sec-3-9-1"><span class="section-number-4">3.9.1</span> Flymake</h4>
+<div class="outline-text-4" id="text-3-9-1">
 
 
 <p>
@@ -991,6 +1004,47 @@ I prefer my errors underlined.
 </pre>
 
 
+</div>
+
+</div>
+
+<div id="outline-container-3-9-2" class="outline-4">
+<h4 id="sec-3-9-2"><span class="section-number-4">3.9.2</span> Flycheck</h4>
+<div class="outline-text-4" id="text-3-9-2">
+
+
+<p>
+Flycheck is an excellent on-the-fly checker that provides many
+additional features and languages. Flymake is part of stock Emacs,
+flychcks is third-party.
+</p>
+<p>
+Flycheck can be quite slow with a large number of errors. We reduce
+how often we run it. We also change the highlighting to simply
+highlight the whole line, as it's much faster. See
+<a href="https://github.com/lunaryorn/flycheck/issues/153#issuecomment-19450255">https://github.com/lunaryorn/flycheck/issues/153#issuecomment-19450255</a>
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(setq flycheck-idle-change-delay 2.0)
+(setq flycheck-highlighting-mode 'lines)
+</pre>
+
+
+<p>
+Style flycheck errors consistently with flymake.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(custom-set-faces
+ '(flycheck-error ((((class color)) (<span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Red"</span>))))
+ '(flycheck-warning ((((class color)) (<span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Orange"</span>)))))
+</pre>
+
+
+</div>
 </div>
 
 </div>
@@ -1287,7 +1341,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-08-02T15:03+0100</p>
+<p class="date">Date: 2013-08-02T17:30+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
