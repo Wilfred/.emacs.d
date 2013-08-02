@@ -57,18 +57,4 @@
 
 (define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
 
-;; pylookup -- python docs
-(setq pylookup-dir "~/.emacs.d/third-party-lisp/pylookup")
-(add-to-list 'load-path pylookup-dir)
-
-;; load pylookup when compile time
-(eval-when-compile (require 'pylookup))
-
-;; set executable file and db file
-(setq pylookup-program (concat pylookup-dir "/pylookup.py"))
-(setq pylookup-db-file (concat pylookup-dir "/pylookup.db"))
-
-;; set search option if you want
-;; (setq pylookup-search-options '("--insensitive" "0" "--desc" "0"))
-
 (provide 'python-customisations)
