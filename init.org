@@ -19,10 +19,10 @@ I don't test it often.
 
 ** Python
 
-I use pyflakes, which is available on PyPI. You can install it with:
+I use flake8, which is available on PyPI. You can install it with:
 
 #+BEGIN_SRC sh
-  sudo pip install pyflakes
+  sudo pip install flake8
 #+END_SRC
 
 ** JavaScript
@@ -520,12 +520,10 @@ isn't very smart. Autopair works nicely.
   (add-hook 'python-mode-hook 'autopair-mode)
 #+END_SRC
 
-We use pyflakes with flymake to check for coding errors.
+We use flake8 with flycheck to check for coding errors.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (require 'flymake-python-pyflakes)
-  (setq flymake-python-pyflakes-executable "pyflakes")
-  (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
+  (add-hook 'python-mode-hook 'flycheck-mode)
 #+END_SRC
 
 I prefer to write docstrings with example usage that aren't quite

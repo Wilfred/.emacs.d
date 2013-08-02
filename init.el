@@ -230,9 +230,7 @@ If a prefix argument is given, don't change the kill-ring."
 (setq autopair-autowrap t)
 (add-hook 'python-mode-hook 'autopair-mode)
 
-(require 'flymake-python-pyflakes)
-(setq flymake-python-pyflakes-executable "pyflakes")
-(add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
+(add-hook 'python-mode-hook 'flycheck-mode)
 
 (setenv "PYFLAKES_NODOCTEST" "y")
 
