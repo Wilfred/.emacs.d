@@ -1,4 +1,4 @@
-This is /home/melpa/melpa/working/magit-20130724.1937/magit.info,
+This is /home/melpa/melpa/working/magit-20130805.1730/magit.info,
 produced by makeinfo version 4.13 from
 /home/melpa/melpa/working/magit/magit.texi.
 
@@ -1337,7 +1337,6 @@ File: magit.info,  Node: Frequently Asked Questions,  Next: GNU Free Documentati
 
 * FAQ - Changes::
 * FAQ 1 - Troubleshooting::
-* FAQ 2 - Display issues::
 
 
 File: magit.info,  Node: FAQ - Changes,  Next: FAQ 1 - Troubleshooting,  Up: Frequently Asked Questions
@@ -1352,7 +1351,7 @@ File: magit.info,  Node: FAQ - Changes,  Next: FAQ 1 - Troubleshooting,  Up: Fre
 
 
 
-File: magit.info,  Node: FAQ 1 - Troubleshooting,  Next: FAQ 2 - Display issues,  Prev: FAQ - Changes,  Up: Frequently Asked Questions
+File: magit.info,  Node: FAQ 1 - Troubleshooting,  Prev: FAQ - Changes,  Up: Frequently Asked Questions
 
 27.2 Troubleshooting
 ====================
@@ -1374,40 +1373,6 @@ Answer
 
 If a command goes wrong, you can hit `$' to access the git process
 buffer.  There, the entire trace for the latest operation is available.
-
-
-File: magit.info,  Node: FAQ 2 - Display issues,  Prev: FAQ 1 - Troubleshooting,  Up: Frequently Asked Questions
-
-27.3 Display issues
-===================
-
-* Menu:
-
-* FAQ 2-1::    How do I fix international characters display?
-
-
-File: magit.info,  Node: FAQ 2-1,  Up: FAQ 2 - Display issues
-
-27.3.1 Question 2.1
--------------------
-
-How do I fix international characters display?
-
-Answer
-......
-
-Please make sure your Magit buffer uses a compatible coding system.  In
-the particular case of file names, git itself quotes them by default.
-You can disable this with one of the following approaches:
-
-     $ git config core.quotepath false
-
-   or
-
-     (setq magit-git-standard-options (append magit-git-standard-options
-                                              '("-c" "core.quotepath=false")))
-
-   The latter might not work in old versions of git.
 
 
 File: magit.info,  Node: GNU Free Documentation License,  Prev: Frequently Asked Questions,  Up: Top
@@ -1881,12 +1846,10 @@ Node: Developing Extensions43866
 Node: Using Git Directly47647
 Node: Customization48018
 Node: Frequently Asked Questions52596
-Node: FAQ - Changes52866
-Node: FAQ 1 - Troubleshooting53277
-Node: FAQ 1-153525
-Node: FAQ 2 - Display issues53830
-Node: FAQ 2-154059
-Node: GNU Free Documentation License54684
+Node: FAQ - Changes52839
+Node: FAQ 1 - Troubleshooting53250
+Node: FAQ 1-153467
+Node: GNU Free Documentation License53772
 
 End Tag Table
 

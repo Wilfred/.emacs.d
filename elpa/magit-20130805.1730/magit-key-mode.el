@@ -38,11 +38,11 @@
      (actions
       ("l" "Short" magit-log)
       ("L" "Long" magit-log-long)
-      ("h" "Reflog" magit-reflog)
+      ("h" "Head Reflog" magit-reflog-head)
       ("f" "File log" magit-single-file-log)
       ("rl" "Ranged short" magit-log-ranged)
       ("rL" "Ranged long" magit-log-long-ranged)
-      ("rh" "Ranged reflog" magit-reflog-ranged))
+      ("rh" "Reflog" magit-reflog))
      (switches
       ("-m" "Only merge commits" "--merges")
       ("-do" "Date Order" "--date-order")
@@ -208,7 +208,8 @@ same name."
   (when (assoc group magit-key-mode-groups)
     (magit-key-mode-delete-group group))
   (setq magit-key-mode-groups
-        (cons (list group (list 'actions) (list 'switches)) magit-key-mode-groups)))
+        (cons (list group (list 'actions) (list 'switches))
+              magit-key-mode-groups)))
 
 (defun magit-key-mode-key-defined-p (for-group key)
   "Return t if KEY is defined as any option within FOR-GROUP.
@@ -265,7 +266,7 @@ The user is prompted for the key."
          (seq (read-key-sequence
                (format "Enter command prefix%s: "
                        (if man-page
-                         (format ", `?' for man `%s'" man-page)
+                           (format ", `?' for man `%s'" man-page)
                          ""))))
          (actions (cdr (assoc 'actions opts))))
     (cond
@@ -455,13 +456,14 @@ the key combination highlighted before the description."
       (setq new-exec-pos
             (cdr (assoc current-exec
                         (magit-key-mode-build-exec-point-alist)))))
-    (if (and is-first actions-p)
-        (progn (goto-char actions-p)
-               (magit-key-mode-jump-to-next-exec))
-      (if new-exec-pos
-          (progn (goto-char new-exec-pos)
-                 (skip-chars-forward " "))
-        (goto-char old-point))))
+    (cond ((and is-first actions-p)
+           (goto-char actions-p)
+           (magit-key-mode-jump-to-next-exec))
+          (new-exec-pos
+           (goto-char new-exec-pos)
+           (skip-chars-forward " "))
+          (t
+           (goto-char old-point))))
   (setq buffer-read-only t)
   (fit-window-to-buffer))
 
@@ -469,7 +471,7 @@ the key combination highlighted before the description."
   (save-excursion
     (goto-char (point-min))
     (let* ((exec (get-text-property (point) 'key-group-executor))
-           (exec-alist (if exec `((,exec . ,(point))) nil)))
+           (exec-alist (and exec `((,exec . ,(point))))))
       (cl-do nil ((eobp) (nreverse exec-alist))
         (when (not (eq exec (get-text-property (point) 'key-group-executor)))
           (setq exec (get-text-property (point) 'key-group-executor))
@@ -505,7 +507,7 @@ the key combination highlighted before the description."
    (lambda (x)
      (format "(%s)" (let ((s (nth 2 x)))
                       (if (member s magit-key-mode-current-options)
-                        (propertize s 'face 'font-lock-warning-face)
+                          (propertize s 'face 'font-lock-warning-face)
                         s))))))
 
 (defun magit-key-mode-draw-actions (actions)

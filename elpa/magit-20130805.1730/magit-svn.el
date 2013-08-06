@@ -50,8 +50,8 @@
   "Find commit for svn REVISION in BRANCH."
   (interactive
    (list (read-string "SVN revision: ")
-         (if current-prefix-arg
-             (read-string "In branch: "))))
+         (and current-prefix-arg
+              (read-string "In branch: "))))
   (let* ((sha (apply 'magit-git-string
                      `("svn"
                        "find-rev"
@@ -67,12 +67,14 @@
 (magit-define-command svn-create-branch (name)
   "Create svn branch NAME."
   (interactive "sBranch name: ")
-  (apply 'magit-run-git "svn" "branch" (append magit-custom-options (list name))))
+  (apply 'magit-run-git "svn" "branch"
+         (append magit-custom-options (list name))))
 
 (magit-define-command svn-create-tag (name)
   "Create svn tag NAME."
   (interactive "sTag name: ")
-  (apply 'magit-run-git "svn" "tag" (append magit-custom-options (list name))))
+  (apply 'magit-run-git "svn" "tag"
+         (append magit-custom-options (list name))))
 
 (magit-define-command svn-rebase ()
   "Run git-svn rebase."
@@ -137,7 +139,8 @@ doesn't repeatedly call it.")
   "Gather details about the current git-svn repository.
 Return nil if there isn't one.  Keys of the alist are ref-path,
 trunk-ref-name and local-ref-name.
-If USE-CACHE is non-nil then return the value of `magit-get-svn-ref-info-cache'."
+If USE-CACHE is non-nil then return the value of
+`magit-get-svn-ref-info-cache'."
   (if (and use-cache magit-svn-get-ref-info-cache)
       magit-svn-get-ref-info-cache
     (let* ((fetch (magit-get "svn-remote" "svn" "fetch"))
@@ -159,7 +162,8 @@ If USE-CACHE is non-nil then return the value of `magit-get-svn-ref-info-cache'.
                                                        "--grep" "git-svn" "-1")
                                      ""))
                          (goto-char (point-min))
-                         (cond ((re-search-forward "git-svn-id: \\(.+/.+?\\)@\\([0-9]+\\)" nil t)
+                         (cond ((re-search-forward
+                                 "git-svn-id: \\(.+/.+?\\)@\\([0-9]+\\)" nil t)
                                 (setq url (match-string 1)
                                       revision (match-string 2))
                                 (magit-svn-get-local-ref url))
@@ -265,15 +269,15 @@ If USE-CACHE is non nil, use the cached information."
   (let ((unpulled-hook (lambda () (magit-insert-svn-unpulled t)))
         (unpushed-hook (lambda () (magit-insert-svn-unpushed t)))
         (remote-hook 'magit-svn-remote-string))
-    (if magit-svn-mode
-        (progn
-          (add-hook 'magit-after-insert-unpulled-commits-hook unpulled-hook nil t)
-          (add-hook 'magit-after-insert-unpushed-commits-hook unpushed-hook nil t)
-          (add-hook 'magit-remote-string-hook remote-hook nil t))
-      (progn
-        (remove-hook 'magit-after-insert-unpulled-commits-hook unpulled-hook t)
-        (remove-hook 'magit-after-insert-unpushed-commits-hook unpushed-hook t)
-        (remove-hook 'magit-remote-string-hook remote-hook t)))
+    (cond
+     (magit-svn-mode
+      (add-hook 'magit-after-insert-unpulled-commits-hook unpulled-hook nil t)
+      (add-hook 'magit-after-insert-unpushed-commits-hook unpushed-hook nil t)
+      (add-hook 'magit-remote-string-hook remote-hook nil t))
+     (t
+      (remove-hook 'magit-after-insert-unpulled-commits-hook unpulled-hook t)
+      (remove-hook 'magit-after-insert-unpushed-commits-hook unpushed-hook t)
+      (remove-hook 'magit-remote-string-hook remote-hook t)))
     (when (called-interactively-p 'any)
       (magit-refresh))))
 

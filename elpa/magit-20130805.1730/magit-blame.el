@@ -97,15 +97,15 @@
              (y-or-n-p (format "save %s first? " (buffer-file-name))))
     (save-buffer))
 
-  (if magit-blame-mode
-      (progn
-        (setq magit-blame-buffer-read-only buffer-read-only)
-        (magit-blame-file-on (current-buffer))
-        (set-buffer-modified-p nil)
-        (setq buffer-read-only t))
-    (magit-blame-file-off (current-buffer))
-    (set-buffer-modified-p nil)
-    (setq buffer-read-only magit-blame-buffer-read-only)))
+  (cond (magit-blame-mode
+         (setq magit-blame-buffer-read-only buffer-read-only)
+         (magit-blame-file-on (current-buffer))
+         (set-buffer-modified-p nil)
+         (setq buffer-read-only t))
+        (t
+         (magit-blame-file-off (current-buffer))
+         (set-buffer-modified-p nil)
+         (setq buffer-read-only magit-blame-buffer-read-only))))
 
 (defun magit-blame-file-off (buffer)
   (save-excursion
@@ -113,8 +113,8 @@
       (with-current-buffer buffer
         (widen)
         (mapc (lambda (ov)
-                (if (overlay-get ov :blame)
-                    (delete-overlay ov)))
+                (when (overlay-get ov :blame)
+                  (delete-overlay ov)))
               (overlays-in (point-min) (point-max)))))))
 
 (defun magit-blame-file-on (buffer)
@@ -136,10 +136,10 @@
   (let ((overlays (overlays-at pos))
         sha1)
     (dolist (ov overlays)
-      (if (overlay-get ov :blame)
-          (setq sha1 (plist-get (nth 3 (overlay-get ov :blame)) :sha1))))
-    (if sha1
-        (magit-show-commit sha1))))
+      (when (overlay-get ov :blame)
+        (setq sha1 (plist-get (nth 3 (overlay-get ov :blame)) :sha1))))
+    (when sha1
+      (magit-show-commit sha1))))
 
 (defun magit-find-next-overlay-change (beg end prop)
   "Return the next position after BEG where an overlay matching a
@@ -171,14 +171,16 @@ boundaries from BEG to END, the return value is nil."
 (defun magit-blame-next-chunk (pos)
   "Go to the next blame chunk."
   (interactive "d")
-  (let ((next-chunk-pos (magit-find-next-overlay-change pos (point-max) :blame)))
+  (let ((next-chunk-pos
+         (magit-find-next-overlay-change pos (point-max) :blame)))
     (when next-chunk-pos
       (goto-char next-chunk-pos))))
 
 (defun magit-blame-previous-chunk (pos)
   "Go to the previous blame chunk."
   (interactive "d")
-  (let ((prev-chunk-pos (magit-find-next-overlay-change pos (point-min) :blame)))
+  (let ((prev-chunk-pos
+         (magit-find-next-overlay-change pos (point-min) :blame)))
     (when prev-chunk-pos
       (goto-char prev-chunk-pos))))
 
@@ -234,7 +236,9 @@ officially supported at the moment."
       (with-current-buffer blame-buf
         (goto-char (point-min))
         ;; search for a ful commit info
-        (while (re-search-forward "^\\([0-9a-f]\\{40\\}\\) \\([0-9]+\\) \\([0-9]+\\) \\([0-9]+\\)$" nil t)
+        (while (re-search-forward
+                "^\\([0-9a-f]\\{40\\}\\) \\([0-9]+\\) \\([0-9]+\\) \\([0-9]+\\)$"
+                nil t)
           (setq commit (match-string-no-properties 1)
                 old-line (string-to-number
                           (match-string-no-properties 2))
