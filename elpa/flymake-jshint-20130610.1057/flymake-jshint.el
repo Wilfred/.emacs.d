@@ -4,7 +4,7 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 23 June 2011
-;; Version: 20130402.1658
+;; Version: 20130610.1057
 ;; X-Original-Version: 2.0
 ;; Keywords: flymake, jshint, javascript
 ;; Package-Requires: ((flymake-easy "0.1"))
@@ -89,6 +89,7 @@
 
 ;;; Changelog
 
+;; v2.0 -- Updated usage instructions following the port to flymake-easy
 ;; v1.3 -- Refactored to use flymake-easy
 
 ;;; Code:
@@ -110,6 +111,7 @@
       (list "jshint" filename "--config" (expand-file-name jshint-configuration-path))
     (list "jshint" filename)))
 
+;;;###autoload
 (defun flymake-jshint-load ()
   "Configure flymake mode to check the current buffer's JavaScript syntax."
   (interactive)
