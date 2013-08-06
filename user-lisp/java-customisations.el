@@ -31,14 +31,13 @@ is quite invasive, messing with (amongst others) after-save-hook."
 (autoload 'dolist "cl")
 (autoload 'ido-completing-read "ido")
 
-(autoload 'find-containing-parent-directory "file-customisations")
 (autoload 'path-for-current-buffer "file-customisations")
 (autoload 'file-path-join "file-customisations")
 
 (defun java-show-test-failures ()
   "Show the failures from the last maven test run."
   (interactive)
-  (let* ((target-directory (find-containing-parent-directory (path-for-current-buffer) "target"))
+  (let* ((target-directory (locate-dominating-file (path-for-current-buffer) "target"))
          (test-results-directory (file-path-join target-directory "target/surefire-reports"))
          (result-files (directory-files test-results-directory))
          (failed-tests nil))
