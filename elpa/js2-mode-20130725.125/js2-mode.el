@@ -7,7 +7,7 @@
 ;;         Dmitry Gutov <dgutov@yandex.ru>
 ;; URL:  https://github.com/mooz/js2-mode/
 ;;       http://code.google.com/p/js2-mode/
-;; Version: 20130307
+;; Version: 20130619
 ;; Keywords: languages, javascript
 ;; Package-Requires: ((emacs "24.1"))
 
@@ -51,7 +51,7 @@
 
 ;;   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
 
-;; Alternately, to install it as a minor mode just for JavaScript linting,
+;; Alternatively, to install it as a minor mode just for JavaScript linting,
 ;; you must add it to the appropriate major-mode hook.  Normally this would be:
 
 ;;   (add-hook 'js-mode-hook 'js2-minor-mode)
@@ -292,8 +292,8 @@ If `js2-dynamic-idle-timer-adjust' is 0 or negative,
   :group 'js2-mode)
 
 (defcustom js2-concat-multiline-strings t
-  "Non-nil to automatically turn a newline in mid-string into a
-string concatenation.  When `eol', the '+' will be inserted at the
+  "When non-nil, `js2-line-break' in mid-string will make it a
+string concatenation. When `eol', the '+' will be inserted at the
 end of the line, otherwise, at the beginning of the next line."
   :type '(choice (const t) (const eol) (const nil))
   :group 'js2-mode)
@@ -854,9 +854,12 @@ First, you can add externs that are valid for all your JavaScript files.
 You should probably do this by adding them to `js2-global-externs', which
 is a global list used for all js2-mode files.
 
-Next, you can add a function to `js2-mode-hook' that adds additional
+Next, you can add a function to `js2-init-hook' that adds additional
 externs appropriate for the specific file, perhaps based on its path.
 These should go in `js2-additional-externs', which is buffer-local.
+
+Third, you can use JSLint's global declaration, as long as
+`js2-include-jslint-globals' is non-nil, which see.
 
 Finally, you can add a function to `js2-post-parse-callbacks',
 which is called after parsing completes, and `js2-mode-ast' is bound to
@@ -1090,11 +1093,19 @@ Not currently used."
   '((t :foreground "orange"))
   "Face used to highlight undeclared variable identifiers.")
 
+(defcustom js2-init-hook nil
+  "List of functions to be called after `js2-mode' or
+`js2-minor-mode' has initialized all variables, before parsing
+the buffer for the first time."
+  :type 'hook
+  :group 'js2-mode
+  :version "20130608")
+
 (defcustom js2-post-parse-callbacks nil
-  "A list of callback functions invoked after parsing finishes.
+  "List of callback functions invoked after parsing finishes.
 Currently, the main use for this function is to add synthetic
 declarations to `js2-recorded-identifiers', which see."
-  :type 'list
+  :type 'hook
   :group 'js2-mode)
 
 (defcustom js2-highlight-external-variables t
@@ -1106,8 +1117,11 @@ another file, or you've got a potential bug."
   :type 'boolean
   :group 'js2-mode)
 
-(defcustom js2-auto-insert-catch-block t
-  "Non-nil to insert matching catch block on open-curly after `try'."
+(defcustom js2-include-jslint-globals t
+  "Non-nil to include the identifiers from JSLint global
+declaration (see http://www.jslint.com/lint.html#global) in the
+buffer-local externs list.  See `js2-additional-externs' for more
+information."
   :type 'boolean
   :group 'js2-mode)
 
@@ -6429,6 +6443,31 @@ it is considered declared."
                 (if (or js2-include-browser-externs js2-include-node-externs)
                     js2-typed-array-externs))))
 
+(defun js2-apply-jslint-globals ()
+  (setq js2-additional-externs
+        (nconc (js2-get-jslint-globals)
+               js2-additional-externs)))
+
+(defun js2-get-jslint-globals ()
+  (loop for node in (js2-ast-root-comments js2-mode-ast)
+        when (and (eq 'block (js2-comment-node-format node))
+                  (save-excursion
+                    (goto-char (js2-node-abs-pos node))
+                    (looking-at "/\\*global ")))
+        append (js2-get-jslint-globals-in
+                (match-end 0)
+                (js2-node-abs-end node))))
+
+(defun js2-get-jslint-globals-in (beg end)
+  (let (res)
+    (save-excursion
+      (goto-char beg)
+      (while (re-search-forward js2-mode-identifier-re end t)
+        (let ((match (match-string 0)))
+          (unless (member match '("true" "false"))
+            (push match res)))))
+    (nreverse res)))
+
 ;;; IMenu support
 
 ;; We currently only support imenu, but eventually should support speedbar and
@@ -7136,8 +7175,7 @@ Scanner should be initialized."
     ;; Give extensions a chance to muck with things before highlighting starts.
     (let ((js2-additional-externs js2-additional-externs))
       (save-excursion
-        (dolist (callback js2-post-parse-callbacks)
-          (funcall callback)))
+        (run-hooks 'js2-post-parse-callbacks))
       (js2-highlight-undeclared-vars))
     root))
 
@@ -10080,6 +10118,9 @@ highlighting features of `js2-mode'."
   (set (make-local-variable 'js2-highlight-level) 0) ; no syntax highlighting
   (add-hook 'after-change-functions #'js2-minor-mode-edit nil t)
   (add-hook 'change-major-mode-hook #'js2-minor-mode-exit nil t)
+  (when js2-include-jslint-globals
+    (add-hook 'js2-post-parse-callbacks 'js2-apply-jslint-globals nil t))
+  (run-hooks 'js2-init-hook)
   (js2-reparse))
 
 (defun js2-minor-mode-exit ()
@@ -10091,6 +10132,7 @@ highlighting features of `js2-mode'."
     (delete-overlay js2-mode-node-overlay)
     (setq js2-mode-node-overlay nil))
   (js2-remove-overlays)
+  (remove-hook 'js2-post-parse-callbacks 'js2-apply-jslint-globals t)
   (setq js2-mode-ast nil))
 
 (defvar js2-source-buffer nil "Linked source buffer for diagnostics view")
@@ -10206,8 +10248,10 @@ Selecting an error will jump it to the corresponding source-buffer error.
 (define-derived-mode js2-mode prog-mode "Javascript-IDE"
   ;; FIXME: Should derive from js-mode.
   "Major mode for editing JavaScript code."
-  (setq comment-start "//"  ; used by comment-region; don't change it
-        comment-end "")
+  ;; Used by comment-region; don't change it.
+  (set (make-local-variable 'comment-start) "//")
+  (set (make-local-variable 'comment-end) "")
+  (set (make-local-variable 'comment-start-skip) js2-comment-start-skip)
   (set (make-local-variable 'max-lisp-eval-depth)
        (max max-lisp-eval-depth 3000))
   (set (make-local-variable 'indent-line-function) #'js2-indent-line)
@@ -10236,7 +10280,6 @@ Selecting an error will jump it to the corresponding source-buffer error.
         c-line-comment-starter "//"
         c-paragraph-start js2-paragraph-start
         c-paragraph-separate "$"
-        comment-start-skip js2-comment-start-skip
         c-syntactic-ws-start js2-syntactic-ws-start
         c-syntactic-ws-end js2-syntactic-ws-end
         c-syntactic-eol js2-syntactic-eol)
@@ -10271,7 +10314,14 @@ Selecting an error will jump it to the corresponding source-buffer error.
         js2-mode-comments-hidden nil
         js2-mode-buffer-dirty-p t
         js2-mode-parsing nil)
+
   (js2-set-default-externs)
+
+  (when js2-include-jslint-globals
+    (add-hook 'js2-post-parse-callbacks 'js2-apply-jslint-globals nil t))
+
+  (run-hooks 'js2-init-hook)
+
   (js2-reparse))
 
 (defun js2-mode-exit ()
@@ -10513,8 +10563,9 @@ This ensures that the counts and `next-error' are correct."
 (defun js2-echo-error (old-point new-point)
   "Called by point-motion hooks."
   (let ((msg (get-text-property new-point 'help-echo)))
-    (when (and (stringp msg) (or (not (current-message))
-                                 (string= (current-message) "Quit")))
+    (when (and (stringp msg)
+               (not (active-minibuffer-window))
+               (not (current-message)))
       (message msg))))
 
 (defalias #'js2-echo-help #'js2-echo-error)
@@ -11089,6 +11140,8 @@ RESET means start over from the beginning."
           (if (zerop (decf count))
               (setq continue nil)))
         (setq errs (cdr errs)))
+      ;; Clear for `js2-echo-error'.
+      (message nil)
       (if err
           (goto-char (second err))
         ;; Wrap around to first error.
