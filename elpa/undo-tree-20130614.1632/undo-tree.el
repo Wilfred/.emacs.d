@@ -1,21 +1,5 @@
-;;; undo-tree.el --- Treat undo history as a tree  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2009-2012  Free Software Foundation, Inc
-
-;; Author: Toby Cubitt <toby-undo-tree@dr-qubit.org>
-;; Version: 20130516.8
-;; X-Original-Version: 0.6.3
-;; Keywords: convenience, files, undo, redo, history, tree
-;; URL: http://www.dr-qubit.org/emacs.php
-;; Repository: http://www.dr-qubit.org/git/undo-tree.git
-
-;; This file is part of Emacs.
-;;
-;; This file is free software: you can redistribute it and/or modify it under
-;; the terms of the GNU General Public License as published by the Free
-;; Software Foundation, either version 3 of the License, or (at your option)
-;; any later version.
-;;
+;; Version: 20130614.1632
 ;; This program is distributed in the hope that it will be useful, but WITHOUT
 ;; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 ;; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
@@ -209,9 +193,7 @@
 ;;
 ;; Persistent undo history:
 ;;
-;; Note: Requires a recent development version of Emacs checked out out from
-;;       the Emacs bzr repository. All stable versions of Emacs currently
-;;       break this feature.
+;; Note: Requires Emacs version 24.3 or higher.
 ;;
 ;; `undo-tree-auto-save-history' (variable)
 ;;    automatically save and restore undo-tree history along with buffer
