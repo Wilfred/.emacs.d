@@ -1,5 +1,5 @@
 ;;; top-mode.el --- run "top" from emacs
-;; Version: 20080326.2053
+;; Version: 20130605.1739
 
 ;; Author: Benjamin Rutt
 ;; Created: Jul 18, 2004
@@ -203,6 +203,7 @@ If POS is nil, use current buffer location."
       (setq buffer-read-only t)
       (top-mode))))
 
+;;;###autoload
 (defun top ()
   "Runs 'top' in an emacs buffer."
   (interactive)
