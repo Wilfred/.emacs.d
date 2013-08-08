@@ -51,4 +51,6 @@ a specific search string."
          (file-path-join python-shell-virtualenv-path "lib/python2.7/site-packages")))
     (ag/search search-term libraries-path)))
 
+(global-set-key (kbd "<C-f5>") 'virtualenv-search)
+
 (provide 'python-utils)
