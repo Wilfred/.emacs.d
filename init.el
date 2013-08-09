@@ -385,3 +385,18 @@ If a prefix argument is given, don't change the kill-ring."
   (indent-region (point-min) (point-max)))
 
 (add-hook 'magit-log-edit-mode-hook 'auto-fill-mode)
+
+(require 'f)
+(require 's)
+
+(defun download-file (url directory file-name)
+  "Download the file at URL into DIRECTORY.
+The FILE-NAME defaults to the one used in the URL."
+  (interactive
+   (list (read-from-minibuffer "URL: ")
+         (read-directory-name "Destination dir: ")
+         ;; deliberately not using read-file-name since that inludes the directory
+         (read-from-minibuffer
+          "File name: "
+          (car (last (s-split "/" url))))))
+  (url-copy-file url (f-join directory file-name) 't))
