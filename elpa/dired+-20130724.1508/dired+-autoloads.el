@@ -22,21 +22,24 @@
 ;;;;;;  diredp-set-tag-value-this-file diredp-paste-replace-tags-this-file
 ;;;;;;  diredp-paste-add-tags-this-file diredp-remove-all-tags-this-file
 ;;;;;;  diredp-untag-this-file diredp-tag-this-file diredp-bookmark-this-file
-;;;;;;  diredp-shell-command-this-file diredp-compress-this-file
-;;;;;;  diredp-grep-this-file diredp-print-this-file diredp-hardlink-this-file
-;;;;;;  diredp-symlink-this-file diredp-relsymlink-this-file diredp-copy-this-file
-;;;;;;  diredp-rename-this-file diredp-upcase-this-file diredp-downcase-this-file
-;;;;;;  diredp-capitalize-this-file diredp-delete-this-file diredp-capitalize
-;;;;;;  dired-mark-files-regexp dired-do-delete dired-do-flagged-delete
-;;;;;;  dired-goto-file dired-up-directory dired-do-find-marked-files
-;;;;;;  dired-maybe-insert-subdir dired-do-load dired-do-byte-compile
-;;;;;;  dired-do-compress diredp-ediff diredp-omit-unmarked diredp-omit-marked
-;;;;;;  diredp-toggle-find-file-reuse-dir diredp-mouse-find-file-reuse-dir-buffer
-;;;;;;  diredp-find-file-reuse-dir-buffer diredp-do-bookmark-in-bookmark-file
-;;;;;;  diredp-set-bookmark-file-bookmark-for-marked diredp-mouse-do-bookmark
-;;;;;;  diredp-do-bookmark diredp-mouse-do-set-tag-value diredp-do-set-tag-value
-;;;;;;  diredp-mouse-do-paste-replace-tags diredp-do-paste-replace-tags
-;;;;;;  diredp-mouse-do-paste-add-tags diredp-do-paste-add-tags diredp-mouse-do-remove-all-tags
+;;;;;;  diredp-shell-command-this-file diredp-async-shell-command-this-file
+;;;;;;  diredp-compress-this-file diredp-grep-this-file diredp-print-this-file
+;;;;;;  diredp-hardlink-this-file diredp-symlink-this-file diredp-relsymlink-this-file
+;;;;;;  diredp-copy-this-file diredp-rename-this-file diredp-upcase-this-file
+;;;;;;  diredp-downcase-this-file diredp-capitalize-this-file diredp-delete-this-file
+;;;;;;  diredp-capitalize dired-mark-files-regexp dired-do-delete
+;;;;;;  dired-do-flagged-delete dired-goto-file diredp-prev-subdir
+;;;;;;  diredp-next-subdir diredp-prev-dirline diredp-next-dirline
+;;;;;;  diredp-previous-line diredp-next-line diredp-up-directory-reuse-dir-buffer
+;;;;;;  diredp-up-directory dired-do-find-marked-files dired-maybe-insert-subdir
+;;;;;;  dired-do-load dired-do-byte-compile dired-do-compress diredp-ediff
+;;;;;;  diredp-omit-unmarked diredp-omit-marked diredp-toggle-find-file-reuse-dir
+;;;;;;  diredp-mouse-find-file-reuse-dir-buffer diredp-find-file-reuse-dir-buffer
+;;;;;;  diredp-do-bookmark-in-bookmark-file diredp-set-bookmark-file-bookmark-for-marked
+;;;;;;  diredp-mouse-do-bookmark diredp-do-bookmark diredp-mouse-do-set-tag-value
+;;;;;;  diredp-do-set-tag-value diredp-mouse-do-paste-replace-tags
+;;;;;;  diredp-do-paste-replace-tags diredp-mouse-do-paste-add-tags
+;;;;;;  diredp-do-paste-add-tags diredp-mouse-do-remove-all-tags
 ;;;;;;  diredp-do-remove-all-tags diredp-mouse-do-untag diredp-do-untag
 ;;;;;;  diredp-mouse-do-tag diredp-do-tag diredp-unmark-files-tagged-not-all
 ;;;;;;  diredp-unmark-files-tagged-some diredp-unmark-files-tagged-none
@@ -59,9 +62,9 @@
 ;;;;;;  diredp-insert-subdirs diredp-dired-inserted-subdirs diredp-dired-this-subdir
 ;;;;;;  diredp-fileset diredp-dired-union-other-window diredp-dired-union
 ;;;;;;  diredp-dired-for-files-other-window diredp-dired-for-files
-;;;;;;  diredp-dired-files-other-window diredp-dired-files diredp-w32-local-drives
-;;;;;;  diredp-prompt-for-bookmark-prefix-flag diff-switches) "dired+"
-;;;;;;  "dired+.el" (20807 4160))
+;;;;;;  diredp-dired-files-other-window diredp-dired-files diredp-wrap-around-flag
+;;;;;;  diredp-w32-local-drives diredp-prompt-for-bookmark-prefix-flag
+;;;;;;  diff-switches) "dired+" "dired+.el" (20993 4269 973295 467000))
 ;;; Generated autoloads from dired+.el
 
 (defvar diff-switches "-c" "\
@@ -80,6 +83,11 @@ Each entry is a list (DRIVE DESCRIPTION), where DRIVE is the drive
 name and DESCRIPTION describes DRIVE.")
 
 (custom-autoload 'diredp-w32-local-drives "dired+" t)
+
+(defvar diredp-wrap-around-flag t "\
+*Non-nil means Dired \"next\" commands wrap around to buffer beginning.")
+
+(custom-autoload 'diredp-wrap-around-flag "dired+" t)
 
 (autoload 'diredp-dired-files "dired+" "\
 Like `dired', but non-positive prefix arg prompts for files to list.
@@ -912,6 +920,9 @@ Unlike `dired-find-alternate-file' this does not use
 
 (autoload 'diredp-toggle-find-file-reuse-dir "dired+" "\
 Toggle whether Dired `find-file' commands reuse directories.
+This applies also to `dired-w32-browser' commands and
+`diredp-up-directory'.
+
 A prefix arg specifies directly whether or not to reuse.
  If its numeric value is non-negative then reuse; else do not reuse.
 
@@ -1037,15 +1048,79 @@ To display just the marked files, type \\[delete-other-windows] first.
 
 \(fn &optional ARG)" t nil)
 
-(autoload 'dired-up-directory "dired+" "\
+(autoload 'diredp-up-directory "dired+" "\
 Run Dired on parent directory of current directory.
 Find the parent directory either in this buffer or another buffer.
 Creates a buffer if necessary.
+
+With a prefix arg, Dired the parent directory in another window.
 
 On MS Windows, if you already at the root directory, invoke
 `diredp-w32-drives' to visit a navigable list of Windows drives.
 
 \(fn &optional OTHER-WINDOW)" t nil)
+
+(autoload 'diredp-up-directory-reuse-dir-buffer "dired+" "\
+Like `diredp-up-directory', but reuse Dired buffers.
+With a prefix arg, Dired the parent directory in another window.  But
+in this case there is no buffer reuse.
+
+\(fn &optional OTHER-WINDOW)" t nil)
+
+(autoload 'diredp-next-line "dired+" "\
+Move down lines then position at filename.
+Optional prefix ARG says how many lines to move; default is one line.
+
+If `diredp-wrap-around-flag' is non-nil then wrap around if none is
+found before the buffer end (buffer beginning, if ARG is negative).
+Otherwise, just move to the buffer limit.
+
+\(fn ARG)" t nil)
+
+(autoload 'diredp-previous-line "dired+" "\
+Move up lines then position at filename.
+Optional prefix ARG says how many lines to move; default is one line.
+
+If `diredp-wrap-around-flag' is non-nil then wrap around if none is
+found before the buffer beginning (buffer end, if ARG is negative).
+Otherwise, just move to the buffer limit.
+
+\(fn ARG)" t nil)
+
+(autoload 'diredp-next-dirline "dired+" "\
+Goto ARGth next directory file line.
+If `diredp-wrap-around-flag' is non-nil then wrap around if none is
+found before the buffer beginning (buffer end, if ARG is negative).
+Otherwise, raise an error or, if NO-ERROR-IF-NOT-FOUND is nil, return
+nil.
+
+\(fn ARG &optional OPOINT)" t nil)
+
+(autoload 'diredp-prev-dirline "dired+" "\
+Goto ARGth previous directory file line.
+
+\(fn ARG)" t nil)
+
+(autoload 'diredp-next-subdir "dired+" "\
+Go to the next subdirectory, regardless of level.
+If ARG = 0 then go to this directory's header line.
+
+If `diredp-wrap-around-flag' is non-nil then wrap around if none is
+found before the buffer end (buffer beginning, if ARG is negative).
+Otherwise, raise an error or, if NO-ERROR-IF-NOT-FOUND is nil, return
+nil.
+
+Non-nil NO-SKIP means do not move to end of header line, and return
+the position moved to so far.
+
+\(fn ARG &optional NO-ERROR-IF-NOT-FOUND NO-SKIP)" t nil)
+
+(autoload 'diredp-prev-subdir "dired+" "\
+Go to the previous subdirectory, regardless of level.
+When called interactively and not on a subdir line, go to this subdir's line.
+Otherwise, this is a mirror image of `diredp-next-subdir'.
+
+\(fn ARG &optional NO-ERROR-IF-NOT-FOUND NO-SKIP)" t nil)
 
 (autoload 'dired-goto-file "dired+" "\
 Go to line describing file FILE in this dired buffer.
@@ -1149,10 +1224,18 @@ In Dired, compress or uncompress the file on the cursor line.
 
 \(fn)" t nil)
 
+(autoload 'diredp-async-shell-command-this-file "dired+" "\
+Run a shell COMMAND asynchronously on the file on the Dired cursor line.
+Like `diredp-shell-command-this-file', but adds `&' at the end of
+COMMAND to execute it asynchronously.  The command output appears in
+buffer `*Async Shell Command*'.
+
+\(fn COMMAND FILELIST)" t nil)
+
 (autoload 'diredp-shell-command-this-file "dired+" "\
 In Dired, run a shell COMMAND on the file on the cursor line.
 
-\(fn COMMAND)" t nil)
+\(fn COMMAND FILELIST)" t nil)
 
 (autoload 'diredp-bookmark-this-file "dired+" "\
 In Dired, bookmark the file on the cursor line.
@@ -1497,7 +1580,7 @@ Send a bug report about a Dired+ problem.
 
 ;;;***
 
-;;;### (autoloads nil nil ("dired+-pkg.el") (20807 4160 544442))
+;;;### (autoloads nil nil ("dired+-pkg.el") (20993 4270 94195 626000))
 
 ;;;***
 
