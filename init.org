@@ -512,7 +512,6 @@ highlight the whole line, as it's much faster. See
 https://github.com/lunaryorn/flycheck/issues/153#issuecomment-19450255
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (setq flycheck-idle-change-delay 2.0)
   (setq flycheck-highlighting-mode 'lines)
 #+END_SRC
 
