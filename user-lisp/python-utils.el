@@ -2,6 +2,7 @@
 (require 'ag)
 (require 'dash)
 (require 's)
+(require 'f)
 (require 'python)
 
 (defcustom virtualenvs-root (expand-file-name "~/.envs")
@@ -25,7 +26,7 @@
               (file-name-nondirectory python-shell-virtualenv-path)
               "not set"))
            virtualenv-names))
-         (virtualenv-path (file-path-join virtualenvs-root virtualenv-name)))
+         (virtualenv-path (f-join virtualenvs-root virtualenv-name)))
     (setq python-shell-virtualenv-path virtualenv-path)))
 
 (defun virtualenv-search--dwim-at-point ()
@@ -48,7 +49,7 @@ a specific search string."
   (let ((search-term (read-from-minibuffer "Search virtualenv for: "
                                            (virtualenv-search--dwim-at-point)))
         (libraries-path
-         (file-path-join python-shell-virtualenv-path "lib/python2.7/site-packages")))
+         (f-join python-shell-virtualenv-path "lib/python2.7/site-packages")))
     (ag/search search-term libraries-path)))
 
 (global-set-key (kbd "<C-f5>") 'virtualenv-search)
