@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-08-14T11:19+0100"/>
+<meta name="generated" content="2013-08-14T11:30+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -122,13 +122,19 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#sec-1">1 Introduction</a></li>
+<li><a href="#sec-1">1 Introduction</a>
+<ul>
+<li><a href="#sec-1-1">1.1 Licensing</a></li>
+<li><a href="#sec-1-2">1.2 Reading This Document</a></li>
+</ul>
+</li>
 <li><a href="#sec-2">2 Installing locally</a>
 <ul>
-<li><a href="#sec-2-1">2.1 Emacs 24</a></li>
-<li><a href="#sec-2-2">2.2 Python</a></li>
-<li><a href="#sec-2-3">2.3 JavaScript</a></li>
-<li><a href="#sec-2-4">2.4 Less</a></li>
+<li><a href="#sec-2-1">2.1 The Git Repository</a></li>
+<li><a href="#sec-2-2">2.2 Emacs 24</a></li>
+<li><a href="#sec-2-3">2.3 Python</a></li>
+<li><a href="#sec-2-4">2.4 JavaScript</a></li>
+<li><a href="#sec-2-5">2.5 Less</a></li>
 </ul>
 </li>
 <li><a href="#sec-3">3 Contents</a>
@@ -182,8 +188,40 @@ for the JavaScript code in this tag.
 <h2 id="sec-1"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 
-<p>This file is a literate programming document. To generate init.el, run
-`M-x org-babel-tangle'. To generate init.html, run `M-x org-export-as-html'.
+
+<p>
+This is the Emacs environment I (Wilfred Hughes) use for development.
+</p>
+
+</div>
+
+<div id="outline-container-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Licensing</h3>
+<div class="outline-text-3" id="text-1-1">
+
+
+<p>
+Code I've written (init.el and files under `user-lisp/') is BSD
+licensed, see COPYING.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Reading This Document</h3>
+<div class="outline-text-3" id="text-1-2">
+
+
+<p>
+This file is a literate programming document written with org-mode and
+org-mode-babel. You can view init.html in a web browser, or read
+init.org in Emacs.
+</p>
+<p>
+init.el and init.html are generated files. To generate init.el, run
+`M-x org-babel-tangle'. To generate init.html, run `M-x
+org-export-as-html'.
 </p>
 <p>
 By default, all the sections in this document are collapsed. You can
@@ -193,7 +231,9 @@ can expand all headers by pressing `C-u C-u C-u &lt;TAB&gt;'.
 <p>
 You can edit any code block by putting point inside the block and
 pressing `C-c '' (press `C-c '' again to escape). 
-</p></div>
+</p>
+</div>
+</div>
 
 </div>
 
@@ -203,27 +243,60 @@ pressing `C-c '' (press `C-c '' again to escape).
 
 
 <p>
-This repository seeks to be as self-contained as possible. However, you will require:
+This repository seeks to be as self-contained as possible. Generally,
+you should be able to check out the repository and start using it on
+any of Linux, OS X and Windows. To use this repository, you will
+require:
 </p>
 
 </div>
 
 <div id="outline-container-2-1" class="outline-3">
-<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Emacs 24</h3>
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> The Git Repository</h3>
 <div class="outline-text-3" id="text-2-1">
 
 
 <p>
-I use this repository with Emacs 24. Most code works with Emacs 23 but
-I don't test it often.
+Remove any existing .emacs.d configuration (or move elsewhere):
 </p>
+
+
+
+<pre class="src src-sh">rm -r ~/.emacs.d
+</pre>
+
+
+<p>
+Clone the repo:
+</p>
+
+
+
+<pre class="src src-sh">git clone git://github.com/Wilfred/.emacs.d.git
+</pre>
+
+
 </div>
 
 </div>
 
 <div id="outline-container-2-2" class="outline-3">
-<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Python</h3>
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Emacs 24</h3>
 <div class="outline-text-3" id="text-2-2">
+
+
+<p>
+I use this repository with Emacs 24. Most code works with Emacs 23 but
+I don't test it often. Bug fixes for other Emacs versions (or other
+Emacsen) are welcomed.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-2-3" class="outline-3">
+<h3 id="sec-2-3"><span class="section-number-3">2.3</span> Python</h3>
+<div class="outline-text-3" id="text-2-3">
 
 
 <p>
@@ -240,9 +313,9 @@ I use flake8, which is available on PyPI. You can install it with:
 
 </div>
 
-<div id="outline-container-2-3" class="outline-3">
-<h3 id="sec-2-3"><span class="section-number-3">2.3</span> JavaScript</h3>
-<div class="outline-text-3" id="text-2-3">
+<div id="outline-container-2-4" class="outline-3">
+<h3 id="sec-2-4"><span class="section-number-3">2.4</span> JavaScript</h3>
+<div class="outline-text-3" id="text-2-4">
 
 
 <p>
@@ -260,9 +333,9 @@ install JSHint, run:
 
 </div>
 
-<div id="outline-container-2-4" class="outline-3">
-<h3 id="sec-2-4"><span class="section-number-3">2.4</span> Less</h3>
-<div class="outline-text-3" id="text-2-4">
+<div id="outline-container-2-5" class="outline-3">
+<h3 id="sec-2-5"><span class="section-number-3">2.5</span> Less</h3>
+<div class="outline-text-3" id="text-2-5">
 
 
 <p>
@@ -298,6 +371,11 @@ with:
 Code I've written lives in user-lisp. This includes packages that I
 haven't polished enough to release yet, small convenience functions,
 and package customisations.
+</p>
+<p>
+Interactive commands, configuration and keybindings are kept in files
+named `FOO-customisations.el'. Elisp convenience functions are kept in
+files named `FOO-utils.el'.
 </p>
 
 
@@ -1361,7 +1439,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-08-14T11:19+0100</p>
+<p class="date">Date: 2013-08-14T11:30+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

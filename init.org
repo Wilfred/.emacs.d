@@ -1,6 +1,21 @@
 * Introduction
-This file is a literate programming document. To generate init.el, run
-`M-x org-babel-tangle'. To generate init.html, run `M-x org-export-as-html'.
+
+This is the Emacs environment I (Wilfred Hughes) use for development.
+
+** Licensing
+
+Code I've written (init.el and files under `user-lisp/') is BSD
+licensed, see COPYING.
+
+** Reading This Document
+
+This file is a literate programming document written with org-mode and
+org-mode-babel. You can view init.html in a web browser, or read
+init.org in Emacs.
+
+init.el and init.html are generated files. To generate init.el, run
+`M-x org-babel-tangle'. To generate init.html, run `M-x
+org-export-as-html'.
 
 By default, all the sections in this document are collapsed. You can
 expand a header by pressing `<TAB>' when point is on that header. You
@@ -8,14 +23,33 @@ can expand all headers by pressing `C-u C-u C-u <TAB>'.
 
 You can edit any code block by putting point inside the block and
 pressing `C-c '' (press `C-c '' again to escape). 
+
 * Installing locally
 
-This repository seeks to be as self-contained as possible. However, you will require:
+This repository seeks to be as self-contained as possible. Generally,
+you should be able to check out the repository and start using it on
+any of Linux, OS X and Windows. To use this repository, you will
+require:
+
+** The Git Repository
+
+Remove any existing .emacs.d configuration (or move elsewhere):
+
+#+BEGIN_SRC sh
+  rm -r ~/.emacs.d
+#+END_SRC
+
+Clone the repo:
+
+#+BEGIN_SRC sh
+  git clone git://github.com/Wilfred/.emacs.d.git
+#+END_SRC
 
 ** Emacs 24
 
 I use this repository with Emacs 24. Most code works with Emacs 23 but
-I don't test it often.
+I don't test it often. Bug fixes for other Emacs versions (or other
+Emacsen) are welcomed.
 
 ** Python
 
@@ -50,6 +84,10 @@ with:
 Code I've written lives in user-lisp. This includes packages that I
 haven't polished enough to release yet, small convenience functions,
 and package customisations.
+
+Interactive commands, configuration and keybindings are kept in files
+named `FOO-customisations.el'. Elisp convenience functions are kept in
+files named `FOO-utils.el'.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (add-to-list 'load-path "~/.emacs.d/user-lisp/")
