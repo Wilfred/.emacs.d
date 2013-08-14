@@ -5,7 +5,7 @@
 
 ;;;### (autoloads (flycheck-info flycheck-def-option-var flycheck-def-config-file-var
 ;;;;;;  flycheck-declare-checker global-flycheck-mode flycheck-mode)
-;;;;;;  "flycheck" "flycheck.el" (20987 50595 994360 845000))
+;;;;;;  "flycheck" "flycheck.el" (21003 21735 832034 471000))
 ;;; Generated autoloads from flycheck.el
 
 (defconst flycheck-mode-line-lighter " FlyC" "\
@@ -62,49 +62,55 @@ about a checker.
 
 The following PROPERTIES are understood:
 
-`:command' A list with the executable (in `car') and the
-arguments (in `cdr') of the syntax checker.  The executable is
-checked for existence with `executable-find' before executing the
-checker.  The arguments are substituted with
-`flycheck-substitute-argument' before execution, see the
-documentation of this function for a list of special tags allowed
-in arguments.
+`:command'
+     A list with the executable (in `car') and the arguments (in
+     `cdr') of the syntax checker.  The executable is checked for
+     existence with `executable-find' before executing the
+     checker.  The arguments are substituted with
+     `flycheck-substitute-argument' before execution, see the
+     documentation of this function for a list of special tags
+     allowed in arguments.
 
-`:error-patterns' A list of error patterns to parse the output of
-the checker.  Each pattern is a list (REGEXP LEVEL).  REGEXP is a
-regular expression that matches an error.  This regular
-expression may contain match groups extracting specific
-information about the error.  The 1st group is the file name, the
-2nd group the line number, the 3rd group the column number and
-the 4th group the error message.  A group is ignored if it did
-not match or the match returned an empty string.  LEVEL is either
-warning or error and determines the severity of the error message
-parsed with the pattern.
+`:error-patterns'
+     A list of error patterns to parse the output of the checker.
+     Each pattern is a list (REGEXP LEVEL).  REGEXP is a regular
+     expression that matches an error.  This regular expression
+     may contain match groups extracting specific information
+     about the error.  The 1st group is the file name, the 2nd
+     group the line number, the 3rd group the column number and
+     the 4th group the error message.  A group is ignored if it
+     did not match or the match returned an empty string.  LEVEL
+     is either warning or error and determines the severity of
+     the error message parsed with the pattern.
 
-`:error-parser' A function symbol to parse errors with.  The
-function must accept three arguments OUTPUT CHECKER BUFFER, where
-OUTPUT is the output as string and CHECKER the checker symbol
-that was used to check BUFFER.  The function must return a list
-of `flycheck-error' objects parsed from OUTPUT.
+`:error-parser'
+     A function symbol to parse errors with.  The function must
+     accept three arguments OUTPUT CHECKER BUFFER, where OUTPUT
+     is the output as string and CHECKER the checker symbol that
+     was used to check BUFFER.  The function must return a list
+     of `flycheck-error' objects parsed from OUTPUT.
 
-`:modes' A major mode symbol or a list thereof.  If present the
-checker is only used in these modes.
+`:modes'
+     A major mode symbol or a list thereof.  If present the
+     checker is only used in these modes.
 
-`:predicate' A function symbol or lambda expression.  If present
-the syntax checker is only used if this function returns non-nil
-when called in the buffer to check.
+`:predicate'
+     A function symbol or lambda expression.  If present the
+     syntax checker is only used if this function returns non-nil
+     when called in the buffer to check.
 
-May also be a form, but this usage is obsolete.
+     May also be a form, but this usage is obsolete.
 
-`:next-checkers' A list where each element is either a checker
-symbol to run after this checker or a cons cell (PREDICATE
-. CHECKER).  In the latter case, CHECKER is the checker symbol to
-run, and the PREDICATE symbol specifies when to run the checker:
-If PREDICATE is `no-errors' run the next checker only if this
-checker returned no errors at all.  If PREDICATE is
-`warnings-only', run the next checker only if this checker
-returned only warnings.  Only the first usable and
-registered (see `flycheck-registered-checker-p') is run.
+`:next-checkers'
+     A list where each element is either a checker
+     symbol to run after this checker or a cons cell (PREDICATE
+     . CHECKER).  In the latter case, CHECKER is the checker symbol to
+     run, and the PREDICATE symbol specifies when to run the checker:
+     If PREDICATE is `no-errors' run the next checker only if this
+     checker returned no errors at all.  If PREDICATE is
+     `warnings-only', run the next checker only if this checker
+     returned only warnings.  Only the first usable and
+     registered (see `flycheck-registered-checker-p') is run.
 
 A checker must have a `:command' property, at least one of
 `:error-patterns' or `:error-parser', and at least one of
@@ -125,10 +131,13 @@ providing a configuration file for CHECKER.  The CHECKER argument
 is used for documentation purposes only.  If given use FILE-NAME
 as initial value.
 
+The variable is declared with `defcustom', and declared
+buffer-local.  CUSTOM-ARGS are forwarded to `defcustom'
+
 Use this together with the `config-file' cell in syntax checker
 commands.
 
-\(fn SYMBOL CHECKER &optional FILE-NAME)" nil t)
+\(fn SYMBOL CHECKER &optional FILE-NAME &rest CUSTOM-ARGS)" nil t)
 
 (put 'flycheck-def-config-file-var 'lisp-indent-function '3)
 
@@ -157,8 +166,8 @@ Open the Flycheck manual.
 
 ;;;***
 
-;;;### (autoloads nil nil ("flycheck-pkg.el") (20987 50596 133190
-;;;;;;  948000))
+;;;### (autoloads nil nil ("flycheck-pkg.el") (21003 21735 949650
+;;;;;;  575000))
 
 ;;;***
 

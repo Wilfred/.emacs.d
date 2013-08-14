@@ -1,4 +1,4 @@
-This is /home/melpa/melpa/working/flycheck-20130731.1956/flycheck.info,
+This is /home/melpa/melpa/working/flycheck-20130813.1821/flycheck.info,
 produced by makeinfo version 4.13 from
 /home/melpa/melpa/working/flycheck/doc/flycheck.texi.
 
@@ -99,7 +99,7 @@ File: flycheck.info,  Node: Features,  Next: Installation,  Prev: Introduction, 
      `flycheck-select-checker' at `C-c ! s'
 
    * Built-in syntax checkers for:
-        * C/C++ (using `cppcheck')
+        * C/C++ (using `clang' and `cppcheck')
 
         * CoffeeScript (using `coffeelint')
 
@@ -459,8 +459,14 @@ Some syntax checkers can be configured via options.  The following
 options are provided by Flycheck (use `C-h v' or `M-x
 describe-variable' on the variable name for detailed help):
 
+ -- User Option: flycheck-clang-include-path
+     Include search path for `c/c++-clang'.
+
+ -- User Option: flycheck-clang-warnings
+     Additional warnings to enable in `c/c++-clang'.
+
  -- User Option: flycheck-cppcheck-checks
-     Additional checks to use in `c/c++-cppcheck'
+     Additional checks to use in `c/c++-cppcheck'.
 
  -- User Option: flycheck-emacs-lisp-initialize-packages
      Whether to initialize packages (see `package-initialize') before
@@ -598,24 +604,26 @@ Errors and warnings from a syntax checker are
  -- User Option: flycheck-highlighting-mode
      This variable determines how to highlight errors:
 
-     If set to `columns', only highlight the error column.  If the error
-     is not specific to a column, highlight the whole line.
+    `columns'
+          Highlights the error column.  If the error does not have a
+          column, highlight the whole line.
 
-     If set to `sexps', highlight the expression at the error column.
-     If there is no expression at the error column, highlight the column
-     only.  If the error is not specific to a column, highlight the
-     whole line.  This mode is the default.
+    `symbols'
+          Highlights the symbol at the error column, if there is any,
+          otherwise behave like `columns'.  This is the default.
 
-     If set to `lines', highlight the whole line the error refers to,
-     regardless of whether the error is specific to a column.
+    `sexps'
+          Highlights the expression at the error column, if there is
+          any, otherwise behave like `columns'.  Note that this mode
+          can be very slow in some major modes.
 
-     If set to `nil', do not highlight errors at all.  However, errors
-     will still be reported in the mode line and in error message
-     popups, and indicated according to `flycheck-indication-mode'.
+    `lines'
+          Highlights the whole line of the error.
 
-     Note that this variable does _not_ affect error _navigation_.
-     `next-error' and `previous-error' always jump to the error column,
-     regardless of the highlighting mode.
+    `nil'
+          Do not highlight errors at all.  However, errors will still
+          be reported in the mode line and in error message popups, and
+          indicated according to `flycheck-indication-mode'.
 
  -- Face: flycheck-fringe-error
  -- Face: flycheck-fringe-warning
@@ -756,10 +764,6 @@ commands:
      flycheck-first-error' moves to the 3rd error from the beginning of
      the buffer.
 
-
-   Error navigation jumps to the exact error column, or to the first
-non-whitespace character of a line if the error is not specific to a
-column.
 
 
 File: flycheck.info,  Node: Mode line,  Prev: Navigation,  Up: Usage
@@ -944,15 +948,22 @@ You define new syntax checkers with `flycheck-define-checker':
                An OPTION ending with a `=' character is treated like in
                a `config-file' cell.
 
-         `(option-list OPTION VARIABLE [FILTER])'
+         `(option-list OPTION VARIABLE [PREPEND-FN [FILTER]])'
                This cell is similar to `option', but for option lists.
 
                The value of VARIABLE must be a list, and OPTION is
-               prepend to each non-nil item in the list.  FILTER is an
-               optional function to be applied to each item in the list
-               before substitution.  Items for which the filter returns
-               nil are dropped.  *Note Option filters::, for a list of
-               built-in option filters.
+               prepended to each non-nil item in the list, using the
+               function PREPEND-FN.  PREPEND-FN is called with OPTION
+               as first and each item in the list as second argument.
+               It should return the result of prepending OPTION to the
+               item, either as list or as string.  If omitted, it
+               defaults to `list', so by default, OPTION will be
+               prepended as a separate argument.
+
+               FILTER is an optional function to be applied to each
+               item in the list before substitution.  Items for which
+               the filter returns nil are dropped.  *Note Option
+               filters::, for a list of built-in option filters.
 
          `(eval FORM)'
                This cell is substituted with a result of evaluating
@@ -2244,6 +2255,9 @@ File: flycheck.info,  Node: 0.13,  Next: master,  Prev: 0.12,  Up: Changes
 
         * Obsolete `:predicate' forms in favor of `:predicate' functions
 
+        * `flycheck-def-config-file-var' does not automatically mark
+          variables as safe anymore
+
    * New features:
 
         * Make fringe indicator faces customizable independently with
@@ -2288,6 +2302,10 @@ File: flycheck.info,  Node: 0.13,  Next: master,  Prev: 0.12,  Up: Changes
         * Copy each message separately in
           `flycheck-copy-messages-as-kill'
 
+        * Mark some customizable variables as safe for file variable
+          usage, most notably `flycheck-indication-mode',
+          `flycheck-highlighting-mode' and `flycheck-idle-change-delay'.
+
    * Bug fixes:
 
         * Fix error when searching for a configuration file outside a
@@ -2330,6 +2348,9 @@ master (unreleased)
           checker for non-configuration files
           (https://github.com/lunaryorn/flycheck/issues/176)
 
+        * Change the default `flycheck-highlighting-mode' to `symbols'
+          (https://github.com/lunaryorn/flycheck/issues/179)
+
    * New features:
 
         * List errors at point only with prefix arg to
@@ -2358,6 +2379,10 @@ master (unreleased)
         * New option filter `flycheck-option-comma-separated-list' for
           options with comma separated lists as values
 
+        * New highlighting mode `symbols' to highlight the symbol
+          pointed to by an error
+          (https://github.com/lunaryorn/flycheck/issues/179)
+
    * New syntax checkers:
 
         * LESS (https://github.com/lunaryorn/flycheck/issues/160)
@@ -2367,6 +2392,9 @@ master (unreleased)
 
         * C/C++ with `cppcheck'
           (https://github.com/lunaryorn/flycheck/issues/170)
+
+        * C/C++ with `clang'
+          (https://github.com/lunaryorn/flycheck/issues/172)
 
    * Improvements:
 
@@ -2388,6 +2416,9 @@ master (unreleased)
           in the echo area
           (https://github.com/lunaryorn/flycheck/issues/175)
 
+        * Fix universal prefix argument for `flycheck-next-error' at
+          `C-c ! n'
+
 
 
 File: flycheck.info,  Node: Credits,  Next: GNU Free Documentation License,  Prev: Changes,  Up: Top
@@ -2407,8 +2438,8 @@ their support and patches are greatly appreciated.
    * Damon Haley (https://github.com/dhaley) helped to shape and test
      the PHP CodeSniffer checker.
 
-   * David Holm (https://github.com/dholm) added a C/C++ style checker
-     using `cppcheck'.
+   * David Holm (https://github.com/dholm) added C/C++ syntax and style
+     checkers using `clang' and `cppcheck' respectively.
 
    * Jimmy Yuen Ho Wong (https://github.com/wyuenho) added the HTML
      syntax checker and the jshint Javascript checker, and did valuable
@@ -2969,6 +3000,8 @@ order of their appearance in the default value of `flycheck-checkers':
 
    * `bash'
 
+   * `c/c++-clang'
+
    * `c/c++-cppcheck'
 
    * `coffee-coffeelint'
@@ -3069,23 +3102,25 @@ Type, Function and Variable Definition Index
 * flycheck-check-syntax-automatically:   Syntax checking.     (line  18)
 * flycheck-checker:                      Selection.           (line  44)
 * flycheck-checkers:                     Selection.           (line  10)
-* flycheck-chktexrc:                     Configuration.       (line  51)
-* flycheck-clear:                        Reporting.           (line 144)
-* flycheck-coffeelintrc:                 Configuration.       (line  54)
-* flycheck-copy-messages-as-kill:        Reporting.           (line 127)
+* flycheck-chktexrc:                     Configuration.       (line  57)
+* flycheck-clang-include-path:           Configuration.       (line  11)
+* flycheck-clang-warnings:               Configuration.       (line  14)
+* flycheck-clear:                        Reporting.           (line 146)
+* flycheck-coffeelintrc:                 Configuration.       (line  60)
+* flycheck-copy-messages-as-kill:        Reporting.           (line 129)
 * flycheck-count-errors:                 Error API.           (line 110)
-* flycheck-cppcheck-checks:              Configuration.       (line  11)
+* flycheck-cppcheck-checks:              Configuration.       (line  17)
 * flycheck-current-errors:               Error API.           (line 106)
-* flycheck-def-config-file-var:          Definition.          (line 274)
-* flycheck-def-option-var:               Definition.          (line 290)
+* flycheck-def-config-file-var:          Definition.          (line 281)
+* flycheck-def-option-var:               Definition.          (line 297)
 * flycheck-define-checker:               Definition.          (line   9)
 * flycheck-describe-checker:             Selection.           (line  72)
-* flycheck-display-error-messages:       Reporting.           (line 107)
-* flycheck-display-errors-function:      Reporting.           (line  98)
-* flycheck-display-errors-in-list:       Reporting.           (line 115)
-* flycheck-emacs-lisp-initialize-packages: Configuration.     (line  14)
-* flycheck-emacs-lisp-load-path:         Configuration.       (line  23)
-* flycheck-emacs-lisp-package-user-dir:  Configuration.       (line  33)
+* flycheck-display-error-messages:       Reporting.           (line 109)
+* flycheck-display-errors-function:      Reporting.           (line 100)
+* flycheck-display-errors-in-list:       Reporting.           (line 117)
+* flycheck-emacs-lisp-initialize-packages: Configuration.     (line  20)
+* flycheck-emacs-lisp-load-path:         Configuration.       (line  29)
+* flycheck-emacs-lisp-package-user-dir:  Configuration.       (line  39)
 * flycheck-error <1>:                    Error API.           (line  11)
 * flycheck-error:                        Reporting.           (line  17)
 * flycheck-error-column-region:          Error API.           (line  81)
@@ -3096,28 +3131,28 @@ Type, Function and Variable Definition Index
 * flycheck-error-pos:                    Error API.           (line  94)
 * flycheck-error-sexp-region:            Error API.           (line  87)
 * flycheck-error-with-buffer:            Error API.           (line  74)
-* flycheck-flake8-maximum-complexity:    Configuration.       (line  36)
-* flycheck-flake8-maximum-line-length:   Configuration.       (line  40)
-* flycheck-flake8rc:                     Configuration.       (line  57)
-* flycheck-fringe-error:                 Reporting.           (line  53)
-* flycheck-fringe-warning:               Reporting.           (line  54)
-* flycheck-google-messages:              Reporting.           (line 132)
+* flycheck-flake8-maximum-complexity:    Configuration.       (line  42)
+* flycheck-flake8-maximum-line-length:   Configuration.       (line  46)
+* flycheck-flake8rc:                     Configuration.       (line  63)
+* flycheck-fringe-error:                 Reporting.           (line  55)
+* flycheck-fringe-warning:               Reporting.           (line  56)
+* flycheck-google-messages:              Reporting.           (line 134)
 * flycheck-has-errors-p:                 Error API.           (line 115)
 * flycheck-highlighting-mode:            Reporting.           (line  31)
 * flycheck-idle-change-delay:            Syntax checking.     (line  47)
-* flycheck-indication-mode:              Reporting.           (line  58)
-* flycheck-jshintrc:                     Configuration.       (line  60)
-* flycheck-list-errors:                  Reporting.           (line  87)
-* flycheck-locate-config-file-functions: Configuration.       (line  84)
+* flycheck-indication-mode:              Reporting.           (line  60)
+* flycheck-jshintrc:                     Configuration.       (line  66)
+* flycheck-list-errors:                  Reporting.           (line  89)
+* flycheck-locate-config-file-functions: Configuration.       (line  90)
 * flycheck-next-error:                   Navigation.          (line  23)
 * flycheck-parse-xml-string:             Error parser API.    (line   7)
-* flycheck-phpcs-standard:               Configuration.       (line  44)
+* flycheck-phpcs-standard:               Configuration.       (line  50)
 * flycheck-previous-error:               Navigation.          (line  31)
-* flycheck-process-error-functions:      Reporting.           (line  71)
-* flycheck-rubocoprc:                    Configuration.       (line  63)
+* flycheck-process-error-functions:      Reporting.           (line  73)
+* flycheck-rubocoprc:                    Configuration.       (line  69)
 * flycheck-select-checker:               Selection.           (line  34)
 * flycheck-syntax-check-failed-hook:     Syntax checking.     (line 120)
-* flycheck-tidyrc:                       Configuration.       (line  66)
+* flycheck-tidyrc:                       Configuration.       (line  72)
 * flycheck-warning:                      Reporting.           (line  18)
 
 
@@ -3126,52 +3161,52 @@ Tag Table:
 Node: Top836
 Node: Introduction2203
 Node: Features3144
-Node: Installation5311
-Node: Activation6737
-Node: Usage7088
-Node: Syntax checking7711
-Node: Selection12177
-Node: Configuration14783
-Node: Reporting19365
-Node: Navigation24819
-Node: Mode line26628
-Node: Extending27534
-Node: Definition28150
-Node: Error parsers41851
-Node: Option filters42984
-Node: Examples43406
-Node: Simple example43838
-Node: Predicate example47019
-Node: Configuration example49143
-Node: Chaining example51785
-Node: API53212
-Node: Error API54000
-Node: Error parser API58197
-Node: Contribution58423
-Node: Reporting issues59101
-Node: Contributing syntax checkers59914
-Node: Contributing code60711
-Node: Unit tests62058
-Node: Changes63395
-Node: 0.164107
-Node: 0.264397
-Node: 0.364676
-Node: 0.464912
-Node: 0.565694
-Node: 0.666920
-Node: 0.6.169788
-Node: 0.769937
-Node: 0.7.170958
-Node: 0.871678
-Node: 0.973201
-Node: 0.1073700
-Node: 0.1175767
-Node: 0.1276959
-Node: 0.1377971
-Node: master80568
-Node: Credits83300
-Node: GNU Free Documentation License86580
-Node: Syntax checkers111753
-Node: Definition Index112934
+Node: Installation5323
+Node: Activation6749
+Node: Usage7100
+Node: Syntax checking7723
+Node: Selection12189
+Node: Configuration14795
+Node: Reporting19563
+Node: Navigation24860
+Node: Mode line26522
+Node: Extending27428
+Node: Definition28044
+Node: Error parsers42161
+Node: Option filters43294
+Node: Examples43716
+Node: Simple example44148
+Node: Predicate example47329
+Node: Configuration example49453
+Node: Chaining example52095
+Node: API53522
+Node: Error API54310
+Node: Error parser API58507
+Node: Contribution58733
+Node: Reporting issues59411
+Node: Contributing syntax checkers60224
+Node: Contributing code61021
+Node: Unit tests62368
+Node: Changes63705
+Node: 0.164417
+Node: 0.264707
+Node: 0.364986
+Node: 0.465222
+Node: 0.566004
+Node: 0.667230
+Node: 0.6.170098
+Node: 0.770247
+Node: 0.7.171268
+Node: 0.871988
+Node: 0.973511
+Node: 0.1074010
+Node: 0.1176077
+Node: 0.1277269
+Node: 0.1378281
+Node: master81185
+Node: Credits84392
+Node: GNU Free Documentation License87707
+Node: Syntax checkers112880
+Node: Definition Index114081
 
 End Tag Table

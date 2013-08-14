@@ -6,7 +6,7 @@
 ;; URL: https://github.com/lunaryorn/flycheck
 ;; Keywords: convenience languages tools
 ;; Version: 0.14-cvs
-;; Package-Requires: ((s "1.6.0") (dash "1.2") (cl-lib "0.1") (emacs "24.1"))
+;; Package-Requires: ((s "1.6.0") (dash "1.6.0") (cl-lib "0.1") (emacs "24.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -112,6 +112,7 @@ buffer-local wherever it is set."
 
 (defcustom flycheck-checkers
   '(bash
+    c/c++-clang
     c/c++-cppcheck
     coffee-coffeelint
     css-csslint
@@ -162,7 +163,8 @@ either directly or with `flycheck-select-checker'.
 Syntax checkers in this list must be defined with
 `flycheck-define-checker'."
   :group 'flycheck
-  :type '(repeat (symbol :tag "Checker")))
+  :type '(repeat (symbol :tag "Checker"))
+  :risky t)
 
 (defvar-local flycheck-checker nil
   "Syntax checker to use for the current buffer.
@@ -202,7 +204,8 @@ function is then given to the syntax checker if it exists.
 
 This variable is an abnormal hook."
   :group 'flycheck
-  :type 'hook)
+  :type 'hook
+  :risky t)
 
 (defcustom flycheck-process-error-functions '(flycheck-add-overlay)
   "Functions to process errors.
@@ -221,7 +224,11 @@ after the corresponding syntax checker finished.  At this stage,
 the overlays from the previous syntax checks are still present,
 and there may be further syntax checkers in the chain.
 
-This variable is an abnormal hook.")
+This variable is an abnormal hook."
+  :group 'flycheck
+  :type 'hook
+  :package-version '(flycheck . "0.13")
+  :risky t)
 
 (defcustom flycheck-display-errors-function #'flycheck-display-error-messages
   "Function to display error messages.
@@ -237,7 +244,8 @@ If set to nil, do not display errors at all."
                  (const :tag "Display errors in error list"
                         flycheck-display-errors-in-list)
                  (function :tag "Error display function"))
-  :package-version '(flycheck . "0.13"))
+  :package-version '(flycheck . "0.13")
+  :risky t)
 
 (defcustom flycheck-indication-mode 'left-fringe
   "The indication mode for Flycheck errors and warnings.
@@ -253,34 +261,42 @@ highlight them according to `flycheck-highlighting-mode'."
   :group 'flycheck
   :type '(choice (const :tag "Indicate in the left fringe" left-fringe)
                  (const :tag "Indicate in the right fringe" right-fringe)
-                 (const :tag "Do not indicate" nil)))
+                 (const :tag "Do not indicate" nil))
+  :safe #'symbolp)
 
-(defcustom flycheck-highlighting-mode 'sexps
+(defcustom flycheck-highlighting-mode 'symbols
   "The highlighting mode for Flycheck errors and warnings.
 
-Controls how Flycheck highlights errors in buffers.  May either
-be `columns', `sexps', `lines' or nil.
+The highlighting mode controls how Flycheck highlights errors in
+buffers.  The following modes are known:
 
-If `columns', highlight the error column.  If the error does not
-have a column, highlight the whole line.
+`columns'
+     highlights the error column.  If the error does not have a
+     column, highlight the whole line.
 
-If `sexps', highlight the expression at the error column, if
-there is any, otherwise behave like `columns'.
+`symbols'
+     highlights the symbol at the error column, if there is any, otherwise
+     behave like `columns'.
 
-If `lines', always highlight the whole line.
+`sexps'
+     highlights the expression at the error column, if there is
+     any, otherwise behave like `columns'.  Note that this mode
+     can be *very* slow in some modes.
 
-If nil do no highlight errors at all, but only indicate according
-to `flycheck-indication-mode'.
+`lines'
+     highlights the whole line.
 
-Note that this does not affect error navigation.  When navigating
-errors with `next-error' and `previous-error' Flycheck always
-jumps to the error column regardless of the highlighting mode."
+nil
+     does not highlight errors at all.  Errors will still be
+     indicated according to `flycheck-indication-mode'."
   :group 'flycheck
   :type '(choice (const :tag "Highlight columns only" columns)
+                 (const :tag "Highlight symbols" symbols)
                  (const :tag "Highlight expressions" sexps)
                  (const :tag "Highlight whole lines" lines)
                  (const :tag "Do not highlight errors" nil))
-  :package-version '(flycheck . "0.12"))
+  :package-version '(flycheck . "0.14")
+  :safe #'symbolp)
 
 (defcustom flycheck-check-syntax-automatically '(save
                                                  idle-change
@@ -291,16 +307,19 @@ jumps to the error column regardless of the highlighting mode."
 This variable is a list of events that may trigger syntax checks.
 The following events are known:
 
-`save' checks syntax automatically each time the buffer is saved.
+`save'
+     checks syntax automatically each time the buffer is saved.
 
-`idle-change' checks syntax automatically some time after the
-last change to the buffer occurred.
+`idle-change'
+     checks syntax automatically some time after the last change
+     to the buffer occurred.
 
-`new-line' checks syntax automatically each time a new line is
-inserted into the buffer.
+`new-line'
+     checks syntax automatically each time a new line is inserted
+     into the buffer.
 
-`mode-enabled' checks syntax automatically when `flycheck-mode'
-is enabled.
+`mode-enabled'
+     checks syntax automatically when `flycheck-mode' is enabled.
 
 For instance, set this variable to '(mode-enabled save) to only
 check syntax automatically when saving a buffer, but never when
@@ -313,7 +332,8 @@ to start a syntax check manually."
               (const :tag "After the buffer was changed and idle" idle-change)
               (const :tag "After a new line was inserted" new-line)
               (const :tag "After `flycheck-mode' was enabled" mode-enabled))
-  :package-version '(flycheck . "0.12"))
+  :package-version '(flycheck . "0.12")
+  :safe #'symbolp)
 
 (defcustom flycheck-idle-change-delay 0.5
   "How many seconds to wait before checking syntax automatically.
@@ -327,7 +347,8 @@ This variable has no effect, if `idle-change' is not contained in
 `flycheck-check-syntax-automatically'."
   :group 'flycheck
   :type 'number
-  :package-version '(flycheck . "0.13"))
+  :package-version '(flycheck . "0.13")
+  :safe #'numberp)
 
 (defcustom flycheck-google-max-messages 5
   "How many messages to google at once.
@@ -341,12 +362,14 @@ messages at point."
   :group 'flycheck
   :type '(choice (const :tag "Always google all messages" nil)
                  (integer :tag "Maximum messages to google"))
-  :package-version '(flycheck . "0.10"))
+  :package-version '(flycheck . "0.10")
+  :safe #'numberp)
 
 (defcustom flycheck-mode-hook nil
   "Hooks to run after `flycheck-mode'."
   :group 'flycheck
-  :type 'hook)
+  :type 'hook
+  :risky t)
 
 (defcustom flycheck-after-syntax-check-hook nil
   "Functions to run after each syntax check.
@@ -381,7 +404,8 @@ checker*.
 
 This variable is a normal hook."
   :group 'flycheck
-  :type 'hook)
+  :type 'hook
+  :risky t)
 
 (defcustom flycheck-syntax-check-failed-hook nil
   "Functions to run if a syntax check failed.
@@ -395,7 +419,8 @@ when Flycheck failed.
 
 This variable is a normal hook."
   :group 'flycheck
-  :type 'hook)
+  :type 'hook
+  :risky t)
 
 (defface flycheck-error
   '((((supports :underline (:style wave)))
@@ -564,9 +589,10 @@ buffer manually.
     (with-temp-buffer
       (insert-file-contents source-file)
       (let ((info (package-buffer-info)))
-        (if (fboundp 'package-desc-version)
-            (package-version-join (package-desc-version info))
-          (aref (package-buffer-info) 3))))))
+        (package-version-join
+         (if (fboundp 'package-desc-version)
+             (package-desc-version info)
+           (version-to-list (aref (package-buffer-info) 3))))))))
 
 (defun flycheck-package-version ()
   "Get the package version of Flycheck.
@@ -956,19 +982,23 @@ Otherwise `(list OPTION VALUE)' is returned."
       (list (concat option value))
     (list option value)))
 
-(defun flycheck-prepend-with-option (option items)
-  "Prepend each item in ITEMS with OPTION.
+(defun flycheck-prepend-with-option (option items &optional prepend-fn)
+  "Prepend OPTION to each item in ITEMS, using PREPEND-FN.
 
 Prepend OPTION to each item in ITEMS.
 
-ITEMS is a list of value to pass to the syntax checker.  OPTION
-is the option, as string.  ITEM-FILTER is a function to apply to
-each item."
+ITEMS is a list of strings to pass to the syntax checker.  OPTION
+is the option, as string.  PREPEND-FN is a function called to
+prepend OPTION to each item in ITEMS.  If nil or omitted, use
+`list'.
+
+Return a flattened list where OPTION is prepended to each item in
+ITEMS."
   (unless (stringp option)
     (error "Option %S is not a string" option))
-  (->> items
-    (--map (list option it))
-    -flatten))
+  (unless prepend-fn
+    (setq prepend-fn #'list))
+  (-flatten (--map (funcall prepend-fn option it) items)))
 
 (defun flycheck-temporary-buffer-p ()
   "Determine whether the current buffer is a temporary buffer.
@@ -1078,49 +1108,55 @@ about a checker.
 
 The following PROPERTIES are understood:
 
-`:command' A list with the executable (in `car') and the
-arguments (in `cdr') of the syntax checker.  The executable is
-checked for existence with `executable-find' before executing the
-checker.  The arguments are substituted with
-`flycheck-substitute-argument' before execution, see the
-documentation of this function for a list of special tags allowed
-in arguments.
+`:command'
+     A list with the executable (in `car') and the arguments (in
+     `cdr') of the syntax checker.  The executable is checked for
+     existence with `executable-find' before executing the
+     checker.  The arguments are substituted with
+     `flycheck-substitute-argument' before execution, see the
+     documentation of this function for a list of special tags
+     allowed in arguments.
 
-`:error-patterns' A list of error patterns to parse the output of
-the checker.  Each pattern is a list (REGEXP LEVEL).  REGEXP is a
-regular expression that matches an error.  This regular
-expression may contain match groups extracting specific
-information about the error.  The 1st group is the file name, the
-2nd group the line number, the 3rd group the column number and
-the 4th group the error message.  A group is ignored if it did
-not match or the match returned an empty string.  LEVEL is either
-warning or error and determines the severity of the error message
-parsed with the pattern.
+`:error-patterns'
+     A list of error patterns to parse the output of the checker.
+     Each pattern is a list (REGEXP LEVEL).  REGEXP is a regular
+     expression that matches an error.  This regular expression
+     may contain match groups extracting specific information
+     about the error.  The 1st group is the file name, the 2nd
+     group the line number, the 3rd group the column number and
+     the 4th group the error message.  A group is ignored if it
+     did not match or the match returned an empty string.  LEVEL
+     is either warning or error and determines the severity of
+     the error message parsed with the pattern.
 
-`:error-parser' A function symbol to parse errors with.  The
-function must accept three arguments OUTPUT CHECKER BUFFER, where
-OUTPUT is the output as string and CHECKER the checker symbol
-that was used to check BUFFER.  The function must return a list
-of `flycheck-error' objects parsed from OUTPUT.
+`:error-parser'
+     A function symbol to parse errors with.  The function must
+     accept three arguments OUTPUT CHECKER BUFFER, where OUTPUT
+     is the output as string and CHECKER the checker symbol that
+     was used to check BUFFER.  The function must return a list
+     of `flycheck-error' objects parsed from OUTPUT.
 
-`:modes' A major mode symbol or a list thereof.  If present the
-checker is only used in these modes.
+`:modes'
+     A major mode symbol or a list thereof.  If present the
+     checker is only used in these modes.
 
-`:predicate' A function symbol or lambda expression.  If present
-the syntax checker is only used if this function returns non-nil
-when called in the buffer to check.
+`:predicate'
+     A function symbol or lambda expression.  If present the
+     syntax checker is only used if this function returns non-nil
+     when called in the buffer to check.
 
-May also be a form, but this usage is obsolete.
+     May also be a form, but this usage is obsolete.
 
-`:next-checkers' A list where each element is either a checker
-symbol to run after this checker or a cons cell (PREDICATE
-. CHECKER).  In the latter case, CHECKER is the checker symbol to
-run, and the PREDICATE symbol specifies when to run the checker:
-If PREDICATE is `no-errors' run the next checker only if this
-checker returned no errors at all.  If PREDICATE is
-`warnings-only', run the next checker only if this checker
-returned only warnings.  Only the first usable and
-registered (see `flycheck-registered-checker-p') is run.
+`:next-checkers'
+     A list where each element is either a checker
+     symbol to run after this checker or a cons cell (PREDICATE
+     . CHECKER).  In the latter case, CHECKER is the checker symbol to
+     run, and the PREDICATE symbol specifies when to run the checker:
+     If PREDICATE is `no-errors' run the next checker only if this
+     checker returned no errors at all.  If PREDICATE is
+     `warnings-only', run the next checker only if this checker
+     returned only warnings.  Only the first usable and
+     registered (see `flycheck-registered-checker-p') is run.
 
 A checker must have a `:command' property, at least one of
 `:error-patterns' or `:error-parser', and at least one of
@@ -1234,10 +1270,12 @@ error if not."
       (`(,(or `option `option-list) ,option-name ,option-var)
        (and (stringp option-name)
             (symbolp option-var)))
-      (`(,(or `option `option-list) ,option-name ,option-var ,filter)
+      (`(,(or `option `option-list) ,option-name ,option-var ,prepender-or-filter)
        (and (stringp option-name)
-            (symbolp option-var)
-            (symbolp filter)))
+            (-all? #'symbolp (list option-var prepender-or-filter))))
+      (`(option-list ,option-name ,option-var ,prepender ,filter)
+       (and (stringp option-name)
+            (-all? #'symbolp (list option-var prepender filter))))
       (`(eval ,_) t)
       (_ nil)))
 
@@ -1254,7 +1292,7 @@ shown with `flycheck-describe-checker'.
 The following PROPERTIES constitute a syntax checker:
 
 `:command (COMMAND ARG ...)'
-      An unquoted list describing the syntax checker command to
+     An unquoted list describing the syntax checker command to
      execute.  `COMMAND' and `ARG' are subject to substitution of
      special symbols and forms by `flycheck-substitute-argument',
      which provide the file to check, options and configuration
@@ -1372,13 +1410,17 @@ value."
        (put ',symbol :flycheck-checker t))))
 
 ;;;###autoload
-(defmacro flycheck-def-config-file-var (symbol checker &optional file-name)
+(defmacro flycheck-def-config-file-var (symbol checker &optional file-name
+                                               &rest custom-args)
   "Define SYMBOL as config file variable for CHECKER, with default FILE-NAME.
 
 SYMBOL is declared as customizable variable (see `defcustom`)
 providing a configuration file for CHECKER.  The CHECKER argument
 is used for documentation purposes only.  If given use FILE-NAME
 as initial value.
+
+The variable is declared with `defcustom', and declared
+buffer-local.  CUSTOM-ARGS are forwarded to `defcustom'
 
 Use this together with the `config-file' cell in syntax checker
 commands."
@@ -1398,7 +1440,7 @@ configuration file a buffer." checker)
        :type '(choice (const :tag "No configuration file" nil)
                       (string :tag "File name or path"))
        :group 'flycheck-config-files
-       :safe #'stringp)
+       ,@custom-args)
      (make-variable-buffer-local ',symbol)))
 
 ;;;###autoload
@@ -1548,56 +1590,76 @@ configuration file was found."
 (defun flycheck-substitute-argument (arg checker)
   "Substitute ARG for CHECKER.
 
-If ARG is a string, return ARG unchanged.
+ARG may be one of the following forms:
 
-If ARG is `source' or `source-inplace', create a temporary file
-to check and return its path.  With `source', try to retain the
-non-directory component of the buffer's file name in the
-temporary file.
+STRING
+     Return ARG unchanged.
 
-If ARG is `source-original', return the path of the actual file
-to check, or an empty string if the buffer has no file name.
-Note that the contents of the file may not be up to date with the
-contents of the buffer to check.  Do not use this as primary
-input to a checker!
+`source', `source-inplace'
+     Create a temporary file to check and return its path.  With
+     `source-inplace' create the temporary file in the same
+     directory as the original file.  With `source', try to
+     retain the non-directory component of the buffer's file name
+     in the temporary file.
 
-If ARG is `temporary-directory', create a unique temporary
-directory and return its path.
+`source-original'
+     Return the path of the actual file to check, or an empty
+     string if the buffer has no file name.  Note that the
+     contents of the file may not be up to date with the contents
+     of the buffer to check.  Do not use this as primary input to
+     a checker!
 
-If ARG is a form `(config-file OPTION VARIABLE)' search the
-configuration file bound to VARIABLE with
-`flycheck-find-config-file' and return a list of arguments that
-pass this configuration file to the syntax checker, or nil if the
-configuration file was not found.  If OPTION ends with a =
-character, the returned list contains a single element only,
-being the concatenation of OPTION and the path of the
-configuration file.  Otherwise the list has two items, the first
-being OPTION, the second the path of the configuration file.
+`temporary-directory'
+     Create a unique temporary directory and return its path.
 
-If ARG is a form `(option OPTION VARIABLE [FILTER])' retrieve the
-value of VARIABLE and return a list of arguments that pass this
-value as value for OPTION to the syntax checker.  FILTER is an
-optional function to be applied to the value of VARIABLE.  This
-function must return nil or a string.  In the former case, return
-nil.  In the latter case, return a list of arguments as described
-above.  If OPTION ends with a =, process it like in a
-`config-file' cell (see above).
+`(config-file OPTION VARIABLE)'
+     Search the configuration file bound to VARIABLE with
+     `flycheck-find-config-file' and return a list of arguments
+     that pass this configuration file to the syntax checker, or
+     nil if the configuration file was not found.
 
-If ARG is a form `(option-list OPTION VARIABLE [FILTER])',
-retrieve the value of VARIABLE, which must be a list, and prepend
-OPTION before each item in this list.  FILTER is an optional
-function to be applied to each item in the list.  Items for which
-FILTER returns nil are dropped.  If the list is non-nil after the
-application of FILTER, return a list `(OPTION ITEM1 OPTION ITEM2
-...)'.  Otherwise return nil.
+     If OPTION ends with a = character, the returned list
+     contains a single element only, being the concatenation of
+     OPTION and the path of the configuration file.  Otherwise
+     the list has two items, the first being OPTION, the second
+     the path of the configuration file.
 
-If ARG is a form `(eval FORM), return the result of evaluating
-FORM in the buffer to be checked.  FORM must either return a
-string or a list of strings, or nil to indicate that nothing
-should be substituted for CELL.  In case of other return values
-an error is signaled.  _No_ further substitutions are performed,
-neither in FORM before it is evaluated, nor in the result of
-evaluating FORM.
+`(option OPTION VARIABLE [FILTER])'
+     Retrieve the value of VARIABLE and return a list of
+     arguments that pass this value as value for OPTION to the
+     syntax checker.
+
+     FILTER is an optional function to be applied to the value of
+     VARIABLE.  This function must return nil or a string.  In
+     the former case, return nil.  In the latter case, return a
+     list of arguments as described above.  If OPTION ends with a
+     =, process it like in a `config-file' cell (see above).
+
+`(option-list OPTION VARIABLE [PREPEND-FN [FILTER]])'
+     Retrieve the value of VARIABLE, which must be a list,
+     and prepend OPTION before each item in this list, using
+     PREPEND-FN.
+
+     PREPEND-FN is called with the OPTION and each item of the
+     list as second argument, and should return OPTION prepended
+     before the item, either as string or as list.
+
+     FILTER is an optional function to be applied to each item in
+     the list.  Items for which FILTER returns nil are dropped.
+     If the list is non-nil after the application of FILTER,
+     return a list `(OPTION ITEM1 OPTION ITEM2 ...)'.  Otherwise
+     return nil.
+
+`(eval FORM)
+     Return the result of evaluating FORM in the buffer to be
+     checked.  FORM must either return a string or a list of
+     strings, or nil to indicate that nothing should be
+     substituted for CELL.  For all other return types, signal an
+     error
+
+     _No_ further substitutions are performed, neither in FORM
+     before it is evaluated, nor in the result of evaluating
+     FORM.
 
 In all other cases, signal an error.
 
@@ -1633,12 +1695,18 @@ are substituted within the body of cells!"
          (error "Value %S of %S for option %S is not a list of strings"
                 value variable option-name))
        (flycheck-prepend-with-option option-name value)))
-    (`(option-list ,option-name ,variable ,filter)
+    (`(option-list ,option-name ,variable ,prepend-fn)
+     (-when-let (value (symbol-value variable))
+       (unless (and (listp value) (-all? #'stringp value))
+         (error "Value %S of %S for option %S is not a list of strings"
+                value variable option-name))
+       (flycheck-prepend-with-option option-name value prepend-fn)))
+    (`(option-list ,option-name ,variable ,prepend-fn ,filter)
      (-when-let (value (-keep filter (symbol-value variable)))
        (unless (and (listp value) (-all? #'stringp value))
          (error "Value %S of %S for option %S is not a list of strings"
                 value variable option-name))
-       (flycheck-prepend-with-option option-name value)))
+       (flycheck-prepend-with-option option-name value prepend-fn)))
     (`(eval ,form)
      (let ((result (eval form)))
        (if (or (null result)
@@ -1655,7 +1723,7 @@ Substitute each argument in the command of CHECKER using
 `flycheck-substitute-argument'.  This replaces any special
 symbols in the command."
   (-flatten (--keep (flycheck-substitute-argument it checker)
-                   (flycheck-checker-command checker))))
+                    (flycheck-checker-command checker))))
 
 (defun flycheck-substitute-shell-argument (arg checker)
   "Substitute ARG for CHECKER.
@@ -2019,17 +2087,23 @@ Pop up a help buffer with the documentation of CHECKER."
   "Structure representing an error reported by a syntax checker.
 Slots:
 
-`buffer' The buffer the reported was reported for, as buffer object.
+`buffer'
+     The buffer the reported was reported for, as buffer object.
 
-`checker' The syntax checker which reported this error, as symbol.
+`checker'
+     The syntax checker which reported this error, as symbol.
 
-`filename'  The file name the error refers to, as string.
+`filename'
+     The file name the error refers to, as string.
 
-`line' The line number the error refers to, as number.
+`line'
+     The line number the error refers to, as number.
 
-`column' The column number the error refers to, as number.
+`column'
+     The column number the error refers to, as number.
 
-`level' The error level, as either `warning' or `error'."
+`level'
+     The error level, as either `warning' or `error'."
   buffer checker filename line column message level)
 
 (defmacro flycheck-error-with-buffer (err &rest forms)
@@ -2099,40 +2173,50 @@ if ERR has no column."
                            (+ (line-end-position) 1))))
               (cons (- end 1) end)))))))))
 
-(defun flycheck-error-sexp-region (err)
-  "Get the sexp region of ERR.
+(defun flycheck-error-thing-region (thing err)
+  "Get the region of THING at the column of ERR.
 
-ERR is a Flycheck error whose region to get.
+ERR is a Flycheck error whose region to get.  THING is a
+understood by `thing-at-point'.
 
 Return a cons cell `(BEG . END)' where BEG is the beginning of
-the symbol at the error column, and END the end of the symbol.
-If ERR has no error column, or if there is no symbol at this
-column, return nil."
+the THING at the error column, and END the end of the symbol.  If
+ERR has no error column, or if there is no THING at this column,
+return nil."
   (-when-let (column (car (flycheck-error-column-region err)))
     (save-excursion
       (save-restriction
         (widen)
         (goto-char column)
-        (bounds-of-thing-at-point 'sexp)))))
+        (bounds-of-thing-at-point thing)))))
 
 (defun flycheck-error-region-for-mode (err mode)
   "Get the region of ERR for the highlighting MODE.
 
-ERR is a Flycheck error.  MODE may either be `columns', `sexps' or `lines'.
+ERR is a Flycheck error.  MODE may be one of the following symbols:
 
-If `columns', return the column region of ERR, or the
-line region if ERR has no column.
+`columns'
+     Get the column region of ERR, or the line region if ERR
+     has no column.
 
-If `sexps', return the sexp region of ERR, or the result of
-`columns', if there is no symbol at the error column.
+`symbols'
+     Get the symbol region of ERR, or the result of `columns', if
+     there is no sexp at the error column.
 
-If `lines', return the line region.
+`sexps'
+     Get the sexp region of ERR, or the result of `columns', if
+     there is no sexp at the error column.
+
+`lines'
+     Return the line region.
 
 Otherwise signal an error."
   (pcase mode
     (`columns (or (flycheck-error-column-region err)
                   (flycheck-error-line-region err)))
-    (`sexps (or (flycheck-error-sexp-region err)
+    (`symbols (or (flycheck-error-thing-region 'symbol err)
+                  (flycheck-error-region-for-mode err 'columns)))
+    (`sexps (or (flycheck-error-thing-region 'sexp err)
                 (flycheck-error-region-for-mode err 'columns)))
     (`lines (flycheck-error-line-region err))
     (_ (error "Invalid mode %S" mode))))
@@ -2337,38 +2421,28 @@ text nodes) or as XML nodes, in the same for as the root node."
     (insert xml)
     (funcall flycheck-xml-parser (point-min) (point-max))))
 
-(defun flycheck-parse-checkstyle-error-node (node filename)
-  "Parse a single error NODE for FILENAME in a Checkstyle doc.
-
-Return the corresponding Flycheck error, or nil of NODE is not an
-error node."
-  (when (listp node)
-    (let* ((name (car node))
-           (attrs (cadr node))
-           (line (flycheck-string-to-number-safe (cdr (assq 'line attrs))))
-           (column (flycheck-string-to-number-safe (cdr (assq 'column attrs))))
-           (severity (cdr (assq 'severity attrs)))
-           (message (cdr (assq 'message attrs))))
-      (when (eq name 'error)
-        (flycheck-error-new
-         :filename filename
-         :line line
-         :column (when (and column (> column 0)) column)
-         :message message
-         :level (if (string= severity "error") 'error 'warning))))))
-
 (defun flycheck-parse-checkstyle-file-node (node)
   "Parse a single file NODE in a Checkstyle document.
 
 Return a list of all errors contained in the NODE, or nil if NODE
 is not a file node."
-  (when (listp node)                    ; Ignore text nodes
-    (let* ((name (car node))
-           (attrs (cadr node))
-           (body (cddr node))
-           (filename (cdr (assq 'name attrs))))
-      (when (eq name 'file)
-        (--keep (flycheck-parse-checkstyle-error-node it filename) body)))))
+  (let ((filename (cdr (assq 'name (cadr node)))))
+    (->> (cddr node)
+      (--filter (and (listp it) (eq (car it) 'error)))
+      (--map
+       (let* ((attrs (cadr it))
+              (line (flycheck-string-to-number-safe
+                     (cdr (assq 'line attrs))))
+              (column (flycheck-string-to-number-safe
+                       (cdr (assq 'column attrs))))
+              (severity (cdr (assq 'severity attrs)))
+              (message (cdr (assq 'message attrs))))
+         (flycheck-error-new
+          :filename filename
+          :line line
+          :column (when (and column (> column 0)) column)
+          :message message
+          :level (if (string= severity "error") 'error 'warning)))))))
 
 (eval-and-compile
   ;; Parser must be defined during compilation, to allow syntax checkers parse
@@ -2387,7 +2461,26 @@ about Checkstyle."
       (unless (eq (car root) 'checkstyle)
         (error "Unexpected root element %s" (car root)))
       ;; cddr gets us the body of the node without its name and its attributes
-      (-flatten (-keep #'flycheck-parse-checkstyle-file-node (cddr root))))))
+      (->> (cddr root)
+        (--filter (and (listp it) (eq (car it) 'file)))
+        (-map #'flycheck-parse-checkstyle-file-node)
+        -flatten))))
+
+(defun flycheck-parse-cppcheck-error-node (node)
+  "Parse a single error NODE from Cppcheck XML.
+
+Return a list of all Flycheck errors this node represents."
+  (let ((attrs (cadr node)))
+    (->> (cddr node)
+      (--filter (and (listp it) (eq (car it) 'location)))
+      (--map (let ((locattrs (cadr it)))
+               (flycheck-error-new
+                :filename (cdr (assq 'file locattrs))
+                :line (flycheck-string-to-number-safe
+                       (cdr (assq 'line locattrs)))
+                :message (cdr (assq 'verbose attrs))
+                :level (if (string= (cdr (assq 'severity attrs)) "error")
+                           'error 'warning)))))))
 
 (eval-and-compile
   (defun flycheck-parse-cppcheck (output _checker _buffer)
@@ -2403,19 +2496,11 @@ about Cppcheck."
                  (errors (--first (eq (car it) 'errors) (cddr root))))
       (unless (eq (car root) 'results)
         (error "Unexpected root element %s" (car root)))
-      (-flatten
-       (--keep (when (and (listp it) (eq (car it) 'error))
-                 (let* ((attrs (cadr it))
-                        (loc (--first (eq (car it) 'location) (cddr it)))
-                        (locattrs (cadr loc)))
-                   (flycheck-error-new
-                    :filename (cdr (assq 'file locattrs))
-                    :line (flycheck-string-to-number-safe
-                           (cdr (assq 'line locattrs)))
-                    :message (cdr (assq 'verbose attrs))
-                    :level (if (string= (cdr (assq 'severity attrs)) "error")
-                               'error 'warning))))
-               errors)))))
+      (->> errors
+        ;; Filter error nodes
+        (--filter (and (listp it) (eq (car it) 'error)))
+        (-map #'flycheck-parse-cppcheck-error-node)
+        -flatten))))
 
 
 ;;;; Error analysis
@@ -2616,16 +2701,21 @@ Return the created overlay."
 Intended for use with `next-error-function'."
   ;; TODO: Horribly inefficient, possibly improve by considering less errors.
   (let* ((n (or n 1))
-         (current-pos (if reset (point-min) (point)))
-         (before-and-after (->> flycheck-current-errors
-                             (-map 'flycheck-error-pos)
-                             (-uniq)
-                             (-filter #'flycheck-navigatable-position-p)
-                             (--remove (= current-pos it))
-                             (--split-with (>= current-pos it))))
-         (before (nreverse (car before-and-after)))
-         (after (cadr before-and-after))
-         (error-pos (nth (- (abs n) 1) (if (< n 0) before after))))
+         (forward? (> n 0))
+         (point (if reset (point-min) (point)))
+         (overlays-at-point (flycheck-overlays-at point))
+         (pos (or
+               (if forward?
+                   (-max-by #'identity (-map #'overlay-end overlays-at-point))
+                 (-min-by #'identity (-map #'overlay-start overlays-at-point)))
+               point))
+         (min (if forward? pos (point-min)))
+         (max (if forward? (point-max) pos))
+         (candidates (->> (flycheck-overlays-in min max)
+                       (-map #'overlay-start)
+                       -uniq
+                       (-sort (if forward? #'<= #'>=))))
+         (error-pos (nth (- (abs n) 1) candidates)))
     (if error-pos
         (goto-char error-pos)
       (user-error "No more Flycheck errors"))))
@@ -2637,6 +2727,9 @@ If RESET is given and non-nil, re-start from the beginning of the buffer.
 
 N specifies how many errors to move forwards.  If negative, move backwards."
   (interactive "P")
+  (when (consp n)
+    ;; Universal prefix argument means reset
+    (setq reset t n nil))
   (flycheck-next-error-function n reset))
 
 (defun flycheck-previous-error (&optional n)
@@ -3049,7 +3142,7 @@ _EVENT is ignored."
              (program (car command))
              (args (cdr command))
              (process-connection-type nil) ; Use pipes to receive checker output
-             (process (apply 'start-file-process
+             (process (apply 'start-process
                              "flycheck" (current-buffer)
                              program args)))
         (setq flycheck-current-process process)
@@ -3094,6 +3187,58 @@ See URL `http://www.gnu.org/software/bash/'."
   :modes sh-mode
   :predicate (lambda () (eq sh-shell 'bash)))
 
+(flycheck-def-option-var flycheck-clang-warnings '("all" "extra") c/c++-clang
+  "A list of additional warnings to enable in Clang.
+
+The value of this variable is a list of strings, where each string
+is the name of a warning category to enable.  By default, all
+recommended warnings and some extra warnings are enabled (as by
+`-Wall' and `-Wextra' respectively).
+
+Refer to the Clang manual at URL
+`http://clang.llvm.org/docs/UsersManual.html' for more
+information about warnings."
+  :type '(choice (const :tag "No additional warnings" nil)
+                 (repeat :tag "Additional warnings"
+                         (string :tag "Warning name")))
+  :safe #'flycheck-string-list-p
+  :package-version '(flycheck . "0.14"))
+
+(flycheck-def-option-var flycheck-clang-include-path nil c/c++-clang
+  "A list of include directories for Clang.
+
+The value of this variable is a list of strings, where each
+string is a directory to add to the include path of Clang.
+Relative paths are relative to the file being checked."
+  :type '(repeat (directory :tag "Include directory"))
+  :safe #'flycheck-string-list-p
+  :package-version '(flycheck . "0.14"))
+
+(flycheck-define-checker c/c++-clang
+  "A C/C++ syntax checker using Clang.
+
+See URL `http://clang.llvm.org/'."
+  :command ("clang"
+            "-fsyntax-only"
+            "-fno-color-diagnostics"    ; Do not include color codes in output
+            "-fno-caret-diagnostics"    ; Do not visually indicate the source
+                                        ; location
+            "-fno-diagnostics-show-option" ; Do not show the corresponding
+                                        ; warning group
+            (option-list "-W" flycheck-clang-warnings s-prepend)
+            (option-list "-I" flycheck-clang-include-path)
+            "-x" (eval
+                  (cl-case major-mode
+                    (c++-mode "c++")
+                    (c-mode "c"))) source)
+  :error-patterns
+  ((warning line-start (file-name) ":" line ":" column
+            ": warning: " (message) line-end)
+   (error line-start (file-name) ":" line ":" column
+          ": " (or "fatal error" "error") ": " (message) line-end))
+  :modes (c-mode c++-mode)
+  :next-checkers ((warnings-only . c/c++-cppcheck)))
+
 (flycheck-def-option-var flycheck-cppcheck-checks '("style") c/c++-cppcheck
   "Enabled checks for Cppcheck.
 
@@ -3124,7 +3269,8 @@ See URL `http://cppcheck.sourceforge.net/'."
   :modes (c-mode c++-mode))
 
 (flycheck-def-config-file-var flycheck-coffeelintrc coffee-coffeelint
-                              ".coffeelint.json")
+                              ".coffeelint.json"
+  :safe #'stringp)
 
 (flycheck-define-checker coffee-coffeelint
   "A CoffeeScript syntax and style checker using coffeelint.
@@ -3276,7 +3422,7 @@ This variable has no effect, if
 (flycheck-define-checker emacs-lisp
   "An Emacs Lisp syntax checker using the Emacs Lisp Byte compiler."
   :command ((eval flycheck-emacs-command)
-            (option-list "--directory" flycheck-emacs-lisp-load-path
+            (option-list "--directory" flycheck-emacs-lisp-load-path nil
                          ;; Expand relative paths against the directory of the
                          ;; buffer to check
                          expand-file-name)
@@ -3484,7 +3630,8 @@ See URL `http://community.haskell.org/~ndm/hlint/'."
           line-end))
   :modes haskell-mode)
 
-(flycheck-def-config-file-var flycheck-tidyrc html-tidy ".tidyrc")
+(flycheck-def-config-file-var flycheck-tidyrc html-tidy ".tidyrc"
+  :safe #'stringp)
 
 (flycheck-define-checker html-tidy
   "A HTML syntax and style checker using Tidy.
@@ -3502,7 +3649,8 @@ See URL `https://github.com/w3c/tidy-html5'."
             " - Warning: " (message) line-end))
   :modes (html-mode nxhtml-mode web-mode))
 
-(flycheck-def-config-file-var flycheck-jshintrc javascript-jshint ".jshintrc")
+(flycheck-def-config-file-var flycheck-jshintrc javascript-jshint ".jshintrc"
+  :safe #'stringp)
 
 (flycheck-define-checker javascript-jshint
   "A JavaScript syntax and style checker using jshint.
@@ -3646,7 +3794,8 @@ See URL `http://www.puppet-lint.com/'."
   :modes puppet-mode
   :predicate (lambda () (and (buffer-file-name) (not (buffer-modified-p)))))
 
-(flycheck-def-config-file-var flycheck-flake8rc python-flake8 ".flake8rc")
+(flycheck-def-config-file-var flycheck-flake8rc python-flake8 ".flake8rc"
+  :safe #'stringp)
 
 (flycheck-def-option-var flycheck-flake8-maximum-complexity nil python-flake8
   "The maximum McCabe complexity of methods.
@@ -3737,7 +3886,8 @@ See URL `http://docutils.sourceforge.net/'."
           (message) line-end))
   :modes rst-mode)
 
-(flycheck-def-config-file-var flycheck-rubocoprc ruby-rubocop ".rubocop.yml")
+(flycheck-def-config-file-var flycheck-rubocoprc ruby-rubocop ".rubocop.yml"
+  :safe #'stringp)
 
 (flycheck-define-checker ruby-rubocop
   "A Ruby syntax and style checker using the RuboCop tool.
@@ -3857,7 +4007,8 @@ See URL `http://www.gnu.org/software/bash/'."
   :modes sh-mode
   :predicate (lambda () (eq sh-shell 'sh)))
 
-(flycheck-def-config-file-var flycheck-chktexrc tex-chktex ".chktexrc")
+(flycheck-def-config-file-var flycheck-chktexrc tex-chktex ".chktexrc"
+  :safe #'stringp)
 
 (flycheck-define-checker tex-chktex
   "A TeX and LaTeX syntax and style checker using chktex.
