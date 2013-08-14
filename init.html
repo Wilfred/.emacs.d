@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-08-09T13:05+0100"/>
+<meta name="generated" content="2013-08-14T11:19+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -1027,8 +1027,7 @@ highlight the whole line, as it's much faster. See
 
 
 
-<pre class="src src-emacs-lisp">(setq flycheck-idle-change-delay 2.0)
-(setq flycheck-highlighting-mode 'lines)
+<pre class="src src-emacs-lisp">(setq flycheck-highlighting-mode 'lines)
 </pre>
 
 
@@ -1341,13 +1340,19 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
   <span style="color: #888a85;">"Download the file at URL into DIRECTORY.</span>
 <span style="color: #888a85;">The FILE-NAME defaults to the one used in the URL."</span>
   (interactive
-   (list (read-from-minibuffer <span style="color: #ad7fa8; font-style: italic;">"URL: "</span>)
-         (read-directory-name <span style="color: #ad7fa8; font-style: italic;">"Destination dir: "</span>)
-         <span style="color: #888a85;">;; </span><span style="color: #888a85;">deliberately not using read-file-name since that inludes the directory</span>
-         (read-from-minibuffer
-          <span style="color: #ad7fa8; font-style: italic;">"File name: "</span>
-          (car (last (s-split <span style="color: #ad7fa8; font-style: italic;">"/"</span> url))))))
-  (url-copy-file url (f-join directory file-name) 't))
+   <span style="color: #888a85;">;; </span><span style="color: #888a85;">We're forced to let-bind url here since we access it before</span>
+   <span style="color: #888a85;">;; </span><span style="color: #888a85;">interactive binds the function parameters.</span>
+   (<span style="color: #729fcf; font-weight: bold;">let</span> ((url (read-from-minibuffer <span style="color: #ad7fa8; font-style: italic;">"URL: "</span>)))
+     (list
+      url
+      (read-directory-name <span style="color: #ad7fa8; font-style: italic;">"Destination dir: "</span>)
+      <span style="color: #888a85;">;; </span><span style="color: #888a85;">deliberately not using read-file-name since that inludes the directory</span>
+      (read-from-minibuffer
+       <span style="color: #ad7fa8; font-style: italic;">"File name: "</span>
+       (car (last (s-split <span style="color: #ad7fa8; font-style: italic;">"/"</span> url)))))))
+  (<span style="color: #729fcf; font-weight: bold;">let</span> ((destination (f-join directory file-name)))
+    (url-copy-file url destination 't)
+    (find-file destination)))
 </pre>
 
 </div>
@@ -1356,7 +1361,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-08-09T13:05+0100</p>
+<p class="date">Date: 2013-08-14T11:19+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

@@ -743,11 +743,17 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
     "Download the file at URL into DIRECTORY.
   The FILE-NAME defaults to the one used in the URL."
     (interactive
-     (list (read-from-minibuffer "URL: ")
-           (read-directory-name "Destination dir: ")
-           ;; deliberately not using read-file-name since that inludes the directory
-           (read-from-minibuffer
-            "File name: "
-            (car (last (s-split "/" url))))))
-    (url-copy-file url (f-join directory file-name) 't))
+     ;; We're forced to let-bind url here since we access it before
+     ;; interactive binds the function parameters.
+     (let ((url (read-from-minibuffer "URL: ")))
+       (list
+        url
+        (read-directory-name "Destination dir: ")
+        ;; deliberately not using read-file-name since that inludes the directory
+        (read-from-minibuffer
+         "File name: "
+         (car (last (s-split "/" url)))))))
+    (let ((destination (f-join directory file-name)))
+      (url-copy-file url destination 't)
+      (find-file destination)))
 #+END_SRC

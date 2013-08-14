@@ -222,7 +222,6 @@ If a prefix argument is given, don't change the kill-ring."
  '(flymake-errline ((((class color)) (:underline "Red"))))
  '(flymake-warnline ((((class color)) (:underline "Orange")))))
 
-(setq flycheck-idle-change-delay 2.0)
 (setq flycheck-highlighting-mode 'lines)
 
 (custom-set-faces
@@ -393,10 +392,16 @@ If a prefix argument is given, don't change the kill-ring."
   "Download the file at URL into DIRECTORY.
 The FILE-NAME defaults to the one used in the URL."
   (interactive
-   (list (read-from-minibuffer "URL: ")
-         (read-directory-name "Destination dir: ")
-         ;; deliberately not using read-file-name since that inludes the directory
-         (read-from-minibuffer
-          "File name: "
-          (car (last (s-split "/" url))))))
-  (url-copy-file url (f-join directory file-name) 't))
+   ;; We're forced to let-bind url here since we access it before
+   ;; interactive binds the function parameters.
+   (let ((url (read-from-minibuffer "URL: ")))
+     (list
+      url
+      (read-directory-name "Destination dir: ")
+      ;; deliberately not using read-file-name since that inludes the directory
+      (read-from-minibuffer
+       "File name: "
+       (car (last (s-split "/" url)))))))
+  (let ((destination (f-join directory file-name)))
+    (url-copy-file url destination 't)
+    (find-file destination)))
