@@ -3,8 +3,8 @@
 ;; Copyright (C) 2012 Magnar Sveen
 
 ;; Author: Magnar Sveen <magnars@gmail.com>
-;; Version: 20130513.1618
-;; X-Original-Version: 1.3.2
+;; Version: 20130812.2233
+;; X-Original-Version: 1.6.0
 ;; Keywords: lists
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -131,6 +131,41 @@ exposed as `acc`."
       (-reduce-from fn (car list) (cdr list))
     (funcall fn)))
 
+(defun -reduce-r-from (fn initial-value list)
+  "Replace conses with FN, nil with INITIAL-VALUE and evaluate
+the resulting expression. If LIST is empty, INITIAL-VALUE is
+returned and FN is not called.
+
+Note: this function works the same as `-reduce-from' but the
+operation associates from right instead of from left."
+  (if (not list) initial-value
+    (funcall fn (car list) (-reduce-r-from fn initial-value (cdr list)))))
+
+(defmacro --reduce-r-from (form initial-value list)
+  "Anaphoric version of `-reduce-r-from'."
+  `(-reduce-r-from (lambda (&optional it acc) ,form) ,initial-value ,list))
+
+(defun -reduce-r (fn list)
+  "Replace conses with FN and evaluate the resulting expression.
+The final nil is ignored. If LIST contains no items, FN must
+accept no arguments as well, and reduce returns the result of
+calling FN with no arguments. If LIST has only 1 item, it is
+returned and FN is not called.
+
+The first argument of FN is the new item, the second is the
+accumulated value.
+
+Note: this function works the same as `-reduce' but the operation
+associates from right instead of from left."
+  (cond
+   ((not list) (funcall fn))
+   ((not (cdr list)) (car list))
+   (t (funcall fn (car list) (-reduce-r fn (cdr list))))))
+
+(defmacro --reduce-r (form list)
+  "Anaphoric version of `-reduce-r'."
+  `(-reduce-r (lambda (&optional it acc) ,form) ,list))
+
 (defmacro --filter (form list)
   "Anaphoric form of `-filter'."
   (let ((r (make-symbol "result")))
@@ -231,14 +266,14 @@ result so if the final member of ARGS is not a list the result is
 a dotted list."
   (let (res)
     (--each
-     args
+        args
       (cond
-        ((not res)
-         (setq res it))
-        ((consp res)
-         (setcdr res (cons (cdr res) it)))
-        (t
-         (setq res (cons res it)))))
+       ((not res)
+        (setq res it))
+       ((consp res)
+        (setcdr res (cons (cdr res) it)))
+       (t
+        (setq res (cons res it)))))
     res))
 
 (defmacro --first (form list)
@@ -659,6 +694,19 @@ Requires Emacs 24 or higher."
   `(closure (t) (&rest args)
             (apply ',fn (append args ',args))))
 
+(defun -juxt (&rest fns)
+  "Takes a list of functions and returns a fn that is the
+juxtaposition of those fns. The returned fn takes a variable
+number of args, and returns a list containing the result of
+applying each fn to the args (left-to-right).
+
+Requires Emacs 24 or higher."
+  (let ((r (make-symbol "result")))
+    `(closure (t) (&rest args)
+              (let (,r)
+                (--each ',fns (!cons (apply it args) ,r))
+                (nreverse ,r)))))
+
 (defun -applify (fn)
   "Changes an n-arity function FN to a 1-arity function that
 expects a list with n items as arguments"
@@ -819,12 +867,74 @@ or with `-compare-fn' if that's non-nil."
 
 (defalias '-contains-p '-contains?)
 
+(defun -sort (predicate list)
+  "Sort LIST, stably, comparing elements using PREDICATE.
+Returns the sorted list.  LIST is NOT modified by side effects.
+PREDICATE is called with two elements of LIST, and should return non-nil
+if the first element should sort before the second."
+  (sort (copy-sequence list) predicate))
+
+(defmacro --sort (form list)
+  "Anaphoric form of `-sort'."
+  (declare (debug t))
+  `(-sort (lambda (it other) ,form) ,list))
+
 (defun -repeat (n x)
   "Return a list with X repeated N times.
 Returns nil if N is less than 1."
   (let (ret)
     (--dotimes n (!cons x ret))
     ret))
+
+(defun -sum (list)
+  "Return the sum of LIST."
+  (apply '+ list))
+
+(defun -product (list)
+  "Return the product of LIST."
+  (apply '* list))
+
+(defun -min (x &rest xs)
+  "Return the smallest value of all arguments."
+  (apply 'min (cons x xs)))
+
+(defun -min-by (pred list)
+  "Call PRED for each item in LIST and return item with smallest value."
+  (let (min-item (min-value most-positive-fixnum))
+    (-each
+     list
+     (lambda (item)
+       (let ((item-value (funcall pred item)))
+         (when (< item-value min-value)
+           (setq min-value item-value)
+           (setq min-item item)))))
+    min-item))
+
+(defmacro --min-by (form list)
+  "Anaphoric form of `-min-by'."
+  (declare (debug t))
+  `(-min-by (lambda (it) ,form) ,list))
+
+(defun -max (x &rest xs)
+  "Return the largest value of all arguments."
+  (apply 'max (cons x xs)))
+
+(defun -max-by (pred list)
+  "Call PRED for each item in LIST and return item with largest value."
+  (let (max-item (max-value most-negative-fixnum))
+    (-each
+     list
+     (lambda (item)
+       (let ((item-value (funcall pred item)))
+         (when (> item-value max-value)
+           (setq max-value item-value)
+           (setq max-item item)))))
+    max-item))
+
+(defmacro --max-by (form list)
+  "Anaphoric form of `-max-by'."
+  (declare (debug t))
+  `(-max-by (lambda (it) ,form) ,list))
 
 (eval-after-load "lisp-mode"
   '(progn
@@ -841,6 +951,10 @@ Returns nil if N is less than 1."
                            "-reduce-from"
                            "--reduce"
                            "-reduce"
+                           "--reduce-r-from"
+                           "-reduce-r-from"
+                           "--reduce-r"
+                           "-reduce-r"
                            "--filter"
                            "-filter"
                            "-select"
@@ -908,6 +1022,7 @@ Returns nil if N is less than 1."
                            "-replace-where"
                            "-partial"
                            "-rpartial"
+                           "-juxt"
                            "->"
                            "->>"
                            "-->"
@@ -924,6 +1039,14 @@ Returns nil if N is less than 1."
                            "-contains-p"
                            "-repeat"
                            "-cons*"
+                           "-sum"
+                           "-product"
+                           "-min"
+                           "-min-by"
+                           "--min-by"
+                           "-max"
+                           "-max-by"
+                           "--max-by"
                            ))
            (special-variables '(
                                 "it"
