@@ -1,6 +1,21 @@
 * Introduction
-This file is a literate programming document. To generate init.el, run
-`M-x org-babel-tangle'. To generate init.html, run `M-x org-export-as-html'.
+
+This is the Emacs environment I (Wilfred Hughes) use for development.
+
+** Licensing
+
+Code I've written (init.el and files under `user-lisp/') is BSD
+licensed, see COPYING.
+
+** Reading This Document
+
+This file is a literate programming document written with org-mode and
+org-mode-babel. You can view init.html in a web browser, or read
+init.org in Emacs.
+
+init.el and init.html are generated files. To generate init.el, run
+`M-x org-babel-tangle'. To generate init.html, run `M-x
+org-export-as-html'.
 
 By default, all the sections in this document are collapsed. You can
 expand a header by pressing `<TAB>' when point is on that header. You
@@ -8,21 +23,40 @@ can expand all headers by pressing `C-u C-u C-u <TAB>'.
 
 You can edit any code block by putting point inside the block and
 pressing `C-c '' (press `C-c '' again to escape). 
+
 * Installing locally
 
-This repository seeks to be as self-contained as possible. However, you will require:
+This repository seeks to be as self-contained as possible. Generally,
+you should be able to check out the repository and start using it on
+any of Linux, OS X and Windows. To use this repository, you will
+require:
+
+** The Git Repository
+
+Remove any existing .emacs.d configuration (or move elsewhere):
+
+#+BEGIN_SRC sh
+  rm -r ~/.emacs.d
+#+END_SRC
+
+Clone the repo:
+
+#+BEGIN_SRC sh
+  git clone git://github.com/Wilfred/.emacs.d.git
+#+END_SRC
 
 ** Emacs 24
 
 I use this repository with Emacs 24. Most code works with Emacs 23 but
-I don't test it often.
+I don't test it often. Bug fixes for other Emacs versions (or other
+Emacsen) are welcomed.
 
 ** Python
 
-I use pyflakes, which is available on PyPI. You can install it with:
+I use flake8, which is available on PyPI. You can install it with:
 
 #+BEGIN_SRC sh
-  sudo pip install pyflakes
+  sudo pip install flake8
 #+END_SRC
 
 ** JavaScript
@@ -50,6 +84,10 @@ with:
 Code I've written lives in user-lisp. This includes packages that I
 haven't polished enough to release yet, small convenience functions,
 and package customisations.
+
+Interactive commands, configuration and keybindings are kept in files
+named `FOO-customisations.el'. Elisp convenience functions are kept in
+files named `FOO-utils.el'.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (add-to-list 'load-path "~/.emacs.d/user-lisp/")
@@ -355,22 +393,31 @@ ls-files` (see elisp:ffir-repository types for the full list). This
 makes it very fast, and ensures that files ignored by git are ignored.
 
 Alternatives worth mentioning are `projectile' and
-`find-file-in-project'. Todo: say why.
+`find-file-in-project'. `projectile' seems to have the most users, but
+I've found it to be a little bit slower, even with external
+commands. `find-file-in-project' seems unmaintained.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (require 'find-file-in-repository)
-  
+#+END_SRC
+
+Ido can become very slow with large lists. This is largely due to
+flexible matching, used when there isn't an exact substring match. We
+switch off flexible matching with `find-file-in-repository'.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
   (defadvice find-file-in-repository (around disable-ido-flex-matching activate)
     (let ((ido-enable-flex-matching nil)
           (ido-case-fold t))
       ad-do-it))
-  
-  (global-set-key (kbd "C-x C-g") 'find-file-in-repository)
-  
-  
 #+END_SRC
 
+Finally, we bind `find-file-in-repository' to `C-x C-g', as we use it
+a lot and it's right next to `C-x C-f'.
 
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (global-set-key (kbd "C-x C-g") 'find-file-in-repository)
+#+END_SRC
 
 *** Dired
 
@@ -454,7 +501,9 @@ It's also useful to quickly generate a minimal HTML page to play with.
 
 
 
-** Flymake
+** As-you-type Checks
+
+*** Flymake
 
 (Note that there's language-specific flymake configuration too.)
 
@@ -488,7 +537,30 @@ I prefer my errors underlined.
    '(flymake-errline ((((class color)) (:underline "Red"))))
    '(flymake-warnline ((((class color)) (:underline "Orange")))))
 #+END_SRC
-    
+
+*** Flycheck
+
+Flycheck is an excellent on-the-fly checker that provides many
+additional features and languages. Flymake is part of stock Emacs,
+flychcks is third-party.
+
+Flycheck can be quite slow with a large number of errors. We reduce
+how often we run it. We also change the highlighting to simply
+highlight the whole line, as it's much faster. See
+https://github.com/lunaryorn/flycheck/issues/153#issuecomment-19450255
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq flycheck-highlighting-mode 'lines)
+#+END_SRC
+
+Style flycheck errors consistently with flymake.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (custom-set-faces
+   '(flycheck-error ((((class color)) (:underline "Red"))))
+   '(flycheck-warning ((((class color)) (:underline "Orange")))))
+#+END_SRC
+
 ** Undoing
 
 Emacs' undo facility is excellent, but undo-tree is even better.
@@ -511,12 +583,10 @@ isn't very smart. Autopair works nicely.
   (add-hook 'python-mode-hook 'autopair-mode)
 #+END_SRC
 
-We use pyflakes with flymake to check for coding errors.
+We use flake8 with flycheck to check for coding errors.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (require 'flymake-python-pyflakes)
-  (setq flymake-python-pyflakes-executable "pyflakes")
-  (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
+  (add-hook 'python-mode-hook 'flycheck-mode)
 #+END_SRC
 
 I prefer to write docstrings with example usage that aren't quite
@@ -524,6 +594,20 @@ valid doctests, so we switch off doctest checks.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setenv "PYFLAKES_NODOCTEST" "y")
+#+END_SRC
+
+I often write triple-quoted docstrings, so it's convenient to have a
+shortcut for inserting them.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'python)
+  
+  (define-skeleton python-insert-docstring
+    "Insert a Python docstring."
+    "This string is ignored!"
+    "\"\"\"" - "\"\"\"")
+  
+  (define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
 #+END_SRC
 
 ** Less (CSS)
@@ -689,4 +773,25 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
     (indent-region (point-min) (point-max)))
   
   (add-hook 'magit-log-edit-mode-hook 'auto-fill-mode)
+  
+  (require 'f)
+  (require 's)
+  
+  (defun download-file (url directory file-name)
+    "Download the file at URL into DIRECTORY.
+  The FILE-NAME defaults to the one used in the URL."
+    (interactive
+     ;; We're forced to let-bind url here since we access it before
+     ;; interactive binds the function parameters.
+     (let ((url (read-from-minibuffer "URL: ")))
+       (list
+        url
+        (read-directory-name "Destination dir: ")
+        ;; deliberately not using read-file-name since that inludes the directory
+        (read-from-minibuffer
+         "File name: "
+         (car (last (s-split "/" url)))))))
+    (let ((destination (f-join directory file-name)))
+      (url-copy-file url destination 't)
+      (find-file destination)))
 #+END_SRC

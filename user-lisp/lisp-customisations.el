@@ -34,6 +34,7 @@
 (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
 
 ;; C-M-x is swallowed by Gnome, so bind C-c e instead
+;; Note that pasisng a prefix argument activates edebug instrumentation
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'eval-defun)
 ;; toggle-debug-on-error is too useful to not have a keybinding
 (define-key emacs-lisp-mode-map (kbd "C-c d") 'toggle-debug-on-error)

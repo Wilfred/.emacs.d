@@ -1,3 +1,5 @@
+(require 'f)
+
 ;;;; files related to buffers
 (defun path-for-current-buffer ()
   "Find a directory path associated with the current buffer, if
@@ -7,10 +9,6 @@ possible. No trailing slash. Returns nil otherwise."
       default-directory)))
 
 ;;;; path manipulation
-(defun file-path-join (directory-name file-name)
-  "Join the relative FILE-NAME to DIRECTORY-NAME, adding slashes where appropriate."
-  (concat (file-name-as-directory directory-name) file-name))
-
 (defun parent-directory (path)
   (directory-file-name (file-name-directory path)))
 
@@ -23,15 +21,12 @@ possible. No trailing slash. Returns nil otherwise."
 
 ;;;; path searching
 
-;; fixme: this is just locate-dominating-file
-(defalias 'find-containing-parent-directory 'locate-dominating-file)
-
 (defun find-path-parent-directory (path file-name)
   "Search PATH and all parent directories for file FILE-NAME,
 returning the path where FILE-NAME can be found."
-  (let ((directory-path (find-containing-parent-directory path file-name)))
+  (let ((directory-path (locate-dominating-file path file-name)))
     (when directory-path
-        (file-path-join directory-path file-name))))
+        (f-join directory-path file-name))))
 
 (autoload 'vc-git-root "vc-git")
 (autoload 'vc-svn-root "vc-svn")
@@ -41,7 +36,7 @@ returning the path where FILE-NAME can be found."
   (or
    (vc-git-root path)
    (vc-svn-root path)
-   (find-containing-parent-directory path "pom.xml")
+   (locate-dominating-file path "pom.xml")
    (error "%s doesn't seem to be part of a project" path)))
 
 (autoload '--remove "dash" nil t)

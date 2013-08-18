@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-07-30T12:19+0100"/>
+<meta name="generated" content="2013-08-14T11:30+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -122,13 +122,19 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#sec-1">1 Introduction</a></li>
+<li><a href="#sec-1">1 Introduction</a>
+<ul>
+<li><a href="#sec-1-1">1.1 Licensing</a></li>
+<li><a href="#sec-1-2">1.2 Reading This Document</a></li>
+</ul>
+</li>
 <li><a href="#sec-2">2 Installing locally</a>
 <ul>
-<li><a href="#sec-2-1">2.1 Emacs 24</a></li>
-<li><a href="#sec-2-2">2.2 Python</a></li>
-<li><a href="#sec-2-3">2.3 JavaScript</a></li>
-<li><a href="#sec-2-4">2.4 Less</a></li>
+<li><a href="#sec-2-1">2.1 The Git Repository</a></li>
+<li><a href="#sec-2-2">2.2 Emacs 24</a></li>
+<li><a href="#sec-2-3">2.3 Python</a></li>
+<li><a href="#sec-2-4">2.4 JavaScript</a></li>
+<li><a href="#sec-2-5">2.5 Less</a></li>
 </ul>
 </li>
 <li><a href="#sec-3">3 Contents</a>
@@ -160,7 +166,12 @@ for the JavaScript code in this tag.
 <li><a href="#sec-3-8-4">3.8.4 Scratch Files</a></li>
 </ul>
 </li>
-<li><a href="#sec-3-9">3.9 Flymake</a></li>
+<li><a href="#sec-3-9">3.9 As-you-type Checks</a>
+<ul>
+<li><a href="#sec-3-9-1">3.9.1 Flymake</a></li>
+<li><a href="#sec-3-9-2">3.9.2 Flycheck</a></li>
+</ul>
+</li>
 <li><a href="#sec-3-10">3.10 Undoing</a></li>
 <li><a href="#sec-3-11">3.11 Python</a></li>
 <li><a href="#sec-3-12">3.12 Less (CSS)</a></li>
@@ -177,8 +188,40 @@ for the JavaScript code in this tag.
 <h2 id="sec-1"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 
-<p>This file is a literate programming document. To generate init.el, run
-`M-x org-babel-tangle'. To generate init.html, run `M-x org-export-as-html'.
+
+<p>
+This is the Emacs environment I (Wilfred Hughes) use for development.
+</p>
+
+</div>
+
+<div id="outline-container-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Licensing</h3>
+<div class="outline-text-3" id="text-1-1">
+
+
+<p>
+Code I've written (init.el and files under `user-lisp/') is BSD
+licensed, see COPYING.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Reading This Document</h3>
+<div class="outline-text-3" id="text-1-2">
+
+
+<p>
+This file is a literate programming document written with org-mode and
+org-mode-babel. You can view init.html in a web browser, or read
+init.org in Emacs.
+</p>
+<p>
+init.el and init.html are generated files. To generate init.el, run
+`M-x org-babel-tangle'. To generate init.html, run `M-x
+org-export-as-html'.
 </p>
 <p>
 By default, all the sections in this document are collapsed. You can
@@ -188,7 +231,9 @@ can expand all headers by pressing `C-u C-u C-u &lt;TAB&gt;'.
 <p>
 You can edit any code block by putting point inside the block and
 pressing `C-c '' (press `C-c '' again to escape). 
-</p></div>
+</p>
+</div>
+</div>
 
 </div>
 
@@ -198,36 +243,36 @@ pressing `C-c '' (press `C-c '' again to escape).
 
 
 <p>
-This repository seeks to be as self-contained as possible. However, you will require:
+This repository seeks to be as self-contained as possible. Generally,
+you should be able to check out the repository and start using it on
+any of Linux, OS X and Windows. To use this repository, you will
+require:
 </p>
 
 </div>
 
 <div id="outline-container-2-1" class="outline-3">
-<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Emacs 24</h3>
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> The Git Repository</h3>
 <div class="outline-text-3" id="text-2-1">
 
 
 <p>
-I use this repository with Emacs 24. Most code works with Emacs 23 but
-I don't test it often.
+Remove any existing .emacs.d configuration (or move elsewhere):
 </p>
-</div>
 
-</div>
 
-<div id="outline-container-2-2" class="outline-3">
-<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Python</h3>
-<div class="outline-text-3" id="text-2-2">
+
+<pre class="src src-sh">rm -r ~/.emacs.d
+</pre>
 
 
 <p>
-I use pyflakes, which is available on PyPI. You can install it with:
+Clone the repo:
 </p>
 
 
 
-<pre class="src src-sh">sudo pip install pyflakes
+<pre class="src src-sh">git clone git://github.com/Wilfred/.emacs.d.git
 </pre>
 
 
@@ -235,9 +280,42 @@ I use pyflakes, which is available on PyPI. You can install it with:
 
 </div>
 
+<div id="outline-container-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Emacs 24</h3>
+<div class="outline-text-3" id="text-2-2">
+
+
+<p>
+I use this repository with Emacs 24. Most code works with Emacs 23 but
+I don't test it often. Bug fixes for other Emacs versions (or other
+Emacsen) are welcomed.
+</p>
+</div>
+
+</div>
+
 <div id="outline-container-2-3" class="outline-3">
-<h3 id="sec-2-3"><span class="section-number-3">2.3</span> JavaScript</h3>
+<h3 id="sec-2-3"><span class="section-number-3">2.3</span> Python</h3>
 <div class="outline-text-3" id="text-2-3">
+
+
+<p>
+I use flake8, which is available on PyPI. You can install it with:
+</p>
+
+
+
+<pre class="src src-sh">sudo pip install flake8
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-2-4" class="outline-3">
+<h3 id="sec-2-4"><span class="section-number-3">2.4</span> JavaScript</h3>
+<div class="outline-text-3" id="text-2-4">
 
 
 <p>
@@ -255,9 +333,9 @@ install JSHint, run:
 
 </div>
 
-<div id="outline-container-2-4" class="outline-3">
-<h3 id="sec-2-4"><span class="section-number-3">2.4</span> Less</h3>
-<div class="outline-text-3" id="text-2-4">
+<div id="outline-container-2-5" class="outline-3">
+<h3 id="sec-2-5"><span class="section-number-3">2.5</span> Less</h3>
+<div class="outline-text-3" id="text-2-5">
 
 
 <p>
@@ -293,6 +371,11 @@ with:
 Code I've written lives in user-lisp. This includes packages that I
 haven't polished enough to release yet, small convenience functions,
 and package customisations.
+</p>
+<p>
+Interactive commands, configuration and keybindings are kept in files
+named `FOO-customisations.el'. Elisp convenience functions are kept in
+files named `FOO-utils.el'.
 </p>
 
 
@@ -771,24 +854,41 @@ makes it very fast, and ensures that files ignored by git are ignored.
 </p>
 <p>
 Alternatives worth mentioning are `projectile' and
-`find-file-in-project'. Todo: say why.
+`find-file-in-project'. `projectile' seems to have the most users, but
+I've found it to be a little bit slower, even with external
+commands. `find-file-in-project' seems unmaintained.
 </p>
 
 
 
 <pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">find-file-in-repository</span>)
-
-(<span style="color: #729fcf; font-weight: bold;">defadvice</span> <span style="color: #edd400; font-weight: bold;">find-file-in-repository</span> (around disable-ido-flex-matching activate)
-  (<span style="color: #729fcf; font-weight: bold;">let</span> ((ido-enable-flex-matching nil)
-        (ido-case-fold t))
-    ad-do-it))
-
-(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"C-x C-g"</span>) 'find-file-in-repository)
-
-
 </pre>
 
 
+<p>
+Ido can become very slow with large lists. This is largely due to
+flexible matching, used when there isn't an exact substring match. We
+switch off flexible matching with `find-file-in-repository'.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defadvice</span> <span style="color: #edd400; font-weight: bold;">find-file-in-repository</span> (around disable-ido-flex-matching activate)
+  (<span style="color: #729fcf; font-weight: bold;">let</span> ((ido-enable-flex-matching nil)
+        (ido-case-fold t))
+    ad-do-it))
+</pre>
+
+
+<p>
+Finally, we bind `find-file-in-repository' to `C-x C-g', as we use it
+a lot and it's right next to `C-x C-f'.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"C-x C-g"</span>) 'find-file-in-repository)
+</pre>
 
 
 </div>
@@ -924,8 +1024,16 @@ It's also useful to quickly generate a minimal HTML page to play with.
 </div>
 
 <div id="outline-container-3-9" class="outline-3">
-<h3 id="sec-3-9"><span class="section-number-3">3.9</span> Flymake</h3>
+<h3 id="sec-3-9"><span class="section-number-3">3.9</span> As-you-type Checks</h3>
 <div class="outline-text-3" id="text-3-9">
+
+
+
+</div>
+
+<div id="outline-container-3-9-1" class="outline-4">
+<h4 id="sec-3-9-1"><span class="section-number-4">3.9.1</span> Flymake</h4>
+<div class="outline-text-4" id="text-3-9-1">
 
 
 <p>
@@ -978,6 +1086,46 @@ I prefer my errors underlined.
 
 </div>
 
+<div id="outline-container-3-9-2" class="outline-4">
+<h4 id="sec-3-9-2"><span class="section-number-4">3.9.2</span> Flycheck</h4>
+<div class="outline-text-4" id="text-3-9-2">
+
+
+<p>
+Flycheck is an excellent on-the-fly checker that provides many
+additional features and languages. Flymake is part of stock Emacs,
+flychcks is third-party.
+</p>
+<p>
+Flycheck can be quite slow with a large number of errors. We reduce
+how often we run it. We also change the highlighting to simply
+highlight the whole line, as it's much faster. See
+<a href="https://github.com/lunaryorn/flycheck/issues/153#issuecomment-19450255">https://github.com/lunaryorn/flycheck/issues/153#issuecomment-19450255</a>
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(setq flycheck-highlighting-mode 'lines)
+</pre>
+
+
+<p>
+Style flycheck errors consistently with flymake.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(custom-set-faces
+ '(flycheck-error ((((class color)) (<span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Red"</span>))))
+ '(flycheck-warning ((((class color)) (<span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Orange"</span>)))))
+</pre>
+
+
+</div>
+</div>
+
+</div>
+
 <div id="outline-container-3-10" class="outline-3">
 <h3 id="sec-3-10"><span class="section-number-3">3.10</span> Undoing</h3>
 <div class="outline-text-3" id="text-3-10">
@@ -1019,14 +1167,12 @@ isn't very smart. Autopair works nicely.
 
 
 <p>
-We use pyflakes with flymake to check for coding errors.
+We use flake8 with flycheck to check for coding errors.
 </p>
 
 
 
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">flymake-python-pyflakes</span>)
-(setq flymake-python-pyflakes-executable <span style="color: #ad7fa8; font-style: italic;">"pyflakes"</span>)
-(add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
+<pre class="src src-emacs-lisp">(add-hook 'python-mode-hook 'flycheck-mode)
 </pre>
 
 
@@ -1038,6 +1184,24 @@ valid doctests, so we switch off doctest checks.
 
 
 <pre class="src src-emacs-lisp">(setenv <span style="color: #ad7fa8; font-style: italic;">"PYFLAKES_NODOCTEST"</span> <span style="color: #ad7fa8; font-style: italic;">"y"</span>)
+</pre>
+
+
+<p>
+I often write triple-quoted docstrings, so it's convenient to have a
+shortcut for inserting them.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">python</span>)
+
+(<span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">python-insert-docstring</span>
+  <span style="color: #888a85;">"Insert a Python docstring."</span>
+  <span style="color: #ad7fa8; font-style: italic;">"This string is ignored!"</span>
+  <span style="color: #ad7fa8; font-style: italic;">"\"\"\""</span> - <span style="color: #ad7fa8; font-style: italic;">"\"\"\""</span>)
+
+(define-key python-mode-map (kbd <span style="color: #ad7fa8; font-style: italic;">"C-c s"</span>) 'python-insert-docstring)
 </pre>
 
 
@@ -1246,6 +1410,27 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
   (indent-region (point-min) (point-max)))
 
 (add-hook 'magit-log-edit-mode-hook 'auto-fill-mode)
+
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">f</span>)
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">s</span>)
+
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">download-file</span> (url directory file-name)
+  <span style="color: #888a85;">"Download the file at URL into DIRECTORY.</span>
+<span style="color: #888a85;">The FILE-NAME defaults to the one used in the URL."</span>
+  (interactive
+   <span style="color: #888a85;">;; </span><span style="color: #888a85;">We're forced to let-bind url here since we access it before</span>
+   <span style="color: #888a85;">;; </span><span style="color: #888a85;">interactive binds the function parameters.</span>
+   (<span style="color: #729fcf; font-weight: bold;">let</span> ((url (read-from-minibuffer <span style="color: #ad7fa8; font-style: italic;">"URL: "</span>)))
+     (list
+      url
+      (read-directory-name <span style="color: #ad7fa8; font-style: italic;">"Destination dir: "</span>)
+      <span style="color: #888a85;">;; </span><span style="color: #888a85;">deliberately not using read-file-name since that inludes the directory</span>
+      (read-from-minibuffer
+       <span style="color: #ad7fa8; font-style: italic;">"File name: "</span>
+       (car (last (s-split <span style="color: #ad7fa8; font-style: italic;">"/"</span> url)))))))
+  (<span style="color: #729fcf; font-weight: bold;">let</span> ((destination (f-join directory file-name)))
+    (url-copy-file url destination 't)
+    (find-file destination)))
 </pre>
 
 </div>
@@ -1254,7 +1439,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-07-30T12:19+0100</p>
+<p class="date">Date: 2013-08-14T11:30+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

@@ -222,6 +222,12 @@ If a prefix argument is given, don't change the kill-ring."
  '(flymake-errline ((((class color)) (:underline "Red"))))
  '(flymake-warnline ((((class color)) (:underline "Orange")))))
 
+(setq flycheck-highlighting-mode 'lines)
+
+(custom-set-faces
+ '(flycheck-error ((((class color)) (:underline "Red"))))
+ '(flycheck-warning ((((class color)) (:underline "Orange")))))
+
 (require 'undo-tree)
 (global-undo-tree-mode)
 
@@ -230,11 +236,18 @@ If a prefix argument is given, don't change the kill-ring."
 (setq autopair-autowrap t)
 (add-hook 'python-mode-hook 'autopair-mode)
 
-(require 'flymake-python-pyflakes)
-(setq flymake-python-pyflakes-executable "pyflakes")
-(add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
+(add-hook 'python-mode-hook 'flycheck-mode)
 
 (setenv "PYFLAKES_NODOCTEST" "y")
+
+(require 'python)
+
+(define-skeleton python-insert-docstring
+  "Insert a Python docstring."
+  "This string is ignored!"
+  "\"\"\"" - "\"\"\"")
+
+(define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
 
 (require 'less-css-mode)
 (add-hook 'less-css-mode-hook 'flymake-mode)
@@ -371,3 +384,24 @@ If a prefix argument is given, don't change the kill-ring."
   (indent-region (point-min) (point-max)))
 
 (add-hook 'magit-log-edit-mode-hook 'auto-fill-mode)
+
+(require 'f)
+(require 's)
+
+(defun download-file (url directory file-name)
+  "Download the file at URL into DIRECTORY.
+The FILE-NAME defaults to the one used in the URL."
+  (interactive
+   ;; We're forced to let-bind url here since we access it before
+   ;; interactive binds the function parameters.
+   (let ((url (read-from-minibuffer "URL: ")))
+     (list
+      url
+      (read-directory-name "Destination dir: ")
+      ;; deliberately not using read-file-name since that inludes the directory
+      (read-from-minibuffer
+       "File name: "
+       (car (last (s-split "/" url)))))))
+  (let ((destination (f-join directory file-name)))
+    (url-copy-file url destination 't)
+    (find-file destination)))
