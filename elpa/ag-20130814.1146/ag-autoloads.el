@@ -3,8 +3,9 @@
 ;;; Code:
 
 
-;;;### (autoloads (ag-regexp-project-at-point ag-project-regexp ag-project
-;;;;;;  ag-regexp ag) "ag" "ag.el" (20993 4280 953295 10000))
+;;;### (autoloads (ag-kill-other-buffers ag-kill-buffers ag-regexp-project-at-point
+;;;;;;  ag-project-regexp ag-project ag-regexp ag) "ag" "ag.el" (21012
+;;;;;;  41756 324386 470000))
 ;;; Generated autoloads from ag.el
 
 (autoload 'ag "ag" "\
@@ -38,9 +39,19 @@ to the symbol under point.
 
 \(fn REGEXP)" t nil)
 
+(autoload 'ag-kill-buffers "ag" "\
+Kill all ag-mode buffers.
+
+\(fn)" t nil)
+
+(autoload 'ag-kill-other-buffers "ag" "\
+Kill all ag-mode buffers other than the current buffer.
+
+\(fn)" t nil)
+
 ;;;***
 
-;;;### (autoloads nil nil ("ag-pkg.el") (20993 4281 58534 943000))
+;;;### (autoloads nil nil ("ag-pkg.el") (21012 41756 431384 133000))
 
 ;;;***
 

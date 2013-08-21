@@ -4,8 +4,8 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 January 2013
-;; Version: 20130722.1547
-;; X-Original-Version: 0.23
+;; Version: 20130814.1146
+;; X-Original-Version: 0.26
 
 ;;; Commentary:
 
@@ -65,6 +65,12 @@ This requires the ag command to support --color-match, which is only in v0.14+"
   :type 'boolean
   :group 'ag)
 
+(defcustom ag-reuse-buffers nil
+  "Non-nil means we reuse the existing search results buffer, rather than
+creating one buffer per unique search."
+  :type 'boolean
+  :group 'ag)
+
 (require 'compile)
 
 ;; Although ag results aren't exactly errors, we treat them as errors
@@ -94,6 +100,12 @@ This requires the ag command to support --color-match, which is only in v0.14+"
 (define-key ag-mode-map (kbd "p") 'compilation-previous-error)
 (define-key ag-mode-map (kbd "n") 'compilation-next-error)
 
+(defun ag/buffer-name (search-string directory regexp)
+  (cond
+   (ag-reuse-buffers "*ag*")
+   (regexp (format "*ag regexp:%s dir:%s*" search-string directory))
+   (:else (format "*ag text:%s dir:%s*" search-string directory))))
+
 (defun ag/s-join (separator strings)
   "Join all the strings in STRINGS with SEPARATOR in between."
   (mapconcat 'identity strings separator))
@@ -121,7 +133,8 @@ If REGEXP is non-nil, treat STRING as a regular expression."
     (compilation-start
      (ag/s-join " "
                 (append '("ag") arguments (list (ag/shell-quote string))))
-     'ag-mode)))
+     'ag-mode
+     `(lambda (mode-name) ,(ag/buffer-name string directory regexp)))))
 
 (defun ag/dwim-at-point ()
   "If there's an active selection, return that.
@@ -182,6 +195,25 @@ to the symbol under point."
    (interactive (list (read-from-minibuffer "Search regexp: " (ag/dwim-at-point))))
 
    (ag/search regexp (ag/project-root default-directory) t))
+
+;;;###autoload
+(defun ag-kill-buffers ()
+  "Kill all ag-mode buffers."
+  (interactive)
+  (dolist (buffer (buffer-list))
+    (when (eq (buffer-local-value 'major-mode buffer) 'ag-mode)
+      (kill-buffer buffer))))
+
+;;;###autoload
+(defun ag-kill-other-buffers ()
+  "Kill all ag-mode buffers other than the current buffer."
+  (interactive)
+  (let ((current-buffer (current-buffer)))
+    (dolist (buffer (buffer-list))
+      (when (and
+             (eq (buffer-local-value 'major-mode buffer) 'ag-mode)
+             (not (eq buffer current-buffer)))
+        (kill-buffer buffer)))))
 
 ;; Taken from grep-filter, just changed the color regex.
 (defun ag-filter ()
