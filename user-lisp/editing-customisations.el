@@ -179,50 +179,10 @@ are interchanged."
 (setq act-jump-case-fold nil)
 (define-key global-map (kbd "<f11>") 'ace-jump-mode)
 
-(defun dwim-at-point ()
-  "If there's an active selection, return that. Otherwise, get
-the symbol at point."
-  (if (use-region-p)
-      (buffer-substring-no-properties (region-beginning) (region-end))
-    (if (symbol-at-point)
-        (symbol-name (symbol-at-point)))))
+(require 'ez-query-replace)
 
-;; todo: investigate whether we're reinventing the wheel, since query-replace-history already exists
-(defvar query-replace/history nil)
-(defun query-replace-at-point (from-string to-string)
-  "Replace occurrences of FROM-STRING with TO-STRING, defaulting
-to the symbol at point."
-  (interactive (list
-                (read-from-minibuffer "Replace what? " (dwim-at-point))
-                (read-from-minibuffer "With what? ")))
-
-  ;; if we currently have point on a symbol we're replacing, go back
-  (-when-let* ((current-symbol (symbol-at-point))
-               (current-symbol-name (symbol-name current-symbol))
-               (string-matches (string-equal current-symbol-name from-string)))
-    (forward-symbol -1))
-
-  (add-to-list 'query-replace/history
-               (list (format "%s -> %s" from-string to-string)
-                     from-string to-string))
-  (perform-replace from-string to-string t nil nil))
-
-(eval-when-compile (require 'cl)) ; first, second
-
-(defun query-replace-repeat ()
-  (interactive)
-  (unless query-replace/history
-    (error "You need to have done query-replace-at-point first"))
-  (let* ((choices (mapcar 'first query-replace/history))
-         (choice (ido-completing-read "Previous replaces: " choices))
-         (from-with-to (cdr (assoc choice query-replace/history)))
-         (from-string (first from-with-to))
-         (to-string (second from-with-to)))
-    (perform-replace from-string to-string
-                   t nil nil)))
-
-(define-key global-map (kbd "M-%") 'query-replace-at-point)
-(define-key global-map (kbd "C-c M-%") 'query-replace-repeat)
+(define-key global-map (kbd "M-%") 'ez-query-replace)
+(define-key global-map (kbd "C-c M-%") 'ez-query-replace-repeat)
 
 ;; multiple cursors
 ;; a good replacement for simple macros since you see the results instantly
