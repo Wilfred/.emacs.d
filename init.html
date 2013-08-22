@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-08-14T11:30+0100"/>
+<meta name="generated" content="2013-08-22T15:42+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -174,10 +174,11 @@ for the JavaScript code in this tag.
 </li>
 <li><a href="#sec-3-10">3.10 Undoing</a></li>
 <li><a href="#sec-3-11">3.11 Python</a></li>
-<li><a href="#sec-3-12">3.12 Less (CSS)</a></li>
-<li><a href="#sec-3-13">3.13 Org-mode</a></li>
-<li><a href="#sec-3-14">3.14 Performance</a></li>
-<li><a href="#sec-3-15">3.15 Undocumented</a></li>
+<li><a href="#sec-3-12">3.12 CSS</a></li>
+<li><a href="#sec-3-13">3.13 Less (CSS)</a></li>
+<li><a href="#sec-3-14">3.14 Org-mode</a></li>
+<li><a href="#sec-3-15">3.15 Performance</a></li>
+<li><a href="#sec-3-16">3.16 Undocumented</a></li>
 </ul>
 </li>
 </ul>
@@ -1210,8 +1211,44 @@ shortcut for inserting them.
 </div>
 
 <div id="outline-container-3-12" class="outline-3">
-<h3 id="sec-3-12"><span class="section-number-3">3.12</span> Less (CSS)</h3>
+<h3 id="sec-3-12"><span class="section-number-3">3.12</span> CSS</h3>
 <div class="outline-text-3" id="text-3-12">
+
+
+<p>
+Currently I'm working on projects that require tabs for CSS
+indentation.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(add-hook 'css-mode-hook
+          (function
+           (<span style="color: #729fcf; font-weight: bold;">lambda</span> ()
+             (<span style="color: #729fcf; font-weight: bold;">progn</span>
+               (setq css-indent-offset 4)
+               (setq indent-tabs-mode nil)))))
+</pre>
+
+
+<p>   
+It's really handy to highlight CSS colour values to show the colour
+they represent.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(add-hook 'css-mode-hook 'rainbow-mode)
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-13" class="outline-3">
+<h3 id="sec-3-13"><span class="section-number-3">3.13</span> Less (CSS)</h3>
+<div class="outline-text-3" id="text-3-13">
 
 
 <p>
@@ -1230,9 +1267,9 @@ syntax check.
 
 </div>
 
-<div id="outline-container-3-13" class="outline-3">
-<h3 id="sec-3-13"><span class="section-number-3">3.13</span> Org-mode</h3>
-<div class="outline-text-3" id="text-3-13">
+<div id="outline-container-3-14" class="outline-3">
+<h3 id="sec-3-14"><span class="section-number-3">3.14</span> Org-mode</h3>
+<div class="outline-text-3" id="text-3-14">
 
 
 <p>
@@ -1250,9 +1287,9 @@ them.
 
 </div>
 
-<div id="outline-container-3-14" class="outline-3">
-<h3 id="sec-3-14"><span class="section-number-3">3.14</span> Performance</h3>
-<div class="outline-text-3" id="text-3-14">
+<div id="outline-container-3-15" class="outline-3">
+<h3 id="sec-3-15"><span class="section-number-3">3.15</span> Performance</h3>
+<div class="outline-text-3" id="text-3-15">
 
 
 <p>
@@ -1272,9 +1309,9 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 
 </div>
 
-<div id="outline-container-3-15" class="outline-3">
-<h3 id="sec-3-15"><span class="section-number-3">3.15</span> Undocumented</h3>
-<div class="outline-text-3" id="text-3-15">
+<div id="outline-container-3-16" class="outline-3">
+<h3 id="sec-3-16"><span class="section-number-3">3.16</span> Undocumented</h3>
+<div class="outline-text-3" id="text-3-16">
 
 
 
@@ -1308,7 +1345,6 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">structured-text-customisations</span>)
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">isearch-customisations</span>)
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">html-customisations</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">css-customisations</span>)
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">python-customisations</span>)
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">javascript-customisations</span>)
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">xml-customisations</span>)
@@ -1439,7 +1475,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-08-14T11:30+0100</p>
+<p class="date">Date: 2013-08-22T15:42+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

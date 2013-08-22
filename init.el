@@ -249,6 +249,15 @@ If a prefix argument is given, don't change the kill-ring."
 
 (define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
 
+(add-hook 'css-mode-hook
+          (function
+           (lambda ()
+             (progn
+               (setq css-indent-offset 4)
+               (setq indent-tabs-mode nil)))))
+
+(add-hook 'css-mode-hook 'rainbow-mode)
+
 (require 'less-css-mode)
 (add-hook 'less-css-mode-hook 'flymake-mode)
 
@@ -282,7 +291,6 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'structured-text-customisations)
 (require 'isearch-customisations)
 (require 'html-customisations)
-(require 'css-customisations)
 (require 'python-customisations)
 (require 'javascript-customisations)
 (require 'xml-customisations)

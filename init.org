@@ -610,6 +610,27 @@ shortcut for inserting them.
   (define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
 #+END_SRC
 
+** CSS
+
+Currently I'm working on projects that require tabs for CSS
+indentation.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-hook 'css-mode-hook
+            (function
+             (lambda ()
+               (progn
+                 (setq css-indent-offset 4)
+                 (setq indent-tabs-mode nil)))))
+#+END_SRC
+   
+It's really handy to highlight CSS colour values to show the colour
+they represent.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-hook 'css-mode-hook 'rainbow-mode)
+#+END_SRC
+
 ** Less (CSS)
 
 The less compiler doesn't give much feedback, but it does gives us a
@@ -671,7 +692,6 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
   (require 'structured-text-customisations)
   (require 'isearch-customisations)
   (require 'html-customisations)
-  (require 'css-customisations)
   (require 'python-customisations)
   (require 'javascript-customisations)
   (require 'xml-customisations)
