@@ -4,8 +4,8 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 January 2013
-;; Version: 20130814.1146
-;; X-Original-Version: 0.26
+;; Version: 20130821.1750
+;; X-Original-Version: 0.27
 
 ;;; Commentary:
 
@@ -13,7 +13,7 @@
 
 ;; Usage:
 
-;; Add you to your .emacs.d:
+;; Add to your .emacs.d:
 
 ;; (add-to-list 'load-path "/path/to/ag.el") ;; optional
 ;; (require 'ag)
@@ -139,10 +139,11 @@ If REGEXP is non-nil, treat STRING as a regular expression."
 (defun ag/dwim-at-point ()
   "If there's an active selection, return that.
 Otherwise, get the symbol at point."
-  (if (use-region-p)
-      (buffer-substring-no-properties (region-beginning) (region-end))
-    (if (symbol-at-point)
-        (symbol-name (symbol-at-point)))))
+  (cond ((use-region-p)
+         (buffer-substring-no-properties (region-beginning) (region-end)))
+        ((symbol-at-point)
+         (substring-no-properties
+          (symbol-name (symbol-at-point))))))
 
 (autoload 'vc-git-root "vc-git")
 (autoload 'vc-svn-root "vc-svn")
