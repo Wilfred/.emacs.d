@@ -13,6 +13,7 @@
   "maxerr": 10000, // keep reporting even if we find lots of issues
   "eqnull": true, // allow foo == null
   "-W099": true, // allowed mixed tabs and spaces
+  "laxcomma": true, // allow comma-first style
   "smarttabs": true // allow mixed tabs and spaces (in some
                     // circumstances), it's not good but it's not
                     // going to misbehave. Note that the warning still
