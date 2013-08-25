@@ -198,6 +198,8 @@ If a prefix argument is given, don't change the kill-ring."
     <head>
         <title>
         </title>
+        <style type=\"text/css\">
+        </style>
     </head>
     <body>
         

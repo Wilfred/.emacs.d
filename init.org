@@ -490,6 +490,8 @@ It's also useful to quickly generate a minimal HTML page to play with.
       <head>
           <title>
           </title>
+          <style type=\"text/css\">
+          </style>
       </head>
       <body>
           
@@ -498,8 +500,6 @@ It's also useful to quickly generate a minimal HTML page to play with.
     (forward-line -2)
     (move-end-of-line nil))
 #+END_SRC
-
-
 
 ** As-you-type Checks
 
