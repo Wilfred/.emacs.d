@@ -30,8 +30,7 @@
 ;; (global-set-key [(control f3)] 'highlight-symbol-at-point)
 ;; (global-set-key [f3] 'highlight-symbol-next)
 ;; (global-set-key [(shift f3)] 'highlight-symbol-prev)
-;; (global-set-key [(meta f3)] 'highlight-symbol-prev)))
-;; (global-set-key [(control meta f3)] 'highlight-symbol-query-replace)
+;; (global-set-key [(meta f3)] 'highlight-symbol-query-replace)
 ;;
 ;; Use `highlight-symbol-at-point' to toggle highlighting of the symbol at
 ;; point throughout the current buffer.  Use `highlight-symbol-mode' to keep the
@@ -248,13 +247,13 @@ element in of `highlight-symbol-faces'."
 
 ;;;###autoload
 (defun highlight-symbol-next ()
-  "Jump to the next location of the symbol at point within the function."
+  "Jump to the next location of the symbol at point within the buffer."
   (interactive)
   (highlight-symbol-jump 1))
 
 ;;;###autoload
 (defun highlight-symbol-prev ()
-  "Jump to the previous location of the symbol at point within the function."
+  "Jump to the previous location of the symbol at point within the buffer."
   (interactive)
   (highlight-symbol-jump -1))
 
@@ -350,6 +349,7 @@ DIR has to be 1 or -1."
           (let ((target (re-search-forward symbol nil t dir)))
             (unless target
               (goto-char (if (< 0 dir) (point-min) (point-max)))
+              (message "Continued from beginning of buffer")
               (setq target (re-search-forward symbol nil nil dir)))
             (goto-char (+ target offset)))
           (setq this-command 'highlight-symbol-jump))

@@ -7,8 +7,8 @@
 ;;;;;;  highlight-symbol-prev-in-defun highlight-symbol-next-in-defun
 ;;;;;;  highlight-symbol-prev highlight-symbol-next highlight-symbol-list-all
 ;;;;;;  highlight-symbol-remove-all highlight-symbol-at-point highlight-symbol-mode)
-;;;;;;  "highlight-symbol" "highlight-symbol.el" (20876 65496 968010
-;;;;;;  932000))
+;;;;;;  "highlight-symbol" "highlight-symbol.el" (20993 4242 316629
+;;;;;;  948000))
 ;;; Generated autoloads from highlight-symbol.el
 
 (autoload 'highlight-symbol-mode "highlight-symbol" "\
@@ -35,12 +35,12 @@ List all symbols highlighted in the buffer.
 \(fn)" t nil)
 
 (autoload 'highlight-symbol-next "highlight-symbol" "\
-Jump to the next location of the symbol at point within the function.
+Jump to the next location of the symbol at point within the buffer.
 
 \(fn)" t nil)
 
 (autoload 'highlight-symbol-prev "highlight-symbol" "\
-Jump to the previous location of the symbol at point within the function.
+Jump to the previous location of the symbol at point within the buffer.
 
 \(fn)" t nil)
 
@@ -68,8 +68,8 @@ before if NLINES is negative.
 
 ;;;***
 
-;;;### (autoloads nil nil ("highlight-symbol-pkg.el") (20876 65497
-;;;;;;  28399 587000))
+;;;### (autoloads nil nil ("highlight-symbol-pkg.el") (20993 4242
+;;;;;;  421313 344000))
 
 ;;;***
 
