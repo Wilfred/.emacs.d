@@ -26,7 +26,7 @@
 ;; Author: Jason R. Blevins <jrblevin@sdf.org>
 ;; Maintainer: Jason R. Blevins <jrblevin@sdf.org>
 ;; Created: May 24, 2007
-;; Version: 20130328.918
+;; Version: 20130726.2142
 ;; X-Original-Version: 2.0
 ;; Keywords: Markdown, GitHub Flavored Markdown, itex
 ;; URL: http://jblevins.org/projects/markdown-mode/
@@ -73,7 +73,7 @@
 ;;
 ;;    * Debian and Ubuntu Linux: [emacs-goodies-el][]
 ;;    * RedHat and Fedora Linux: [emacs-goodies][]
-;;    * OpenBSD: [textproc/markdown-mode][]
+;;    * NetBSD: [textproc/markdown-mode][]
 ;;    * Arch Linux (AUR): [emacs-markdown-mode-git][]
 ;;    * MacPorts: [markdown-mode.el][macports-package] ([pending][macports-ticket])
 ;;    * FreeBSD: [textproc/markdown-mode.el][freebsd-port]
@@ -1871,7 +1871,7 @@ because `thing-at-point-looking-at' does not work reliably with
   "Match GFM quoted code blocks from point to LAST."
   (let (open lang body close all)
     (cond ((and (eq major-mode 'gfm-mode)
-                (search-forward-regexp "^\\(```\\)\\(\\w+\\)?$" last t))
+                (search-forward-regexp "^\\(```\\)\\([^[:space:]]+[[:space:]]*\\)?$" last t))
            (beginning-of-line)
            (setq open (list (match-beginning 1) (match-end 1))
                  lang (list (match-beginning 2) (match-end 2)))
@@ -4642,7 +4642,9 @@ if ARG is omitted or nil."
   ;; do the initial link fontification
   (markdown-fontify-buffer-wiki-links))
 
-;;(add-to-list 'auto-mode-alist '("\\.text$" . markdown-mode))
+;;;###autoload(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+;;;###autoload(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+;;;###autoload(add-to-list 'auto-mode-alist '("\\.text\\'" . markdown-mode))
 
 
 ;;; GitHub Flavored Markdown Mode  ============================================
@@ -4652,7 +4654,7 @@ if ARG is omitted or nil."
    ;; GFM features to match first
    (list
     (cons 'markdown-match-gfm-code-blocks '((1 markdown-pre-face)
-                                            (2 markdown-language-keyword-face)
+                                            (2 markdown-language-keyword-face t t)
                                             (3 markdown-pre-face)
                                             (4 markdown-pre-face))))
    ;; Basic Markdown features (excluding possibly overridden ones)
