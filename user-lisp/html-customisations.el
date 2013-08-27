@@ -62,13 +62,14 @@
   "Contents: "
   "<%= " str " %>")
 
-(setq template-skeletons '(template-tag-skeleton
-                           template-variable-skeleton
-                           template-comment-skeleton
-                           template-block-skeleton
-                           template-if-skeleton
-                           template-if-else-skeleton
-                           underscore-skeleton))
+(defvar template-skeletons
+  '(template-tag-skeleton
+    template-variable-skeleton
+    template-comment-skeleton
+    template-block-skeleton
+    template-if-skeleton
+    template-if-else-skeleton
+    underscore-skeleton))
 
 (defun insert-django-skeleton ()
   (interactive)
