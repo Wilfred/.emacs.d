@@ -92,8 +92,8 @@
       ;; Find the opening " of the file name.
       (while (not (looking-at "\""))
         (forward-char 1))
-      (setq start-pos (point))
       (forward-char)
+      (setq start-pos (point))
 
       ;; Find the closing "
       (while (not (looking-at "\""))
