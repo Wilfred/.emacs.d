@@ -1,5 +1,0 @@
-# -*- coding: utf-8 -*-
-# name: django_tag
-# key: %
-# --
-{% $1 %}
