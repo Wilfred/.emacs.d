@@ -3,7 +3,7 @@
 ;; Author: Steve Purcell <steve@sanityinc.com>
 ;; Keywords: navigation slime elisp emacs-lisp
 ;; URL: https://github.com/purcell/elisp-slime-nav
-;; Version: 20130522.1912
+;; Version: 20130612.1246
 ;; X-Original-Version: DEV
 ;; Package-Requires: ((cl-lib "0.2"))
 ;;
@@ -22,7 +22,7 @@
 ;;
 ;;   (require 'elisp-slime-nav) ;; optional if installed via package.el
 ;;   (dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook))
-;;     (add-hook hook 'elisp-slime-nav-mode))
+;;     (add-hook hook 'turn-on-elisp-slime-nav-mode))
 ;;
 ;; Known issues:
 ;;
@@ -47,6 +47,11 @@
 (define-minor-mode elisp-slime-nav-mode
   "Enable Slime-style navigation of elisp symbols using M-. and M-,"
   nil " SliNav" elisp-slime-nav-mode-map)
+
+;;;###autoload
+(defun turn-on-elisp-slime-nav-mode ()
+  "Explicitly enable `elisp-slime-nav-mode'."
+  (elisp-slime-nav-mode 1))
 
 (defun elisp-slime-nav--all-navigable-symbol-names ()
   "Return a list of strings for the symbols to which navigation is possible."

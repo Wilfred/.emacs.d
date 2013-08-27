@@ -4,15 +4,20 @@
 
 
 ;;;### (autoloads (elisp-slime-nav-describe-elisp-thing-at-point
-;;;;;;  elisp-slime-nav-find-elisp-thing-at-point elisp-slime-nav-mode)
-;;;;;;  "elisp-slime-nav" "elisp-slime-nav.el" (20896 40888 196643
-;;;;;;  558000))
+;;;;;;  elisp-slime-nav-find-elisp-thing-at-point turn-on-elisp-slime-nav-mode
+;;;;;;  elisp-slime-nav-mode) "elisp-slime-nav" "elisp-slime-nav.el"
+;;;;;;  (20993 4268 296628 870000))
 ;;; Generated autoloads from elisp-slime-nav.el
 
 (autoload 'elisp-slime-nav-mode "elisp-slime-nav" "\
 Enable Slime-style navigation of elisp symbols using M-. and M-,
 
 \(fn &optional ARG)" t nil)
+
+(autoload 'turn-on-elisp-slime-nav-mode "elisp-slime-nav" "\
+Explicitly enable `elisp-slime-nav-mode'.
+
+\(fn)" nil nil)
 
 (autoload 'elisp-slime-nav-find-elisp-thing-at-point "elisp-slime-nav" "\
 Jump to the elisp thing at point, be it a function, variable, library or face.
@@ -31,8 +36,8 @@ Argument SYM-NAME thing to find.
 
 ;;;***
 
-;;;### (autoloads nil nil ("elisp-slime-nav-pkg.el") (20896 40888
-;;;;;;  306466 28000))
+;;;### (autoloads nil nil ("elisp-slime-nav-pkg.el") (20993 4268
+;;;;;;  399273 434000))
 
 ;;;***
 
