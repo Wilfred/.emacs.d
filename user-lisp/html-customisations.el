@@ -79,7 +79,32 @@
 
 (define-key html-mode-map "\C-ct" 'insert-django-skeleton)
 
+(defun visit-parent-django-template ()
+  "In a buffer containg {% extends \"foo.html\" %}, visit foo.html."
+  (interactive)
+  (let (start-pos end-pos template-name)
+    (save-excursion
+      (widen)
+      (goto-char (point-min))
+      ;; Find the extends tag
+      (while (not (looking-at "{% ?extends"))
+        (forward-char 1))
+      ;; Find the opening " of the file name.
+      (while (not (looking-at "\""))
+        (forward-char 1))
+      (setq start-pos (point))
+      (forward-char)
 
+      ;; Find the closing "
+      (while (not (looking-at "\""))
+        (forward-char 1))
+      (setq end-pos (point))
+
+      (setq template-name (buffer-substring-no-properties start-pos end-pos)))
+
+    ;; Open this file, assuming it's in the same directory.
+    ;; TODO: Search the current VCS checkout for it.
+    (find-file template-name)))
 
 (defun html-linkify-region (url)
   "Wraps the region in an <a> tag with href set to URL."
