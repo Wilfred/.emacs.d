@@ -10,6 +10,7 @@
 
 (require 'which-func)
 
+;; FIXME: breaks for class methods, since it assumes `self'
 (defun* python-insert-super-function (&aux start-pos)
   "Insert a call to super for the current class and function."
   (interactive)
