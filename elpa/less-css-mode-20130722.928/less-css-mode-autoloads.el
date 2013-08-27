@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (less-css-mode less-css-compile) "less-css-mode"
-;;;;;;  "less-css-mode.el" (20928 16714 488911 177000))
+;;;;;;  "less-css-mode.el" (20993 4236 19963 542000))
 ;;; Generated autoloads from less-css-mode.el
 
 (autoload 'less-css-compile "less-css-mode" "\
@@ -19,12 +19,12 @@ Special commands:
 
 \(fn)" t nil)
 
-(add-to-list 'auto-mode-alist '("\\.less" . less-css-mode))
+(add-to-list 'auto-mode-alist '("\\.less\\'" . less-css-mode))
 
 ;;;***
 
-;;;### (autoloads nil nil ("less-css-mode-pkg.el") (20928 16714 608753
-;;;;;;  529000))
+;;;### (autoloads nil nil ("less-css-mode-pkg.el") (20993 4236 126364
+;;;;;;  700000))
 
 ;;;***
 

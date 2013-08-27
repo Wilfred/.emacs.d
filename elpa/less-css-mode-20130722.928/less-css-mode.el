@@ -5,7 +5,7 @@
 ;; Author: Steve Purcell <steve@sanityinc.com>
 ;; URL: https://github.com/purcell/less-css-mode
 ;; Keywords: less css mode
-;; Version: 20130610.1645
+;; Version: 20130722.928
 ;; X-Original-Version: DEV
 ;;
 ;; This program is free software; you can redistribute it and/or
@@ -196,7 +196,7 @@ Special commands:
     (css-indent-line)))
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.less" . less-css-mode))
+(add-to-list 'auto-mode-alist '("\\.less\\'" . less-css-mode))
 
 
 (provide 'less-css-mode)
