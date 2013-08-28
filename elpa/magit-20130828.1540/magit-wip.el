@@ -1,7 +1,10 @@
 ;;; magit-wip.el --- git-wip plug-in for Magit
 
-;; Copyright (C) 2012-2013  Jonas Bernoulli
-;; Copyright (C) 2012  Ryan C. Thompson
+;; Copyright (C) 2012-2013  The Magit Project Developers.
+;;
+;; For a full list of contributors, see the AUTHORS.md file
+;; at the top-level directory of this distribution and at
+;; https://raw.github.com/magit/magit/master/AUTHORS.md
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 
@@ -87,7 +90,7 @@
 
 The following `format'-like specs are supported:
 %f the full name of the file being saved
-#g the root of the git repository
+%g the root of the git repository
 %r the name of the file being saved,
    relative to the repository root."
   :group 'magit
@@ -98,7 +101,7 @@ The following `format'-like specs are supported:
 
 The following `format'-like specs are supported:
 %f the full name of the file being saved
-#g the root of the git repository
+%g the root of the git repository
 %r the name of the file being saved,
    relative to the repository root."
   :group 'magit
@@ -124,6 +127,13 @@ work-in-progress ref."
   :group 'magit)
 
 (defun turn-on-magit-wip-save ()
+  "Conditionally turn on magit-wip-save-mode.
+
+Turn on magit-wip-save-mode if the buffer is a file in a git
+repository where wip-save is enabled in git config.
+
+You can activate it with git config magit.extension wip-save.
+"
   (when (and (buffer-file-name)
              (magit-get-top-dir)
              (member "wip-save" (magit-get-all "magit.extension")))

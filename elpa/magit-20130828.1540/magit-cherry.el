@@ -1,6 +1,12 @@
 ;;; magit-cherry.el --- "git cherry" support for Magit
 
-;; Copyright (C) 2013  Moritz Bunkus
+;; Copyright (C) 2013  The Magit Project Developers.
+;;
+;; For a full list of contributors, see the AUTHORS.md file
+;; at the top-level directory of this distribution and at
+;; https://raw.github.com/magit/magit/master/AUTHORS.md
+
+;; Author: Moritz Bunkus <moritz@bunkus.org>
 
 ;; Magit is free software; you can redistribute it and/or modify it
 ;; under the terms of the GNU General Public License as published by
@@ -28,20 +34,21 @@
 (define-derived-mode magit-cherry-mode magit-mode "Magit Cherry"
   "Magit Cherry")
 
-(magit-define-command cherry (&optional upstream head)
-  (interactive)
-  (let ((branch (magit-get-current-branch)))
-    (if (not branch)
-        (error "Don't cherry on a detached head.")
-      (magit-buffer-switch magit--cherry-buffer-name)
-      (magit-mode-init
-       (magit-get-top-dir)
-       'magit-cherry-mode
-       #'magit--refresh-cherry-buffer
-       (or upstream (magit-read-rev "Upstream"
-                                    (magit-format-ref
-                                     (magit-remote-branch-for branch t))))
-       (or head (magit-read-rev "Head" branch))))))
+(magit-define-command cherry (upstream head)
+  (interactive
+   (let ((branch (or (magit-get-current-branch)
+                     (error "Don't cherry on a detached head."))))
+     (list (magit-read-rev "Cherry upstream"
+                           (magit-format-ref
+                            (magit-remote-branch-for branch t)))
+           (magit-read-rev "Cherry head" branch))))
+  (let ((topdir (magit-get-top-dir default-directory)))
+    (magit-buffer-switch magit--cherry-buffer-name)
+    (magit-mode-init topdir
+                     #'magit-cherry-mode
+                     #'magit--refresh-cherry-buffer
+                     upstream
+                     head)))
 
 (defun magit--refresh-cherry-buffer (cherry-upstream cherry-head)
   (magit-create-buffer-sections
@@ -52,12 +59,12 @@
                (abbreviate-file-name default-directory))
        (format "Branch head: %s\n" (or branch-head "nothing committed (yet)"))
        "\n"
-       (format "%s means: present in '%s' but not in '%s'\n"
+       (format "%s means: equivalent exists in '%s'\n"
                (propertize " - " 'face 'magit-diff-del)
-               cherry-upstream cherry-head)
-       (format "%s means: present in '%s' but not in '%s'\n"
+               cherry-upstream)
+       (format "%s means: only exists in '%s'\n"
                (propertize " + " 'face 'magit-diff-add)
-               cherry-head cherry-upstream)
+               cherry-head)
        "\n"
        (propertize "Cherry commits:" 'face 'magit-section-title) "\n"))
     (magit-git-section 'commit nil 'magit--wash-cherry-output

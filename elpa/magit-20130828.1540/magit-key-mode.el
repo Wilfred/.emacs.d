@@ -1,6 +1,10 @@
 ;;; magit-key-mode.el --- interactively tune git invocation
 
-;; Copyright (C) 2010-2011  Phil Jackson
+;; Copyright (C) 2010-2013  The Magit Project Developers.
+;;
+;; For a full list of contributors, see the AUTHORS.md file
+;; at the top-level directory of this distribution and at
+;; https://raw.github.com/magit/magit/master/AUTHORS.md
 
 ;; Author: Phil Jackson <phil@shellarchive.co.uk>
 
@@ -30,6 +34,32 @@
 
 (eval-when-compile (require 'cl-lib))
 
+(defvar magit-key-mode-keymaps)
+(defvar magit-key-mode-last-buffer)
+(defvar magit-pre-key-mode-window-conf)
+
+;;; Faces
+
+(defface magit-key-mode-header-face
+  '((t :inherit font-lock-keyword-face))
+  "Face for key mode header lines."
+  :group 'magit-faces)
+
+(defface magit-key-mode-button-face
+  '((t :inherit font-lock-builtin-face))
+  "Face for key mode buttons."
+  :group 'magit-faces)
+
+(defface magit-key-mode-switch-face
+  '((t :inherit font-lock-warning-face))
+  "Face for key mode switches."
+  :group 'magit-faces)
+
+(defface magit-key-mode-args-face
+  '((t :inherit widget-field))
+  "Face for key mode switch arguments."
+  :group 'magit-faces)
+
 ;;; Keygroups
 
 (defvar magit-key-mode-groups
@@ -52,16 +82,16 @@
       ("-g" "Show Graph" "--graph")
       ("-n" "Name only" "--name-only")
       ("-am" "All match" "--all-match")
-      ("-ab" "All branches" "--branches")
       ("-al" "All" "--all"))
      (arguments
       ("=r" "Relative" "--relative=" read-directory-name)
       ("=c" "Committer" "--committer=" read-from-minibuffer)
       ("=>" "Since" "--since=" read-from-minibuffer)
       ("=<" "Before" "--before=" read-from-minibuffer)
-      ("=s" "Pickaxe search" "-S" read-from-minibuffer)
       ("=a" "Author" "--author=" read-from-minibuffer)
-      ("=g" "Grep" "--grep=" read-from-minibuffer)
+      ("=g" "Grep messages" "--grep=" read-from-minibuffer)
+      ("=G" "Grep patches" "-G" read-from-minibuffer)
+      ("=s" "Pickaxe search" "-S" read-from-minibuffer)
       ("=b" "Branches" "--branches=" read-from-minibuffer)
       ("=R" "Remotes" "--remotes=" read-from-minibuffer)))
 
@@ -128,11 +158,12 @@
     (tagging
      (man-page "git-tag")
      (actions
-      ("t" "Lightweight" magit-tag)
-      ("a" "Annotated" magit-annotated-tag)
+      ("t" "Create" magit-tag)
       ("k" "Delete" magit-delete-tag))
      (switches
-      ("-f" "Force" "-f")))
+      ("-a" "Annotate" "--annotate")
+      ("-f" "Force" "--force")
+      ("-s" "Sign" "--sign")))
 
     (stashing
      (man-page "git-stash")
@@ -144,10 +175,23 @@
       ("-u" "Include untracked files" "--include-untracked")
       ("-a" "Include all files" "--all")))
 
+    (committing
+     (man-page "git-commit")
+     (actions
+      ("c" "Commit" magit-commit))
+     (switches
+      ("-r" "Replace the tip of current branch" "--amend")
+      ("-A" "Stage all modified and deleted files" "--all")
+      ("-e" "Allow empty commit" "--allow-empty")
+      ("-n" "Bypass git hooks" "--no-verify")
+      ("-s" "Add Signed-off-by line" "--signoff")
+      ("-S" "Sign using gpg" "--gpg-sign")))
+
     (merging
      (man-page "git-merge")
      (actions
-      ("m" "Merge" magit-manual-merge))
+      ("m" "Merge" magit-merge)
+      ("A" "Abort" magit-merge-abort))
      (switches
       ("-ff" "Fast-forward only" "--ff-only")
       ("-nf" "No fast-forward" "--no-ff")
@@ -182,7 +226,23 @@
       ("r" "Reset" magit-bisect-reset)
       ("s" "Start" magit-bisect-start)
       ("u" "Run" magit-bisect-run)
-      ("v" "Visualize" magit-bisect-visualize))))
+      ("v" "Visualize" magit-bisect-visualize)))
+
+    (diff-options
+     (actions
+      ("s" "Set" magit-set-diff-options)
+      ("d" "Set default" magit-set-default-diff-options)
+      ("c" "Save default" magit-save-default-diff-options)
+      ("r" "Reset to default" magit-reset-diff-options)
+      ("h" "Toggle Hunk Refinement" magit-toggle-diff-refine-hunk))
+     (switches
+      ("-m" "Show smallest possible diff" "--minimal")
+      ("-p" "Use patience diff algorithm" "--patience")
+      ("-h" "Use histogram diff algorithm" "--histogram")
+      ("-b" "Ignore whitespace changes" "--ignore-space-change")
+      ("-w" "Ignore all whitespace" "--ignore-all-space")
+      ("-W" "Show surrounding functions" "--function-context"))
+     ))
   "Holds the key, help, function mapping for the log-mode.
 If you modify this make sure you reset `magit-key-mode-keymaps'
 to nil.")
@@ -482,7 +542,7 @@ the key combination highlighted before the description."
 
 (defun magit-key-mode-draw-header (header)
   "Draw a header with the correct face."
-  (insert (propertize header 'face 'font-lock-keyword-face) "\n"))
+  (insert (propertize header 'face 'magit-key-mode-header-face) "\n"))
 
 (defvar magit-key-mode-args-in-cols nil
   "When true, draw arguments in columns as with switches and options.")
@@ -496,7 +556,7 @@ the key combination highlighted before the description."
      (format "(%s) %s"
              (nth 2 x)
              (propertize (gethash (nth 2 x) magit-key-mode-current-args "")
-                         'face 'widget-field)))
+                         'face 'magit-key-mode-args-face)))
    (not magit-key-mode-args-in-cols)))
 
 (defun magit-key-mode-draw-switches (switches)
@@ -507,7 +567,7 @@ the key combination highlighted before the description."
    (lambda (x)
      (format "(%s)" (let ((s (nth 2 x)))
                       (if (member s magit-key-mode-current-options)
-                          (propertize s 'face 'font-lock-warning-face)
+                          (propertize s 'face 'magit-key-mode-switch-face)
                         s))))))
 
 (defun magit-key-mode-draw-actions (actions)
@@ -520,7 +580,7 @@ the key combination highlighted before the description."
     (magit-key-mode-draw-header section)
     (magit-key-mode-draw-in-cols
      (mapcar (lambda (x)
-               (let* ((head (propertize (car x) 'face 'font-lock-builtin-face))
+               (let* ((head (propertize (car x) 'face 'magit-key-mode-button-face))
                       (desc (nth 1 x))
                       (more (and maker (funcall maker x)))
                       (text (format " %s: %s%s%s"
@@ -578,10 +638,16 @@ Return the point before the actions part, if any, nil otherwise."
      `(defun ,(intern (concat "magit-key-mode-popup-" (symbol-name group))) nil
         ,(concat "Key menu for " (symbol-name group))
         (interactive)
-        (magit-key-mode (quote ,group)
-                        ;; As a tempory solution it is okay to do this here.
-                        ,(when (eq group 'logging)
-                           '(and magit-have-graph (list "--graph"))))))))
+        (magit-key-mode
+         (quote ,group)
+         ;; As a tempory kludge it is okay to do this here.
+         ,(cl-case group
+            (logging
+             '(when magit-have-graph
+                (list "--graph")))
+            (diff-options
+             '(when (local-variable-p 'magit-diff-options)
+                magit-diff-options))))))))
 
 ;; create the interactive functions for the key mode popups (which are
 ;; applied in the top-level key maps)
