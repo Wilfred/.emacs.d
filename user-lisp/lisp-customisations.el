@@ -1,19 +1,7 @@
 ;; paredit for both clojure and elisp
-(autoload 'paredit-mode "paredit")
 (defun turn-on-paredit () (paredit-mode 1))
 (add-hook 'clojure-mode-hook 'turn-on-paredit)
 (add-hook 'emacs-lisp-mode-hook 'turn-on-paredit)
-
-;; byte-compile elisp files to check for errors
-(add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
-
-;; don't bother running checkdoc, it's annoying for quick hacks
-(require 'flycheck)
-(setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers))
-
-;; bind our usual flymake movement keys for flycheck too
-(define-key flycheck-mode-map (kbd "<f8>") 'flycheck-previous-error)
-(define-key flycheck-mode-map (kbd "<f9>") 'flycheck-next-error)
 
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
@@ -30,32 +18,7 @@
 (dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook))
   (add-hook hook 'elisp-slime-nav-mode))
 
-;; eldoc displays the arguments to the function under cursor in the minibuffer
-(add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
-
-;; C-M-x is swallowed by Gnome, so bind C-c e instead
-;; Note that pasisng a prefix argument activates edebug instrumentation
-(define-key emacs-lisp-mode-map (kbd "C-c e") 'eval-defun)
-;; toggle-debug-on-error is too useful to not have a keybinding
-(define-key emacs-lisp-mode-map (kbd "C-c d") 'toggle-debug-on-error)
-;; evaluate macros step-by-step
-(define-key emacs-lisp-mode-map (kbd "C-c m") 'macrostep-expand)
-
-(require 'rainbow-delimiters)
 (add-hook 'clojure-mode-hook 'rainbow-delimiters-mode)
-(add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
-
-;; brighter colours, snaffled from solarized mode
-(set-face-foreground 'rainbow-delimiters-depth-1-face "white")
-(set-face-foreground 'rainbow-delimiters-depth-2-face "cyan")
-(set-face-foreground 'rainbow-delimiters-depth-3-face "yellow")
-(set-face-foreground 'rainbow-delimiters-depth-4-face "green")
-(set-face-foreground 'rainbow-delimiters-depth-5-face "orange")
-(set-face-foreground 'rainbow-delimiters-depth-6-face "purple")
-(set-face-foreground 'rainbow-delimiters-depth-7-face "white")
-(set-face-foreground 'rainbow-delimiters-depth-8-face "cyan")
-(set-face-foreground 'rainbow-delimiters-depth-9-face "yellow")
-(set-face-foreground 'rainbow-delimiters-unmatched-face "red")
 
 (autoload 'clojure-mode "clojure-mode")
 (add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))

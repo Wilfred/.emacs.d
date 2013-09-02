@@ -230,10 +230,44 @@ If a prefix argument is given, don't change the kill-ring."
  '(flycheck-error ((((class color)) (:underline "Red"))))
  '(flycheck-warning ((((class color)) (:underline "Orange")))))
 
+(require 'flycheck)
+(define-key flycheck-mode-map (kbd "<f8>") 'flycheck-previous-error)
+(define-key flycheck-mode-map (kbd "<f9>") 'flycheck-next-error)
+
 (require 'undo-tree)
 (global-undo-tree-mode)
 
+(define-key emacs-lisp-mode-map (kbd "C-c e") 'eval-defun)
+
+(define-key emacs-lisp-mode-map (kbd "C-c d") 'toggle-debug-on-error)
+
+(define-key emacs-lisp-mode-map (kbd "C-c m") 'macrostep-expand)
+
+(add-hook 'emacs-lisp-mode-hook
+          (lambda () (paredit-mode 1)))
+
+(add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
+
+(require 'rainbow-delimiters)
+(set-face-foreground 'rainbow-delimiters-depth-1-face "white")
+(set-face-foreground 'rainbow-delimiters-depth-2-face "cyan")
+(set-face-foreground 'rainbow-delimiters-depth-3-face "yellow")
+(set-face-foreground 'rainbow-delimiters-depth-4-face "green")
+(set-face-foreground 'rainbow-delimiters-depth-5-face "orange")
+(set-face-foreground 'rainbow-delimiters-depth-6-face "purple")
+(set-face-foreground 'rainbow-delimiters-depth-7-face "white")
+(set-face-foreground 'rainbow-delimiters-depth-8-face "cyan")
+(set-face-foreground 'rainbow-delimiters-depth-9-face "yellow")
+(set-face-foreground 'rainbow-delimiters-unmatched-face "red")
+
+(add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
+
+(add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
+
 (setq-default flycheck-emacs-lisp-initialize-packages t)
+
+(require 'flycheck)
+(setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers))
 
 (require 'autopair)
 (require 'python)

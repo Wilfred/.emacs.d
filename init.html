@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-09-02T18:09+0100"/>
+<meta name="generated" content="2013-09-02T19:03+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -173,7 +173,15 @@ for the JavaScript code in this tag.
 </ul>
 </li>
 <li><a href="#sec-3-10">3.10 Undoing</a></li>
-<li><a href="#sec-3-11">3.11 Emacs Lisp</a></li>
+<li><a href="#sec-3-11">3.11 Emacs Lisp</a>
+<ul>
+<li><a href="#sec-3-11-1">3.11.1 Shortcuts</a></li>
+<li><a href="#sec-3-11-2">3.11.2 Editing Parentheses</a></li>
+<li><a href="#sec-3-11-3">3.11.3 Highlighting Parentheses</a></li>
+<li><a href="#sec-3-11-4">3.11.4 Function Signatures</a></li>
+<li><a href="#sec-3-11-5">3.11.5 On-the-fly Checking</a></li>
+</ul>
+</li>
 <li><a href="#sec-3-12">3.12 Python</a></li>
 <li><a href="#sec-3-13">3.13 CSS</a></li>
 <li><a href="#sec-3-14">3.14 Less (CSS)</a></li>
@@ -1123,6 +1131,18 @@ Style flycheck errors consistently with flymake.
 </pre>
 
 
+<p>
+We use the same movement keys for flycheck as we do for flymake.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">flycheck</span>)
+(define-key flycheck-mode-map (kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f8&gt;"</span>) 'flycheck-previous-error)
+(define-key flycheck-mode-map (kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f9&gt;"</span>) 'flycheck-next-error)
+</pre>
+
+
 </div>
 </div>
 
@@ -1153,11 +1173,163 @@ Emacs' undo facility is excellent, but undo-tree is even better.
 <div class="outline-text-3" id="text-3-11">
 
 
+
+</div>
+
+<div id="outline-container-3-11-1" class="outline-4">
+<h4 id="sec-3-11-1"><span class="section-number-4">3.11.1</span> Shortcuts</h4>
+<div class="outline-text-4" id="text-3-11-1">
+
+
+<p>
+eval-defun is bound to `C-M-x', but Gnome doesn't allow Emacs to
+receive that key sequence. It's very useful command when developing,
+especially since giving a prefix argument switches on edebug for that
+function.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(define-key emacs-lisp-mode-map (kbd <span style="color: #ad7fa8; font-style: italic;">"C-c e"</span>) 'eval-defun)
+</pre>
+
+
+<p>
+Similarly, toggle-debug-on-error is something I call a lot when
+developing, and it doesn't have have any keybinding.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(define-key emacs-lisp-mode-map (kbd <span style="color: #ad7fa8; font-style: italic;">"C-c d"</span>) 'toggle-debug-on-error)
+</pre>
+
+
+<p>
+When writing and debugging macros, it's really important to be able
+to see what they expand to. Macrostep allows us to incrementally
+expand the macros in our elisp file.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(define-key emacs-lisp-mode-map (kbd <span style="color: #ad7fa8; font-style: italic;">"C-c m"</span>) 'macrostep-expand)
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-11-2" class="outline-4">
+<h4 id="sec-3-11-2"><span class="section-number-4">3.11.2</span> Editing Parentheses</h4>
+<div class="outline-text-4" id="text-3-11-2">
+
+
+<p>
+Paredit make editing code with parentheses wonderful and has been the
+gold standard for lisp coding for some time. Smartparens has recently
+gained popularity as an paredit alternative, but I haven't invested
+the time to learn it yet.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(add-hook 'emacs-lisp-mode-hook
+          (<span style="color: #729fcf; font-weight: bold;">lambda</span> () (paredit-mode 1)))
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-11-3" class="outline-4">
+<h4 id="sec-3-11-3"><span class="section-number-4">3.11.3</span> Highlighting Parentheses</h4>
+<div class="outline-text-4" id="text-3-11-3">
+
+
+<p>
+We colour each pair of parentheses according to their depth. This is
+useful for seeing similarly nested lines, such as conditions in a
+cond expression.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
+</pre>
+
+
+<p>
+Our theme (tangotango) only provides colours for the first few nesting
+levels before repeating. We override the face colours so we have
+unique colours until we're seven levels deep.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">rainbow-delimiters</span>)
+(set-face-foreground 'rainbow-delimiters-depth-1-face <span style="color: #ad7fa8; font-style: italic;">"white"</span>)
+(set-face-foreground 'rainbow-delimiters-depth-2-face <span style="color: #ad7fa8; font-style: italic;">"cyan"</span>)
+(set-face-foreground 'rainbow-delimiters-depth-3-face <span style="color: #ad7fa8; font-style: italic;">"yellow"</span>)
+(set-face-foreground 'rainbow-delimiters-depth-4-face <span style="color: #ad7fa8; font-style: italic;">"green"</span>)
+(set-face-foreground 'rainbow-delimiters-depth-5-face <span style="color: #ad7fa8; font-style: italic;">"orange"</span>)
+(set-face-foreground 'rainbow-delimiters-depth-6-face <span style="color: #ad7fa8; font-style: italic;">"purple"</span>)
+(set-face-foreground 'rainbow-delimiters-depth-7-face <span style="color: #ad7fa8; font-style: italic;">"white"</span>)
+(set-face-foreground 'rainbow-delimiters-depth-8-face <span style="color: #ad7fa8; font-style: italic;">"cyan"</span>)
+(set-face-foreground 'rainbow-delimiters-depth-9-face <span style="color: #ad7fa8; font-style: italic;">"yellow"</span>)
+(set-face-foreground 'rainbow-delimiters-unmatched-face <span style="color: #ad7fa8; font-style: italic;">"red"</span>)
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-11-4" class="outline-4">
+<h4 id="sec-3-11-4"><span class="section-number-4">3.11.4</span> Function Signatures</h4>
+<div class="outline-text-4" id="text-3-11-4">
+
+
+<p>
+We use eldoc to show the signature of the function at point in the
+minibuffer.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-11-5" class="outline-4">
+<h4 id="sec-3-11-5"><span class="section-number-4">3.11.5</span> On-the-fly Checking</h4>
+<div class="outline-text-4" id="text-3-11-5">
+
+
+<p>
+It's really useful to use flycheck when coding elisp. It detects
+mistyped variables, deprecated functions (everything that
+byte-compilation checks).
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
+</pre>
+
+
 <p>
 Flycheck is able to initialise installed packages before checking
-elisp. It does not do this by default, to encourage developers to use
-Cask instead (see <a href="https://github.com/flycheck/flycheck/pull/176">https://github.com/flycheck/flycheck/pull/176</a>). We
-switch this behaviour back on.
+elisp (useful when requiring third party libraries). It does not do
+this by default, to encourage developers to use Cask instead (see
+<a href="https://github.com/flycheck/flycheck/pull/176">https://github.com/flycheck/flycheck/pull/176</a>). We switch this
+behaviour back on.
 </p>
 
 
@@ -1166,6 +1338,19 @@ switch this behaviour back on.
 </pre>
 
 
+<p>
+By default, flycheck also runs checkdoc on elisp code. This gets in
+the way for quick throwaway elisp scripts, so we switch off checkdoc.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">flycheck</span>)
+(setq flycheck-checkers (<span style="color: #729fcf; font-weight: bold;">--remove</span> (eq <span style="color: #ff6347;">it</span> 'emacs-lisp-checkdoc) flycheck-checkers))
+</pre>
+
+
+</div>
 </div>
 
 </div>
@@ -1498,7 +1683,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-09-02T18:09+0100</p>
+<p class="date">Date: 2013-09-02T19:03+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

@@ -561,6 +561,14 @@ Style flycheck errors consistently with flymake.
    '(flycheck-warning ((((class color)) (:underline "Orange")))))
 #+END_SRC
 
+We use the same movement keys for flycheck as we do for flymake.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'flycheck)
+  (define-key flycheck-mode-map (kbd "<f8>") 'flycheck-previous-error)
+  (define-key flycheck-mode-map (kbd "<f9>") 'flycheck-next-error)
+#+END_SRC
+
 ** Undoing
 
 Emacs' undo facility is excellent, but undo-tree is even better.
@@ -572,13 +580,107 @@ Emacs' undo facility is excellent, but undo-tree is even better.
 
 ** Emacs Lisp
 
+*** Shortcuts
+
+eval-defun is bound to `C-M-x', but Gnome doesn't allow Emacs to
+receive that key sequence. It's very useful command when developing,
+especially since giving a prefix argument switches on edebug for that
+function.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (define-key emacs-lisp-mode-map (kbd "C-c e") 'eval-defun)
+#+END_SRC
+
+Similarly, toggle-debug-on-error is something I call a lot when
+developing, and it doesn't have have any keybinding.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (define-key emacs-lisp-mode-map (kbd "C-c d") 'toggle-debug-on-error)
+#+END_SRC
+
+When writing and debugging macros, it's really important to be able
+to see what they expand to. Macrostep allows us to incrementally
+expand the macros in our elisp file.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (define-key emacs-lisp-mode-map (kbd "C-c m") 'macrostep-expand)
+#+END_SRC
+
+*** Editing Parentheses
+
+Paredit make editing code with parentheses wonderful and has been the
+gold standard for lisp coding for some time. Smartparens has recently
+gained popularity as an paredit alternative, but I haven't invested
+the time to learn it yet.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-hook 'emacs-lisp-mode-hook
+            (lambda () (paredit-mode 1)))
+#+END_SRC
+
+*** Highlighting Parentheses
+
+We colour each pair of parentheses according to their depth. This is
+useful for seeing similarly nested lines, such as conditions in a
+cond expression.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
+#+END_SRC
+
+Our theme (tangotango) only provides colours for the first few nesting
+levels before repeating. We override the face colours so we have
+unique colours until we're seven levels deep.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'rainbow-delimiters)
+  (set-face-foreground 'rainbow-delimiters-depth-1-face "white")
+  (set-face-foreground 'rainbow-delimiters-depth-2-face "cyan")
+  (set-face-foreground 'rainbow-delimiters-depth-3-face "yellow")
+  (set-face-foreground 'rainbow-delimiters-depth-4-face "green")
+  (set-face-foreground 'rainbow-delimiters-depth-5-face "orange")
+  (set-face-foreground 'rainbow-delimiters-depth-6-face "purple")
+  (set-face-foreground 'rainbow-delimiters-depth-7-face "white")
+  (set-face-foreground 'rainbow-delimiters-depth-8-face "cyan")
+  (set-face-foreground 'rainbow-delimiters-depth-9-face "yellow")
+  (set-face-foreground 'rainbow-delimiters-unmatched-face "red")
+#+END_SRC
+
+*** Function Signatures
+
+We use eldoc to show the signature of the function at point in the
+minibuffer.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
+#+END_SRC
+
+*** On-the-fly Checking
+
+It's really useful to use flycheck when coding elisp. It detects
+mistyped variables, deprecated functions (everything that
+byte-compilation checks).
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
+#+END_SRC
+
 Flycheck is able to initialise installed packages before checking
-elisp. It does not do this by default, to encourage developers to use
-Cask instead (see https://github.com/flycheck/flycheck/pull/176). We
-switch this behaviour back on.
+elisp (useful when requiring third party libraries). It does not do
+this by default, to encourage developers to use Cask instead (see
+https://github.com/flycheck/flycheck/pull/176). We switch this
+behaviour back on.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq-default flycheck-emacs-lisp-initialize-packages t)
+#+END_SRC
+
+By default, flycheck also runs checkdoc on elisp code. This gets in
+the way for quick throwaway elisp scripts, so we switch off checkdoc.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'flycheck)
+  (setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers))
 #+END_SRC
 
 ** Python
