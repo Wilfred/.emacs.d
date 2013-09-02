@@ -570,6 +570,17 @@ Emacs' undo facility is excellent, but undo-tree is even better.
   (global-undo-tree-mode)
 #+END_SRC
 
+** Emacs Lisp
+
+Flycheck is able to initialise installed packages before checking
+elisp. It does not do this by default, to encourage developers to use
+Cask instead (see https://github.com/flycheck/flycheck/pull/176). We
+switch this behaviour back on.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq-default flycheck-emacs-lisp-initialize-packages t)
+#+END_SRC
+
 ** Python
 
 Having brackets and quotation marks closed is very useful in

@@ -233,6 +233,8 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'undo-tree)
 (global-undo-tree-mode)
 
+(setq-default flycheck-emacs-lisp-initialize-packages t)
+
 (require 'autopair)
 (require 'python)
 (setq autopair-autowrap t)

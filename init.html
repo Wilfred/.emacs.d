@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-08-25T22:35+0100"/>
+<meta name="generated" content="2013-09-02T18:09+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -173,12 +173,13 @@ for the JavaScript code in this tag.
 </ul>
 </li>
 <li><a href="#sec-3-10">3.10 Undoing</a></li>
-<li><a href="#sec-3-11">3.11 Python</a></li>
-<li><a href="#sec-3-12">3.12 CSS</a></li>
-<li><a href="#sec-3-13">3.13 Less (CSS)</a></li>
-<li><a href="#sec-3-14">3.14 Org-mode</a></li>
-<li><a href="#sec-3-15">3.15 Performance</a></li>
-<li><a href="#sec-3-16">3.16 Undocumented</a></li>
+<li><a href="#sec-3-11">3.11 Emacs Lisp</a></li>
+<li><a href="#sec-3-12">3.12 Python</a></li>
+<li><a href="#sec-3-13">3.13 CSS</a></li>
+<li><a href="#sec-3-14">3.14 Less (CSS)</a></li>
+<li><a href="#sec-3-15">3.15 Org-mode</a></li>
+<li><a href="#sec-3-16">3.16 Performance</a></li>
+<li><a href="#sec-3-17">3.17 Undocumented</a></li>
 </ul>
 </li>
 </ul>
@@ -1148,8 +1149,30 @@ Emacs' undo facility is excellent, but undo-tree is even better.
 </div>
 
 <div id="outline-container-3-11" class="outline-3">
-<h3 id="sec-3-11"><span class="section-number-3">3.11</span> Python</h3>
+<h3 id="sec-3-11"><span class="section-number-3">3.11</span> Emacs Lisp</h3>
 <div class="outline-text-3" id="text-3-11">
+
+
+<p>
+Flycheck is able to initialise installed packages before checking
+elisp. It does not do this by default, to encourage developers to use
+Cask instead (see <a href="https://github.com/flycheck/flycheck/pull/176">https://github.com/flycheck/flycheck/pull/176</a>). We
+switch this behaviour back on.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(setq-default flycheck-emacs-lisp-initialize-packages t)
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-12" class="outline-3">
+<h3 id="sec-3-12"><span class="section-number-3">3.12</span> Python</h3>
+<div class="outline-text-3" id="text-3-12">
 
 
 <p>
@@ -1210,9 +1233,9 @@ shortcut for inserting them.
 
 </div>
 
-<div id="outline-container-3-12" class="outline-3">
-<h3 id="sec-3-12"><span class="section-number-3">3.12</span> CSS</h3>
-<div class="outline-text-3" id="text-3-12">
+<div id="outline-container-3-13" class="outline-3">
+<h3 id="sec-3-13"><span class="section-number-3">3.13</span> CSS</h3>
+<div class="outline-text-3" id="text-3-13">
 
 
 <p>
@@ -1246,9 +1269,9 @@ they represent.
 
 </div>
 
-<div id="outline-container-3-13" class="outline-3">
-<h3 id="sec-3-13"><span class="section-number-3">3.13</span> Less (CSS)</h3>
-<div class="outline-text-3" id="text-3-13">
+<div id="outline-container-3-14" class="outline-3">
+<h3 id="sec-3-14"><span class="section-number-3">3.14</span> Less (CSS)</h3>
+<div class="outline-text-3" id="text-3-14">
 
 
 <p>
@@ -1267,9 +1290,9 @@ syntax check.
 
 </div>
 
-<div id="outline-container-3-14" class="outline-3">
-<h3 id="sec-3-14"><span class="section-number-3">3.14</span> Org-mode</h3>
-<div class="outline-text-3" id="text-3-14">
+<div id="outline-container-3-15" class="outline-3">
+<h3 id="sec-3-15"><span class="section-number-3">3.15</span> Org-mode</h3>
+<div class="outline-text-3" id="text-3-15">
 
 
 <p>
@@ -1287,9 +1310,9 @@ them.
 
 </div>
 
-<div id="outline-container-3-15" class="outline-3">
-<h3 id="sec-3-15"><span class="section-number-3">3.15</span> Performance</h3>
-<div class="outline-text-3" id="text-3-15">
+<div id="outline-container-3-16" class="outline-3">
+<h3 id="sec-3-16"><span class="section-number-3">3.16</span> Performance</h3>
+<div class="outline-text-3" id="text-3-16">
 
 
 <p>
@@ -1309,9 +1332,9 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 
 </div>
 
-<div id="outline-container-3-16" class="outline-3">
-<h3 id="sec-3-16"><span class="section-number-3">3.16</span> Undocumented</h3>
-<div class="outline-text-3" id="text-3-16">
+<div id="outline-container-3-17" class="outline-3">
+<h3 id="sec-3-17"><span class="section-number-3">3.17</span> Undocumented</h3>
+<div class="outline-text-3" id="text-3-17">
 
 
 
@@ -1475,7 +1498,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-08-25T22:35+0100</p>
+<p class="date">Date: 2013-09-02T18:09+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
