@@ -1,5 +1,5 @@
 ## load this with python-mode and autopair enabled
-## then after redirect_to, try to insert {
+## then after redirect_to (or anywhere else), try to insert {
 ## Emacs grinds to a halt.
 
 from django.conf.urls.defaults import patterns, include, url
