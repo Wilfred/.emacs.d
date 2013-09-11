@@ -269,10 +269,7 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'flycheck)
 (setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers))
 
-(require 'autopair)
-(require 'python)
-(setq autopair-autowrap t)
-(add-hook 'python-mode-hook 'autopair-mode)
+(add-hook 'python-mode-hook 'smartparens-mode)
 
 (add-hook 'python-mode-hook 'flycheck-mode)
 

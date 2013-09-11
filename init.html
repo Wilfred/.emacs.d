@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-09-02T19:03+0100"/>
+<meta name="generated" content="2013-09-11T18:02+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -1363,15 +1363,14 @@ the way for quick throwaway elisp scripts, so we switch off checkdoc.
 <p>
 Having brackets and quotation marks closed is very useful in
 Python. Paredit isn't well suited for Python, and `electric-pair-mode`
-isn't very smart. Autopair works nicely.
+isn't very smart. Autopair works well, but performance is poor on
+medium size (a few hundred LOC) files with many strings. Smartparens
+is the best solution.
 </p>
 
 
 
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">autopair</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">python</span>)
-(setq autopair-autowrap t)
-(add-hook 'python-mode-hook 'autopair-mode)
+<pre class="src src-emacs-lisp">(add-hook 'python-mode-hook 'smartparens-mode)
 </pre>
 
 
@@ -1683,7 +1682,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-09-02T19:03+0100</p>
+<p class="date">Date: 2013-09-11T18:02+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

@@ -687,13 +687,12 @@ the way for quick throwaway elisp scripts, so we switch off checkdoc.
 
 Having brackets and quotation marks closed is very useful in
 Python. Paredit isn't well suited for Python, and `electric-pair-mode`
-isn't very smart. Autopair works nicely.
+isn't very smart. Autopair works well, but performance is poor on
+medium size (a few hundred LOC) files with many strings. Smartparens
+is the best solution.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (require 'autopair)
-  (require 'python)
-  (setq autopair-autowrap t)
-  (add-hook 'python-mode-hook 'autopair-mode)
+  (add-hook 'python-mode-hook 'smartparens-mode)
 #+END_SRC
 
 We use flake8 with flycheck to check for coding errors.
