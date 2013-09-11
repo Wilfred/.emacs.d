@@ -3,7 +3,8 @@
 ;;; Code:
 
 
-;;;### (autoloads (paredit-mode) "paredit" "paredit.el" (20860 59717))
+;;;### (autoloads (enable-paredit-mode paredit-mode) "paredit" "paredit.el"
+;;;;;;  (20993 4224 316630 694000))
 ;;; Generated autoloads from paredit.el
 
 (autoload 'paredit-mode "paredit" "\
@@ -17,9 +18,14 @@ Paredit behaves badly if parentheses are unbalanced, so exercise
 
 \(fn &optional ARG)" t nil)
 
+(autoload 'enable-paredit-mode "paredit" "\
+Turn on pseudo-structural editing of Lisp code.
+
+\(fn)" t nil)
+
 ;;;***
 
-;;;### (autoloads nil nil ("paredit-pkg.el") (20860 59717 292638))
+;;;### (autoloads nil nil ("paredit-pkg.el") (20993 4224 421701 259000))
 
 ;;;***
 
