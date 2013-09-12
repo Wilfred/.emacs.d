@@ -340,6 +340,7 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'editd-customisations)
 
 (require 'git-customisations)
+(require 'git-flow-release)
 
 ;; stolen from http://demonastery.org/2013/04/emacs-narrow-to-region-indirect/
 (defun narrow-to-region-indirect (start end)
