@@ -53,10 +53,10 @@ Emacsen) are welcomed.
 
 ** Python
 
-I use flake8, which is available on PyPI. You can install it with:
+I use pyflakes, which is available on PyPI. You can install it with:
 
 #+BEGIN_SRC sh
-  sudo pip install flake8
+  sudo pip install pyflakes
 #+END_SRC
 
 ** JavaScript
@@ -695,17 +695,11 @@ is the best solution.
   (add-hook 'python-mode-hook 'smartparens-mode)
 #+END_SRC
 
-We use flake8 with flycheck to check for coding errors.
+We use pyflakes with flymake to check for coding errors.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (add-hook 'python-mode-hook 'flycheck-mode)
-#+END_SRC
-
-I prefer to write docstrings with example usage that aren't quite
-valid doctests, so we switch off doctest checks.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (setenv "PYFLAKES_NODOCTEST" "y")
+  (require 'flymake-python-pyflakes)
+  (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
 #+END_SRC
 
 I often write triple-quoted docstrings, so it's convenient to have a

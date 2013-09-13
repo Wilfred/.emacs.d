@@ -271,9 +271,8 @@ If a prefix argument is given, don't change the kill-ring."
 
 (add-hook 'python-mode-hook 'smartparens-mode)
 
-(add-hook 'python-mode-hook 'flycheck-mode)
-
-(setenv "PYFLAKES_NODOCTEST" "y")
+(require 'flymake-python-pyflakes)
+(add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
 
 (require 'python)
 
