@@ -2,6 +2,7 @@
 (defun turn-on-paredit () (paredit-mode 1))
 (add-hook 'clojure-mode-hook 'turn-on-paredit)
 (add-hook 'emacs-lisp-mode-hook 'turn-on-paredit)
+(add-hook 'scheme-mode-hook 'turn-on-paredit)
 
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
@@ -19,6 +20,7 @@
   (add-hook hook 'elisp-slime-nav-mode))
 
 (add-hook 'clojure-mode-hook 'rainbow-delimiters-mode)
+(add-hook 'scheme-mode-hook 'rainbow-delimiters-mode)
 
 (autoload 'clojure-mode "clojure-mode")
 (add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
