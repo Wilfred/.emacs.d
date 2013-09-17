@@ -274,6 +274,8 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'flymake-python-pyflakes)
 (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
 
+(setenv "PYFLAKES_NODOCTEST" "y")
+
 (require 'python)
 
 (define-skeleton python-insert-docstring
