@@ -5,9 +5,10 @@
 
 ;;;### (autoloads (turn-off-show-smartparens-mode turn-on-show-smartparens-mode
 ;;;;;;  show-smartparens-global-mode show-smartparens-mode turn-off-smartparens-mode
-;;;;;;  turn-on-smartparens-mode smartparens-global-mode smartparens-mode
+;;;;;;  turn-on-smartparens-mode smartparens-global-mode turn-on-smartparens-strict-mode
+;;;;;;  smartparens-global-strict-mode smartparens-strict-mode smartparens-mode
 ;;;;;;  sp-use-smartparens-bindings sp-use-paredit-bindings sp-cheat-sheet)
-;;;;;;  "smartparens" "smartparens.el" (20993 4220 449964 189000))
+;;;;;;  "smartparens" "smartparens.el" (21060 12677 216518 96000))
 ;;; Generated autoloads from smartparens.el
 
 (autoload 'sp-cheat-sheet "smartparens" "\
@@ -54,6 +55,48 @@ You can enable pre-set bindings by customizing
  \\{sp-keymap}
 
 \(fn &optional ARG)" t nil)
+
+(autoload 'smartparens-strict-mode "smartparens" "\
+Toggle the strict smartparens mode.
+
+When strict mode is active, `delete-char', `kill-word' and their
+backward variants will skip over the pair delimiters in order to
+keep the structure always valid (the same way as `paredit-mode'
+does).  This is accomplished by remapping them to
+`sp-delete-char' and `sp-kill-word'.  There is also function
+`sp-kill-symbol' that deletes symbols instead of words, otherwise
+working exactly the same (it is not bound to any key by default).
+
+When strict mode is active, this is indicated with \"/s\"
+after the smartparens indicator in the mode list.
+
+\(fn &optional ARG)" t nil)
+
+(defvar smartparens-global-strict-mode nil "\
+Non-nil if Smartparens-Global-Strict mode is enabled.
+See the command `smartparens-global-strict-mode' for a description of this minor mode.
+Setting this variable directly does not take effect;
+either customize it (see the info node `Easy Customization')
+or call the function `smartparens-global-strict-mode'.")
+
+(custom-autoload 'smartparens-global-strict-mode "smartparens" nil)
+
+(autoload 'smartparens-global-strict-mode "smartparens" "\
+Toggle Smartparens-Strict mode in all buffers.
+With prefix ARG, enable Smartparens-Global-Strict mode if ARG is positive;
+otherwise, disable it.  If called from Lisp, enable the mode if
+ARG is omitted or nil.
+
+Smartparens-Strict mode is enabled in all buffers where
+`turn-on-smartparens-strict-mode' would do it.
+See `smartparens-strict-mode' for more information on Smartparens-Strict mode.
+
+\(fn &optional ARG)" t nil)
+
+(autoload 'turn-on-smartparens-strict-mode "smartparens" "\
+Turn on `smartparens-mode'.
+
+\(fn)" t nil)
 
 (defvar smartparens-global-mode nil "\
 Non-nil if Smartparens-Global mode is enabled.
@@ -128,9 +171,9 @@ Turn off `show-smartparens-mode'.
 
 ;;;***
 
-;;;### (autoloads nil nil ("smartparens-config.el" "smartparens-latex.el"
-;;;;;;  "smartparens-lua.el" "smartparens-pkg.el" "smartparens-ruby.el")
-;;;;;;  (20993 4220 713204 224000))
+;;;### (autoloads nil nil ("smartparens-config.el" "smartparens-html.el"
+;;;;;;  "smartparens-latex.el" "smartparens-lua.el" "smartparens-pkg.el"
+;;;;;;  "smartparens-ruby.el") (21060 12677 478395 410000))
 
 ;;;***
 
