@@ -1,4 +1,4 @@
-(autoload 'js2-mode "js2-mode" nil t)
+(require 'js2-mode)
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 
 ; indent with tab characters (treating them as eight spaces)
@@ -18,6 +18,11 @@
 (custom-set-faces
  '(js2-function-param-face ((((class color)) (:foreground "Green")))))
 
+;; js2-mode offers a variety of warnings, but jshint is better at
+;; this, so we switch of those in js2-mode.
+(setq js2-strict-inconsistent-return-warning nil)
+(setq js2-strict-missing-semi-warning nil)
+(setq js2-strict-trailing-comma-warning nil)
 
 (require 'flymake-jshint)
 
