@@ -7,6 +7,7 @@
 ;; https://raw.github.com/magit/magit/master/AUTHORS.md
 
 ;; Author: Yann Hodique <yann.hodique@gmail.com>
+;; Package: magit
 
 ;; Contains code from Egg (Emacs Got Git) <https://github.com/byplayer/egg>,
 ;; released under the GNU General Public License version 3 or later.
@@ -124,11 +125,9 @@
     (with-current-buffer buffer
       (save-restriction
         (with-temp-buffer
-          (magit-git-insert (append
-                             (list "blame" "--porcelain")
-                             (and magit-blame-ignore-whitespace (list "-w"))
-                             (list "--" (file-name-nondirectory
-                                         (buffer-file-name buffer)))))
+          (apply 'magit-git-insert "blame" "--porcelain"
+                 `(,@(and magit-blame-ignore-whitespace (list "-w")) "--"
+                   ,(file-name-nondirectory (buffer-file-name buffer))))
           (magit-blame-parse buffer (current-buffer)))))))
 
 (defun magit-blame-locate-commit (pos)

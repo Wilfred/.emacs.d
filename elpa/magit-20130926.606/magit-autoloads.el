@@ -3,8 +3,8 @@
 ;;; Code:
 
 
-;;;### (autoloads (magit-status) "magit" "magit.el" (21022 7776 887578
-;;;;;;  668000))
+;;;### (autoloads (magit-status) "magit" "magit.el" (21060 12680
+;;;;;;  329861 247000))
 ;;; Generated autoloads from magit.el
 
 (autoload 'magit-status "magit" "\
@@ -22,7 +22,7 @@ when asking for user input.
 ;;;***
 
 ;;;### (autoloads (magit-blame-mode) "magit-blame" "magit-blame.el"
-;;;;;;  (21022 7776 617577 881000))
+;;;;;;  (21060 12679 916526 610000))
 ;;; Generated autoloads from magit-blame.el
 
 (autoload 'magit-blame-mode "magit-blame" "\
@@ -32,73 +32,9 @@ Display blame information inline.
 
 ;;;***
 
-;;;### (autoloads (turn-on-magit-flow magit-flow-mode) "magit-flow"
-;;;;;;  "magit-flow.el" (21022 7776 814245 121000))
-;;; Generated autoloads from magit-flow.el
-
-(autoload 'magit-flow-mode "magit-flow" "\
-FLOW support for Magit
-
-\(fn &optional ARG)" t nil)
-
-(autoload 'turn-on-magit-flow "magit-flow" "\
-Unconditionally turn on `magit-flow-mode'.
-
-\(fn)" nil nil)
-
-;;;***
-
-;;;### (autoloads (turn-on-magit-stgit magit-stgit-mode) "magit-stgit"
-;;;;;;  "magit-stgit.el" (21022 7776 760911 632000))
-;;; Generated autoloads from magit-stgit.el
-
-(autoload 'magit-stgit-mode "magit-stgit" "\
-StGit support for Magit
-
-\(fn &optional ARG)" t nil)
-
-(autoload 'turn-on-magit-stgit "magit-stgit" "\
-Unconditionally turn on `magit-stgit-mode'.
-
-\(fn)" nil nil)
-
-;;;***
-
-;;;### (autoloads (turn-on-magit-svn magit-svn-mode) "magit-svn"
-;;;;;;  "magit-svn.el" (21022 7776 987578 959000))
-;;; Generated autoloads from magit-svn.el
-
-(autoload 'magit-svn-mode "magit-svn" "\
-SVN support for Magit
-
-\(fn &optional ARG)" t nil)
-
-(autoload 'turn-on-magit-svn "magit-svn" "\
-Unconditionally turn on `magit-svn-mode'.
-
-\(fn)" nil nil)
-
-;;;***
-
-;;;### (autoloads (turn-on-magit-topgit magit-topgit-mode) "magit-topgit"
-;;;;;;  "magit-topgit.el" (21022 7776 964245 558000))
-;;; Generated autoloads from magit-topgit.el
-
-(autoload 'magit-topgit-mode "magit-topgit" "\
-Topgit support for Magit
-
-\(fn &optional ARG)" t nil)
-
-(autoload 'turn-on-magit-topgit "magit-topgit" "\
-Unconditionally turn on `magit-topgit-mode'.
-
-\(fn)" nil nil)
-
-;;;***
-
 ;;;### (autoloads (global-magit-wip-save-mode magit-wip-save-mode
-;;;;;;  magit-wip-mode) "magit-wip" "magit-wip.el" (21022 7776 937578
-;;;;;;  814000))
+;;;;;;  magit-wip-mode) "magit-wip" "magit-wip.el" (21060 12680 373194
+;;;;;;  717000))
 ;;; Generated autoloads from magit-wip.el
 
 (defvar magit-wip-mode nil "\
@@ -147,8 +83,8 @@ See `magit-wip-save-mode' for more information on Magit-Wip-Save mode.
 
 ;;;***
 
-;;;### (autoloads nil nil ("magit-bisect.el" "magit-cherry.el" "magit-compat.el"
-;;;;;;  "magit-key-mode.el" "magit-pkg.el") (21022 7777 83698 205000))
+;;;### (autoloads nil nil ("magit-bisect.el" "magit-cherry.el" "magit-key-mode.el"
+;;;;;;  "magit-pkg.el") (21060 12680 493189 762000))
 
 ;;;***
 

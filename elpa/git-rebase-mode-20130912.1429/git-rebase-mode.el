@@ -5,7 +5,7 @@
 
 ;; Author: Phil Jackson <phil@shellarchive.co.uk>
 ;; Maintainer: Jonas Bernoulli <jonas@bernoul.li>
-;; Version: 20130828.242
+;; Version: 20130912.1429
 ;; X-Original-Version: 0.14.0
 ;; Homepage: https://github.com/magit/git-modes
 ;; Keywords: convenience vc git
@@ -124,14 +124,15 @@
     (define-key map (kbd "s")   'git-rebase-squash)
     (define-key map (kbd "f")   'git-rebase-fixup)
     (define-key map (kbd "k")   'git-rebase-kill-line)
+    (define-key map (kbd "C-k") 'git-rebase-kill-line)
     (define-key map (kbd "p")   'git-rebase-backward-line)
     (define-key map (kbd "n")   'forward-line)
     (define-key map (kbd "M-p") 'git-rebase-move-line-up)
     (define-key map (kbd "M-n") 'git-rebase-move-line-down)
+    (define-key map (kbd "M-<up>") 'git-rebase-move-line-up)
+    (define-key map (kbd "M-<down>") 'git-rebase-move-line-down)
     map)
-  "Keymap for Git-Rebase mode.
-Note this will be added to by the top-level code which defines
-the edit functions.")
+  "Keymap for Git-Rebase mode.")
 
 (easy-menu-define git-rebase-mode-menu git-rebase-mode-map
   "Git-Rebase mode menu"
@@ -147,7 +148,7 @@ the edit functions.")
     ["Execute" git-rebase-exec t]
     "---"
     ["Abort" git-rebase-abort t]
-    ["Done" server-edit t]))
+    ["Done" git-rebase-server-edit t]))
 
 ;;; Utilities
 
@@ -210,8 +211,10 @@ that of CHANGE-TO."
   (when (git-rebase-looking-at-action-or-exec)
     (let ((buffer-read-only nil)
           (col (current-column)))
-      (transpose-lines 1)
-      (forward-line -2)
+      (goto-char (point-at-bol))
+      (unless (bobp)
+        (transpose-lines 1)
+        (forward-line -2))
       (move-to-column col))))
 
 (defun git-rebase-move-line-down ()
@@ -310,7 +313,8 @@ exec line was commented out, also uncomment it."
     (when (looking-at git-rebase-action-line-re)
       (let ((commit (match-string 2)))
         (if (fboundp 'magit-show-commit)
-            (magit-show-commit commit nil nil 'select)
+            (let ((default-directory (expand-file-name "../../")))
+              (magit-show-commit commit nil nil 'select))
           (shell-command (concat "git show " commit)))))))
 
 (defun git-rebase-backward-line (&optional n)
@@ -322,7 +326,7 @@ Like `forward-line' but go into the opposite direction."
 ;;; Mode
 
 ;;;###autoload
-(define-derived-mode git-rebase-mode special-mode "Rebase"
+(define-derived-mode git-rebase-mode special-mode "Git Rebase"
   "Major mode for editing of a Git rebase file.
 
 Rebase files are generated when you run 'git rebase -i' or run

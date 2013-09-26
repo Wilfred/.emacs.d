@@ -7,6 +7,8 @@
 ;; https://raw.github.com/magit/magit/master/AUTHORS.md
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
+;; Keywords: vc tools
+;; Package: magit
 
 ;; Magit is free software; you can redistribute it and/or modify it
 ;; under the terms of the GNU General Public License as published by
@@ -132,12 +134,11 @@ work-in-progress ref."
 Turn on magit-wip-save-mode if the buffer is a file in a git
 repository where wip-save is enabled in git config.
 
-You can activate it with git config magit.extension wip-save.
-"
+You can activate it with git config magit.extension wip-save."
   (when (and (buffer-file-name)
              (magit-get-top-dir)
              (member "wip-save" (magit-get-all "magit.extension")))
-    (if (= (magit-git-exit-code "wip" "-h") 0)
+    (if (magit-git-success "wip" "-h")
         (magit-wip-save-mode 1)
       (message "Git command 'git wip' cannot be found"))))
 

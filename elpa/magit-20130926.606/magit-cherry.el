@@ -7,6 +7,7 @@
 ;; https://raw.github.com/magit/magit/master/AUTHORS.md
 
 ;; Author: Moritz Bunkus <moritz@bunkus.org>
+;; Package: magit
 
 ;; Magit is free software; you can redistribute it and/or modify it
 ;; under the terms of the GNU General Public License as published by
@@ -29,21 +30,25 @@
 
 (require 'magit)
 
-(defvar magit--cherry-buffer-name "*magit-cherry*")
+(defvar magit-cherry-buffer-name "*magit-cherry*"
+  "Name of buffer used to display commits not merged upstream.")
 
 (define-derived-mode magit-cherry-mode magit-mode "Magit Cherry"
-  "Magit Cherry")
+  "Mode for looking at commits not merged upstream.
+
+\\{magit-cherry-mode-map}
+Unless shadowed by the mode specific bindings above, bindings
+from the parent keymap `magit-mode-map' are also available.")
 
 (magit-define-command cherry (upstream head)
   (interactive
    (let ((branch (or (magit-get-current-branch)
                      (error "Don't cherry on a detached head."))))
      (list (magit-read-rev "Cherry upstream"
-                           (magit-format-ref
-                            (magit-remote-branch-for branch t)))
+                           (magit-get-tracked-branch branch nil t))
            (magit-read-rev "Cherry head" branch))))
   (let ((topdir (magit-get-top-dir default-directory)))
-    (magit-buffer-switch magit--cherry-buffer-name)
+    (magit-display-mode-buffer magit-cherry-buffer-name)
     (magit-mode-init topdir
                      #'magit-cherry-mode
                      #'magit--refresh-cherry-buffer
