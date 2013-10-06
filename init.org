@@ -412,11 +412,18 @@ switch off flexible matching with `find-file-in-repository'.
       ad-do-it))
 #+END_SRC
 
-Finally, we bind `find-file-in-repository' to `C-x C-g', as we use it
+We bind `find-file-in-repository' to `C-x C-g', as we use it
 a lot and it's right next to `C-x C-f'.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (global-set-key (kbd "C-x C-g") 'find-file-in-repository)
+#+END_SRC
+
+Finally, it's useful to reopen the same buffers when Emacs is
+restarted:
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (desktop-save-mode 1)
 #+END_SRC
 
 *** Dired

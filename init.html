@@ -891,13 +891,24 @@ switch off flexible matching with `find-file-in-repository'.
 
 
 <p>
-Finally, we bind `find-file-in-repository' to `C-x C-g', as we use it
+We bind `find-file-in-repository' to `C-x C-g', as we use it
 a lot and it's right next to `C-x C-f'.
 </p>
 
 
 
 <pre class="src src-emacs-lisp">(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"C-x C-g"</span>) 'find-file-in-repository)
+</pre>
+
+
+<p>
+Finally, it's useful to reopen the same buffers when Emacs is
+restarted:
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(desktop-save-mode 1)
 </pre>
 
 
@@ -1684,7 +1695,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-09-17T14:52+0100</p>
+<p class="date">Date: 2013-10-06T19:21+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

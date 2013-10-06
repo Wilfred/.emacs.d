@@ -163,6 +163,8 @@ If a prefix argument is given, don't change the kill-ring."
 
 (global-set-key (kbd "C-x C-g") 'find-file-in-repository)
 
+(desktop-save-mode 1)
+
 (require 'dired+)
 
 (setq delete-by-moving-to-trash t)
