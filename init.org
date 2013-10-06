@@ -22,7 +22,27 @@ expand a header by pressing `<TAB>' when point is on that header. You
 can expand all headers by pressing `C-u C-u C-u <TAB>'.
 
 You can edit any code block by putting point inside the block and
-pressing `C-c '' (press `C-c '' again to escape). 
+pressing `C-c '' (press `C-c '' again to escape).
+
+** Generating This Document
+
+init.org is the source file that I edit, and init.el and init.html are
+generated from it.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'org)
+  
+  (defun export-init-org ()
+    "Generate init.html and init.html from the current init.org file."
+    (interactive)
+    (call-interactively 'org-export-as-html)
+    (call-interactively 'org-babel-tangle))
+#+END_SRC
+
+
+
+TODO: move this to the end of the generated init.el, so as not to slow
+down the loading of styling.
 
 * Installing locally
 
