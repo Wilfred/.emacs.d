@@ -1,7 +1,7 @@
 ; no startup screen
 (setq-default inhibit-startup-screen t)
 
-(setq programming-quotes
+(defvar programming-quotes
       '("First, solve the problem. Then, write the code. -- John Johnson"
         "The computing scientist’s main challenge is not to get confused by the complexities of his own making. -- E. W. Dijkstra"
         "There are two ways of constructing a software design: One way is to make it so simple that there are obviously no deficiencies and the other way is to make it so complicated that there are no obvious deficiencies. -- C. A. R. Hoare"
@@ -22,16 +22,16 @@
   (let ((random-index (random (length list))))
     (nth random-index list)))
 
-; scratch buffer should be empty on startup
+; populate the initial scratch buffer with a random quote.
 (setq-default initial-scratch-message (random-choice programming-quotes))
 
-; rename the scratch buffer since I only use it for elisp
-(switch-to-buffer (get-buffer-create "*scratch-elisp*"))
-(emacs-lisp-mode)
+; create a separate scratch buffer for elisp experimentation
+(with-current-buffer (get-buffer-create "*scratch-elisp*")
+  (emacs-lisp-mode))
 
 ; create a scratch Python buffer too
-(switch-to-buffer  (get-buffer-create "*scratch-python*"))
-(python-mode)
+(with-current-buffer (get-buffer-create "*scratch-python*")
+  (python-mode))
 
 ; start in the scratch buffer
 (switch-to-buffer  (get-buffer-create "*scratch*"))
