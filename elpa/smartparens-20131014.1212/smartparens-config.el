@@ -65,26 +65,14 @@
 ;; automatically.  If you want to call sp-local-pair outside this
 ;; macro, you MUST supply the major mode argument.
 
-;; LaTeX modes
-(sp-with-modes '(
-                 tex-mode
-                 plain-tex-mode
-                 latex-mode
-                 )
-  ;; math modes, yay.  The :actions are provided automatically if
-  ;; these pairs do not have global definition.
-  (sp-local-pair "$" "$")
-  (sp-local-pair "\\[" "\\]")
-  (sp-local-pair "`" "'")
-  (sp-local-tag "\\b" "\\begin{_}" "\\end{_}"))
-
-;; html modes
-(sp-with-modes '(
-                 sgml-mode
-                 html-mode
-                 )
-  (sp-local-pair "<" ">")
-  (sp-local-tag  "<" "<_>" "</_>" :transform 'sp-match-sgml-tags))
+(eval-after-load "sgml-mode"     '(require 'smartparens-html))
+(eval-after-load "rhtml-mode"    '(require 'smartparens-html))
+(eval-after-load "nxhtml-mode"   '(require 'smartparens-html))
+(eval-after-load "nxml-mode"     '(require 'smartparens-html))
+(eval-after-load "latex"         '(require 'smartparens-latex))
+(eval-after-load "lua-mode"      '(require 'smartparens-lua))
+(eval-after-load "ruby-mode"     '(require 'smartparens-ruby))
+(eval-after-load "enh-ruby-mode" '(require 'smartparens-ruby))
 
 (provide 'smartparens-config)
 

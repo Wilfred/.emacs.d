@@ -404,10 +404,12 @@ Symbol is defined as a chunk of text recognized by
                          inferior-emacs-lisp-mode
                          lisp-interaction-mode
                          scheme-mode
+                         inferior-scheme-mode
+                         geiser-repl-mode
                          lisp-mode
                          eshell-mode
                          slime-repl-mode
-                         nrepl-mode
+                         nrepl-repl-mode
                          clojure-mode
                          common-lisp-mode)
   "List of Lisp modes.")
@@ -556,21 +558,22 @@ string.  After the removal, all the pairs are re-checked."
   "Return the fall-back command as if `smartparens-mode' were disabled."
   (let ((smartparens-mode nil)
         (keys (or key-sequence (car sp-recent-keys))))
-    (key-binding keys t)))
+    ;; HACK: why and when this happens, I can't figure it out!!!
+    (if keys (key-binding keys t) 'self-insert-command)))
 
 (defun sp--update-local-pairs ()
   "Update local pairs after removal or at mode initialization."
-  (setq sp-local-pairs (sp--merge-with-local major-mode))
-  (setq sp-local-pairs (--filter (plist-get it :actions) sp-local-pairs))
+  (setq sp-local-pairs
+        (->> (sp--merge-with-local major-mode)
+          (--filter (plist-get it :actions))))
   ;; update the `sp-pair-list'.  This is a list only containing
   ;; (open.close) cons pairs for easier querying.  We also must order
   ;; it by length of opening delimiter in descending order (first
   ;; value is the longest)
-  (let ((l))
-    (--each sp-local-pairs
-      (!cons (cons (plist-get it :open) (plist-get it :close)) l))
-    (setq l (sort l #'(lambda (x y) (> (length (car x)) (length (car y))))))
-    (setq sp-pair-list l)))
+  (setq sp-pair-list
+        (->> sp-local-pairs
+          (--map (cons (plist-get it :open) (plist-get it :close)))
+          (-sort (lambda (x y) (> (length (car x)) (length (car y))))))))
 
 (defun sp--update-local-pairs-everywhere (&rest modes)
   "Run `sp--update-local-pairs' in all buffers.
@@ -899,9 +902,9 @@ use :skip-match option in `sp-local-pair'."
           :value-type symbol)
   :group 'smartparens)
 
-(defcustom sp-navigate-reindent-after-up '(
+(defcustom sp-navigate-reindent-after-up `(
                                            (interactive
-                                            emacs-lisp-mode
+                                            ,@sp--lisp-modes
                                             )
                                            )
   "Modes where sexps should be reindented after jumping out of them with `sp-up-sexp'.
@@ -1013,7 +1016,7 @@ handler."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Misc functions
+;; Misc/Utility functions
 
 (defmacro !delete (elm list)
   "Destructive: Set LIST to (delete ELM LIST)."
@@ -1141,13 +1144,59 @@ beginning."
   (cond ((> x 0) 1) ((< x 0) -1) (t 0)))
 
 (cl-eval-when (compile eval load)
-  (defun sp--get-substitute (keyword-list struct list)
+  (defun sp--get-substitute (struct list)
     "Only ever call this from sp-get!  This function do the
 replacement of all the keywords with actual calls to sp-get."
-    (if (and (listp list)
-             (not (eq (car list) 'sp-get)))
-        (mapcar (lambda (x) (sp--get-substitute keyword-list struct x)) list)
-      (if (memq list keyword-list)
+    (if (listp list)
+        (if (eq (car list) 'sp-get)
+            list
+          (mapcar (lambda (x) (sp--get-substitute struct x))
+                  (let ((command (car list)))
+                    (cond
+                     ((eq command 'sp-do-move-op)
+                      (let ((argument (make-symbol "--sp-argument--")))
+                        `(let ((,argument ,(cadr list)))
+                           (if (< ,argument :beg-prf)
+                               (progn
+                                 (goto-char :beg-prf)
+                                 (delete-char (+ :op-l :prefix-l))
+                                 (goto-char ,argument)
+                                 (insert :prefix :op))
+                             (goto-char ,argument)
+                             (insert :prefix :op)
+                             (goto-char :beg-prf)
+                             (delete-char (+ :op-l :prefix-l))))))
+                     ((eq command 'sp-do-move-cl)
+                      (let ((argument (make-symbol "--sp-argument--")))
+                        `(let ((,argument ,(cadr list)))
+                           (if (> ,argument :end-in)
+                               (progn
+                                 (goto-char ,argument)
+                                 (insert :cl :suffix)
+                                 (goto-char :end-in)
+                                 (delete-char (+ :cl-l :suffix-l)))
+                             (goto-char :end-in)
+                             (delete-char (+ :cl-l :suffix-l))
+                             (goto-char ,argument)
+                             (insert :cl :suffix)))))
+                     ((eq command 'sp-do-del-op)
+                      `(progn
+                         (goto-char :beg-prf)
+                         (delete-char (+ :op-l :prefix-l))))
+                     ((eq command 'sp-do-del-cl)
+                      `(progn
+                         (goto-char :end-in)
+                         (delete-char (+ :cl-l :suffix-l))))
+                     ((eq command 'sp-do-put-op)
+                      `(progn
+                         (goto-char ,(cadr list))
+                         (insert :prefix :op)))
+                     ((eq command 'sp-do-put-cl)
+                      `(progn
+                         (goto-char ,(cadr list))
+                         (insert :cl :suffix)))
+                     (t list)))))
+      (if (keywordp list)
           (sp--get-replace-keyword struct list)
         list)))
 
@@ -1163,6 +1212,8 @@ replacement of all the keywords with actual calls to sp-get."
       (:end-in      `(- (plist-get ,struct :end) (length (plist-get ,struct :cl))))
       ;; point in buffer before the prefix of this expression
       (:beg-prf     `(- (plist-get ,struct :beg) (length (plist-get ,struct :prefix))))
+      ;; point in the buffer after the suffix of this expression
+      (:end-suf     `(+ (plist-get ,struct :end) (length (plist-get ,struct :suffix))))
       ;; opening delimiter
       (:op          `(plist-get ,struct :op))
       ;; closing delimiter
@@ -1171,10 +1222,12 @@ replacement of all the keywords with actual calls to sp-get."
       (:op-l        `(length (plist-get ,struct :op)))
       ;; length of the closing pair
       (:cl-l        `(length (plist-get ,struct :cl)))
-      ;; length of the entire expression, including enclosing delimiters and the prefix
+      ;; length of the entire expression, including enclosing
+      ;; delimiters and the prefix and suffix
       (:len         `(- (plist-get ,struct :end)
                         (plist-get ,struct :beg)
-                        (- (length (plist-get ,struct :prefix)))))
+                        (- (length (plist-get ,struct :prefix)))
+                        (- (length (plist-get ,struct :suffix)))))
       ;; length of the the pair ignoring the prefix, including delimiters
       (:len-out     `(- (plist-get ,struct :end) (plist-get ,struct :beg)))
       ;; length of the pair inside the delimiters
@@ -1185,7 +1238,10 @@ replacement of all the keywords with actual calls to sp-get."
       ;; expression prefix
       (:prefix      `(plist-get ,struct :prefix))
       ;; expression prefix length
-      (:prefix-l    `(length (plist-get ,struct :prefix))))))
+      (:prefix-l    `(length (plist-get ,struct :prefix)))
+      (:suffix      `(plist-get ,struct :suffix))
+      (:suffix-l    `(length (plist-get ,struct :suffix)))
+      (t keyword))))
 
 ;; The structure returned by sp-get-sexp is a plist with following properties:
 ;;
@@ -1214,21 +1270,37 @@ attributes are:
 :beg-in    - point in buffer after the opening delimiter
 :end-in    - point in buffer before the closing delimiter
 :beg-prf   - point in buffer before the prefix of this expression
+:end-suf   - point in buffer after the suffix of this expression
 :op        - opening delimiter
 :cl        - closing delimiter
 :op-l      - length of the opening pair
 :cl-l      - length of the closing pair
 :len       - length of the entire expression, including enclosing
-delimiters and the prefix
-:len-out   - length of the the pair ignoring the prefix, including
-delimiters
+             delimiters, the prefix and the suffix
+:len-out   - length of the the pair ignoring the prefix and suffix,
+             including delimiters
 :len-in    - length of the pair inside the delimiters
 :prefix    - expression prefix
 :prefix-l  - expression prefix length
+:suffix    - expression suffix
+:suffix-l  - expression suffix length
 
-In addition to simple queries, this macro understands arbitrary
-forms where any of the aforementioned attributes are used.
-Therefore, you can for example query for
+These special \"functions\" are expanded to do the selected
+action in the context of currently queried pair:
+
+Nullary:
+\(sp-do-del-op) - remove prefix and opening delimiter
+\(sp-do-del-cl) - remove closing delimiter and suffix
+
+Unary:
+\(sp-do-move-op p) - move prefix and opening delimiter to point p
+\(sp-do-move-cl p) - move closing delimiter and suffix to point p
+\(sp-do-put-op p) - put prefix and opening delimiter at point p
+\(sp-do-put-cl p) - put closing delimiter and suffix at point p
+
+In addition to these simple queries and commands, this macro
+understands arbitrary forms where any of the aforementioned
+attributes are used.  Therefore, you can for example query for
 \"(+ :op-l :cl-l)\".  This query would return the sum of lengths
 of opening and closing delimiter.  A query
 \"(concat :prefix :op)\" would return the string containing
@@ -1237,11 +1309,8 @@ expression prefix and the opening delimiter.
 Special care is taken to only evaluate the STRUCT argument once."
   (declare (indent 1)
            (debug (form body)))
-  (let ((keyword-list '(:beg :end :beg-in :end-in :beg-prf
-                             :op :cl :op-l :cl-l :len :len-out :len-in
-                             :prefix :prefix-l))
-        (st (make-symbol "struct")))
-    (sp--get-substitute keyword-list st `(let ((,st ,struct)) ,@forms))))
+  (let ((st (make-symbol "struct")))
+    (sp--get-substitute st `(let ((,st ,struct)) ,@forms))))
 
 (defmacro sp-compare-sexps (a b &optional fun what-a what-b)
   "Return non-nil if the expressions A and B are equal.
@@ -1267,7 +1336,9 @@ The list OLD-PAIR must not be nil."
     (cl-case prop
       (:close (plist-put old-pair :close new-val))
       (:prefix (plist-put old-pair :prefix new-val))
+      (:suffix (plist-put old-pair :suffix new-val))
       (:skip-match (plist-put old-pair :skip-match new-val))
+      (:trigger (plist-put old-pair :trigger new-val))
       ((:actions :when :unless :pre-handlers :post-handlers)
        (cl-case (car new-val)
          (:add (plist-put old-pair prop (-union (plist-get old-pair prop) (cdr new-val))))
@@ -1435,12 +1506,14 @@ negative -N, wrap N preceeding expressions.")
 (cl-defun sp-pair (open
                    close
                    &key
+                   trigger
                    (actions '(wrap insert autoskip))
                    when
                    unless
                    pre-handlers
                    post-handlers
-                   bind)
+                   bind
+                   insert)
   "Add a pair definition.
 
 OPEN is the opening delimiter.  Every pair is uniquely determined
@@ -1449,6 +1522,11 @@ by this string.
 CLOSE is the closing delimiter.  You can use nil for this
 argument if you are updating an existing definition.  In this
 case, the old value is retained.
+
+TRIGGER is an optional trigger for the pair.  The pair will be
+inserted if either OPEN or TRIGGER is typed.  This is usually
+used as a shortcut for longer pairs or for pairs that can't be
+typed easily.
 
 ACTIONS is a list of actions that smartparens will perform with
 this pair.  Possible values are:
@@ -1539,13 +1617,24 @@ This function will move the closing pair on its own line only if
 the next command is `newline' or is triggered by RET.  Otherwise
 the pairs stay on the same line.
 
-BIND is a key binding to which a \"wrapping\" action will be
-bound.  This function will be generated on the fly by
-smartparens, using name
+BIND is a key binding to which a \"wrapping\" action is bound.
+The key should be in format that is accepted by `kbd'.  This
+function will be generated on the fly by smartparens, using name
 \"sp---wrap-with-<ASCII-OF-CHAR1>-<ASCII-OF-CHAR2>-...\".  The
-binding will be added to global keymap.  When executed, it will
-wrap ARG (default 1) expressions with this pair (like
-`paredit-wrap-round' and friends)."
+binding is be added to global keymap.  When executed, it wraps
+ARG (default 1) expressions with this pair (like
+`paredit-wrap-round' and friends).
+
+INSERT is a key binding to which an \"insert\" action is bound.
+The key should be in format that is accepted by `kbd'.  This is
+achieved by binding a lambda form:
+
+ (lambda () (interactive) (sp-insert-pair \"pair-id\"))
+
+to the supplied key, where pair-id is the open delimiter of the
+pair.  The binding is added to the global map.  You can also bind
+a similar lambda manually.  To only bind this in specific major
+modes, use this property on `sp-local-pair' instead."
   (if (eq actions :rem)
       (let ((remove (concat
                      (sp-get-pair-definition open t :open)
@@ -1556,6 +1645,7 @@ wrap ARG (default 1) expressions with this pair (like
     (let ((pair nil))
       (setq pair (plist-put pair :open open))
       (when close (plist-put pair :close close))
+      (when trigger (plist-put pair :trigger trigger))
       (dolist (arg '((:actions . actions)
                      (:when . when)
                      (:unless . unless)
@@ -1570,7 +1660,8 @@ wrap ARG (default 1) expressions with this pair (like
           (plist-put pair (car arg) (eval (cdr arg)))))
       (sp--update-pair-list pair t))
     (sp--update-trigger-keys)
-    (when bind (sp--generate-wrapping-function open bind global-map)))
+    (when bind (sp--generate-wrapping-function open bind global-map))
+    (when insert (global-set-key (kbd insert) `(lambda () (interactive) (sp-insert-pair ,open)))))
   (sp--update-local-pairs-everywhere)
   sp-pairs)
 
@@ -1578,13 +1669,16 @@ wrap ARG (default 1) expressions with this pair (like
                          open
                          close
                          &key
+                         trigger
                          (actions '(:add))
                          (when '(:add))
                          (unless '(:add))
                          (pre-handlers '(:add))
                          (post-handlers '(:add))
                          bind
+                         insert
                          prefix
+                         suffix
                          skip-match)
   "Add a local pair definition or override a global definition.
 
@@ -1597,6 +1691,11 @@ characters of expression prefix syntax class are automatically
 considered instead.  This can be used to attach custom prefixes
 to pairs, such as prefix \"\\function\" in \\function{arg} in
 `LaTeX-mode'.
+
+SUFFIX is a regular expression matching an optional suffix for
+this pair in the specified major modes.  If not specified, the
+characters of punctuation syntax class are automatically
+considered instead.
 
 The rest of the arguments have same semantics as in `sp-pair'.
 
@@ -1625,11 +1724,15 @@ To disable a pair in a major mode, simply set its actions set to
 nil. This will ensure the pair is not even loaded when the mode is
 activated.
 
-If BIND is non-nil, the bindings are added into major mode keymap
+If BIND is non-nil, the binding is added into major mode keymap
 called \"foo-mode-map\".  If the mode does not follow this
-convention, you will need to bind the function manually.  The
-bindings are not added into `smartparens-mode-map' to prevent
+convention, you will need to bind the function manually (see
+`sp-pair' to how the function is named for each particular pair).
+The bindings are not added into `smartparens-mode-map' to prevent
 clashes between different modes.
+
+The binding for INSERT follows the same convention as BIND.  See
+`sp-pair' for more info.
 
 You can provide a function SKIP-MATCH, that will take three
 arguments: the currently matched delimiter, beginning of match
@@ -1655,7 +1758,9 @@ addition, there is a global per major-mode option, see
       (let* ((pair nil))
         (setq pair (plist-put pair :open open))
         (when close (plist-put pair :close close))
+        (when trigger (plist-put pair :trigger trigger))
         (when prefix (plist-put pair :prefix prefix))
+        (when suffix (plist-put pair :suffix suffix))
         (when skip-match (plist-put pair :skip-match skip-match))
         (when (and (not (sp-get-pair-definition open t))
                    (equal actions '(:add)))
@@ -1669,7 +1774,10 @@ addition, there is a global per major-mode option, see
         (ignore-errors
           (when bind (sp--generate-wrapping-function
                       open bind
-                      (symbol-value (intern (concat (symbol-name m) "-map"))))))))
+                      (symbol-value (intern (concat (symbol-name m) "-map"))))))
+        (when insert (define-key (symbol-value (intern (concat (symbol-name m) "-map")))
+                       (kbd insert)
+                       `(lambda () (interactive) (sp-insert-pair ,open))))))
     (sp--update-trigger-keys))
   (sp--update-local-pairs-everywhere (-flatten (list modes)))
   sp-pairs)
@@ -2030,7 +2138,15 @@ If USE-INSIDE-STRING is non-nil, use value of
   (ignore-errors
     (let ((hook (sp-get-pair id type))
           (context (sp--get-context type)))
-      (run-hook-with-args 'hook id action context))))
+      (if hook
+          (run-hook-with-args 'hook id action context)
+        (let ((tag-hook (plist-get
+                         (--first (string-match-p
+                                   (replace-regexp-in-string "_" ".*?" (plist-get it :open))
+                                   id)
+                                  (cdr (assq 'html-mode sp-tags)))
+                         type)))
+          (run-hook-with-args 'tag-hook id action context))))))
 
 ;; TODO: add a test for a symbol property that would tell this handler
 ;; not to re=set `sp-last-operation'. Useful for example in "macro
@@ -2757,8 +2873,11 @@ include separate pair node."
             (append (list nil second-action nil first-action)
                     previous-undo-actions)))))
 
-(defun sp-insert-pair ()
+(defun sp-insert-pair (&optional pair)
   "Automatically insert the closing pair if it is allowed in current context.
+
+If PAIR is provided, use this as pair ID instead of looking
+through the recent history of pressed keys.
 
 You can disable this feature completely for all modes and all pairs by
 setting `sp-autoinsert-pair' to nil.
@@ -2770,18 +2889,24 @@ default.  See `sp-autoinsert-if-followed-by-same' for more info.
 You can globally disable insertion of closing pair if point is
 followed by word.  It is disabled by default.  See
 `sp-autoinsert-if-followed-by-word' for more info."
-  (let* ((last-keys (sp--get-recent-keys))
+  (let* ((last-keys (or (and pair (sp--reverse-string pair)) (sp--get-recent-keys)))
          ;; (last-keys "\"\"\"\"\"\"\"\"\"\"\"\"")
          ;; we go through all the opening pairs and compare them to
          ;; last-keys.  If the opair is a prefix of last-keys, insert
-         ;; the closing pair
-         (active-pair (--first (string-prefix-p (sp--reverse-string (car it)) last-keys) sp-pair-list))
+         ;; the closing pair.  We also check the :trigger pair
+         ;; properties here.
+         (trig (--first (and (plist-get it :trigger)
+                             (string-prefix-p (sp--reverse-string (plist-get it :trigger)) last-keys))
+                        sp-local-pairs))
+         (active-pair (or (when trig (cons (plist-get trig :open) (plist-get trig :close)))
+                          (--first (string-prefix-p (sp--reverse-string (car it)) last-keys) sp-pair-list)))
          (open-pair (car active-pair))
          (close-pair (cdr active-pair)))
     ;; Test "repeat last wrap" here.  If we wrap a region and then
     ;; type in a pair, wrap again around the last active region.  This
     ;; should probably be tested in the `self-insert-command'
     ;; advice... but we're lazy :D
+    (setq trig (or (and trig (plist-get trig :trigger)) open-pair))
     (if (and sp-autowrap-region
              active-pair
              (sp--wrap-repeat-last active-pair))
@@ -2832,7 +2957,7 @@ followed by word.  It is disabled by default.  See
                        (and (equal open-pair close-pair)
                             (eq sp-last-operation 'sp-insert-pair)
                             (save-excursion
-                              (backward-char (length open-pair))
+                              (backward-char (length trig))
                               (sp--looking-back (sp--strict-regexp-quote open-pair))))
                        (not (equal open-pair close-pair)))))
                  (not (run-hook-with-args-until-success
@@ -2845,6 +2970,8 @@ followed by word.  It is disabled by default.  See
             (progn
               (setq sp-delayed-pair (cons open-pair (- (point) (length open-pair))))
               (setq sp-last-operation 'sp-insert-pair-delayed))
+          (unless pair (delete-char (- (length trig))))
+          (insert open-pair)
           (sp--run-hook-with-args open-pair :pre-handlers 'insert)
           (insert close-pair)
           (backward-char (length close-pair))
@@ -3305,9 +3432,8 @@ The expressions considered are those delimited by pairs on
                (failure (funcall eof))
                (skip-match-fn (cdr (--first (memq major-mode (car it)) sp-navigate-skip-match)))
                (skip-match-pair-fns (->> possible-ops
-                                      (--map (let ((smf (sp-get-pair it :skip-match)))
-                                               (when smf (cons it smf))))
-                                      (--remove (not it)))))
+                                      (--mapcat (let ((smf (sp-get-pair it :skip-match)))
+                                                  (when smf (list (cons it smf) (cons (sp-get-pair it :close) smf))))))))
           (while (and (> depth 0) (not (funcall eof)))
             (sp--search-and-save-match search-fn needle b r mb me ms)
             (if r
@@ -3345,13 +3471,13 @@ The expressions considered are those delimited by pairs on
                 (message "Opening or closing pair is inside a string or comment and matching pair is outside (or vice versa).  Ignored."))
               nil)
              (t
-              (let* ((op (if forward open close))
-                     (pref (sp-get-pair op :prefix)))
+              (let* ((op (if forward open close)))
                 (list :beg s
                       :end e
                       :op op
                       :cl (if forward close open)
-                      :prefix (sp--get-prefix s pref)))))))))))
+                      :prefix (sp--get-prefix s op)
+                      :suffix (sp--get-suffix e op)))))))))))
 
 ;; TODO: this does not consider unbalanced quotes in comments!!!
 (defun sp--find-next-stringlike-delimiter (needle search-fn-f &optional limit skip-fn)
@@ -3407,8 +3533,7 @@ opening and closing delimiter, such as *...*, \"...\", `...` etc."
             (let ((mb b) (me e))
               (setq b (min mb me))
               (setq e (max mb me)))
-            (let ((pref (sp-get-pair m :prefix)))
-              (list :beg b :end e :op m :cl m :prefix (sp--get-prefix b pref)))))))))
+            (list :beg b :end e :op m :cl m :prefix (sp--get-prefix b m) :suffix (sp--get-suffix e m))))))))
 
 (defun sp-get-expression (&optional back)
   "Find the nearest balanced expression of any kind.
@@ -3509,47 +3634,92 @@ of opening/closing delimiter or prefix)."
   "Get the beginning of hybrid sexp.
 See `sp-get-hybrid-sexp' for definition."
   (save-excursion
-    (let ((p (progn (when (sp-point-in-symbol) (sp-backward-sexp)) (point)))
-          (lb (line-beginning-position))
-          (cur (--if-let (save-excursion (sp-backward-sexp)) it (list :end 0))) ;hack
-          last)
-      (if (< (sp-get cur :end) lb)
-          lb
-        (while (sp-get cur
-                 (and cur
-                      (> :end lb)
-                      (<= :end p)))
-          (setq last cur)
-          (setq cur (sp-backward-sexp)))
-        (if last
-            (sp-get last :beg-prf)
-          ;; happens when there is no sexp before the opening delim of
-          ;; the enclosing sexp.  In case it is on line above, we take
-          ;; the maximum wrt lb.
-          (sp-get cur (max :beg-in lb)))))))
+    (cl-flet ((indent-or-beg-of-line
+               (lb)
+               (if (sp-point-in-blank-line)
+                   lb
+                 (back-to-indentation)
+                 (point))))
+      (let ((p (progn (when (sp-point-in-symbol) (sp-backward-sexp)) (point)))
+            (lb (line-beginning-position))
+            (cur (--if-let (save-excursion (sp-backward-sexp)) it (list :end 0))) ;hack
+            last)
+        (if (< (sp-get cur :end) lb)
+            ;; if the line is not empty, we move the beg to the indent
+            (indent-or-beg-of-line lb)
+          (while (sp-get cur
+                   (and cur
+                        (> :end lb)
+                        (<= :end p)))
+            (setq last cur)
+            (setq cur (sp-backward-sexp)))
+          (if last
+              (sp-get last :beg-prf)
+            ;; happens when there is no sexp before the opening delim of
+            ;; the enclosing sexp.  In case it is on line above, we take
+            ;; the maximum wrt lb.
+            (sp-get cur (max :beg-in (indent-or-beg-of-line lb)))))))))
+
+(defun sp--narrow-to-line ()
+  "Narrow to the current line."
+  (narrow-to-region (line-beginning-position) (line-end-position)))
 
 (defun sp--get-hybrid-sexp-end ()
   "Get the end of hybrid sexp.
 See `sp-get-hybrid-sexp' for definition."
   (save-excursion
-    (let ((p (progn (when (sp-point-in-symbol) (sp-backward-sexp)) (point)))
-          (le (line-end-position))
-          (cur (--if-let (save-excursion (sp-forward-sexp)) it (list :beg (1+ (point-max))))) ;hack
-          last)
-      (if (> (sp-get cur :beg) le)
-          le
-        (while (sp-get cur
-                 (and cur
-                      (< :beg le)
-                      (>= :beg p)))
-          (setq last cur)
-          (setq cur (sp-forward-sexp)))
-        (if last
-            (sp-get last :end)
-          ;; happens when there is no sexp before the closing delim of
-          ;; the enclosing sexp.  In case it is on line below, we take
-          ;; the minimum wrt le.
-          (sp-get cur (min :end-in le)))))))
+    (flet ((skip-prefix-backward
+            (p)
+            (save-excursion
+              (goto-char p)
+              (save-restriction
+                (sp--narrow-to-line)
+                (skip-syntax-backward " .")
+                (point)))))
+      (let ((p (progn (when (sp-point-in-symbol) (sp-backward-sexp)) (point)))
+            (le (line-end-position))
+            (cur (--if-let (save-excursion (sp-forward-sexp)) it (list :beg (1+ (point-max))))) ;hack
+            last)
+        (if (> (sp-get cur :beg) le)
+            (if (sp-point-in-blank-line) le (skip-prefix-backward le))
+          (while (sp-get cur
+                   (and cur
+                        (< :beg le)
+                        (>= :beg p)))
+            (setq last cur)
+            (setq cur (sp-forward-sexp)))
+          (let ((r (skip-prefix-backward
+                    (if last
+                        (sp-get last :end)
+                      ;; happens when there is no sexp before the closing delim of
+                      ;; the enclosing sexp.  In case it is on line below, we take
+                      ;; the minimum wrt le.
+                      (sp-get cur (min :end-in le))))))
+            (goto-char r)
+            ;; fix the situation when point ends in comment
+            (cond
+             ((sp-point-in-comment)
+              (if (= (line-number-at-pos p)
+                     (line-number-at-pos r))
+                  (line-end-position)
+                (goto-char p)
+                (line-end-position)))
+             (t r))))))))
+
+(defun sp--get-hybrid-suffix (p)
+  "Get the hybrid sexp suffix, which is any punctuation after
+the end, possibly preceeded by whitespace."
+  (save-excursion
+    (goto-char p)
+    (buffer-substring-no-properties
+     p
+     (save-restriction
+       (sp--narrow-to-line)
+       (skip-syntax-forward " ")
+       (if (not (looking-at "\\s."))
+           p
+         (skip-syntax-forward ".")
+         (point))))))
 
 (defun sp-get-hybrid-sexp ()
   "Return the hybrid sexp around point.
@@ -3558,11 +3728,13 @@ A hybrid sexp is defined as the smallest balanced region containing
 the point while not expanding further than the current line.  That is,
 any hanging sexps will be included, but the expansion stops at the
 enclosing list boundaries or line boundaries."
-  (list :beg (sp--get-hybrid-sexp-beg)
-        :end (sp--get-hybrid-sexp-end)
-        :op ""
-        :cl ""
-        :prefix ""))
+  (let ((end (sp--get-hybrid-sexp-end)))
+    (list :beg (sp--get-hybrid-sexp-beg)
+          :end end
+          :op ""
+          :cl ""
+          :prefix ""
+          :suffix (sp--get-hybrid-suffix end))))
 
 (defun sp-get-enclosing-sexp (&optional arg)
   "Return the balanced expression that wraps point at the same level.
@@ -3641,16 +3813,38 @@ following point after `sp-backward-up-sexp' is called)."
           (!cons (sp-forward-sexp) r))
         (cons lst (nreverse (cdr r)))))))
 
-(cl-defun sp--get-prefix (&optional (p (point)) use-mode-regexp)
-  "Get the prefix of EXPR. Prefix is any continuous sequence of
-characters in \"expression prefix\" syntax class."
-  (save-excursion
-    (goto-char p)
-    (if use-mode-regexp
-        (when (sp--looking-back use-mode-regexp)
-          (substring-no-properties (match-string 0)))
-      (skip-syntax-backward "'")
-      (buffer-substring-no-properties (point) p))))
+(cl-defun sp--get-prefix (&optional (p (point)) op)
+  "Get the prefix of EXPR.  Prefix is any continuous sequence of
+characters in \"expression prefix\" syntax class.
+
+If the prefix property is defined for OP, the associated regexp
+is used to retrieve the prefix instead."
+  (let ((pref (sp-get-pair op :prefix)))
+    (save-excursion
+      (goto-char p)
+      (if pref
+          (when (sp--looking-back pref)
+            (substring-no-properties (match-string 0)))
+        (skip-syntax-backward "'")
+        (buffer-substring-no-properties (point) p)))))
+
+(cl-defun sp--get-suffix (&optional (p (point)) op)
+  "Get the suffix of EXPR.  Suffix is any continuous sequence of
+  whitespace followed by characters in \"punctuation\" syntax class.
+
+If the suffix property is defined for OP, the associated regexp
+is used to retrieve the suffix instead."
+  (let ((suff (sp-get-pair op :suffix)))
+    (save-excursion
+      (goto-char p)
+      (if suff
+          (when (sp--looking-at suff)
+            (substring-no-properties (match-string 0)))
+        (skip-syntax-forward " ")
+        (if (not (looking-at "\\s."))
+            ""
+          (skip-syntax-forward ".")
+          (buffer-substring-no-properties p (point)))))))
 
 (defun sp-get-symbol (&optional back)
   "Find the nearest symbol that is after point, or before point if BACK is non-nil.
@@ -3679,7 +3873,7 @@ returned by `sp-get-sexp'."
         (sp-forward-symbol -1)
         (setq b (point))))
     (unless last-or-first
-      (list :beg b :end e :op "" :cl "" :prefix (sp--get-prefix b)))))
+      (list :beg b :end e :op "" :cl "" :prefix (sp--get-prefix b) :suffix (sp--get-suffix e)))))
 
 (defun sp--get-string (bounds)
   "Return the `sp-get-sexp' format info about the string.
@@ -3690,7 +3884,8 @@ This function simply transforms BOUNDS, which is a cons (BEG
         :end (1+ (cdr bounds))
         :op (char-to-string (char-after (cdr bounds)))
         :cl (char-to-string (char-after (cdr bounds)))
-        :prefix ""))
+        :prefix ""
+        :suffix ""))
 
 (defun sp-get-string (&optional back)
   "Find the nearest string after point, or before if BACK is non-nil.
@@ -3722,7 +3917,8 @@ and newline."
         :end (save-excursion (skip-chars-forward " \t\n") (point))
         :op ""
         :cl ""
-        :prefix ""))
+        :prefix ""
+        :suffix ""))
 
 (defun sp--sgml-get-tag-name (match)
   (let ((sub (if (equal "/" (substring match 1 2))
@@ -3784,7 +3980,8 @@ and newline."
                     :end (if forward close-end open-end)
                     :op (if forward op cl)
                     :cl (if forward cl op)
-                    :prefix ""))))))))
+                    :prefix ""
+                    :suffix ""))))))))
 
 (defun sp-prefix-tag-object (&optional arg)
   "Read the command and invoke it on the next tag object.
@@ -3923,8 +4120,7 @@ expressions are considered."
                     (goto-char (sp-get sym :end))
                     (if (sp--looking-at (sp--get-opening-regexp))
                         (let* ((ms (match-string 0))
-                               (pref-re (sp-get-pair ms :prefix))
-                               (pref (sp--get-prefix (point) pref-re)))
+                               (pref (sp--get-prefix (point) ms)))
                           (if (and pref
                                    (string-prefix-p
                                     (sp--reverse-string sym-string)
@@ -3932,6 +4128,15 @@ expressions are considered."
                               (sp-get-sexp nil)
                             sym))
                       sym)))))))))))))
+
+(defun sp-narrow-to-sexp (arg)
+  "Make text outside current balanced expression invisible.
+A numeric arg specifies to move up by that many enclosing expressions.
+
+See also `narrow-to-region' and `narrow-to-defun'."
+  (interactive "p")
+  (-when-let (enc (sp-get-enclosing-sexp arg))
+    (sp-get enc (narrow-to-region :beg-prf :end))))
 
 (defun sp-forward-sexp (&optional arg)
   "Move forward across one balanced expression.
@@ -4194,22 +4399,24 @@ Examples:
 
   ((foo bar) (baz |quux) blab) -> (|(foo bar) (baz quux) blab) ;; \\[universal-argument]"
   (interactive "P")
-  (let ((raw (sp--raw-argument-p arg))
-        (arg (prefix-numeric-value arg)))
-    (cond
-     ((and raw (= arg 4))
-      (sp-up-sexp)
-      (sp-beginning-of-sexp))
-     ((= arg 1)
-      (sp-down-sexp '(16)))
-     ((< arg 0)
-      (sp-backward-up-sexp)
-      (sp-forward-sexp (1+ arg))
-      (sp-down-sexp))
-     ((> arg 0)
-      (sp-up-sexp)
-      (sp-forward-sexp (- arg 2))
-      (sp-down-sexp)))))
+  (let* ((raw (sp--raw-argument-p arg))
+         (arg (prefix-numeric-value arg))
+         (re (cond
+              ((and raw (= arg 4))
+               (sp-up-sexp)
+               (sp-beginning-of-sexp))
+              ((= arg 1)
+               (sp-down-sexp '(16)))
+              ((< arg 0)
+               (sp-backward-up-sexp)
+               (sp-forward-sexp (1+ arg))
+               (sp-down-sexp))
+              ((> arg 0)
+               (sp-up-sexp)
+               (sp-forward-sexp (- arg 2))
+               (sp-down-sexp)))))
+    (sp--run-hook-with-args (sp-get re :op) :post-handlers 'beginning-of-sexp)
+    re))
 
 (defun sp-end-of-sexp (&optional arg)
   "Jump to end of the sexp the point is in.
@@ -4242,22 +4449,24 @@ Examples:
 
   ((foo |bar) (baz quux) blab) -> ((foo bar) (baz quux) blab|) ;; \\[universal-argument]"
   (interactive "P")
-  (let ((raw (sp--raw-argument-p arg))
-        (arg (prefix-numeric-value arg)))
-    (cond
-     ((and raw (= arg 4))
-      (sp-up-sexp)
-      (sp-end-of-sexp))
-     ((= arg 1)
-      (sp-down-sexp '(-16)))
-     ((< arg 0)
-      (sp-backward-up-sexp)
-      (sp-forward-sexp (+ 2 arg))
-      (sp-backward-down-sexp))
-     ((> arg 0)
-      (sp-up-sexp)
-      (sp-forward-sexp (1- arg))
-      (sp-backward-down-sexp)))))
+  (let* ((raw (sp--raw-argument-p arg))
+         (arg (prefix-numeric-value arg))
+         (re (cond
+              ((and raw (= arg 4))
+               (sp-up-sexp)
+               (sp-end-of-sexp))
+              ((= arg 1)
+               (sp-down-sexp '(-16)))
+              ((< arg 0)
+               (sp-backward-up-sexp)
+               (sp-forward-sexp (+ 2 arg))
+               (sp-backward-down-sexp))
+              ((> arg 0)
+               (sp-up-sexp)
+               (sp-forward-sexp (1- arg))
+               (sp-backward-down-sexp)))))
+    (sp--run-hook-with-args (sp-get re :op) :post-handlers 'end-of-sexp)
+    re))
 
 (defun sp-up-sexp (&optional arg interactive)
   "Move forward out of one level of parentheses.
@@ -4553,12 +4762,15 @@ Examples:
          baz)                          baz)"
   (interactive "P")
   (let* ((raw (sp--raw-argument-p arg))
-         (arg (prefix-numeric-value arg)))
+         (arg (prefix-numeric-value arg))
+         (orig-indent (save-excursion
+                        (back-to-indentation)
+                        (current-column))))
     (cond
      ((= arg 0) (kill-line))
      ((and raw (= arg 16))
       (let ((hl (sp-get-hybrid-sexp)))
-        (sp-get hl (kill-region :beg-prf :end))))
+        (sp-get hl (kill-region :beg-prf :end-suf))))
      (t
       (let ((hl (sp-get-hybrid-sexp)))
         (save-excursion
@@ -4568,7 +4780,7 @@ Examples:
                      (sp-point-in-symbol))
             (sp-backward-sexp))
           (sp-get hl
-            (kill-region (point) (min (point-max) (if (looking-at "[ \t]*$") (1+ :end) :end)))
+            (kill-region (point) (min (point-max) (if (looking-at "[ \t]*$") (1+ :end-suf) :end-suf)))
             (when sp-hybrid-kill-excessive-whitespace
               (cond
                ((sp-point-in-blank-line)
@@ -4577,17 +4789,22 @@ Examples:
                   (delete-region (line-beginning-position) (min (point-max) (1+ (line-end-position))))))
                ((looking-at "[ \t]*$")
                 (delete-blank-lines)))))))
-      (sp--cleanup-after-kill)))))
+      (sp--cleanup-after-kill)
+      ;; if we've killed the entire line, do *not* contract the indent
+      ;; to just one space
+      (when (sp-point-in-blank-line)
+        (delete-region (line-beginning-position) (line-end-position))
+        (insert (make-string orig-indent ?\ )))))))
 
 (defun sp--transpose-objects (first second)
   "Transpose FIRST and SECOND object while preserving the
 whitespace between them."
   (save-excursion
     (goto-char (sp-get second :beg-prf))
-    (setq ins (sp-get second (delete-and-extract-region :beg-prf :end)))
-    (setq between (delete-and-extract-region (sp-get first :end) (point)))
-    (goto-char (sp-get first :beg-prf))
-    (insert ins between)))
+    (let ((ins (sp-get second (delete-and-extract-region :beg-prf :end-suf)))
+          (between (delete-and-extract-region (sp-get first :end-suf) (point))))
+      (goto-char (sp-get first :beg-prf))
+      (insert ins between))))
 
 (defun sp-transpose-sexp (&optional arg)
   "Transpose the expressions around point.
@@ -4626,8 +4843,7 @@ Examples:
     (while (> n 0)
       (when (< arg 0) (sp-backward-sexp))
       (let* ((next (save-excursion (sp-forward-sexp)))
-             (prev (save-excursion (goto-char (sp-get next :beg-prf)) (sp-backward-sexp)))
-             ins between)
+             (prev (save-excursion (goto-char (sp-get next :beg-prf)) (sp-backward-sexp))))
         (sp--transpose-objects prev next)
         (when (< arg 0)
           (goto-char (+ (sp-get prev :beg-prf) (sp-get next :len))))
@@ -4666,8 +4882,7 @@ Examples:
            (prev (save-excursion
                    (goto-char (sp-get next :beg))
                    (sp-backward-sexp)
-                   (sp-get-hybrid-sexp)))
-           ins between)
+                   (sp-get-hybrid-sexp))))
       (if (sp-compare-sexps prev next > :end)
           (message "Invalid context: previous h-sexp ends after the next one.")
         (sp--transpose-objects prev next))
@@ -4692,8 +4907,7 @@ Examples:
          (next (save-excursion
                  (goto-char (sp-get cur :end))
                  (sp-forward-sexp)
-                 (sp-get-hybrid-sexp)))
-         ins between)
+                 (sp-get-hybrid-sexp))))
     (if (sp-compare-sexps cur next >)
         (message "Invalid context: current h-sexp starts after the next one.")
       (sp--transpose-objects cur next))))
@@ -4748,13 +4962,84 @@ handling of empty lines."
             (sp-get enc
               (delete-char :cl-l)
               (goto-char (sp-get prev-sexp :end))
+              ;; see next TODO
+              (save-restriction
+                (sp--narrow-to-line)
+                (skip-syntax-forward " ")
+                (skip-syntax-forward "."))
               (insert :cl)))
         ;; otherwise just C-u barf
         (sp-skip-backward-to-symbol t)
         (sp-forward-barf-sexp '(4))
+        ;; we need to take special care of any hanging
+        ;; punctuation. TODO: this should be a sexp suffix? HACK until
+        ;; we fix barf to get the info.
+        (save-restriction
+          (sp-get (sp-backward-down-sexp)
+            (goto-char :end)
+            (delete-char (- :cl-l))
+            (sp--narrow-to-line)
+            (skip-syntax-forward " ")
+            (skip-syntax-forward ".")
+            (insert :cl)))
         (sp-get enc (indent-region :beg :end))))
     (indent-according-to-mode)
     (sp--run-hook-with-args (sp-get enc :op) :post-handlers 'dedent-adjust-sexp)))
+
+;;  "When the hook is called point is *after* the just moved closing delimiter."
+;; TODO: add hook
+(defun sp-slurp-hybrid-sexp ()
+  "Add hybrid sexp following the current list in it by moving the
+closing delimiter.
+
+This is philosophically similar to `sp-forward-slurp-sexp' but
+works better in \"line-based\" languages like C or Java.
+
+Because the structure is much looser in these languages, this
+command currently does not support all the prefix argument
+triggers that `sp-forward-slurp-sexp' does."
+  (interactive)
+  (-if-let* ((enc (sp-get-enclosing-sexp))
+             (bsexp (save-excursion
+                      (sp-get enc (goto-char :end))
+                      (when (sp-compare-sexps (sp-forward-sexp) enc >)
+                        (sp-get-hybrid-sexp)))))
+      (save-excursion
+        (sp-get enc
+          (goto-char :end-suf)
+          (delete-char (- (+ :cl-l :suffix-l)))
+          ;; TODO: move to hook
+          (when (sp-point-in-blank-line)
+            (delete-region (line-beginning-position) (1+ (line-end-position))))
+          (sp-forward-sexp)
+          (sp-get (sp-get-hybrid-sexp) (goto-char :end-suf))
+          (insert :cl :suffix))
+        ;; TODO: move to hook
+        (sp-get (sp--next-thing-selection -1)
+          (save-excursion
+            (if (save-excursion
+                  (goto-char :beg-in)
+                  (looking-at "[ \t]*$"))
+                (progn
+                  (goto-char :end-in)
+                  (newline))
+              ;; copy the whitespace after opening delim and put it in
+              ;; front of the closing. This will ensure pretty { foo }
+              ;; or {foo}
+              (goto-char :end-in)
+              (insert (buffer-substring-no-properties
+                       :beg-in
+                       (+ :beg-in (save-excursion
+                                    (goto-char :beg-in)
+                                    (skip-syntax-forward " ")))))))
+          (when (not (looking-at "[ \t]*$"))
+            (newline)))
+        (sp-get (sp--next-thing-selection -1) (indent-region :beg :end))
+        ;; we need to call this again to get the new structure after
+        ;; indent.
+        (sp--next-thing-selection -1))
+    (message "This operation would result in invalid structure. Ignored.")
+    nil))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -4886,7 +5171,8 @@ Examples:
                     (goto-char (sp-get next-thing :beg-in))
                     (sp--run-hook-with-args (sp-get enc :op) :pre-handlers 'slurp-backward)
                     (insert (sp-get enc :prefix) (sp-get enc :op))
-                    (indent-region (sp-get next-thing :beg-in) (sp-get enc :end))))
+                    (indent-region (sp-get next-thing :beg-in) (sp-get enc :end))
+                    (sp--run-hook-with-args (sp-get enc :op) :post-handlers 'slurp-backward)))
               (while (> n 0)
                 (goto-char (sp-get enc :beg-prf))
                 (setq ok enc)
@@ -4912,7 +5198,8 @@ Examples:
                         (insert (sp-get ok :prefix) (sp-get ok :op))
                         (indent-region (point) (sp-get ok :end))
                         ;; HACK: update the "enc" data structure if ok==enc
-                        (when (sp-compare-sexps enc ok) (plist-put enc :beg (- (point) (sp-get ok :op-l)))))
+                        (when (sp-compare-sexps enc ok) (plist-put enc :beg (- (point) (sp-get ok :op-l))))
+                        (sp--run-hook-with-args (sp-get enc :op) :post-handlers 'slurp-backward))
                       (setq n (1- n)))
                   (message "We can't slurp without breaking strictly balanced expression. Ignored.")
                   (setq n -1)))))))
@@ -4983,57 +5270,6 @@ Examples:
       (sp-down-sexp)
       (sp-backward-slurp-sexp arg)))))
 
-(defmacro sp--barf-sexp (fw-1)
-  "Generate forward/backward barf functions."
-  `(let ((n (abs arg)))
-     (while (> n 0)
-       (let* ((ok (sp-get-enclosing-sexp))
-              ,@(when (not fw-1) '((prefix nil) (prefix-len 0)))
-              next-thing)
-         (if ok
-             (save-excursion
-               (goto-char ,(if fw-1 '(sp-get ok :end-in)
-                             '(sp-get ok :beg-in)))
-               ;; NOTE: sp-get-thing is "reversed", if we barf forward
-               ;; we search from end of list backward for the thing to
-               ;; barf.
-               (setq next-thing (sp-get-thing ,fw-1))
-               (if (and next-thing
-                        (/= (sp-get next-thing :beg) (sp-get ok :beg))) ;; ok == next-thing
-                   (progn
-                     (delete-char ,(if fw-1 '(sp-get ok :cl-l)
-                                     '(sp-get ok (- (+ :op-l :prefix-l)))))
-                     (goto-char ,(if fw-1 '(sp-get next-thing :beg)
-                                   '(- (sp-get next-thing :end)
-                                       (sp-get ok (+ :op-l :prefix-l)))))
-                     ,(if fw-1
-                          '(progn
-                             (let ((next-prefix (sp-get next-thing :prefix)))
-                               (when next-prefix (backward-char (length next-prefix))))
-                             (sp-skip-backward-to-symbol t))
-                        ;; skip the prefix backward.  We don't have
-                        ;; info about this prefix, since it is the
-                        ;; "following-sexp" to the one being jumped
-                        ;; over -- next-thing
-                        '(progn
-                           (sp-skip-forward-to-symbol t)
-                           (skip-syntax-backward "'")))
-                     ,(if fw-1
-                          '(sp--run-hook-with-args (sp-get ok :op) :pre-handlers 'barf-forward)
-                        '(sp--run-hook-with-args (sp-get ok :op) :pre-handlers 'barf-backward))
-                     (insert ,(if fw-1 '(sp-get ok :cl)
-                                '(sp-get ok (concat :prefix :op))))
-                     ;; reindent the "barfed region"
-                     (indent-region (sp-get ok :beg-prf) (sp-get ok :end))
-                     ,(if fw-1
-                          '(sp--run-hook-with-args (sp-get ok :op) :post-handlers 'barf-forward)
-                        '(sp--run-hook-with-args (sp-get ok :op) :post-handlers 'barf-backward))
-                     (setq n (1- n)))
-                 (message "The expression is empty.")
-                 (setq n -1)))
-           (message "We can't barf without breaking strictly balanced expression. Ignored.")
-           (setq n -1))))))
-
 (defun sp-forward-barf-sexp (&optional arg)
   "Remove the last sexp in the current list by moving the closing delimiter.
 
@@ -5057,20 +5293,34 @@ Examples: (prefix arg in comment)
 
   (foo bar| baz)   -> foo (bar| baz)   ;; -1"
   (interactive "P")
-  (let ((raw (sp--raw-argument-p arg))
-        (old-arg arg)
-        (arg (prefix-numeric-value arg)))
+  (let* ((raw (sp--raw-argument-p arg))
+         (old-arg arg)
+         (arg (prefix-numeric-value arg)))
     (if (> arg 0)
-        (if raw
-            (let* ((lst (sp-get-list-items))
-                   (last nil))
-              (!cdr lst)
-              (while (and lst (>= (point) (sp-get (car lst) :beg))) (setq last (car lst)) (!cdr lst))
-              (setq arg (length lst))
-              (when (/= arg 0)
-                (sp--barf-sexp t)
-                (sp-get last (when (> (point) :end) (goto-char :end)))))
-          (sp--barf-sexp t))
+        (if (sp-point-in-blank-sexp)
+            (message "Point is in blank sexp, nothing to barf")
+          (save-excursion
+            (let ((enc (sp-get-enclosing-sexp)))
+              (sp-get enc
+                (cond
+                 ((and raw (= arg 4))
+                  (sp-get (sp-get-thing t)
+                    (goto-char :end-suf)))
+                 (t
+                  (goto-char :end-in)
+                  (sp-backward-sexp arg)
+                  (when (<= (point) :beg)
+                    (goto-char :beg-in))))
+                ;; we know for sure there is at least one thing in the list
+                (let ((back (sp-get-thing t)))
+                  (if (sp-compare-sexps back enc)
+                      (goto-char :beg-in)
+                    (goto-char (sp-get back :end-suf))))
+                (sp--run-hook-with-args :op :pre-handlers 'barf-forward))
+              (sp-get (sp-get-enclosing-sexp)
+                (sp-do-move-cl (point))
+                (indent-region :beg :end)
+                (sp--run-hook-with-args :op :post-handlers 'barf-forward)))))
       (sp-backward-barf-sexp (sp--negate-argument old-arg)))))
 
 (defun sp-backward-barf-sexp (&optional arg)
@@ -5087,20 +5337,34 @@ Examples:
 
   (1 2 3 |4 5 6) -> 1 2 3 (|4 5 6) ;; \\[universal-argument] (or 3)"
   (interactive "P")
-  (let ((raw (sp--raw-argument-p arg))
-        (old-arg arg)
-        (arg (prefix-numeric-value arg)))
+  (let* ((raw (sp--raw-argument-p arg))
+         (old-arg arg)
+         (arg (prefix-numeric-value arg)))
     (if (> arg 0)
-        (if raw
-            (let* ((lst (sp-get-list-items))
-                   (n 0))
-              (!cdr lst)
-              (while (and lst (> (point) (sp-get (car lst) :end))) (!cdr lst) (setq n (1+ n)))
-              (setq arg n)
-              (when (/= arg 0)
-                (sp--barf-sexp nil)
-                (sp-get (car lst) (when (< (point) :beg-prf) (goto-char :beg-prf)))))
-          (sp--barf-sexp nil))
+        (if (sp-point-in-blank-sexp)
+            (message "Point is in blank sexp, nothing to barf")
+          (save-excursion
+            (let ((enc (sp-get-enclosing-sexp)))
+              (sp-get enc
+                (cond
+                 ((and raw (= arg 4))
+                  (sp-get (sp-get-thing)
+                    (goto-char :beg-prf)))
+                 (t
+                  (goto-char :beg-in)
+                  (sp-forward-sexp arg)
+                  (when (>= (point) :end)
+                    (goto-char :end-in))))
+                ;; we know for sure there is at least one thing in the list
+                (let ((next (sp-get-thing)))
+                  (if (sp-compare-sexps next enc)
+                      (goto-char :end-in)
+                    (goto-char (sp-get next :beg-prf))))
+                (sp--run-hook-with-args :op :pre-handlers 'barf-backward))
+              (sp-get (sp-get-enclosing-sexp)
+                (sp-do-move-op (point))
+                (indent-region :beg :end)
+                (sp--run-hook-with-args :op :post-handlers 'barf-backward)))))
       (sp-forward-barf-sexp (sp--negate-argument old-arg)))))
 
 ;; TODO: get rid of the macro anyway, it's stupid!
@@ -5110,14 +5374,15 @@ Examples:
         (dec (if forward '1- '1+))
         (forward-fn (if forward 'forward-char 'backward-char))
         (next-char-fn (if forward 'following-char 'preceding-char))
-        (looking (if forward 'sp--looking-at 'sp--looking-back)))
+        (looking (if forward 'sp--looking-at 'sp--looking-back))
+        (eob-test (if forward '(eobp) '(bobp))))
     `(let ((in-comment (sp-point-in-comment))
            ;; HACK: if we run out of current context this might skip a
            ;; pair that was not allowed before.  However, such a call is
            ;; never made in SP, so it's OK for now
            (allowed-pairs (sp--get-allowed-regexp))
            (allowed-strings (sp--get-stringlike-regexp)))
-       (while (and (not (or (eobp)
+       (while (and (not (or ,eob-test
                             (and stop-after-string
                                  (not (sp-point-in-string))
                                  (sp-point-in-string (,dec (point))))
@@ -5478,7 +5743,7 @@ Examples:
 
 Note that to kill only the content and not the enclosing
 delimiters you can use \\[universal-argument] \\[sp-backward-kill-sexp].
-See `sp-kill-sexp' for more information."
+See `sp-backward-kill-sexp' for more information."
   (interactive "p")
   (while (> arg 0)
     (let ((ok (sp-get-enclosing-sexp 1)))
@@ -5588,40 +5853,44 @@ Examples:
 
 We want to move the `while' before the `let'.
 
-​  (let ((stuff 1)            |(while (we-are-good)
+​  (let ((stuff 1)             (while (we-are-good)
 ​        (other 2))              (let ((stuff 1)
 ​    (while (we-are-good)  ->          (other 2))
-​     |(do-thing 1)                (do-thing 1)
+​     |(do-thing 1)               |(do-thing 1)
 ​      (do-thing 2)                (do-thing 2)
 ​      (do-thing 3)))              (do-thing 3)))
 
-  (forward-char (sp-get env |:op-l)) -> |(sp-get env (forward-char :op-l))"
+  (forward-char (sp-get env |:op-l)) -> (sp-get env (forward-char |:op-l))"
   (interactive "p")
-  (sp-forward-whitespace)
-  (let* ((old (point))
-         (bot (sp-beginning-of-sexp))
-         raise cl-own-line)
-    ;; we need to check if the :cl was on its own line
-    (save-excursion
-      (goto-char (sp-get bot :end))
-      (when (string-match-p (concat "^[\n\t ]*"
-                                    (regexp-quote (sp-get bot (concat :cl)))
-                                    "[\n\t ]*\\'")
-                            (thing-at-point 'line))
-        (setq cl-own-line t)))
-    (setq raise (buffer-substring (point) old))
-    (delete-region (point) old)
-    (sp-unwrap-sexp -1)
-    (let ((enc (sp-backward-up-sexp arg)))
-      (goto-char (sp-get enc :end))
-      (insert (if cl-own-line "\n" "") (sp-get bot :cl))
-      (goto-char (sp-get enc :beg-prf))
-      (save-excursion
-        (sp-get bot (insert :prefix :op))
-        (insert raise))
-      (indent-region
-       (sp-get enc :beg-prf)
-       (+ (sp-get enc :end) (length raise) (sp-get bot (+ :op-l :cl-l :prefix-l)))))))
+  (save-excursion
+    (let* ((old-buffer-size (buffer-size))
+           (enc (sp-get-enclosing-sexp))
+           (inner-close (sp-get enc (delete-and-extract-region
+                                     (save-excursion
+                                       (goto-char :end-in)
+                                       (sp-backward-whitespace))
+                                     :end)))
+           (inner-raise (sp-get enc (delete-and-extract-region
+                                     :beg-prf
+                                     (save-excursion
+                                       (sp-forward-whitespace)))))
+           (whitespace (sp-get enc
+                         ;; this happens when the entire inside sexp was removed.
+                         (when (= old-buffer-size (+ (buffer-size) :len))
+                           (delete-and-extract-region
+                            (save-excursion
+                              (goto-char :beg-prf)
+                              (max (line-beginning-position) (sp-backward-whitespace)))
+                            :beg-prf))))
+           (encp (sp-get-enclosing-sexp arg)))
+      (sp-get encp
+        (goto-char :end)
+        (insert inner-close)
+        (goto-char :beg-prf)
+        (insert inner-raise (if whitespace whitespace ""))
+        (sp-get (sp-get-enclosing-sexp)
+          (indent-region :beg :end)))))
+  (indent-according-to-mode))
 
 (defun sp-absorb-sexp (&optional arg)
   "Absorb previous expression.
@@ -5787,15 +6056,19 @@ expressions up until the start of enclosing list."
           (setq dws (- :end :beg)))))
     (goto-char (- e dws))))
 
-(defun sp-forward-whitespace ()
-  "Skip forward past the whitespace characters."
-  (interactive)
-  (skip-chars-forward " \t\n"))
+(defun sp-forward-whitespace (&optional arg)
+  "Skip forward past the whitespace characters.
+With non-nil ARG return number of characters skipped."
+  (interactive "P")
+  (let ((rel-move (skip-chars-forward " \t\n")))
+    (if arg rel-move (point))))
 
-(defun sp-backward-whitespace ()
-  "Skip backward past the whitespace characters."
-  (interactive)
-  (skip-chars-backward " \t\n"))
+(defun sp-backward-whitespace (&optional arg)
+  "Skip backward past the whitespace characters.
+With non-nil ARG return number of characters skipped."
+  (interactive "P")
+  (let ((rel-move (skip-chars-backward " \t\n")))
+    (if arg rel-move (point))))
 
 (defun sp-split-sexp (arg)
   "Split the list or string the point is on into two.
@@ -5839,7 +6112,7 @@ Examples:
    (t
     (let ((ok (sp-get-enclosing-sexp 1)))
       (when ok
-        (forward-char (- (prog1 (sp-backward-whitespace) (insert (sp-get ok :cl)))))
+        (forward-char (- (prog1 (sp-backward-whitespace t) (insert (sp-get ok :cl)))))
         (save-excursion (sp-forward-whitespace) (insert (sp-get ok :op))))))))
 
 (defun sp--join-sexp (prev next)
@@ -5931,7 +6204,8 @@ not necessarily represent a valid balanced expression!"
            (dir (sp--signum arg))
            (beg point) (end point)
            (op "") (cl "")
-           (prefix ""))
+           (prefix "")
+           (suffix ""))
       (cond
        ;; select up until end of list
        ((and raw (= arg 4))
@@ -5944,7 +6218,8 @@ not necessarily represent a valid balanced expression!"
                 (when ok
                   (sp-get ok
                     (setq end :end)
-                    (setq cl :cl)))))))
+                    (setq cl :cl)
+                    (setq suffix :suffix)))))))
         (unless point
           (let ((ok (sp-get-thing)))
             (when ok
@@ -5970,7 +6245,8 @@ not necessarily represent a valid balanced expression!"
             (when ok
               (sp-get ok
                 (setq end :end)
-                (setq cl :cl))))))
+                (setq cl :cl)
+                (setq suffix :suffix))))))
        ;; select the enclosing expression
        ((and raw (= (abs arg) 16))
         (let ((enc (sp-get-enclosing-sexp)))
@@ -5978,7 +6254,8 @@ not necessarily represent a valid balanced expression!"
               (error "No enclosing expression")
             (sp-get enc (setq beg :beg) (setq end :end)
                     (setq op :op) (setq cl :cl)
-                    (setq prefix :prefix)))))
+                    (setq prefix :prefix)
+                    (setq suffix :suffix)))))
        ;; normal selection, select N expressions
        ((> arg 0)
         (let* ((first (sp-forward-sexp))
@@ -5998,7 +6275,8 @@ not necessarily represent a valid balanced expression!"
               (setq prefix :prefix)))
           (sp-get last
             (setq end :end)
-            (setq cl :cl))))
+            (setq cl :cl)
+            (setq suffix :suffix))))
        ;; normal select, select -N expressions
        ((< arg 0)
         (let* ((first (sp-backward-sexp))
@@ -6018,7 +6296,8 @@ not necessarily represent a valid balanced expression!"
           (unless (and point (= point end))
             (sp-get first
               (setq end :end)
-              (setq cl :cl)))))
+              (setq cl :cl)
+              (setq suffix :suffix)))))
        ;; N = 0, select insides
        ((= arg 0)
         (let ((enc (sp-get-enclosing-sexp)))
@@ -6038,8 +6317,9 @@ not necessarily represent a valid balanced expression!"
                 (when ok
                   (sp-get ok
                     (setq end :end)
-                    (setq cl :cl)))))))))
-      (list :beg beg :end end :op op :cl cl :prefix prefix))))
+                    (setq cl :cl)
+                    (setq suffix :suffix)))))))))
+      (list :beg beg :end end :op op :cl cl :prefix prefix :suffix suffix))))
 
 (defun sp-select-next-thing (&optional arg point)
   "Set active region over next thing as recognized by `sp-get-thing'.
