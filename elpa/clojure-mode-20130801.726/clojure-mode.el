@@ -6,7 +6,7 @@
 ;;          Lennart Staflin <lenst@lysator.liu.se>
 ;;          Phil Hagelberg <technomancy@gmail.com>
 ;; URL: http://github.com/technomancy/clojure-mode
-;; Version: 20130424.1149
+;; Version: 20130801.726
 ;; X-Original-Version: 2.1.0
 ;; Keywords: languages, lisp
 
@@ -142,7 +142,7 @@
         ">=" "accessor" "aclone"
         "agent" "agent-errors" "aget" "alength" "alias"
         "all-ns" "alter" "alter-meta!" "alter-var-root" "amap"
-        "ancestors" "and" "apply" "areduce" "array-map"
+        "ancestors" "and" "apply" "areduce" "array-map" "as->"
         "aset" "aset-boolean" "aset-byte" "aset-char" "aset-double"
         "aset-float" "aset-int" "aset-long" "aset-short" "assert"
         "assoc" "assoc!" "assoc-in" "associative?" "atom"
@@ -157,7 +157,7 @@
         "chunk-next" "chunk-rest" "chunked-seq?" "class" "class?"
         "clear-agent-errors" "clojure-version" "coll?" "comment" "commute"
         "comp" "comparator" "compare" "compare-and-set!" "compile"
-        "complement" "concat" "cond" "condp" "conj"
+        "complement" "concat" "cond" "condp" "cond->" "cond->>" "conj"
         "conj!" "cons" "constantly" "construct-proxy" "contains?"
         "count" "counted?" "create-ns" "create-struct" "cycle"
         "dec" "decimal?" "declare" "definline" "defmacro"
@@ -169,8 +169,8 @@
         "doto" "double" "double-array" "doubles" "drop"
         "drop-last" "drop-while" "empty" "empty?" "ensure"
         "enumeration-seq" "eval" "even?" "every?"
-        "extend" "extend-protocol" "extend-type" "extends?" "extenders"
-        "false?" "ffirst" "file-seq" "filter" "find" "find-doc"
+        "extend" "extend-protocol" "extend-type" "extends?" "extenders" "ex-info" "ex-data"
+        "false?" "ffirst" "file-seq" "filter" "filterv" "find" "find-doc"
         "find-ns" "find-var" "first" "flatten" "float" "float-array"
         "float?" "floats" "flush" "fn" "fn?"
         "fnext" "for" "force" "format" "future"
@@ -187,7 +187,7 @@
         "line-seq" "list" "list*" "list?" "load"
         "load-file" "load-reader" "load-string" "loaded-libs" "locking"
         "long" "long-array" "longs" "loop" "macroexpand"
-        "macroexpand-1" "make-array" "make-hierarchy" "map" "map?"
+        "macroexpand-1" "make-array" "make-hierarchy" "map" "mapv" "map?"
         "map-indexed" "mapcat" "max" "max-key" "memfn" "memoize"
         "merge" "merge-with" "meta" "method-sig" "methods"
         "min" "min-key" "mod" "name" "namespace"
@@ -207,16 +207,17 @@
         "pvalues" "quot" "rand" "rand-int" "range"
         "ratio?" "rational?" "rationalize" "re-find" "re-groups"
         "re-matcher" "re-matches" "re-pattern" "re-seq" "read"
-        "read-line" "read-string" "reify" "reduce" "ref" "ref-history-count"
+        "read-line" "read-string" "reify" "reduce" "reduce-kv" "ref" "ref-history-count"
         "ref-max-history" "ref-min-history" "ref-set" "refer" "refer-clojure"
         "release-pending-sends" "rem" "remove" "remove-method" "remove-ns"
         "repeat" "repeatedly" "replace" "replicate"
         "require" "reset!" "reset-meta!" "resolve" "rest"
         "resultset-seq" "reverse" "reversible?" "rseq" "rsubseq"
-        "satisfies?" "second" "select-keys" "send" "send-off" "seq"
+        "satisfies?" "second" "select-keys" "send" "send-off" "send-via" "seq"
         "seq?" "seque" "sequence" "sequential?" "set"
+        "set-agent-send-executor!" "set-agent-send-off-executor!"
         "set-validator!" "set?" "short" "short-array" "shorts"
-        "shutdown-agents" "slurp" "some" "sort" "sort-by"
+        "shutdown-agents" "slurp" "some" "some->" "some->>" "sort" "sort-by"
         "sorted-map" "sorted-map-by" "sorted-set" "sorted-set-by" "sorted?"
         "special-form-anchor" "special-symbol?" "spit" "split-at" "split-with" "str"
         "stream?" "string?" "struct" "struct-map" "subs"
@@ -276,9 +277,9 @@
          "\\>")
        1 font-lock-type-face)
       ;; Constant values (keywords), including as metadata e.g. ^:static
-      ("\\<^?:\\(\\sw\\|#\\)+\\>" 0 font-lock-constant-face)
+      ("\\<^?:\\(\\sw\\|\\s_\\)+\\(\\>\\|\\_>\\)" 0 font-lock-constant-face)
       ;; Meta type annotation #^Type or ^Type
-      ("#?^\\sw+" 0 font-lock-preprocessor-face)
+      ("#?^\\(\\sw\\|\\s_\\)+" 0 font-lock-preprocessor-face)
       ("\\<io\\!\\>" 0 font-lock-warning-face)
 
       ;;Java interop highlighting
@@ -366,6 +367,8 @@ Clojure to load that file."
     (modify-syntax-entry ?\[ "(]" table)
     (modify-syntax-entry ?\] ")[" table)
     (modify-syntax-entry ?^ "'" table)
+    ;; Make hash a usual word character
+    (modify-syntax-entry ?# "_ p" table)
     table))
 
 (defvar clojure-mode-abbrev-table nil
@@ -398,6 +401,22 @@ numbers count from the end:
 ;; For compatibility with Emacs < 24, derive conditionally
 (defalias 'clojure-parent-mode
   (if (fboundp 'prog-mode) 'prog-mode 'fundamental-mode))
+
+(defun clojure-space-for-delimiter-p (endp delim)
+  (if (eq major-mode 'clojure-mode)
+      (save-excursion
+        (backward-char)
+        (if (and (or (char-equal delim ?\()
+                     (char-equal delim ?\")
+                     (char-equal delim ?{))
+                 (not endp))
+            (if (char-equal (char-after) ?#)
+                (and (not (bobp))
+                     (or (char-equal ?w (char-syntax (char-before)))
+                         (char-equal ?_ (char-syntax (char-before)))))
+              t)
+          t))
+    t))
 
 ;;;###autoload
 (define-derived-mode clojure-mode clojure-parent-mode "Clojure"
@@ -433,7 +452,9 @@ if that value is non-nil."
             (lambda ()
               (when (>= paredit-version 21)
                 (define-key clojure-mode-map "{" 'paredit-open-curly)
-                (define-key clojure-mode-map "}" 'paredit-close-curly)))))
+                (define-key clojure-mode-map "}" 'paredit-close-curly)
+                (add-to-list 'paredit-space-for-delimiter-predicates
+                             'clojure-space-for-delimiter-p)))))
 
 (defun clojure-display-inferior-lisp-buffer ()
   "Display a buffer bound to `inferior-lisp-buffer'."
@@ -920,6 +941,8 @@ returned."
   (forward-char)
   (set-mark (clojure-string-end)))
 
+(defvar clojure-docstring-indent-level 2)
+
 (defun clojure-fill-docstring (&optional argument)
   "Fill the definition that the point is on appropriate for Clojure.
 
@@ -936,25 +959,28 @@ returned."
   (let ((old-point (point)))
     (save-restriction
       (save-excursion
-        (let* ((string-region (clojure-docstring-start+end-points))
-               (string-start (1+ (car string-region)))
+        (let* ((clojure-fill-column fill-column)
+               (string-region (clojure-docstring-start+end-points))
+               (string-start (car string-region))
                (string-end (cdr string-region))
-               (string (buffer-substring-no-properties (1+ (car string-region))
-                                                       (cdr string-region))))
+               (string (buffer-substring-no-properties string-start
+                                                       string-end)))
           (delete-region string-start string-end)
           (insert
            (with-temp-buffer
              (insert string)
-             (let ((left-margin 2))
+             (let ((left-margin clojure-docstring-indent-level))
                (delete-trailing-whitespace)
+               (setq fill-column clojure-fill-column)
                (fill-region (point-min) (point-max))
-               (buffer-substring-no-properties (+ 2 (point-min)) (point-max))))))))
+               (buffer-substring-no-properties (+ clojure-docstring-indent-level (point-min)) (point-max))))))))
     (goto-char old-point)))
 
 
 
 (defconst clojure-namespace-name-regex
   (rx line-start
+      (zero-or-more whitespace)
       "("
       (zero-or-one (group (regexp "clojure.core/")))
       (zero-or-one (submatch "in-"))
@@ -1006,10 +1032,15 @@ returned."
     (replace-regexp-in-string
      "_" "-" (mapconcat 'identity (cdr (split-string relative "/")) "."))))
 
+(defun clojure-insert-ns-form-at-point ()
+  "Insert a namespace form at point"
+  (interactive)
+  (insert (format "(ns %s)" (clojure-expected-ns))))
+
 (defun clojure-insert-ns-form ()
   (interactive)
   (goto-char (point-min))
-  (insert (format "(ns %s)" (clojure-expected-ns))))
+  (clojure-insert-ns-form-at-point))
 
 (defun clojure-update-ns ()
   "Updates the namespace of the current buffer. Useful if a file has been renamed."
