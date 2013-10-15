@@ -35,7 +35,12 @@ generated from it.
     (call-interactively 'org-babel-tangle))
 #+END_SRC
 
+We include an extra CSS file in the export HTML, so we can modify the
+styling.
 
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq org-export-html-style-extra "<link rel=\"stylesheet\" type=\"text/css\" href=\"init.css\" />")
+#+END_SRC
 
 TODO: move this to the end of the generated init.el, so as not to slow
 down the loading of styling.

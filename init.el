@@ -1,11 +1,13 @@
 
 (require 'org)
-  
-  (defun export-init-org ()
-    "Generate init.html and init.html from the current init.org file."
-    (interactive)
-;;    (call-interactively 'org-export-as-html)
-    (call-interactively 'org-babel-tangle))
+
+(defun export-init-org ()
+  "Generate init.html and init.html from the current init.org file."
+  (interactive)
+  (call-interactively 'org-export-as-html)
+  (call-interactively 'org-babel-tangle))
+
+(setq org-export-html-style-extra "<link rel=\"stylesheet\" type=\"text/css\" href=\"init.css\" />")
 
 (add-to-list 'load-path "~/.emacs.d/user-lisp/")
 
