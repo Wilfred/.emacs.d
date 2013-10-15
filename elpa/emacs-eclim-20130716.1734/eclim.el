@@ -113,6 +113,9 @@ in the current workspace."
 (defvar eclim--project-name nil)
 (make-variable-buffer-local 'eclim--project-name)
 
+(defvar eclim--project-current-file nil)
+(make-variable-buffer-local 'eclim--project-current-file)
+
 (defvar eclim--project-natures-cache nil)
 (defvar eclim--projects-cache nil)
 
@@ -248,9 +251,14 @@ lists are then appended together."
                          (list a (eval (cdr (or (assoc a eclim--default-args)
                                                 (error "sorry, no default value for: %s" a)))))))))
 
+(defun eclim--command-should-sync-p (cmd args)
+  (and (eclim--args-contains args '("-f" "-o"))
+                            (not (or (string= cmd "project_by_resource")
+                                     (string= cmd "project_link_resource")))))
+
 (defun eclim--execute-command-internal (executor cmd args)
   (lexical-let* ((expargs (eclim--expand-args args))
-                 (sync (eclim--args-contains args '("-f" "-o")))
+                 (sync (eclim--command-should-sync-p cmd args))
                  (check (eclim--args-contains args '("-p"))))
     (when sync (eclim/java-src-update))
     (when check
@@ -351,21 +359,11 @@ argument FILENAME is given, return that file's project root directory."
   "Returns this file's project name. If the optional argument
 FILENAME is given, return that file's  project name instead."
   (labels ((get-project-name (file)
-             (let ((project-list (eclim/project-list))
-                   (project-dir (eclim--project-dir file)))
-               (when (and project-list project-dir)
-                 (assoc-default 'name
-                                (or
-                                 (find project-dir project-list ;; case sensitive
-                                       :key (lambda (e) (assoc-default 'path e))
-                                       :test (lambda (s1 s2) (string= (file-truename s1) (file-truename s2))))
-                                 (find project-dir project-list ;; case insensitive
-                                       :key (lambda (e) (assoc-default 'path e))
-                                       :test (lambda (s1 s2) (string= (downcase (file-truename s1)) (downcase (file-truename s2)))))))))))
+                             (eclim/execute-command "project_by_resource" ("-f" file))))
     (if filename
         (get-project-name filename)
         (or eclim--project-name
-            (setq eclim--project-name (get-project-name buffer-file-name))))))
+            (and buffer-file-name (setq eclim--project-name (get-project-name buffer-file-name)))))))
 
 (defun eclim--find-file (path-to-file)
   (if (not (string-match-p "!" path-to-file))
@@ -422,7 +420,9 @@ FILENAME is given, return that file's  project name instead."
   (replace-regexp-in-string "\s*$" "" content))
 
 (defun eclim--project-current-file ()
-  (file-relative-name buffer-file-name (eclim--project-dir)))
+  (or eclim--project-current-file
+      (setq eclim--project-current-file
+            (eclim/execute-command "project_link_resource" ("-f" buffer-file-name)))))
 
 (defun eclim--byte-offset (&optional text)
   ;; TODO: restricted the ugly newline counting to dos buffers => remove it all the way later
@@ -466,6 +466,7 @@ FILENAME is given, return that file's  project name instead."
           (yas/load-directory eclim--snippet-directory))
         (kill-local-variable 'eclim--project-dir)
         (kill-local-variable 'eclim--project-name)
+        (kill-local-variable 'eclim--project-current-file)
         (add-hook 'after-save-hook 'eclim--problems-update-maybe nil 't)
         (add-hook 'after-save-hook 'eclim--after-save-hook nil 't))
     (remove-hook 'after-save-hook 'eclim--problems-update-maybe 't)

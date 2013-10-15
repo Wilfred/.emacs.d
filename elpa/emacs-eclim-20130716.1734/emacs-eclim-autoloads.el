@@ -6,7 +6,7 @@
 ;;;### (autoloads nil nil ("ac-emacs-eclim-source.el" "company-emacs-eclim.el"
 ;;;;;;  "eclim-ant.el" "eclim-completion.el" "eclim-java.el" "eclim-maven.el"
 ;;;;;;  "eclim-problems.el" "eclim-project.el" "eclim.el" "eclimd.el"
-;;;;;;  "emacs-eclim-pkg.el") (20876 65508 202876 506000))
+;;;;;;  "emacs-eclim-pkg.el") (20993 4266 745174 373000))
 
 ;;;***
 
