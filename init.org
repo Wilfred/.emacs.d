@@ -13,10 +13,6 @@ This file is a literate programming document written with org-mode and
 org-mode-babel. You can view init.html in a web browser, or read
 init.org in Emacs.
 
-init.el and init.html are generated files. To generate init.el, run
-`M-x org-babel-tangle'. To generate init.html, run `M-x
-org-export-as-html'.
-
 By default, all the sections in this document are collapsed. You can
 expand a header by pressing `<TAB>' when point is on that header. You
 can expand all headers by pressing `C-u C-u C-u <TAB>'.
