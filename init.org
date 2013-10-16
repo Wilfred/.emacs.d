@@ -791,6 +791,15 @@ them.
   (setq org-src-fontify-natively t)
 #+END_SRC
 
+** Markdown
+
+Markdown is essentially prose, so it's nice to automatically line-wrap
+(by inserting newlines) as we type.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-hook 'markdown-mode-hook 'auto-fill-mode)
+#+END_SRC
+   
 ** Performance
 
 Emacs will run garbage collection after `gc-cons-threshold' bytes of

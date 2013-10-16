@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-10-15T11:39+0100"/>
+<meta name="generated" content="2013-10-16T15:52+0100"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -187,8 +187,9 @@ for the JavaScript code in this tag.
 <li><a href="#sec-3-13">3.13 CSS</a></li>
 <li><a href="#sec-3-14">3.14 Less (CSS)</a></li>
 <li><a href="#sec-3-15">3.15 Org-mode</a></li>
-<li><a href="#sec-3-16">3.16 Performance</a></li>
-<li><a href="#sec-3-17">3.17 Undocumented</a></li>
+<li><a href="#sec-3-16">3.16 Markdown</a></li>
+<li><a href="#sec-3-17">3.17 Performance</a></li>
+<li><a href="#sec-3-18">3.18 Undocumented</a></li>
 </ul>
 </li>
 </ul>
@@ -262,6 +263,12 @@ generated from it.
   (call-interactively 'org-export-as-html)
   (call-interactively 'org-babel-tangle))
 </pre>
+
+
+<p>
+We include an extra CSS file in the export HTML, so we can modify the
+styling.
+</p>
 
 
 
@@ -1538,8 +1545,28 @@ them.
 </div>
 
 <div id="outline-container-3-16" class="outline-3">
-<h3 id="sec-3-16"><span class="section-number-3">3.16</span> Performance</h3>
+<h3 id="sec-3-16"><span class="section-number-3">3.16</span> Markdown</h3>
 <div class="outline-text-3" id="text-3-16">
+
+
+<p>
+Markdown is essentially prose, so it's nice to automatically line-wrap
+(by inserting newlines) as we type.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(add-hook 'markdown-mode-hook 'auto-fill-mode)
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-17" class="outline-3">
+<h3 id="sec-3-17"><span class="section-number-3">3.17</span> Performance</h3>
+<div class="outline-text-3" id="text-3-17">
 
 
 <p>
@@ -1559,9 +1586,9 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 
 </div>
 
-<div id="outline-container-3-17" class="outline-3">
-<h3 id="sec-3-17"><span class="section-number-3">3.17</span> Undocumented</h3>
-<div class="outline-text-3" id="text-3-17">
+<div id="outline-container-3-18" class="outline-3">
+<h3 id="sec-3-18"><span class="section-number-3">3.18</span> Undocumented</h3>
+<div class="outline-text-3" id="text-3-18">
 
 
 
@@ -1726,7 +1753,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-10-15T11:39+0100</p>
+<p class="date">Date: 2013-10-16T15:52+0100</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
