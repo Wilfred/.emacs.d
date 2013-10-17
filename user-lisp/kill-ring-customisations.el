@@ -7,10 +7,22 @@
     (set-text-properties 0 (length string) nil cleaned-string)
     cleaned-string))
 
+(require 's)
+(require 'ht)
+(eval-when-compile '(require 'cl))
+
 (defun kill-ring-choose ()
   "Pick any previously killed item (using ido) to insert into the buffer."
   (interactive)
-  (insert (ido-completing-read "Previously killed: "
-           (mapcar 'remove-all-text-properties kill-ring))))
+  (let ((abbrevs (ht)))
+    (dolist (item kill-ring)
+      (setq item (remove-all-text-properties item))
+      (ht-set abbrevs
+              (s-truncate 40 (s-replace "\n" " " item))
+              item))
+    (insert
+     (ht-get
+      abbrevs
+      (ido-completing-read "Previously killed: " (ht-keys abbrevs))))))
 
 (provide 'kill-ring-customisations)
