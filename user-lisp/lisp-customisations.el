@@ -25,6 +25,6 @@
 (autoload 'clojure-mode "clojure-mode")
 (add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
 
-(require 'nrepl)
+(require 'cider)
 
 (provide 'lisp-customisations)

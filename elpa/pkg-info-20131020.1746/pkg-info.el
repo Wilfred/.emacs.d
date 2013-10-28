@@ -5,8 +5,9 @@
 ;; Author: Sebastian Wiesner <lunaryorn@gmail.com>
 ;; URL: https://github.com/lunaryorn/pkg-info.el
 ;; Keywords: convenience
-;; Version: 0.2-cvs
-;; Package-Requires: ((dash "1.6.0") (s "1.6.0"))
+;; Version: 20131020.1746
+;; X-Original-Version: 0.4-cvs
+;; Package-Requires: ((dash "1.6.0") (epl "0.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -40,9 +41,10 @@
 
 ;;; Code:
 
+(require 'epl)
 (require 'dash)
-(require 's)
-(require 'package)
+
+(require 'find-func)
 
 
 ;;;; Version information
@@ -63,48 +65,31 @@ Return VERSION."
     (message (pkg-info-format-version version)))
   version)
 
-(defun pkg-info-locate-feature-source (feature)
-  "Get the source file for FEATURE.
-
-Return the source file as string, or nil if FEATURE was not
-found."
-  (-when-let* ((library (locate-library (symbol-name feature)))
-               (s-chop-suffix "c" library))
-    (when (file-exists-p library)
-      library)))
-
 ;;;###autoload
-(defun pkg-info-library-version (feature-or-file &optional show)
-  "Get the version in the header of FEATURE-OR-FILE.
+(defun pkg-info-library-version (library &optional show)
+  "Get the version in the header of LIBRARY.
 
-FEATURE-OR-FILE is either a symbol denoting a named feature, or a
-string with the path to a library.
+LIBRARY is either a symbol denoting a named feature, or a library
+name as string..
 
 When SHOW is non-nil, show the version in the minibuffer.
 
-Return the version from the library header as list or nil, if the
-library was not found or had no proper library header.  See Info
-node `(elisp)Library Headers' for more information about library
-headers."
+Return the version from the header of LIBRARY as list.  Signal an
+error if the LIBRARY was not found or had no proper header.
+
+See Info node `(elisp)Library Headers' for more information
+about library headers."
   (interactive
    (list (->> (completing-read "Load library: "
                                (apply-partially 'locate-file-completion-table
                                                 load-path
                                                 (get-load-suffixes)))
-           locate-library
-           (s-chop-suffix "c"))
+           find-library-name)
          t))
-  (-when-let (source-file (if (symbolp feature-or-file)
-                              (pkg-info-locate-feature-source feature-or-file)
-                            feature-or-file))
-    (with-temp-buffer
-      (insert-file-contents source-file)
-      (let ((info (package-buffer-info)))
-        (pkg-info--show-version-and-return
-         (if (fboundp 'package-desc-version)
-             (package-desc-version info)
-           (version-to-list (aref (package-buffer-info) 3)))
-         show)))))
+  (let* ((library-name (if (symbolp library) (symbol-name library) library))
+         (source (find-library-name library-name))
+         (version (epl-package-version (epl-package-from-file source))))
+    (pkg-info--show-version-and-return version show)))
 
 ;;;###autoload
 (defun pkg-info-defining-library-version (function &optional show)
@@ -113,19 +98,23 @@ headers."
 When SHOW is non-nil, show the version in mini-buffer.
 
 This function is mainly intended to find the version of a major
-mode, i.e.
+or minor mode, i.e.
 
    (pkg-info-defining-library-version 'flycheck-mode)
 
 Return the version of the library defining FUNCTION (as by
-`pkg-info-locate-library-version'), or nil if the library was not
-found or had no version."
+`pkg-info-locate-library-version').  Signal an error if FUNCTION
+is not a valid function, if its defining library was not found,
+or if the library had no proper version header."
   (interactive
    (let ((input (completing-read "Function: " obarray #'boundp :require-match)))
      (list (if (string= input "") nil (intern input)) t)))
-  (-when-let* ((definition (symbol-function function))
-               (source-file (find-lisp-object-file-name function definition)))
-    (pkg-info-library-version source-file show)))
+  (unless (functionp function)
+    (signal 'wrong-type-argument (list 'functionp function)))
+  (let ((library (symbol-file function 'defun)))
+    (unless library
+      (error "Can't find definition of %s" function))
+    (pkg-info-library-version library show)))
 
 ;;;###autoload
 (defun pkg-info-package-version (package &optional show)
@@ -135,19 +124,24 @@ When SHOW is non-nil, show the version in the minibuffer.
 
 Return the version as list, or nil if PACKAGE is not installed."
   (interactive
-   (list (intern
-          (completing-read "Installed package: "
-                           (--map (symbol-name (car it)) package-alist)
-                           nil :require-match
-                           nil nil (symbol-name (caar package-alist))))
-         t))
-  (-when-let (info (assq package package-alist))
-    (pkg-info--show-version-and-return
-     (if (fboundp 'package-desc-version)
-         (package-desc-version (cadr info))
-       (aref (cdr info) 0))
-     show)))
+   (let* ((installed (epl-installed-packages))
+          (names (-sort #'string<
+                        (--map (symbol-name (epl-package-name it)) installed)))
+          (default (car names))
+          (reply (completing-read "Installed package: " names nil 'require-match
+                                  nil nil default)))
+     (list reply t)))
+  (let* ((name (if (stringp package) (intern package) package))
+         (package (epl-find-installed-package name)))
+    (unless package
+      (error "Can't find installed package %s" name))
+    (pkg-info--show-version-and-return (epl-package-version package) show)))
 
 (provide 'pkg-info)
+
+;; Local Variables:
+;; indent-tabs-mode: nil
+;; coding: utf-8
+;; End:
 
 ;;; pkg-info.el ends here
