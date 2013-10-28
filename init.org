@@ -451,13 +451,6 @@ a lot and it's right next to `C-x C-f'.
   (global-set-key (kbd "C-x C-g") 'find-file-in-repository)
 #+END_SRC
 
-Finally, it's useful to reopen the same buffers when Emacs is
-restarted:
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (desktop-save-mode 1)
-#+END_SRC
-
 *** Dired
 
 Dired isn't very colourful by default, but `dired+' has helpful
