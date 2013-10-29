@@ -755,6 +755,22 @@ shortcut for inserting them.
   (define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
 #+END_SRC
 
+** Haskell
+
+Flycheck supports Haskell well, so we switch it on inside Haskell
+buffers.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-hook 'haskell-mode-hook 'flycheck-mode)
+#+END_SRC
+
+Tab doesn't indent in haskell-mode by default, so we enable
+indentation.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+#+END_SRC
+   
 ** CSS
 
 Currently I'm working on projects that require tabs for CSS
@@ -850,7 +866,6 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
   (require 'javascript-customisations)
   (require 'xml-customisations)
   (require 'lisp-customisations)
-  (require 'haskell-customisations)
   (require 'c-customisations)
   (require 'sh-customisations)
   (require 'coffee-customisations)

@@ -297,6 +297,10 @@ If a prefix argument is given, don't change the kill-ring."
 
 (define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
 
+(add-hook 'haskell-mode-hook 'flycheck-mode)
+
+(add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+
 (add-hook 'css-mode-hook
           (function
            (lambda ()
@@ -345,7 +349,6 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'javascript-customisations)
 (require 'xml-customisations)
 (require 'lisp-customisations)
-(require 'haskell-customisations)
 (require 'c-customisations)
 (require 'sh-customisations)
 (require 'coffee-customisations)
