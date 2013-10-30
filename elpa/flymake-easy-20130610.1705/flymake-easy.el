@@ -4,7 +4,7 @@
 
 ;; Author: Steve Purcell <steve@sanityinc.com>
 ;; URL: https://github.com/purcell/flymake-easy
-;; Version: 20130512.1842
+;; Version: 20130610.1705
 ;; X-Original-Version: DEV
 ;; Keywords: convenience, internal
 
@@ -85,7 +85,7 @@ Argument LOCATION where to create the temporary copy: one of 'tempdir (default) 
 Argument WARNING-RE a pattern which identifies error messages as warnings.
 Argument INFO-RE a pattern which identifies messages as infos (supported only
 by the flymake fork at https://github.com/illusori/emacs-flymake)."
-  (let ((executable (first (funcall command-fn "dummy"))))
+  (let ((executable (car (funcall command-fn "dummy"))))
     (if (executable-find executable) ;; TODO: defer this checking
         (unless (flymake-easy-exclude-buffer-p)
           (setq flymake-easy--command-fn command-fn
@@ -107,7 +107,7 @@ by the flymake fork at https://github.com/illusori/emacs-flymake)."
 ;; Internal overrides for flymake
 
 (defun flymake-easy--find-all-matches (str)
-  "Return all matched for error line patterns in STR.
+  "Return every match for `flymake-err-line-patterns' in STR.
 
 This is a judicious override for `flymake-split-output', enabled
 by the advice below, which allows for matching multi-line
@@ -120,7 +120,7 @@ patterns."
         (while (string-match regex str pos)
           (push (match-string 0 str) matches)
           (setq pos (match-end 0)))
-        (setf last-match-end-pos (max pos last-match-end-pos))))
+        (setq last-match-end-pos (max pos last-match-end-pos))))
     (let ((residual (substring str last-match-end-pos)))
       (list matches
             (unless (string= "" residual) residual)))))
