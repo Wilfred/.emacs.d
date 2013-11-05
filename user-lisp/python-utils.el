@@ -46,8 +46,10 @@ a specific search string."
   (interactive)
   (unless python-shell-virtualenv-path
     (error "Need to set `python-shell-virtualenv-path', see `virtualenv-workon'"))
-  (let ((search-term (read-from-minibuffer "Search virtualenv for: "
-                                           (virtualenv-search--dwim-at-point)))
+  (let ((search-term (read-from-minibuffer
+                      (format "Search %s virtualenv for: "
+                              (f-filename python-shell-virtualenv-path))
+                      (virtualenv-search--dwim-at-point)))
         (libraries-path
          (f-join python-shell-virtualenv-path "lib/python2.7/site-packages")))
     (ag/search search-term libraries-path)))
