@@ -872,8 +872,6 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
   
   (require 'startup-customisations)
   
-  (require 'editd-customisations)
-  
   (require 'git-customisations)
   (require 'git-flow-release)
   

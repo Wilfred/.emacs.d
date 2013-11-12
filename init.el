@@ -355,8 +355,6 @@ If a prefix argument is given, don't change the kill-ring."
 
 (require 'startup-customisations)
 
-(require 'editd-customisations)
-
 (require 'git-customisations)
 (require 'git-flow-release)
 
