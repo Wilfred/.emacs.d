@@ -69,9 +69,38 @@
   :group 'magit-faces)
 
 ;;; Keygroups
-
+;;;###autoload
 (defvar magit-key-mode-groups
-  '((logging
+  '((dispatch
+     (actions
+      ("b" "Branching"       magit-key-mode-popup-branching)
+      ("B" "Bisecting"       magit-key-mode-popup-bisecting)
+      ("c" "Committing"      magit-key-mode-popup-committing)
+      ("d" "Diff worktree"   magit-diff-working-tree)
+      ("D" "Diff"            magit-diff)
+      ("f" "Fetching"        magit-key-mode-popup-fetching)
+      ("F" "Pulling"         magit-key-mode-popup-pulling)
+      ("g" "Refresh Buffers" magit-refresh-all)
+      ("l" "Logging"         magit-key-mode-popup-logging)
+      ("m" "Merging"         magit-key-mode-popup-merging)
+      ("M" "Remoting"        magit-key-mode-popup-remoting)
+      ("P" "Pushing"         magit-key-mode-popup-pushing)
+      ("o" "Submoduling"     magit-key-mode-popup-submodule)
+      ("r" "Rewriting"       magit-key-mode-popup-rewriting)
+      ("s" "Show Status"     magit-status)
+      ("S" "Stage all"       magit-stage-all)
+      ("t" "Tagging"         magit-key-mode-popup-tagging)
+      ("U" "Unstage all"     magit-unstage-all)
+      ("v" "Show Commit"     magit-show-commit)
+      ("V" "Show File"       magit-show)
+      ("w" "Wazzup"          magit-wazzup)
+      ("X" "Reset worktree"  magit-reset-working-tree)
+      ("y" "Cherry"          magit-cherry)
+      ("z" "Stashing"        magit-key-mode-popup-stashing)
+      ("!" "Running"         magit-key-mode-popup-running)
+      ("$" "Show Process"    magit-display-process)))
+
+    (logging
      (man-page "git-log")
      (actions
       ("l" "Short" magit-log)
@@ -99,6 +128,8 @@
       ("=a" "Author" "--author=" read-from-minibuffer)
       ("=g" "Grep messages" "--grep=" read-from-minibuffer)
       ("=G" "Grep patches" "-G" read-from-minibuffer)
+      ("=L" "Trace evolution of line range [long log only]"
+       "-L" magit-read-file-trace)
       ("=s" "Pickaxe search" "-S" read-from-minibuffer)
       ("=b" "Branches" "--branches=" read-from-minibuffer)
       ("=R" "Remotes" "--remotes=" read-from-minibuffer)))
@@ -187,7 +218,12 @@
     (committing
      (man-page "git-commit")
      (actions
-      ("c" "Commit" magit-commit))
+      ("c" "Commit" magit-commit)
+      ("a" "Amend"  magit-commit-amend)
+      ("e" "Extend" magit-commit-extend)
+      ("r" "Reword" magit-commit-reword)
+      ("f" "Fixup"  magit-commit-fixup)
+      ("s" "Squash" magit-commit-squash))
      (switches
       ("-r" "Replace the tip of current branch" "--amend")
       ("-R" "Claim authorship and reset author date" "--reset-author")
@@ -219,6 +255,23 @@
       ("*" "Set unused" magit-rewrite-set-unused)
       ("." "Set used" magit-rewrite-set-used)))
 
+    (apply-mailbox
+     (man-page "git-am")
+     (actions
+      ("J" "Apply Mailbox" magit-apply-mailbox))
+     (switches
+      ("-s" "add a Signed-off-by line to the commit message" "--signoff")
+      ("-3" "allow fall back on 3way merging if needed" "--3way")
+      ("-k" "pass -k flag to git-mailinfo" "--keep")
+      ("-c" "strip everything before a scissors line" "--scissors")
+      ("-p" "pass it through git-apply" "-p")
+      ("-r" "override error message when patch failure occurs" "--resolvemsg")
+      ("-d" "lie about committer date" "--committer-date-is-author-date")
+      ("-D" "use current timestamp for author date" "--ignore-date")
+      ("-b" "pass -b flag to git-mailinfo" "--keep-non-patch"))
+     (arguments
+      ("=p" "format the patch(es) are in" "--patch-format")))
+
     (submodule
      (man-page "git-submodule")
      (actions
@@ -233,11 +286,9 @@
       ("b" "Bad" magit-bisect-bad)
       ("g" "Good" magit-bisect-good)
       ("k" "Skip" magit-bisect-skip)
-      ("l" "Log" magit-bisect-log)
       ("r" "Reset" magit-bisect-reset)
       ("s" "Start" magit-bisect-start)
-      ("u" "Run" magit-bisect-run)
-      ("v" "Visualize" magit-bisect-visualize)))
+      ("u" "Run" magit-bisect-run)))
 
     (diff-options
      (actions
@@ -664,6 +715,8 @@ Return the point before the actions part, if any, nil otherwise."
 (mapc (lambda (g)
         (magit-key-mode-generate (car g)))
       magit-key-mode-groups)
+
+;;;###autoload (mapc (lambda (g) (eval `(autoload ',(intern (concat "magit-key-mode-popup-" (symbol-name (car g)))) "magit-key-mode" ,(concat "Key menu for " (symbol-name (car g))) t))) magit-key-mode-groups)
 
 (provide 'magit-key-mode)
 ;;; magit-key-mode.el ends here
