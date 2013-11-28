@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2010 Chris Wanstrath
 
-;; Version: 20130502.1632
+;; Version: 20130618.1418
 ;; X-Original-Version: 0.4.1
 ;; Keywords: CoffeeScript major mode
 ;; Author: Chris Wanstrath <chris@ozmm.org>
@@ -861,7 +861,7 @@ END lie."
   (progn
     (goto-char match)
     (beginning-of-line)
-    (add-text-properties (point) (+ (point) 1) `(syntax-table (14 . nil)))))
+    (add-text-properties (point) (+ (point) 1) `(coffee-mode-syntax-table (14 . nil)))))
 
 ;; support coffescript block comments
 ;; examples:
