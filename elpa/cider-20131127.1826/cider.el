@@ -9,9 +9,9 @@
 ;;         Hugo Duncan <hugo@hugoduncan.org>
 ;;         Steve Purcell <steve@sanityinc.com>
 ;; URL: http://www.github.com/clojure-emacs/cider
-;; Version: 0.3.0-cvs
+;; Version: 0.4.0-cvs
+;; Package-Requires: ((clojure-mode "2.0.0") (cl-lib "0.3") (dash "2.1.0") (pkg-info "0.3"))
 ;; Keywords: languages, clojure, cider
-;; Package-Requires: ((clojure-mode "2.0.0") (cl-lib "0.3") (dash "2.1.0") (pkg-info "0.1"))
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -57,15 +57,13 @@
   :prefix "cider-"
   :group 'applications)
 
-(require 'nrepl-client)
+(require 'cider-client)
 (require 'cider-version)
 (require 'cider-interaction)
 (require 'cider-eldoc)
 (require 'cider-repl)
 (require 'cider-repl-mode)
-(require 'cider-selector)
 (require 'cider-mode)
-(require 'cider-macroexpansion)
 
 ;;;###autoload
 (defun cider-jack-in (&optional prompt-project)

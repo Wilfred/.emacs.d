@@ -34,6 +34,8 @@
 
 (defconst cider-macroexpansion-buffer "*cider-macroexpansion*")
 
+(push cider-macroexpansion-buffer cider-ancilliary-buffers)
+
 (defun cider-macroexpand-undo (&optional arg)
   "Undo the last macroexpansion, using `undo-only'.
 ARG is passed along to `undo-only'."
@@ -54,7 +56,7 @@ This variable specifies both what was expanded and the expander.")
 (defun cider-macroexpand-expr (expander expr &optional buffer)
   "Macroexpand, use EXPANDER, the given EXPR from BUFFER."
   (let* ((form (cider-macroexpand-form expander expr))
-         (expansion (plist-get (nrepl-send-string-sync form nrepl-buffer-ns) :stdout)))
+         (expansion (plist-get (cider-eval-sync form nrepl-buffer-ns) :stdout)))
     (setq cider-last-macroexpand-expression form)
     (cider-initialize-macroexpansion-buffer expansion nrepl-buffer-ns)))
 
@@ -65,7 +67,7 @@ This variable specifies both what was expanded and the expander.")
     (if form-with-bounds
         (destructuring-bind (expr bounds) form-with-bounds
           (let* ((form (cider-macroexpand-form expander expr))
-                 (expansion (plist-get (nrepl-send-string-sync form nrepl-buffer-ns) :stdout)))
+                 (expansion (plist-get (cider-eval-sync form nrepl-buffer-ns) :stdout)))
             (cider-redraw-macroexpansion-buffer
              expansion (current-buffer) (car bounds) (cdr bounds) (point)))))))
 
@@ -73,9 +75,10 @@ This variable specifies both what was expanded and the expander.")
   "Repeat the last macroexpansion."
   (interactive)
   (let ((expansion
-         (plist-get (nrepl-send-string-sync cider-last-macroexpand-expression nrepl-buffer-ns) :stdout)))
+         (plist-get (cider-eval-sync cider-last-macroexpand-expression nrepl-buffer-ns) :stdout)))
     (cider-initialize-macroexpansion-buffer expansion nrepl-buffer-ns)))
 
+;;;###autoload
 (defun cider-macroexpand-1 (&optional prefix)
   "Invoke 'macroexpand-1' on the expression at point.
 If invoked with a PREFIX argument, use 'macroexpand' instead of
@@ -92,6 +95,7 @@ If invoked with a PREFIX argument, use 'macroexpand' instead of
   (let ((expander (if prefix 'macroexpand 'macroexpand-1)))
     (cider-macroexpand-expr-inplace expander)))
 
+;;;###autoload
 (defun cider-macroexpand-all ()
   "Invoke 'clojure.walk/macroexpand-all' on the expression at point."
   (interactive)

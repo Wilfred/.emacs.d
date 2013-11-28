@@ -6,7 +6,7 @@
 ;;          Lennart Staflin <lenst@lysator.liu.se>
 ;;          Phil Hagelberg <technomancy@gmail.com>
 ;; URL: http://github.com/clojure-emacs/clojure-mode
-;; Version: 20131019.624
+;; Version: 20131123.2357
 ;; X-Original-Version: 2.1.0
 ;; Keywords: languages, lisp
 
@@ -28,7 +28,7 @@
 ;;   ;; require or autoload paredit-mode
 ;;   (add-hook 'clojure-mode-hook 'paredit-mode)
 
-;; See nREPL.el (http://github.com/clojure-emacs/nrepl.el) for
+;; See CIDER (http://github.com/clojure-emacs/cider) for
 ;; better interaction with subprocesses via nREPL.
 
 ;;; License:
@@ -101,7 +101,7 @@
        (1 font-lock-keyword-face)
        (2 font-lock-function-name-face nil t))
 
-      (,(concat "(\\(\\(?:[a-z\.-]+/\\)?def\[a-z\]*-?\\)"
+      (,(concat "(\\(\\(?:[a-z\.-]+/\\)?def\[a-z\-\]*-?\\)"
                 ;; Function declarations.
                 "\\>"
                 ;; Any whitespace
@@ -243,7 +243,7 @@
         "when" "when-first" "when-let" "when-not" "while"
         "with-bindings" "with-bindings*" "with-in-str" "with-loading-context" "with-local-vars"
         "with-meta" "with-open" "with-out-str" "with-precision"
-        "with-redefs" "with-redefs-fn" "xml-seq" "zipmap"
+        "with-redefs" "with-redefs-fn" "xml-seq" "zero?" "zipmap"
         ) t)
          "\\>")
        1 font-lock-builtin-face)
@@ -497,6 +497,7 @@ if that value is non-nil."
   (setq-local parse-sexp-ignore-comments t)
 
   (clojure-mode-font-lock-setup)
+  (setq-local open-paren-in-column-0-is-defun-start nil)
   (add-hook 'paredit-mode-hook
             (lambda ()
               (when (>= paredit-version 21)
@@ -772,7 +773,8 @@ This function also returns nil meaning don't specify the indentation."
               ((or (eq method 'defun)
                    (and clojure-defun-style-default-indent
                         ;; largely to preserve useful alignment of :require, etc in ns
-                        (not (string-match "^:" function)))
+                        (not (string-match "^:" function))
+                        (not method))
                    (and (null method)
                         (> (length function) 3)
                         (string-match "\\`\\(?:\\S +/\\)?\\(def\\|with-\\)"
@@ -1194,9 +1196,7 @@ word test in it and whether the file lives under the test/ directory."
 
 ;;;###autoload
 (progn
-  (add-to-list 'auto-mode-alist '("\\.clj\\'" . clojure-mode))
-  (add-to-list 'auto-mode-alist '("\\.cljs\\'" . clojure-mode))
-  (add-to-list 'auto-mode-alist '("\\.cljx\\'" . clojure-mode))
+  (add-to-list 'auto-mode-alist '("\\.clj[sx]?\\'" . clojure-mode))
   (add-to-list 'auto-mode-alist '("\\.dtm\\'" . clojure-mode))
   (add-to-list 'auto-mode-alist '("\\.edn\\'" . clojure-mode))
   (add-to-list 'interpreter-mode-alist '("jark" . clojure-mode))

@@ -37,13 +37,17 @@
     (define-key map (kbd "M-.") 'cider-jump)
     (define-key map (kbd "M-,") 'cider-jump-back)
     (define-key map (kbd "M-TAB") 'complete-symbol)
-    (define-key map (kbd "C-M-x") 'cider-eval-expression-at-point)
-    (define-key map (kbd "C-c C-c") 'cider-eval-expression-at-point)
-    (define-key map (kbd "C-x C-e") 'cider-eval-last-expression)
-    (define-key map (kbd "C-c C-e") 'cider-eval-last-expression)
-    (define-key map (kbd "C-c C-p") 'cider-pprint-eval-last-expression)
+    (define-key map (kbd "C-M-x") 'cider-eval-defun-at-point)
+    (define-key map (kbd "C-c C-c") 'cider-eval-defun-at-point)
+    (define-key map (kbd "C-x C-e") 'cider-eval-last-sexp)
+    (define-key map (kbd "C-c C-e") 'cider-eval-last-sexp)
+    (define-key map (kbd "C-c C-w") 'cider-eval-last-sexp-and-replace)
+    (define-key map (kbd "C-c M-e") 'cider-eval-last-sexp-to-repl)
+    (define-key map (kbd "C-c M-p") 'cider-insert-last-sexp-in-repl)
+    (define-key map (kbd "C-c C-p") 'cider-pprint-eval-last-sexp)
     (define-key map (kbd "C-c C-r") 'cider-eval-region)
     (define-key map (kbd "C-c C-n") 'cider-eval-ns-form)
+    (define-key map (kbd "C-c M-:") 'cider-read-and-eval)
     (define-key map (kbd "C-c C-m") 'cider-macroexpand-1)
     (define-key map (kbd "C-c M-m") 'cider-macroexpand-all)
     (define-key map (kbd "C-c M-n") 'cider-repl-set-ns)
@@ -82,11 +86,14 @@
     "--"
     ["Complete symbol" complete-symbol]
     "--"
-    ["Eval expression at point" cider-eval-expression-at-point]
-    ["Eval last expression" cider-eval-last-expression]
-    ["Eval last expression in popup buffer" cider-pprint-eval-last-expression]
+    ["Eval top-level sexp at point" cider-eval-defun-at-point]
+    ["Eval last sexp" cider-eval-last-sexp]
+    ["Eval last sexp in popup buffer" cider-pprint-eval-last-sexp]
+    ["Eval last sexp to REPL buffer" cider-eval-last-sexp-to-repl]
+    ["Eval last sexp and replace it with its result" cider-eval-last-sexp-and-replace]
     ["Eval region" cider-eval-region]
     ["Eval ns form" cider-eval-ns-form]
+    ["Insert last sexp in REPL" cider-insert-last-sexp-in-repl]
     "--"
     ["Load current buffer" cider-load-current-buffer]
     ["Load file" cider-load-file]

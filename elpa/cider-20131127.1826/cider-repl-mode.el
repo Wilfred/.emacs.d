@@ -47,7 +47,7 @@
 
 Decides if paredit should insert a space after/before (if/unless
 ENDP) DELIM."
-  (if (eq major-mode 'cider-repl-mode)
+  (if (derived-mode-p 'cider-repl-mode)
       (save-excursion
         (backward-char)
         (if (and (or (char-equal delim ?\()
@@ -73,28 +73,28 @@ ENDP) DELIM."
     (set-keymap-parent map clojure-mode-map)
     (define-key map (kbd "M-.") 'cider-jump)
     (define-key map (kbd "M-,") 'cider-jump-back)
-    (define-key map (kbd "RET") 'cider-return)
+    (define-key map (kbd "RET") 'cider-repl-return)
     (define-key map (kbd "TAB") 'cider-repl-tab)
-    (define-key map (kbd "C-<return>") 'cider-closing-return)
-    (define-key map (kbd "C-j") 'cider-newline-and-indent)
+    (define-key map (kbd "C-<return>") 'cider-repl-closing-return)
+    (define-key map (kbd "C-j") 'cider-repl-newline-and-indent)
     (define-key map (kbd "C-c C-d") 'cider-doc)
     (define-key map (kbd "C-c C-s") 'cider-src)
-    (define-key map (kbd "C-c C-o") 'cider-clear-output)
-    (define-key map (kbd "C-c M-o") 'cider-clear-buffer)
+    (define-key map (kbd "C-c C-o") 'cider-repl-clear-output)
+    (define-key map (kbd "C-c M-o") 'cider-repl-clear-buffer)
     (define-key map (kbd "C-c M-n") 'cider-repl-set-ns)
-    (define-key map (kbd "C-c C-u") 'cider-kill-input)
-    (define-key map (kbd "C-a") 'cider-bol)
-    (define-key map (kbd "C-S-a") 'cider-bol-mark)
-    (define-key map [home] 'cider-bol)
-    (define-key map [S-home] 'cider-bol-mark)
-    (define-key map (kbd "C-<up>") 'cider-backward-input)
-    (define-key map (kbd "C-<down>") 'cider-forward-input)
-    (define-key map (kbd "M-p") 'cider-previous-input)
-    (define-key map (kbd "M-n") 'cider-next-input)
-    (define-key map (kbd "M-r") 'cider-previous-matching-input)
-    (define-key map (kbd "M-s") 'cider-next-matching-input)
-    (define-key map (kbd "C-c C-n") 'cider-next-prompt)
-    (define-key map (kbd "C-c C-p") 'cider-previous-prompt)
+    (define-key map (kbd "C-c C-u") 'cider-repl-kill-input)
+    (define-key map (kbd "C-a") 'cider-repl-bol)
+    (define-key map (kbd "C-S-a") 'cider-repl-bol-mark)
+    (define-key map [home] 'cider-repl-bol)
+    (define-key map [S-home] 'cider-repl-bol-mark)
+    (define-key map (kbd "C-<up>") 'cider-repl-backward-input)
+    (define-key map (kbd "C-<down>") 'cider-repl-forward-input)
+    (define-key map (kbd "M-p") 'cider-repl-previous-input)
+    (define-key map (kbd "M-n") 'cider-repl-next-input)
+    (define-key map (kbd "M-r") 'cider-repl-previous-matching-input)
+    (define-key map (kbd "M-s") 'cider-repl-next-matching-input)
+    (define-key map (kbd "C-c C-n") 'cider-repl-next-prompt)
+    (define-key map (kbd "C-c C-p") 'cider-repl-previous-prompt)
     (define-key map (kbd "C-c C-b") 'cider-interrupt)
     (define-key map (kbd "C-c C-c") 'cider-interrupt)
     (define-key map (kbd "C-c C-j") 'cider-javadoc)
@@ -108,7 +108,7 @@ ENDP) DELIM."
     map))
 
 (define-derived-mode cider-repl-mode fundamental-mode "REPL"
-  "Major mode for nREPL interactions.
+  "Major mode for Clojure REPL interactions.
 
 \\{cider-repl-mode-map}"
   (setq-local lisp-indent-function 'clojure-indent-function)
@@ -120,10 +120,10 @@ ENDP) DELIM."
   (cider-turn-on-eldoc-mode)
   (if (fboundp 'hack-dir-local-variables-non-file-buffer)
       (hack-dir-local-variables-non-file-buffer))
-  (when cider-history-file
-    (cider-history-load cider-history-file)
-    (add-hook 'kill-buffer-hook 'cider-history-just-save t t)
-    (add-hook 'kill-emacs-hook 'cider-history-just-save))
+  (when cider-repl-history-file
+    (cider-repl-history-load cider-repl-history-file)
+    (add-hook 'kill-buffer-hook 'cider-repl-history-just-save t t)
+    (add-hook 'kill-emacs-hook 'cider-repl-history-just-save))
   (add-hook 'paredit-mode-hook
             (lambda ()
               (when (>= paredit-version 21)
@@ -145,10 +145,10 @@ ENDP) DELIM."
     ["Display JavaDoc" cider-javadoc]
     "--"
     ["Set REPL ns" cider-repl-set-ns]
-    ["Toggle pretty printing of results" cider-toggle-pretty-printing]
-    ["Clear output" cider-clear-output]
-    ["Clear buffer" cider-clear-buffer]
-    ["Kill input" cider-kill-input]
+    ["Toggle pretty printing of results" cider-repl-toggle-pretty-printing]
+    ["Clear output" cider-repl-clear-output]
+    ["Clear buffer" cider-repl-clear-buffer]
+    ["Kill input" cider-repl-kill-input]
     ["Interrupt" cider-interrupt]
     ["Quit" cider-quit]
     ["Restart" cider-restart]
