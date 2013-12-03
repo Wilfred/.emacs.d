@@ -17,10 +17,7 @@
         "True glory consists in doing what deserves to be written; in writing what deserves to be read. -- Pliny the Elder"
         "The whole point of getting things done is knowing what to leave undone. -- Oswald Chambers"))
 
-(defun random-choice (list)
-  "Return a random element from LIST."
-  (let ((random-index (random (length list))))
-    (nth random-index list)))
+(require 'random-utils)
 
 ; populate the initial scratch buffer with a random quote.
 (setq-default initial-scratch-message (random-choice programming-quotes))
