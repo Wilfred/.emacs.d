@@ -93,6 +93,19 @@
 
 (global-set-key (kbd "M-P") 'highlight-symbol-first)
 
+(defun highlight-symbol-last ()
+  "Jump to the last location of symbol at point."
+  (interactive)
+  (push-mark)
+  (eval
+   `(progn
+      (goto-char (point-max))
+      (search-backward-regexp
+       (rx symbol-start ,(thing-at-point 'symbol) symbol-end)
+       nil t))))
+
+(global-set-key (kbd "M-N") 'highlight-symbol-last)
+
 (defun beginning-of-line-dwim ()
   "Toggles between moving point to the first non-whitespace character, and
 the start of the line."

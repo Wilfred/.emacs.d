@@ -274,6 +274,24 @@ where a symbol was imported.
   (global-set-key (kbd "M-P") 'highlight-symbol-first)
 #+END_SRC
 
+More rarely, it's useful to be able to jump to the last occurrence of
+a symbol.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defun highlight-symbol-last ()
+    "Jump to the last location of symbol at point."
+    (interactive)
+    (push-mark)
+    (eval
+     `(progn
+        (goto-char (point-max))
+        (search-backward-regexp
+         (rx symbol-start ,(thing-at-point 'symbol) symbol-end)
+         nil t))))
+  
+  (global-set-key (kbd "M-N") 'highlight-symbol-last)
+#+END_SRC
+
 *** By indentation
 
 `C-a' normally moves us to the beginning of the line
