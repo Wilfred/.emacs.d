@@ -124,7 +124,6 @@
 
 ; zen coding: converts selector-style lines to tags
 ; e.g. table>tr*2 becomes <table><tr></tr><tr></tr></table>
-(add-to-list 'load-path "~/.emacs.d/third-party-lisp/zencoding")
 (require 'zencoding-mode)
 (add-hook 'sgml-mode-hook 'zencoding-mode) ;; Auto-start on any markup modes
 
