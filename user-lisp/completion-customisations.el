@@ -10,6 +10,7 @@
 (define-key yas-minor-mode-map (kbd "SPC") 'yas-expand)
 
 ;; dabbrev-expand should match case
+(require 'dabbrev)
 (setq dabbrev-case-fold-search nil)
 
 ;; force hippie-expand completions to be case-sensitive
