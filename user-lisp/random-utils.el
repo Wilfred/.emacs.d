@@ -28,15 +28,14 @@ current time the current Emacs PID."
   "Generate a random 32 character string and "
   (interactive)
   (random-reseed-securely)
-  (let ((password (random-string
-                   32
-                   ;; split the string into a list of of one-character strings
-                   (mapcar 'string
-                           "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !&.|@"))))
+  (let ((password
+         (random-string
+          32
+          (split-string
+           "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !&.|@"
+           "" t))))
     (message "%s (also copied to clipboard)" password)
     (let ((x-select-enable-clipboard t))
       (kill-new password))))
 
 (provide 'random-utils)
-
-
