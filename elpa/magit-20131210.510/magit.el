@@ -397,6 +397,16 @@ Only considered when moving past the last entry with
   :group 'magit
   :type 'boolean)
 
+(defcustom magit-log-format-graph-function nil
+  "Function used to format graphs in log buffers.
+The function is called with one argument, the propertized graph
+of a single line in as a string.  It has to return the formatted
+string.  This option can also be nil, in which case the graph is
+inserted as is."
+  :group 'magit
+  :type '(choice (const :tag "insert as is" nil)
+                 function))
+
 (defcustom magit-log-show-margin t
   "Whether to use a margin when showing `oneline' logs.
 When non-nil the author name and date are displayed in the margin
@@ -789,10 +799,18 @@ manager but it will be used in more places in the future."
 
 (defcustom magit-diff-options nil
   "Git options used to display diffs.
+
 For more information about the options see man:git-diff.
 This variable can be conveniently set in Magit buffers
 using `magit-key-mode-popup-diff-options' (bound to \
-\\<magit-mode-map>\\[magit-key-mode-popup-diff-options])."
+\\<magit-mode-map>\\[magit-key-mode-popup-diff-options]).
+
+Please note that not all of these options are supported by older
+versions of Git, which could become a problem if you use tramp to
+access repositories on a system with such a version.  If you see
+whitespace where you would have expected a diff, this likely is
+the cause, and the only (currently) workaround is to not make the
+problematic option a member of the default value."
   :group 'magit
   :type '(set :greedy t
               (const :tag
@@ -1658,24 +1676,25 @@ server if necessary."
           (magit-process-popup-time -1))
      ;; Make sure the client is usable.
      (magit-assert-emacsclient "use `magit-with-emacsclient'")
+     ;; Make sure server-use-tcp's value is valid.
+     (unless (featurep 'make-network-process '(:family local))
+       (setq server-use-tcp t))
      ;; Make sure the server is running.
      (unless server-process
-       (if (server-running-p "server")
-           (unless (eq system-type 'windows-nt)
-             (setq server-name (format "server%s" (emacs-pid)))
-             (server-start))
-         (server-start)))
+       (when (server-running-p server-name)
+         (setq server-name (format "server%s" (emacs-pid)))
+         (when (server-running-p server-name)
+           (server-force-delete server-name)))
+       (server-start))
      ;; Tell Git to use the client.
      (setenv "GIT_EDITOR"
              (concat magit-emacsclient-executable
-                     ;; Tell Emacsclient to use this server,
-                     ;; if necessary and possible.
-                     (unless (or (equal server-name "server")
-                                 (eq system-type 'windows-nt)
-                                 server-use-tcp)
-                       (concat " --socket-name="
-                               (expand-file-name server-name
-                                                 server-socket-dir)))))
+     ;; Tell the client where the server is, if necessary.
+                     (and (not server-use-tcp)
+                          (not (equal server-name "server"))
+                          (concat " --socket-name="
+                                  (expand-file-name server-name
+                                                    server-socket-dir)))))
      (when server-use-tcp
        (setenv "EMACS_SERVER_FILE"
                (expand-file-name server-name server-auth-dir)))
@@ -3880,7 +3899,7 @@ Customize variable `magit-diff-refine-hunk' to change the default mode."
 
 (defconst magit-log-oneline-re
   (concat "^"
-          "\\(?4:\\(?:[-_/|\\*o.] ?\\)+ *\\)?"     ; graph
+          "\\(?4:\\(?:[-_/|\\*o.] *\\)+ *\\)?"     ; graph
           "\\(?:"
           "\\(?1:[0-9a-fA-F]+\\) "                 ; sha1
           "\\(?:\\(?3:([^()]+)\\) \\)?"            ; refs
@@ -3892,7 +3911,7 @@ Customize variable `magit-diff-refine-hunk' to change the default mode."
 
 (defconst magit-log-long-re
   (concat "^"
-          "\\(?4:\\(?:[-_/|\\*o.] ?\\)+ *\\)?"     ; graph
+          "\\(?4:\\(?:[-_/|\\*o.] *\\)+ *\\)?"     ; graph
           "\\(?:"
           "\\(?:commit \\(?1:[0-9a-fA-F]+\\)"      ; sha1
           "\\(?: \\(?3:([^()]+)\\)\\)?\\)"         ; refs
@@ -3985,7 +4004,9 @@ Customize variable `magit-diff-refine-hunk' to change the default mode."
           (insert (propertize hash 'face 'magit-log-sha1) " ")
         (insert (make-string (1+ magit-sha1-abbrev-length) ? ))))
     (when graph
-      (insert graph))
+      (if magit-log-format-graph-function
+          (insert (funcall magit-log-format-graph-function graph))
+        (insert graph)))
     (when (and hash (eq style 'long))
       (insert (propertize (if refs hash (magit-rev-parse hash))
                           'face 'magit-log-sha1) " "))
@@ -4135,7 +4156,7 @@ from the parent keymap `magit-mode-map' are also available."
   (magit-git-insert-section (commitbuf nil)
       #'magit-wash-commit
     "log" "-1" "--decorate=full"
-    "--pretty=medium" "--no-abbrev-commit"
+    "--pretty=medium"
     "--cc" "-p" (and magit-show-diffstat "--stat")
     magit-diff-options commit))
 
@@ -5507,6 +5528,8 @@ and ignore the option.
 (defvar-local magit-commit-squash-args  nil)
 (defvar-local magit-commit-squash-fixup nil)
 
+(defvar magit-commit-unmark-after-squash t)
+
 ;;;###autoload
 (defun magit-commit-fixup (&optional commit)
   "Create a fixup commit.
@@ -5556,6 +5579,8 @@ depending on the value of option `magit-commit-squash-commit'.
 (defun magit-commit-squash-marked ()
   (when magit-marked-commit
     (magit-commit-squash magit-marked-commit magit-commit-squash-fixup))
+  (when magit-commit-unmark-after-squash
+    (setq magit-marked-commit nil))
   (kill-local-variable 'magit-commit-squash-fixup)
   (remove-hook 'magit-mark-commit-hook 'magit-commit-squash-marked t)
   (remove-hook 'magit-mode-quit-window-hook 'magit-commit-squash-abort t)
@@ -5921,7 +5946,8 @@ With a prefix arg, do a submodule update --init."
 (defun magit-run-git-bisect (subcommand &optional args no-assert)
   (unless (or no-assert (magit-bisecting-p))
     (error "Not bisecting"))
-  (let ((file (magit-git-dir "BISECT_CMD_OUTPUT")))
+  (let ((file (magit-git-dir "BISECT_CMD_OUTPUT"))
+        (default-directory (magit-get-top-dir)))
     (ignore-errors (delete-file file))
     (magit-with-refresh
       (magit-run-git*
@@ -6069,13 +6095,15 @@ This command can only be used inside log buffers (usually
 *magit-log*) and only if that displays a `oneline' log.
 Also see option `magit-log-show-margin'."
   (interactive)
-  (if (derived-mode-p 'magit-log-mode)
-      (if (eq (car magit-refresh-args) 'oneline)
-          (progn (setq-local magit-log-show-margin
-                             (not magit-log-show-margin))
-                 (magit-refresh))
-        (error "The log margin cannot be used with \"long\" log"))
-    (error "The log margin cannot be used outside of log buffers")))
+  (unless (derived-mode-p 'magit-log-mode)
+    (error "The log margin cannot be used outside of log buffers"))
+  (unless (eq (car magit-refresh-args) 'oneline)
+    (error "The log margin cannot be used with \"long\" log"))
+  (if magit-log-show-margin
+      (magit-set-buffer-margin (car magit-log-margin-spec)
+                               (not (cdr (window-margins))))
+    (setq-local magit-log-show-margin t)
+    (magit-refresh)))
 
 (defun magit-log-show-more-entries (&optional arg)
   "Grow the number of log entries shown.
@@ -6788,7 +6816,7 @@ With a prefix argument, visit in other window."
       ((diffstat)       (magit-section-info item))
       ((diff)           (magit-section-info item))
       ((hunk)           (magit-section-info (magit-section-parent item)))
-      (nil              nil)))))
+      (nil              default-directory)))))
 
 ;;;###autoload
 (defun magit-show (rev file &optional switch-function)
@@ -6812,41 +6840,47 @@ return the buffer, without displaying it."
                file (magit-section-info section))
        (unless rev
          (setq rev (magit-get-current-branch))))
-     (list (magit-read-rev "Retrieve file from revision" rev)
-           (magit-read-file-from-rev rev file)
-           current-prefix-arg)))
-  (if (eq rev 'working)
-      (find-file-noselect file)
-    (let* ((name (format "%s.%s" file
-                         (if (symbolp rev)
-                             (format "@{%s}" rev)
-                           (replace-regexp-in-string "/" ":" rev))))
-           (buffer (get-buffer name)))
-      (when buffer
-        (with-current-buffer buffer
-          (unless (and (equal file magit-file-name)
-                       (equal rev  magit-show-current-version))
-            (setq buffer nil))))
-      (with-current-buffer
-          (or buffer (create-file-buffer name))
-        (with-silent-modifications
-          (if (eq rev 'index)
-              (let ((temp (car (split-string
-                                (magit-git-string "checkout-index"
-                                                  "--temp" file)
-                                "\t"))))
-                (insert-file-contents temp nil nil nil t)
-                (delete-file temp))
-            (magit-git-insert "cat-file" "-p" (concat rev ":" file))))
-        (let ((buffer-file-name (expand-file-name file (magit-get-top-dir))))
-          (normal-mode t))
-        (setq magit-file-name file)
-        (setq magit-show-current-version rev)
-        (goto-char (point-min))
-        (funcall (if (called-interactively-p 'any)
-                     (if switch-function 'switch-to-buffer 'pop-to-buffer)
-                   (or switch-function 'identity))
-                 (current-buffer))))))
+     (setq rev  (magit-read-rev "Retrieve file from revision" rev)
+           file (cl-case rev
+                  (working (read-file-name "Find file: "))
+                  (index   (magit-read-file-from-rev "HEAD" file))
+                  (t       (magit-read-file-from-rev rev file))))
+     (list rev file (if current-prefix-arg
+                        'switch-to-buffer
+                      'pop-to-buffer))))
+  (let (buffer)
+    (if (eq rev 'working)
+        (setq buffer (find-file-noselect file))
+      (let ((name (format "%s.%s" file
+                          (if (symbolp rev)
+                              (format "@{%s}" rev)
+                            (replace-regexp-in-string "/" ":" rev)))))
+        (setq buffer (get-buffer name))
+        (when buffer
+          (with-current-buffer buffer
+            (unless (and (equal file magit-file-name)
+                         (equal rev  magit-show-current-version))
+              (setq buffer nil))))
+        (with-current-buffer
+            (or buffer (setq buffer (create-file-buffer name)))
+          (with-silent-modifications
+            (if (eq rev 'index)
+                (let ((temp (car (split-string
+                                  (magit-git-string "checkout-index"
+                                                    "--temp" file)
+                                  "\t"))))
+                  (insert-file-contents temp nil nil nil t)
+                  (delete-file temp))
+              (magit-git-insert "cat-file" "-p" (concat rev ":" file))))
+          (let ((buffer-file-name (expand-file-name file (magit-get-top-dir))))
+            (normal-mode t))
+          (setq magit-file-name file)
+          (setq magit-show-current-version rev)
+          (goto-char (point-min)))))
+    (when switch-function
+      (with-current-buffer buffer
+        (funcall switch-function (current-buffer))))
+    buffer))
 
 ;;;; Mark
 
@@ -6881,7 +6915,7 @@ return the buffer, without displaying it."
 \\<magit-branch-manager-mode-map>Type `\\[magit-visit-item]` to checkout a branch, `\\[magit-reset-head]' to reset current branch,
 you can also merge the branch with `\\[magit-key-mode-popup-merging]`
 
-Type `\\[magit-discard-item]' to delet a branch, or `\\[universal-argument] \\[magit-discard-item]' to force the deletion.
+Type `\\[magit-discard-item]' to delete a branch, or `\\[universal-argument] \\[magit-discard-item]' to force the deletion.
 Type `\\[magit-rename-item]' to Rename a branch.
 
 More information can be found in Info node `(magit)The branch list'
