@@ -892,6 +892,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
   
   (require 'git-customisations)
   (require 'git-flow-release)
+  (require 'eshell-customisations)
   
   ;; stolen from http://demonastery.org/2013/04/emacs-narrow-to-region-indirect/
   (defun narrow-to-region-indirect (start end)
