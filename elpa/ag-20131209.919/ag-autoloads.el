@@ -4,8 +4,8 @@
 
 
 ;;;### (autoloads (ag-kill-other-buffers ag-kill-buffers ag-regexp-project-at-point
-;;;;;;  ag-project-regexp ag-project ag-regexp ag) "ag" "ag.el" (21060
-;;;;;;  12683 986539 445000))
+;;;;;;  ag-project-regexp ag-project-files ag-project ag-regexp ag-files
+;;;;;;  ag) "ag" "ag.el" (21168 35441 619567 136000))
 ;;; Generated autoloads from ag.el
 
 (autoload 'ag "ag" "\
@@ -13,6 +13,12 @@ Search using ag in a given DIRECTORY for a given search STRING,
 with STRING defaulting to the symbol under point.
 
 \(fn STRING DIRECTORY)" t nil)
+
+(autoload 'ag-files "ag" "\
+Search using ag in a given DIRECTORY and file type regex FILE-REGEX
+for a given search STRING, with STRING defaulting to the symbol under point.
+
+\(fn STRING FILE-REGEX DIRECTORY)" t nil)
 
 (autoload 'ag-regexp "ag" "\
 Search using ag in a given directory for a given regexp.
@@ -24,6 +30,12 @@ Guess the root of the current project and search it with ag
 for the given string.
 
 \(fn STRING)" t nil)
+
+(autoload 'ag-project-files "ag" "\
+Search using ag in a given DIRECTORY and file type regex FILE-REGEX
+for a given search STRING, with STRING defaulting to the symbol under point.
+
+\(fn STRING FILE-REGEX)" t nil)
 
 (autoload 'ag-project-regexp "ag" "\
 Guess the root of the current project and search it with ag
@@ -51,7 +63,7 @@ Kill all ag-mode buffers other than the current buffer.
 
 ;;;***
 
-;;;### (autoloads nil nil ("ag-pkg.el") (21060 12684 75511 509000))
+;;;### (autoloads nil nil ("ag-pkg.el") (21168 35441 717696 846000))
 
 ;;;***
 
