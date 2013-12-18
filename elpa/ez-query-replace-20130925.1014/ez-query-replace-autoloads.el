@@ -4,24 +4,24 @@
 
 
 ;;;### (autoloads (ez-query-replace-repeat ez-query-replace) "ez-query-replace"
-;;;;;;  "ez-query-replace.el" (21012 62272 330475 45000))
+;;;;;;  "ez-query-replace.el" (21169 52873 296289 701000))
 ;;; Generated autoloads from ez-query-replace.el
 
 (autoload 'ez-query-replace "ez-query-replace" "\
 Replace occurrences of FROM-STRING with TO-STRING, defaulting
 to the symbol at point.
 
-\(fn FROM-STRING TO-STRING)" t nil)
+\(fn)" t nil)
 
 (autoload 'ez-query-replace-repeat "ez-query-replace" "\
-
+Run `ez-query-replace' with an old FROM and TO value.
 
 \(fn)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil nil ("ez-query-replace-pkg.el") (21012 62272
-;;;;;;  417726 10000))
+;;;### (autoloads nil nil ("ez-query-replace-pkg.el") (21169 52873
+;;;;;;  425164 297000))
 
 ;;;***
 
