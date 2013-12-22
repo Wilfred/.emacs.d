@@ -21,10 +21,15 @@
 
 (add-hook 'clojure-mode-hook 'rainbow-delimiters-mode)
 (add-hook 'scheme-mode-hook 'rainbow-delimiters-mode)
+(add-hook 'lisp-mode-hook 'rainbow-delimiters-mode)
 
 (autoload 'clojure-mode "clojure-mode")
 (add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
 
 (require 'cider)
+
+;; Trifle configuration
+;; todo: write a proper major mode
+(add-to-list 'auto-mode-alist '("\\.tfl$" . lisp-mode))
 
 (provide 'lisp-customisations)
