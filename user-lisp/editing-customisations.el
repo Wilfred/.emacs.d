@@ -184,6 +184,28 @@ are interchanged."
 (define-key global-map (kbd "M-%") 'ez-query-replace)
 (define-key global-map (kbd "C-c M-%") 'ez-query-replace-repeat)
 
+;; open line and indent is a frequent and useful operation
+;; so we can go from this (where `|` represents the cursor:
+;;    foo("bar", {|})
+;; to this:
+;;    foo("bar", {
+;;        |
+;;    })
+(defun open-newline-and-indent ()
+  (interactive)
+  ;; Move any text after point to the next line, and indent it.
+  (newline-and-indent)
+
+  ;; Move back to the end of the starting line.
+  (forward-line -1)
+  (end-of-line)
+
+  ;; Start a correctly indented blank line.
+  (newline-and-indent))
+
+;; I don't use open-line, so overwrite its keybinding.
+(define-key global-map (kbd "C-o") 'open-newline-and-indent)
+
 ;; multiple cursors
 ;; a good replacement for simple macros since you see the results instantly
 (require 'multiple-cursors)
