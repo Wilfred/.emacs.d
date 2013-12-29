@@ -32,4 +32,12 @@
 ;; todo: write a proper major mode
 (add-to-list 'auto-mode-alist '("\\.tfl$" . lisp-mode))
 
+;; convenience function for Trifle indentation
+;; todo: full-blown indentation functionality
+(defun remove-indent ()
+  (interactive)
+  (back-to-indentation)
+  (let ((indent-size (- (point) (line-beginning-position))))
+    (delete-backward-char indent-size)))
+
 (provide 'lisp-customisations)
