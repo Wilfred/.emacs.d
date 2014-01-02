@@ -1,4 +1,4 @@
-This is /tmp/magit13617Dyx/magit-20131210.510/magit.info, produced by
+This is /tmp/magit23852DOX/magit-20140101.1611/magit.info, produced by
 makeinfo version 4.13 from /home/melpa/melpa/working/magit/magit.texi.
 
 INFO-DIR-SECTION Emacs
@@ -65,9 +65,9 @@ the mailing list
 * Interactive Rebasing::
 * Rewriting::
 * Pushing and Pulling::
+* Submodules::
 * Bisecting::
 * Finding commits not merged upstream::
-* Submodules::
 * Using Magit Extensions::
 * Using Git Directly::
 * GNU Free Documentation License::
@@ -865,7 +865,7 @@ changes that you still need to rewrite, and you can apply hunks from
 it, like from any other diff.
 
 
-File: magit.info,  Node: Pushing and Pulling,  Next: Bisecting,  Prev: Rewriting,  Up: Top
+File: magit.info,  Node: Pushing and Pulling,  Next: Submodules,  Prev: Rewriting,  Up: Top
 
 20 Pushing and Pulling
 **********************
@@ -904,7 +904,7 @@ branch, Magit shows them in a section called _Unpulled changes_.  Typing
 `F F' will fetch and merge them into the current branch.
 
 
-File: magit.info,  Node: Submodules,  Next: Using Magit Extensions,  Prev: Finding commits not merged upstream,  Up: Top
+File: magit.info,  Node: Submodules,  Next: Bisecting,  Prev: Pushing and Pulling,  Up: Top
 
 21 Submodules
 *************
@@ -923,7 +923,7 @@ File: magit.info,  Node: Submodules,  Next: Using Magit Extensions,  Prev: Findi
      value specified in .gitmodules.
 
 
-File: magit.info,  Node: Bisecting,  Next: Finding commits not merged upstream,  Prev: Pushing and Pulling,  Up: Top
+File: magit.info,  Node: Bisecting,  Next: Finding commits not merged upstream,  Prev: Submodules,  Up: Top
 
 22 Bisecting
 ************
@@ -953,7 +953,7 @@ their state.
 r'.
 
 
-File: magit.info,  Node: Finding commits not merged upstream,  Next: Submodules,  Prev: Bisecting,  Up: Top
+File: magit.info,  Node: Finding commits not merged upstream,  Next: Using Magit Extensions,  Prev: Bisecting,  Up: Top
 
 23 Finding commits not merged upstream
 **************************************
@@ -979,7 +979,7 @@ for the same plus the automatic commit).  The buffer is refreshed
 automatically after each cherry-pick.
 
 
-File: magit.info,  Node: Using Magit Extensions,  Next: Using Git Directly,  Prev: Submodules,  Up: Top
+File: magit.info,  Node: Using Magit Extensions,  Next: Using Git Directly,  Prev: Finding commits not merged upstream,  Up: Top
 
 24 Magit Extensions
 *******************
@@ -1536,41 +1536,41 @@ permit their use in free software.
 
 
 Tag Table:
-Node: Top795
-Node: Introduction2331
-Node: Acknowledgments3824
-Node: Sections4360
-Node: Status6910
-Node: Untracked files9649
-Node: Staging and Committing10854
-Node: History14970
-Node: Reflogs18152
-Node: Commit Buffer18556
-Node: Diffing19882
-Node: Tagging20869
-Node: Resetting21319
-Node: Stashing22843
-Node: Branches and Remotes23914
-Node: Branches Popup24735
-Node: Remotes Popup25997
-Node: Branches in the Branch Manager26348
-Node: Remotes in the Branch Manager27520
-Node: Wazzup28081
-Node: Merging28874
-Node: Rebasing29924
-Node: Interactive Rebasing30750
-Node: Rewriting32045
-Node: Pushing and Pulling35354
-Node: Submodules37283
-Node: Bisecting37729
-Node: Finding commits not merged upstream38973
-Node: Using Magit Extensions40227
-Node: Activating extensions40498
-Node: Interfacing with Subversion41883
-Node: Interfacing with Topgit42483
-Node: Interfacing with StGit43514
-Node: Using Git Directly44483
-Node: GNU Free Documentation License44871
+Node: Top796
+Node: Introduction2332
+Node: Acknowledgments3825
+Node: Sections4361
+Node: Status6911
+Node: Untracked files9650
+Node: Staging and Committing10855
+Node: History14971
+Node: Reflogs18153
+Node: Commit Buffer18557
+Node: Diffing19883
+Node: Tagging20870
+Node: Resetting21320
+Node: Stashing22844
+Node: Branches and Remotes23915
+Node: Branches Popup24736
+Node: Remotes Popup25998
+Node: Branches in the Branch Manager26349
+Node: Remotes in the Branch Manager27521
+Node: Wazzup28082
+Node: Merging28875
+Node: Rebasing29925
+Node: Interactive Rebasing30751
+Node: Rewriting32046
+Node: Pushing and Pulling35355
+Node: Submodules37285
+Node: Bisecting37702
+Node: Finding commits not merged upstream38937
+Node: Using Magit Extensions40203
+Node: Activating extensions40499
+Node: Interfacing with Subversion41884
+Node: Interfacing with Topgit42484
+Node: Interfacing with StGit43515
+Node: Using Git Directly44484
+Node: GNU Free Documentation License44872
 
 End Tag Table
 

@@ -87,6 +87,7 @@
       ("P" "Pushing"         magit-key-mode-popup-pushing)
       ("o" "Submoduling"     magit-key-mode-popup-submodule)
       ("r" "Rewriting"       magit-key-mode-popup-rewriting)
+      ("R" "Rebasing"        magit-rebase-step)
       ("s" "Show Status"     magit-status)
       ("S" "Stage all"       magit-stage-all)
       ("t" "Tagging"         magit-key-mode-popup-tagging)
@@ -136,10 +137,10 @@
 
     (running
      (actions
-      ("!" "Command from root" magit-shell-command)
-      (":" "Git command" magit-git-command)
-      ("g" "git gui" magit-run-git-gui)
-      ("k" "gitk" magit-run-gitk)))
+      ("!" "Git Subcommand (from root)" magit-git-command-topdir)
+      (":" "Git Subcommand (from pwd)" magit-git-command)
+      ("g" "Git Gui" magit-run-git-gui)
+      ("k" "Gitk" magit-run-gitk)))
 
     (fetching
      (man-page "git-fetch")
@@ -208,8 +209,12 @@
     (stashing
      (man-page "git-stash")
      (actions
+      ("v" "View" magit-diff-stash)
       ("z" "Save" magit-stash)
-      ("s" "Snapshot" magit-stash-snapshot))
+      ("s" "Snapshot" magit-stash-snapshot)
+      ("a" "Apply" magit-stash-apply)
+      ("p" "Pop" magit-stash-pop)
+      ("k" "Drop" magit-stash-drop))
      (switches
       ("-k" "Keep index" "--keep-index")
       ("-u" "Include untracked files" "--include-untracked")
@@ -231,8 +236,9 @@
       ("-e" "Allow empty commit" "--allow-empty")
       ("-v" "Show diff of changes to be committed" "--verbose")
       ("-n" "Bypass git hooks" "--no-verify")
-      ("-s" "Add Signed-off-by line" "--signoff")
-      ("-S" "Sign using gpg" "--gpg-sign")))
+      ("-s" "Add Signed-off-by line" "--signoff"))
+     (arguments
+      ("=S" "Sign using gpg" "--gpg-sign=" magit-read-gpg-secret-key)))
 
     (merging
      (man-page "git-merge")
@@ -720,4 +726,7 @@ Return the point before the actions part, if any, nil otherwise."
 ;;;###autoload (mapc (lambda (g) (eval `(autoload ',(intern (concat "magit-key-mode-popup-" (symbol-name (car g)))) "magit-key-mode" ,(concat "Key menu for " (symbol-name (car g))) t))) magit-key-mode-groups)
 
 (provide 'magit-key-mode)
+;; Local Variables:
+;; indent-tabs-mode: nil
+;; End:
 ;;; magit-key-mode.el ends here
