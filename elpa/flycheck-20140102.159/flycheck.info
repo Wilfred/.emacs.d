@@ -1,11 +1,11 @@
-This is /home/melpa/melpa/working/flycheck-20130820.2206/flycheck.info,
+This is /tmp/flycheck27454wWw/flycheck-20140102.159/flycheck.info,
 produced by makeinfo version 4.13 from
 /home/melpa/melpa/working/flycheck/doc/flycheck.texi.
 
 This manual is for Flycheck, the on-the-fly syntax checker for GNU
 Emacs.
 
-   Copyright (C) 2013 Sebastian Wiesner
+   Copyright (C) 2013, 2014 Sebastian Wiesner
 
        Permission is granted to copy, distribute and/or modify this
      document   under the terms of the GNU Free Documentation License,
@@ -28,7 +28,7 @@ Flycheck manual
 This manual is for Flycheck, the on-the-fly syntax checker for GNU
 Emacs.
 
-   Copyright (C) 2013 Sebastian Wiesner
+   Copyright (C) 2013, 2014 Sebastian Wiesner
 
        Permission is granted to copy, distribute and/or modify this
      document   under the terms of the GNU Free Documentation License,
@@ -100,7 +100,13 @@ File: flycheck.info,  Node: Features,  Next: Installation,  Prev: Introduction, 
 
    * Built-in syntax checkers for:
 
+        * AsciiDoc (using `asciidoc')
+
         * C/C++ (using `clang' and `cppcheck')
+
+        * CFEngine (using `cf-promises')
+
+        * Chef cookbooks (using `foodcritic'))
 
         * CoffeeScript (using `coffee' and `coffeelint')
 
@@ -116,46 +122,56 @@ File: flycheck.info,  Node: Features,  Next: Installation,  Prev: Introduction, 
 
         * Go (using `gofmt', `go build' and `go test')
 
-        * Haml
+        * Haml (using `haml')
 
-        * Haskell (using `ghc', `hdevtools' and `hlint')
+        * Handlebars (using `handlebars')
+
+        * Haskell (using `ghc' and `hlint')
 
         * HTML (using `tidy')
 
-        * Javascript (using `jshint')
+        * Javascript (using `jshint' and `gjslint')
 
         * JSON (using `jsonlint')
 
         * LESS (using `lessc')
 
-        * Lua
+        * Lua (using `luac')
 
-        * Perl
+        * Perl (using `perl')
 
-        * PHP (using the PHP Command Line and PHP CodeSniffer)
+        * PHP (using `php', `phpmd' and `phpcs')
 
         * Puppet (using `puppet parser' and `puppet-lint')
 
-        * Python (using `flake8', `pylint', or `pyflakes')
+        * Python (using `flake8' or `pylint')
 
-        * Ruby (using `rubocop', `ruby' or `jruby')
+        * Racket
+
+        * ReStructuredText (using `rst2pseudoxml.py' from Docutils)
+
+        * Ruby (using `rubocop', `ruby' , `jruby' or `ruby-lint')
 
         * Rust (using `rustc')
 
-        * RST (ReStructuredText, using Docutils)
+        * Sass (using `sass')
 
-        * Sass
+        * Scala (using `scalac')
 
-        * Scala
+        * SCSS (using `scss')
 
-        * SCSS
+        * Shell scripts (using `bash', `dash', or `zsh' depending on
+          the type of shell script)
 
-        * Shell scripts (using Bash, Dash, or Zsh depending on the type
-          of shell script)
+        * Slim (using `slimrb')
 
         * TeX/LaTeX (using `chktex' or `lacheck')
 
+        * Texinfo (using `makeinfo')
+
         * XML (using `xmlstarlet' or `xmllint')
+
+        * YAML (using `js-yaml' or `ruby')
 
    * Nice error indication and highlighting
 
@@ -177,13 +193,22 @@ File: flycheck.info,  Node: Features,  Next: Installation,  Prev: Introduction, 
 
 The following extensions provide additional cool features for Flycheck:
 
+   * flycheck-cask (https://github.com/flycheck/flycheck-cask) makes
+     Flycheck use Cask packages in Cask (https://github.com/cask/cask)
+     projects.
+
    * flycheck-color-mode-line.el
-     (https://github.com/syl20bnr/flycheck-color-mode-line) colors the
+     (https://github.com/flycheck/flycheck-color-mode-line) colors the
      mode line according to the Flycheck status.
 
    * flycheck-d-unittests
-     (https://github.com/tom-tan/flycheck-d-unittest) adds a Flycheck
+     (https://github.com/flycheck/flycheck-d-unittest) adds a Flycheck
      checker to run unit tests for D programs on the fly.
+
+   * flycheck-hdevtools
+     (https://github.com/flycheck/flycheck-hdevtools) adds a Flycheck
+     syntax checker for Haskell based on hdevtools
+     (https://github.com/bitc/hdevtools/).
 
 
 
@@ -205,17 +230,18 @@ the MELPA repository, add the following code to `init.el':
                   '("melpa" . "http://melpa.milkbox.net/packages/") t)
      (package-initialize)
 
-   If you use Cask (https://github.com/rejeep/cask.el), add the
-following to your `Cask' file:
+   If you use Cask (https://github.com/cask/cask), add the following to
+your `Cask' file:
 
      (source gnu)
      (source melpa)
 
      (depends-on "flycheck")
 
-   Flycheck supports GNU Emacs 24.2 and newer on Linux, OS X and any
-other decent flavor of Unix.  It should work with GNU Emacs 24.1, too,
-but it is not tested against this version of Emacs.
+   Flycheck supports Emacs 24.  It is tested with Emacs 24.3, and Emacs
+snapshot builds.  It should work with GNU Emacs 24.1 and 24.2 as well,
+but it is not tested against these versions.  If it does not work with
+these versions, please report an issue.
 
    Flycheck does not support Windows, but tries to be compatible with
 it.  You may try to use Flycheck on Windows.  It should mostly work, but
@@ -240,6 +266,10 @@ automatically enable Flycheck in all buffers, in which it can be used,
 add the following to your `init.el' file:
 
      (add-hook 'after-init-hook #'global-flycheck-mode)
+
+   Flycheck will not check syntax in buffers for remote or encrypted
+files.  The former is potentially slow, and the latter might leak
+confidential data to temporary directories.
 
 
 File: flycheck.info,  Node: Usage,  Next: Extending,  Prev: Introduction,  Up: Top
@@ -397,7 +427,8 @@ File: flycheck.info,  Node: Selection,  Next: Configuration,  Prev: Syntax check
 ============================
 
 By default Flycheck automatically selects a suitable syntax checker from
-`flycheck-checkers':
+all "enabled" syntax checkers, that is, all syntax checkers contained
+in `flycheck-checkers' and not in `flycheck-disabled-checkers':
 
  -- User Option: flycheck-checkers
      A list of all syntax checkers to use as candidates for automatic
@@ -416,6 +447,23 @@ By default Flycheck automatically selects a suitable syntax checker from
 
      *Note Syntax checkers::, for a list of available checkers.
 
+     You should not need to change this option normally.  Please use
+     `flycheck-disabled-checkers' to disable specific syntax checkers.
+
+ -- User Option: flycheck-disabled-checkers
+     A list of all syntax checkers which must _not_ be used for
+     automatic checker selection.
+
+     This variable overrides a `flycheck-checkers': A syntax checker in
+     this list will never be used, even if it is contained in
+     `flycheck-checkers'.
+
+     A syntax checker contained in this list is said to be "disabled".
+     If a syntax checker is registered and not disabled, it is
+     "enabled".
+
+     Use this option to disable specific syntax checkers.
+
    If no suitable syntax checker is found the syntax check is
 _silently_ omitted.  _No_ error is signaled, and only a specific
 indicator informs about the omitted syntax check.  *Note Mode line::.
@@ -431,7 +479,8 @@ buffer, too:
      re-enable automatic selection.
 
      Any defined syntax checker can be selected with this command,
-     regardless of the contents of `flycheck-checkers'.
+     regardless of whether it is contained in `flycheck-checkers' or
+     `flycheck-disabled-checkers'.
 
    By default, the prompt uses IDO for completion and matching, but you
 can change the completion system in use:
@@ -440,12 +489,10 @@ can change the completion system in use:
      The completion system to use.
 
     `ido'
-          Use IDO. This is default, but `grizzl' is the recommended
-          system.
+          Use IDO.
 
     `grizzl'
-          Use Grizzl (https://github.com/d11wtq/grizzl).  This is the
-          recommended system, but you need to install Grizzl separately.
+          Use Grizzl (https://github.com/d11wtq/grizzl).
 
     `nil'
           Use the standard unfancy `completing-read'.  This is not
@@ -490,12 +537,62 @@ File: flycheck.info,  Node: Configuration,  Next: Reporting,  Prev: Selection,  
 2.3 Syntax checker configuration
 ================================
 
+2.3.1 Syntax checker executables
+--------------------------------
+
+For each syntax checker, there is a buffer-local, customizable variable
+`flycheck-CHECKER-executable', where CHECKER is the name of the syntax
+checker.
+
+   The value of this variable is either nil, or a string.  In the former
+case, Flycheck uses the default executable from the syntax checker
+definition when executing the syntax checker.  In the latter case, it
+uses the value of the variable as executable.
+
+   Use these variables to override the executable from the definition
+per buffer.  For instance, you could use a different Emacs version with
+the `emacs-lisp' or `emacs-lisp-checkdoc'.
+
+   You can either set this variable directly in your `init.el', or
+change it interactively:
+
+`C-c ! e'
+`M-x flycheck-set-checker-executable'
+     Set the executable of a syntax checker in the current buffer.
+
+     Prompt for a syntax checker, and an executable file, and set the
+     corresponding executable variable.
+
+     With prefix arg, prompt for a syntax checker and reset its
+     executable to the default.
+
+2.3.2 Syntax checker options
+----------------------------
+
 Some syntax checkers can be configured via options.  The following
 options are provided by Flycheck (use `C-h v' or `M-x
 describe-variable' on the variable name for detailed help):
 
+ -- User Option: flycheck-clang-definitions
+     Additional preprocessor definitions for `c/c++-clang'.
+
  -- User Option: flycheck-clang-include-path
      Include search path for `c/c++-clang'.
+
+ -- User Option: flycheck-clang-includes
+     Additional include files for `c/c++-clang'.
+
+ -- User Option: flycheck-clang-language-standard
+     The language standard for `c/c++-clang'.
+
+ -- User Option: flycheck-clang-ms-extensions
+     Whether to enable Microsoft extensions in `c/c++-clang'.
+
+ -- User Option: flycheck-clang-no-rtti
+     Whether to disable RTTI in `c/c++-clang'.
+
+ -- User Option: flycheck-clang-standard-library
+     The standard library to use for `c/c++-clang'.
 
  -- User Option: flycheck-clang-warnings
      Additional warnings to enable in `c/c++-clang'.
@@ -534,11 +631,26 @@ describe-variable' on the variable name for detailed help):
      syntax checker allows without reporting an error.
 
  -- User Option: flycheck-phpcs-standard
-     The coding standard the syntax checker `php-phpcs' shall use.
+     The coding standard `php-phpcs' shall use.
 
-   Some syntax checkers also read configuration files denoted by
-associated "configuration file variables".  The following configuration
-files are provided by Flycheck:
+ -- User Option: flycheck-phpmd-rulesets
+     The rule sets `php-phpmd' shall use.
+
+ -- User Option: flycheck-rubocop-lint-only
+     Whether to disable style checks for `ruby-rubocop'.
+
+ -- User Option: flycheck-sass-compass
+     Whether to enable the Compass CSS framework for `sass'.
+
+ -- User Option: flycheck-scss-compass
+     Whether to enable the Compass CSS framework for `scss'.
+
+2.3.3 Syntax checker configuration files
+----------------------------------------
+
+Some syntax checkers also read configuration files denoted by associated
+"configuration file variables".  The following configuration files are
+provided by Flycheck:
 
  -- User Option: flycheck-chktexrc
      The configuration file for the `tex-chktex' syntax checker.
@@ -549,8 +661,14 @@ files are provided by Flycheck:
  -- User Option: flycheck-flake8rc
      The configuration file for the `python-flake8' syntax checker.
 
+ -- User Option: flycheck-gjslintrc
+     The configuration file for the `javascript-gjslint' syntax checker.
+
  -- User Option: flycheck-jshintrc
      The configuration file for the `javascript-jshint' syntax checker.
+
+ -- User Option: flycheck-pylintrc
+     The configuration file for the `python-pylint' syntax checker.
 
  -- User Option: flycheck-rubocoprc
      The configuration file for the `ruby-rubocop' syntax checker.
@@ -558,19 +676,8 @@ files are provided by Flycheck:
  -- User Option: flycheck-tidyrc
      The configuration file for the `html-tidy' syntax checker.
 
-   Customize these variables using `M-x customize-group RET
-flycheck-config-files'.  Use `flycheck-describe-checker' to find out
-whether a syntax checker has a configuration file.
-
-   You may also use these variables as file-local variables.  For
-instance, the following checks the Javascript file always with
-`.jshintrc' from the parent directory:
-
-     // Local variables:
-     // flycheck-jshintrc: "../.jshintrc"
-     // End:
-
-   These configuration files are located using the functions in
+   The value of these variables is either a string or nil.  In the
+former case, locate the configuration file using the functions in
 `flycheck-locate-config-file-functions':
 
  -- User Option: flycheck-locate-config-file-functions
@@ -605,6 +712,24 @@ located by the following algorithm:
 
    If any of these steps succeeds, the subsequent steps are not
 executed.
+
+   If the configuration file is found, pass it to the syntax checker
+upon invocation.
+
+   If the configuration file is not found, or if the value of the
+variable is nil, invoke the syntax checker without a configuration file.
+
+   Customize these variables using `M-x customize-group RET
+flycheck-config-files'.  Use `flycheck-describe-checker' to find out
+whether a syntax checker has a configuration file.
+
+   You may also use these variables as file-local variables.  For
+instance, the following checks the Javascript file always with
+`.jshintrc' from the parent directory:
+
+     // Local variables:
+     // flycheck-jshintrc: "../.jshintrc"
+     // End:
 
 
 File: flycheck.info,  Node: Reporting,  Next: Navigation,  Prev: Configuration,  Up: Usage
@@ -692,19 +817,28 @@ Flycheck:
      t, to indicate that the error was fully processed and inhibit any
      further processing.
 
-   You can also list all errors in the current buffer:
+   You can also show a list with all errors in the current buffer:
 
 `C-c ! l'
 `M-x flycheck-list-errors'
      List all errors in the current buffer in a separate buffer.
 
-     With prefix arg, list only errors at point.
+     The error list automatically refreshes after a syntax check, and
+     follows the current buffer, that is, if you switch to another
+     buffer, the error list is updated to show the errors of the new
+     buffer.
 
    If you hover a highlighted error with the mouse, a tooltip with the
 top-most error message will be shown.
 
-   Flycheck also displays errors under point, via
-`flycheck-display-errors-function':
+   Flycheck also displays errors under point after a short delay:
+
+ -- User Option: flycheck-display-errors-delay
+     Delay in seconds before displaying errors at point.
+
+     Use floating point numbers to express fractions of seconds.
+
+   The error is displayed via `flycheck-display-errors-function':
 
  -- User Option: flycheck-display-errors-function
      A function to display errors under point.
@@ -761,12 +895,25 @@ File: flycheck.info,  Node: Navigation,  Next: Mode line,  Prev: Reporting,  Up:
 2.5 Error navigation
 ====================
 
-Flycheck supports the standard error navigation commands of Emacs.  If
-no compilation buffer (including those from `M-x compile', `M-x grep',
-`M-x occur', etc.) is visible, `M-g n' (`next-error') and `M-g p'
-(`previous-error') will navigate between Flycheck warnings and errors
-in the current buffer.  *Note Compilation Mode: (emacs)Compilation
-Mode, for more information about these commands.
+Flycheck integrates into standard error navigation commands of Emacs.
+If no compilation buffer (including those from `M-x compile', `M-x
+grep', `M-x occur', etc.) is visible, `M-g n' (`next-error') and `M-g
+p' (`previous-error') will navigate between Flycheck warnings and
+errors in the current buffer.  *Note Compilation Mode:
+(emacs)Compilation Mode, for more information about these commands.
+
+   You can disable this integration by setting
+`flycheck-next-error-navigation' to nil:
+
+ -- User Option: flycheck-standard-error-navigation
+     If non-nil, enable navigation of Flycheck errors with the standard
+     `next-error' and friends.
+
+     Otherwise, do not integrate in standard error navigation, and let
+     these functions only navigate compilation mode errors.
+
+     Changes to this variable only take effect when enabling
+     `flycheck-mode'.
 
    Visible compilation buffers take precedence over Flycheck navigation.
 If such a buffer is visible, `M-g n' and `M-g p' will ignore Flycheck
@@ -800,6 +947,9 @@ commands:
      flycheck-first-error' moves to the 3rd error from the beginning of
      the buffer.
 
+
+   These functions are not affected by the value of
+`flycheck-standard-error-navigation'.
 
 
 File: flycheck.info,  Node: Mode line,  Prev: Navigation,  Up: Usage
@@ -848,13 +998,14 @@ syntax checkers::, for more information.
 
 * Menu:
 
-* Definition::          How to define syntax checkers
-* Error parsers::       Built-in error parsers
-* Option filters::      Built-in option filters
-* Examples::            Examples on how to define syntax checkers
+* Definition::                  How to define syntax checkers
+* Error levels::                Built-in error levels and how to define new
+* Error parsers::               Built-in error parsers
+* Option filters::              Built-in option filters
+* Examples::                    Examples on how to define syntax checkers
 
 
-File: flycheck.info,  Node: Definition,  Next: Error parsers,  Prev: Extending,  Up: Extending
+File: flycheck.info,  Node: Definition,  Next: Error levels,  Prev: Extending,  Up: Extending
 
 3.1 Definition of syntax checkers
 =================================
@@ -870,20 +1021,29 @@ You define new syntax checkers with `flycheck-define-checker':
 
      The following PROPERTIES constitute a syntax checker:
 
-    `:command (COMMAND ARG ...)'
+    `:command (EXECUTABLE ARG ...)'
           An unquoted list describing the syntax checker command to
           execute.
 
-          COMMAND is checked for existence with `executable-find'
-          before executing a syntax checker.
+          EXECUTABLE must be a string with the executable of this syntax
+          checker.
 
-          In COMMAND and ARG, the following special symbols and sexps
-          are substituted before executing the syntax checker:
+          A customizable, buffer-local variable
+          `flycheck-SYMBOL-executable' is implicitly defined to allow
+          overriding of the executable.  If this variable is non-nil,
+          Flycheck uses the value of the variable as executable,
+          otherwise it falls back to EXECUTABLE.  In either case, the
+          executable is checked with `executable-find' before use.
+
+          Each ARG is an argument to the executable, either as string,
+          or as one of the following special symbols and forms:
 
          `source'
-               This symbol is substituted with the file to check.  This
-               file is a temporary file with the contents of the buffer
-               to check, created in the system's temporary directory.
+               The file to check.
+
+               This file is a temporary file with the contents of the
+               buffer to check, created in the system's temporary
+               directory.
 
                If the buffer to check has a file name, the
                non-directory component of the name of the temporary
@@ -899,10 +1059,11 @@ You define new syntax checkers with `flycheck-define-checker':
                to your syntax checker.
 
          `source-inplace'
-               This symbol is substituted with the file to check.  This
-               file is a temporary file with the contents of the buffer
-               to check, created in the same directory as the buffer's
-               file.  The name of the file is random.
+               The file to check.
+
+               This file is a temporary file with the contents of the
+               buffer to check, created in the same directory as the
+               buffer's file.  The name of the file is random.
 
                If the buffer has no file name, this symbol is
                equivalent to `source'.
@@ -912,8 +1073,9 @@ You define new syntax checkers with `flycheck-define-checker':
                include files in C, or Python modules).
 
          `source-original'
-               This symbol is substituted with `buffer-file-name', or
-               an empty string, if the buffer has no file name.
+               The file name of the current buffer, as by
+               `buffer-file-name', or an empty string, if the buffer
+               has no file name.
 
                This symbol is provided to additionally pass the real
                name of the file to check to a syntax checker.
@@ -930,9 +1092,8 @@ You define new syntax checkers with `flycheck-define-checker':
                                                (not (buffer-modified-p)))
 
          `temporary-directory'
-               This symbol is substituted with the path of an existing
-               temporary directory, which is unique on each execution
-               of the syntax checker.
+               The path to an existing temporary directory, which is
+               unique on each execution of the syntax checker.
 
                Use this symbol if you need to move files created by a
                syntax checker out of the way.
@@ -940,11 +1101,22 @@ You define new syntax checkers with `flycheck-define-checker':
                See the declaration of the `elixir' syntax checker for an
                application of this symbol.
 
+         `temporary-file-name'
+               The path to a temporary file, which is unique on each
+               execution of the syntax checker.  The file is _not_
+               created automatically.
+
+               Use this symbol if you need to move files created by a
+               syntax checker out of the way.
+
+               See the declaration of the `go-build' syntax checker for
+               an application of this symbol.
+
          `(config-file OPTION VARIABLE)'
-               This cell is substituted with a configuration file for
-               the syntax checker.  OPTION is a string containing the
-               option that specifies a configuration file to the syntax
-               checker tool.
+               A configuration file for this syntax checker.
+
+               OPTION is a string containing the option that specifies a
+               configuration file to the syntax checker tool.
 
                VARIABLE is a symbol referring to a variable from which
                to obtain the name or path of the configuration file.
@@ -952,10 +1124,10 @@ You define new syntax checkers with `flycheck-define-checker':
                checker configuration.  Define this variable with
                `flycheck-def-config-file-var'.
 
-               If the configuration file is found, the cell is
-               substituted with the OPTION and the absolute path to the
-               configuration file as string.  Otherwise the cell is
-               simply dropped from the arguments of the syntax checker.
+               If the configuration file is found, pass the OPTION and
+               the absolute path to the configuration file to the
+               syntax checker.  Otherwise the cell is simply dropped
+               from the arguments of the syntax checker.
 
                If OPTION ends with a `=' character, OPTION and the
                absolute path to the configuration file are concatenated
@@ -964,54 +1136,74 @@ You define new syntax checkers with `flycheck-define-checker':
                given as two separate arguments.
 
          `(option OPTION VARIABLE [FILTERS])'
-               This cell is substituted with the value of VARIABLE.
+               The value of a variable.
+
                OPTION is a string containing the option for with to
                specify the value.  FILTER is an optional function to be
-               applied to the value of VARIABLE before substitution.
-               *Note Option filters::, for a list of built-in option
-               filters.
+               applied to the value of VARIABLE before use.  *Note
+               Option filters::, for a list of built-in option filters.
 
                VARIABLE is a symbol referring to a variable whose value
                to use.  *Note Configuration::, for more information
                about syntax checker configuration.  Define this
                variable with `flycheck-def-option-var'.
 
-               If VARIABLE is not NIL after applying FILTER, the cell
-               is substituted with the OPTION and the value of VARIABLE
-               after applying FILTER.  Otherwise the cell is simply
-               dropped from the arguments of the syntax checker.
+               If VARIABLE is not `nil' after applying FILTER, pass
+               OPTION and the value of VARIABLE after applying FILTER.
+               Otherwise the cell is simply dropped from the arguments
+               of the syntax checker.
 
                An OPTION ending with a `=' character is treated like in
                a `config-file' cell.
 
          `(option-list OPTION VARIABLE [PREPEND-FN [FILTER]])'
-               This cell is similar to `option', but for option lists.
+               Like `option', but for lists of options.
 
-               The value of VARIABLE must be a list, and OPTION is
-               prepended to each non-nil item in the list, using the
-               function PREPEND-FN.  PREPEND-FN is called with OPTION
-               as first and each item in the list as second argument.
-               It should return the result of prepending OPTION to the
-               item, either as list or as string.  If omitted, it
-               defaults to `list', so by default, OPTION will be
-               prepended as a separate argument.
+               OPTION is a string containing the option to specify.
+               VARIABLE is a variable whose value must be a list.
+               PREPEND-FN is a function called with OPTION as first and
+               the item of the list as second argument.  It should
+               return the result of prepending OPTION to the item,
+               either as list or as string.  If omitted, it defaults to
+               `list', so by default, OPTION will be prepended as a
+               separate argument.
 
                FILTER is an optional function to be applied to each
-               item in the list before substitution.  Items for which
-               the filter returns nil are dropped.  *Note Option
-               filters::, for a list of built-in option filters.
+               item in the list before use.  *Note Option filters::,
+               for a list of built-in option filters.
+
+               For each item in the value of VARIABLE, which is not
+               `nil' after applying FILTER, pass OPTION the the item
+               after applying FILTER, as returned by PREPEND-FN.
+
+               Nil items are simply ignored.
+
+         `(option-flag OPTION VARIABLE)'
+               Like `option', but for boolean flags.
+
+               OPTION is a string containing the option to specify.
+               VARIABLE is a symbol referring to a variable.
+
+               If VARIABLE is non-nil, pass OPTION to the syntax
+               checker.  Otherwise just ignore this argument.
 
          `(eval FORM)'
-               This cell is substituted with a result of evaluating
-               FORM.  FORM must either return a string or a list of
-               strings, or `nil' to indicate that nothing should be
-               substituted for CELL.  In case of other return values an
-               error is signaled.  _No_ further substitutions are
-               performed, neither in FORM before it is evaluated, nor
-               in the result of evaluating FORM.
+               The result of evaluating FORM.
 
-          Note that substitution is not recursive.  No symbols or cells
-          are substituted within the body of cells!
+               FORM is an arbitrary Emacs Lisp form.  It is evaluated
+               literally _each time_ the syntax checker is executed.
+               Special forms and symbols in FORM are _not_ replaced!
+
+               FORM must evaluate either to a string, a list of strings
+               or nil.  For any other result, signal an error.
+
+               If the result of FORM is not nil, pass the result to the
+               syntax checker _literally_.  Special symbols and forms
+               in the result of FORM are _not_ replaced.
+
+          Note these special forms and symbols do not apply recursively.
+          Within the body of a cell, special forms and symbols are not
+          replaced!
 
           This property is mandatory.
 
@@ -1019,8 +1211,13 @@ You define new syntax checkers with `flycheck-define-checker':
           An unquoted list of one or more error patterns to parse the
           output of the syntax checker `:command'.
 
-          LEVEL is either `warning' or `error' and denotes the severity
-          of errors matched by the pattern.
+          LEVEL is a Flycheck error level, and denotes the severity of
+          errors matched by the pattern.  This mainly affects the visual
+          representation of matched errors in buffers.
+
+          Flycheck provides the built-in error levels `error' and
+          `warning'.  You can define your own error levels with
+          `flycheck-define-error-level'.
 
           The LEVEL is followed by one or more `rx' SEXP elements.  See
           the docstring of the function `rx' for more information.  In
@@ -1102,10 +1299,15 @@ You define new syntax checkers with `flycheck-define-checker':
           An unquoted list defining the syntax checker to run after
           this checker.
 
+          Flycheck tries all items in the order of declaration, and
+          runs the first usable one.  Subsequent items are _not_ used.
+
           Each ITEM is either a syntax checker symbol or a cons cell
-          `(PREDICATE . CHECKER)'.  In the former case, the syntax
-          checker is always considered.  In the later case, CHECKER is
-          only considered if the PREDICATE matches.
+          `(PREDICATE . CHECKER)'.
+
+          In the former case, the syntax checker is usable, if it is
+          eligible for automatic selection.  In the latter case, the
+          PREDICATE must also match.
 
           PREDICATE is either `no-errors' or `warnings-only':
 
@@ -1165,9 +1367,61 @@ To make the syntax checker available for automatic selection, add it to
      syntax checker.
 
 
-File: flycheck.info,  Node: Error parsers,  Next: Option filters,  Prev: Definition,  Up: Extending
+File: flycheck.info,  Node: Error levels,  Next: Error parsers,  Prev: Definition,  Up: Extending
 
-3.2 Error parsers
+3.2 Error levels
+================
+
+Flycheck provides two built-in error levels:
+
+`error'
+     Severe errors which cannot be ignored
+
+`warning'
+     Potential errors which can be ignored
+
+`info'
+     Informational annotations
+
+   You can define your own error levels with
+`flycheck-define-error-level':
+
+ -- flycheck-define-error-level: LEVEL &rest PROPERTIES
+     Define a new error LEVEL with PROPERTIES.
+
+     The following PROPERTIES constitute an error level:
+
+    `:overlay-category CATEGORY'
+          The overlay CATEGORY for LEVEL, as symbol.
+
+          An overlay category is a symbol whose properties provide the
+          default values for overlays of this category.  *Note Overlay
+          properties: (elisp)Overlay properties, for more information
+          about overlay properties and categories.
+
+          A category for an error level overlay should at least define
+          the `face' property, for error highlighting.  Other useful
+          properties for error level categories are `priority' to
+          influence the stacking of multiple error level overlays, and
+          `help-echo' to define a default error messages for errors
+          without messages.
+
+    `:fringe-face FACE'
+          A face to use for fringe indicators for LEVEL, as symbol.
+
+    `:fringe-bitmap BITMAP'
+          A fringe bitmap to use for fringe indicators for LEVEL, as
+          symbol.
+
+          *Note Fringe Bitmaps: (elisp)Fringe Bitmaps, for a list of
+          built-in fringe bitmaps, and instructions on how to define
+          new bitmaps.
+
+
+
+File: flycheck.info,  Node: Error parsers,  Next: Option filters,  Prev: Error levels,  Up: Extending
+
+3.3 Error parsers
 =================
 
 Syntax checkers may use more sophisticated error parsing by using the
@@ -1205,7 +1459,7 @@ API::, for more information about Flycheck errors.
 
 File: flycheck.info,  Node: Option filters,  Next: Examples,  Prev: Error parsers,  Up: Extending
 
-3.3 Option filters
+3.4 Option filters
 ==================
 
 Flycheck provides the following built-in option filters for use with the
@@ -1221,7 +1475,7 @@ Flycheck provides the following built-in option filters for use with the
 
 File: flycheck.info,  Node: Examples,  Prev: Option filters,  Up: Extending
 
-3.4 Examples of syntax checkers
+3.5 Examples of syntax checkers
 ===============================
 
 * Menu:
@@ -1234,7 +1488,7 @@ File: flycheck.info,  Node: Examples,  Prev: Option filters,  Up: Extending
 
 File: flycheck.info,  Node: Simple example,  Next: Predicate example,  Prev: Examples,  Up: Examples
 
-3.4.1 Basic syntax checkers
+3.5.1 Basic syntax checkers
 ---------------------------
 
 As explained in the previous chapter *note Extending:: a syntax checker
@@ -1299,14 +1553,14 @@ these are the Python packages from the source code tree.
 patterns extract the error location and the error message from the
 output of `epylint'.  An error pattern is a list containing a regular
 expression with match groups to extract the error information, and an
-error level (either `warning' or `error').
+error level.
 
    Eventually we enable the syntax checker in `python-mode'.
 
 
 File: flycheck.info,  Node: Predicate example,  Next: Configuration example,  Prev: Simple example,  Up: Examples
 
-3.4.2 Syntax checkers with predicates
+3.5.2 Syntax checkers with predicates
 -------------------------------------
 
 In the previous examples the syntax checkers were specific to certain
@@ -1360,7 +1614,7 @@ regardless of the major mode.
 
 File: flycheck.info,  Node: Configuration example,  Next: Chaining example,  Prev: Predicate example,  Up: Examples
 
-3.4.3 Configuration files for syntax checkers
+3.5.3 Configuration files for syntax checkers
 ---------------------------------------------
 
 Some syntax checkers can be configured using configuration files given
@@ -1384,7 +1638,7 @@ configuration files:
 
    To use a configuration file with jshint, we first declare the
 variable `flycheck-jshintrc' that provides the name of the file, as
-explained in *note Configuration::.
+oexplained in *note Configuration::.
 
    In the `:command' we use a `config-file' element to pass the
 configuration file to the syntax checker.  If the configuration file is
@@ -1420,7 +1674,7 @@ checker.  This variable is declared with the special macro
 
 File: flycheck.info,  Node: Chaining example,  Prev: Configuration example,  Up: Examples
 
-3.4.4 Chaining syntax checkers
+3.5.4 Chaining syntax checkers
 ------------------------------
 
 For many languages, more than a single syntax checker is applicable.
@@ -1513,8 +1767,8 @@ Flycheck errors are represented by the CL structure `flycheck-error'.
           The human-readable error message as string.
 
     `level'
-          The severity of the error message, as either `error' or
-          `warning'.
+          The error level of the message, as symbol denoting an error
+          level defined with `flycheck-define-error-level'.
 
      There are two constructors you may use to create errors:
 
@@ -1624,10 +1878,9 @@ contribution.
 * Reporting issues::            How to report issues with Flycheck
 * Contributing syntax checkers::  How to contribute your syntax checkers
 * Contributing code::           How to contribute code
-* Unit tests::                  How to write unit tests for your code
 
 
-File: flycheck.info,  Node: Reporting issues,  Next: Contributing syntax checkers,  Up: Contribution
+File: flycheck.info,  Node: Reporting issues,  Next: Contributing syntax checkers,  Prev: Contribution,  Up: Contribution
 
 5.1 Reporting issues
 ====================
@@ -1670,10 +1923,9 @@ send us a pull request (see *note Contributing code::).
      with the syntax checker tool.
 
    * If possible, please add unit tests for your new syntax checker.
-     *Note Unit tests::.
 
 
-File: flycheck.info,  Node: Contributing code,  Next: Unit tests,  Prev: Contributing syntax checkers,  Up: Contribution
+File: flycheck.info,  Node: Contributing code,  Prev: Contributing syntax checkers,  Up: Contribution
 
 5.3 Contributing code
 =====================
@@ -1695,7 +1947,7 @@ Please contribute patches to Flycheck as pull requests on Github.
 
    * Verify your Emacs Lisp code with `checkdoc' (`C-c ? d').
 
-   * Add unit tests for your code, if possible.  *Note Unit tests::.
+   * Add unit tests for your code, if possible.
 
    * Open a pull request
      (https://help.github.com/articles/using-pull-requests) that
@@ -1713,47 +1965,6 @@ not do the following:
 You will be asked to improve your pull request in these cases.
 
 
-File: flycheck.info,  Node: Unit tests,  Prev: Contributing code,  Up: Contribution
-
-5.4 Writing unit tests
-======================
-
-Flycheck has a comprehensive to maintain and ensure the functionality
-and quality of the code.  Please add unit tests for your code if
-possible.
-
-   The test suite is contained in the `tests/' directory and written
-using the *note ERT: (ert)Top. library.
-
-   To add unit tests do the following:
-
-   * Familiarize yourself with the *note ERT: (ert)Top. library.
-
-   * Familiarize yourself with the test suite in
-     `flycheck-testsuite.el'.
-
-   * Add your tests at the appropriate.  Keep the order of tests
-     corresponding to the order of declarations in `flycheck.el'.
-
-   * Extend the provisioning script `vagrant/provision.sh' with the
-     dependencies of your tests, if necessary.  This includes syntax
-     checker tools.
-
-   * Install Virtual Box (https://www.virtualbox.org/) and Vagrant
-     (http://www.vagrantup.com/).
-
-   * Run your tests with `make virtual-test'.
-
-   You may also run the tests locally during development.  To do so:
-
-   * Install Carton (https://github.com/rejeep/carton).
-
-   * Setup your development environment with `carton install'.
-
-   * Run the tests with `tests/run.sh'.  Use `tests/run.sh flake8' to
-     run only tests whose names contain the string `flake8'.
-
-
 File: flycheck.info,  Node: Changes,  Next: Credits,  Prev: Contribution,  Up: Top
 
 Appendix A Changes
@@ -1764,6 +1975,7 @@ This appendix provides a comprehensive changelog of all releases:
 * Menu:
 
 * master        :: unreleased
+* 0.15          :: Nov 15, 2013
 * 0.14.1        :: Aug 15, 2013
 * 0.14          :: Aug 15, 2013
 * 0.13          :: Jun 28, 2013
@@ -1783,7 +1995,7 @@ This appendix provides a comprehensive changelog of all releases:
 * 0.1           :: Oct 11, 2012
 
 
-File: flycheck.info,  Node: 0.1,  Next: 0.2,  Up: Changes
+File: flycheck.info,  Node: 0.1,  Next: 0.2,  Prev: Changes,  Up: Changes
 
 0.1 (Oct 11, 2012)
 ==================
@@ -2480,7 +2692,7 @@ File: flycheck.info,  Node: 0.14,  Next: 0.14.1,  Prev: 0.13,  Up: Changes
 
 
 
-File: flycheck.info,  Node: 0.14.1,  Next: master,  Prev: 0.14,  Up: Changes
+File: flycheck.info,  Node: 0.14.1,  Next: 0.15,  Prev: 0.14,  Up: Changes
 
 0.14.1 (Aug 16, 2013)
 =====================
@@ -2492,9 +2704,9 @@ File: flycheck.info,  Node: 0.14.1,  Next: master,  Prev: 0.14,  Up: Changes
 
 
 
-File: flycheck.info,  Node: master,  Prev: 0.14.1,  Up: Changes
+File: flycheck.info,  Node: 0.15,  Next: master,  Prev: 0.14.1,  Up: Changes
 
-master (unreleased)
+0.15 (Nov 15, 2013)
 ===================
 
    * Flycheck has a new home at `https://github.com/flycheck/flycheck',
@@ -2505,10 +2717,227 @@ master (unreleased)
         * Do not add the current directory to the `emacs-lisp' syntax
           checker load path
 
-   * New features
+        * `flycheck-list-errors' cannot list errors at point anymore
+          (https://github.com/flycheck/flycheck/issues/214).  It does
+          not accept a prefix argument anymore, and takes zero
+          arguments now
+
+        * `flycheck-display-errors-in-list' is gone
+          (https://github.com/flycheck/flycheck/issues/214).  The error
+          list automatically highlights the error at point now
+
+        * Remove obsolete `flycheck-declare-checker'
+
+   * New syntax checkers:
+
+        * YAML (https://github.com/flycheck/flycheck/issues/236)
+
+        * Javascript with `gjslint'
+          (https://github.com/flycheck/flycheck/issues/245)
+
+        * Slim (https://github.com/flycheck/flycheck/issues/246)
+
+        * PHP using `phpmd'
+          (https://github.com/flycheck/flycheck/issues/249)
+
+   * New features:
 
         * Support IDO or Grizzl (https://github.com/d11wtq/grizzl) as
           completion systems for `flycheck-select-checker' at `C-c ! s'
+
+        * Disable standard error navigation with
+          `flycheck-standard-error-navigation'
+          (https://github.com/flycheck/flycheck/issues/202)
+
+        * Add `flycheck-clang-language-standard' to choose the language
+          standard for C/C++ syntax checking
+          (https://github.com/flycheck/flycheck/issues/207)
+
+        * Add `flycheck-clang-definitions' to set additional
+          definitions for C/C++ syntax checking
+          (https://github.com/flycheck/flycheck/issues/207)
+
+        * Add `flycheck-clang-no-rtti' to disable RTTI for C/C++ syntax
+          checking (https://github.com/flycheck/flycheck/issues/207)
+
+        * Add new option cell `option-flag' for boolean flags in syntax
+          checker commands
+
+        * Add `flycheck-clang-includes' to include additional files for
+          C/C++ syntax checking
+          (https://github.com/flycheck/flycheck/issues/207)
+
+        * Add configuration file variable `flycheck-pylintrc' for Pylint
+
+        * New faces `flycheck-error-list-highlight-at-point' and
+          `flycheck-error-list-highlight' to highlight the errors at
+          point and at the current line respectively in the error list
+          (https://github.com/flycheck/flycheck/issues/214)
+
+        * The error list now automatically updates to show the errors
+          of the current buffer
+          (https://github.com/flycheck/flycheck/issues/214)
+
+        * Define new error levels with `flycheck-define-error-level'
+          (https://github.com/flycheck/flycheck/issues/212)
+
+        * Add `flycheck-clang-standard-library' to choose the standard
+          library for C/C++ syntax checking
+          (https://github.com/flycheck/flycheck/issues/234)
+
+        * Customize the delay for displaying errors via
+          `flycheck-display-errors-delay'
+          (https://github.com/flycheck/flycheck/issues/243)
+
+        * Add `info' level for informational annotations by syntax
+          checkers (https://github.com/flycheck/flycheck/issues/215)
+
+        * Add a new symbol `temporary-file-name' to pass temporary file
+          names to syntax checkers
+          (https://github.com/flycheck/flycheck/issues/259)
+
+   * Improvements:
+
+        * The error list now refreshes automatically after each syntax
+          check (https://github.com/flycheck/flycheck/issues/214)
+
+        * The errors at point are now automatically highlighted in the
+          error list (https://github.com/flycheck/flycheck/issues/214)
+
+        * `emacs-lisp-checkdoc' does not longer check `.dir-locals.el'
+          files
+
+        * Do not automatically check syntax in encrypted files
+          (https://github.com/flycheck/flycheck/issues/222)
+
+        * Parse notes from `c/c++-clang' into info level messages
+          (https://github.com/flycheck/flycheck/issues/215)
+
+        * Parse convention warnings from `pylint'
+          (https://github.com/flycheck/flycheck/issues/204) to info
+          level (https://github.com/flycheck/flycheck/issues/215)
+
+        * Demote naming warnings from `python-flake8' to info level
+          (https://github.com/flycheck/flycheck/issues/215)
+
+        * Support `enh-ruby-mode' in Ruby syntax checkers
+          (https://github.com/flycheck/flycheck/issues/256)
+
+        * Parse columns from `python-pylint' errors
+
+        * Do not compress temporary files for syntax checks if the
+          original file was compressed
+
+   * Bug fixes:
+
+        * Find local includes in the Clang syntax checker
+          (https://github.com/flycheck/flycheck/issues/225)
+
+        * Do not emit spurious flawed definition warning in the `rst'
+          syntax checker
+
+        * Handle abbreviated file names in `luac' output, by simply
+          ignoring them
+          (https://github.com/flycheck/flycheck/issues/251)
+
+        * Correctly redirect the output binary of the `go-build' syntax
+          checker (https://github.com/flycheck/flycheck/issues/259)
+
+        * Fix Cppcheck parsing with the built-in Emacs XML parser
+          (https://github.com/flycheck/flycheck/issues/263)
+
+
+
+File: flycheck.info,  Node: master,  Prev: 0.15,  Up: Changes
+
+master (unreleased)
+===================
+
+   * Breaking changes:
+
+        * Argument substitution is no longer performed on syntax checker
+          executables.  The executable must be a string.
+
+        * Split out `haskell-hdevtools' into a separate package
+          (https://github.com/flycheck/flycheck/issues/275).  See
+          flycheck-hdevtools
+          (https://github.com/flycheck/flycheck-hdevtools)
+
+        * Drop support for coffeelint 0.x
+
+        * The error list is reimplemented on top of Tabulated List Mode
+          (https://github.com/flycheck/flycheck/issues/230).  This
+          greatly changes the appearance and behaviour of the error
+          list.
+
+   * New syntax checkers:
+
+        * Ruby with `ruby-lint'
+          (https://github.com/flycheck/flycheck/issues/250)
+
+        * Handlebars (https://github.com/flycheck/flycheck/issues/270)
+
+        * YAML with `yaml-jsyaml'
+          (https://github.com/flycheck/flycheck/issues/253)
+
+        * Chef recipes with `foodcritic'
+          (https://github.com/flycheck/flycheck/issues/255)
+
+        * AsciiDoc (https://github.com/flycheck/flycheck/issues/276)
+
+        * CFEngine (https://github.com/flycheck/flycheck/issues/271)
+
+        * Racket (https://github.com/flycheck/flycheck/issues/277)
+
+        * Texinfo
+
+   * New features:
+
+        * Define variables to override the executables of syntax
+          checkers (https://github.com/flycheck/flycheck/issues/272)
+
+        * Interactively set the executable of a syntax checker with
+          `flycheck-set-checker-executable'
+          (https://github.com/flycheck/flycheck/issues/272)
+
+        * Disable syntax checkers easily with
+          `flycheck-disabled-checkers'
+          (https://github.com/flycheck/flycheck/issues/269)
+
+        * Add support for the Compass CSS framework in the `sass' and
+          `scss' checkers, with `flycheck-sass-compass' and
+          `flycheck-scss-compass' respectively
+          (https://github.com/flycheck/flycheck/issues/268)
+
+        * Disable style checks in `ruby-rubocop' with
+          `flycheck-rubocop-lint-only'
+          (https://github.com/flycheck/flycheck/issues/287)
+
+        * Add support for Microsoft extensions in `c/c++-clang' via
+          `flycheck-clang-ms-extensions'
+          (https://github.com/flycheck/flycheck/issues/283)
+
+        * New faces `flycheck-error-list-info',
+          `flycheck-error-list-warning', `flycheck-error-list-error',
+          `flycheck-error-list-line-number' and
+          `flycheck-error-list-column-number'
+          (https://github.com/flycheck/flycheck/issues/230)
+
+   * Improvements:
+
+        * Demote Rubocop convention messages to `info' level
+
+        * Stop Flycheck before the buffer is reverted
+          (https://github.com/flycheck/flycheck/issues/282)
+
+        * Properly resolve local module imports in `haskell-ghc'
+
+   * Bug fixes:
+
+        * Make relative imports work with `python-pylint'
+          (https://github.com/flycheck/flycheck/issues/280)
+
+        * Fix parsing of errors in `scss' and `sass'
 
 
 
@@ -2517,8 +2946,10 @@ File: flycheck.info,  Node: Credits,  Next: GNU Free Documentation License,  Pre
 Appendix B Credits
 ******************
 
-The following people contributed to Flycheck.  Their help and ideas,
-their support and patches are greatly appreciated.
+Flycheck is written and maintained by Sebastian Wiesner
+(https://github.com/lunaryorn), with contributions from the following
+people.  Their help and ideas, their support and patches are greatly
+appreciated.
 
    * Bozhidar Batsov (https://github.com/bbatsov) provided valuable
      feedback and refinements, brought Flycheck to a larger user base
@@ -2531,6 +2962,9 @@ their support and patches are greatly appreciated.
 
    * David Holm (https://github.com/dholm) added C/C++ syntax and style
      checkers using `clang' and `cppcheck' respectively.
+
+   * Gereon Frey (https://github.com/gfrey) fixed the `go-build' syntax
+     checker and improve its tests.
 
    * Jimmy Yuen Ho Wong (https://github.com/wyuenho) added the HTML
      syntax checker and the jshint Javascript checker, and did valuable
@@ -2558,6 +2992,9 @@ their support and patches are greatly appreciated.
    * Matthias Dahl (https://github.com/BinaryKhaos) improved the
      performance of Flycheck's temp file handling.
 
+   * Mitch Tishmack (https://github.com/mitchty) added support for
+     Microsoft extensions to the Clang syntax checker.
+
    * Peter Vasil (https://github.com/ptrv) contributed syntax checkers
      for XML, Lua and Go (using `go build' and `go test'), added unit
      tests and did valuable testing.
@@ -2576,19 +3013,27 @@ their support and patches are greatly appreciated.
      API and engaged in worthwhile discussion to shape this project.
 
    * Sylvain Benner (https://github.com/syl20bnr) added syntax checkers
-     for Elixir and Erlang, and wrote the cool
-     flycheck-color-mode-line.el
-     (https://github.com/syl20bnr/flycheck-color-mode-line) extension.
+     for Elixir and Erlang, and wrote the cool flycheck-color-mode-line
+     (https://github.com/flycheck/flycheck-color-mode-line) extension.
 
    * Sylvain Rousseau (https://github.com/thisirs) added a syntax
      checker for POSIX shell script using `bash', and improved error
      parsing in the Bash script syntax checker.
 
+   * Ted Zlatanov (https://github.com/tzz) added a syntax checker for
+     CFEngine.
+
    * tom tan (https://github.com/tom-tan) added a syntax checker for
-     the D programming language using `dmd'.
+     the D programming language using `dmd', and wrote the cool
+     flycheck-d-unittest
+     (https://github.com/flycheck/flycheck-d-unittest) extension.
 
    * Yannick Roehlly (https://github.com/yannick1974) added support for
      PEP8 naming errors to the Flake8 syntax checker.
+
+   * Yasuyuki Oka (https://github.com/yasuyk) contribute a lot of
+     syntax checkers for various languages, including AsciiDoc, Chef
+     recipes, Handlebars, Javascript, PHP, Racket, Ruby, Slim and YAML.
 
    * Victor Deryagin (https://github.com/vderyagin) added the Rust
      syntax checker.
@@ -3092,11 +3537,17 @@ Appendix D Available syntax checkers
 The following syntax checkers are included in Flycheck, listed in the
 order of their appearance in the default value of `flycheck-checkers':
 
+   * `asciidoc'
+
    * `bash'
 
    * `c/c++-clang'
 
    * `c/c++-cppcheck'
+
+   * `cfengine'
+
+   * `chef-foodcritic'
 
    * `coffee'
 
@@ -3122,7 +3573,7 @@ order of their appearance in the default value of `flycheck-checkers':
 
    * `haml'
 
-   * `haskell-hdevtools'
+   * `handlebars'
 
    * `haskell-ghc'
 
@@ -3131,6 +3582,8 @@ order of their appearance in the default value of `flycheck-checkers':
    * `html-tidy'
 
    * `javascript-jshint'
+
+   * `javascript-gjslint'
 
    * `json-jsonlint'
 
@@ -3142,6 +3595,8 @@ order of their appearance in the default value of `flycheck-checkers':
 
    * `php'
 
+   * `php-phpmd'
+
    * `php-phpcs'
 
    * `puppet-parser'
@@ -3152,9 +3607,13 @@ order of their appearance in the default value of `flycheck-checkers':
 
    * `python-pylint'
 
+   * `racket'
+
    * `rst'
 
    * `ruby-rubocop'
+
+   * `ruby-rubylint'
 
    * `ruby'
 
@@ -3172,13 +3631,21 @@ order of their appearance in the default value of `flycheck-checkers':
 
    * `sh-bash'
 
+   * `slim'
+
    * `tex-chktex'
 
    * `tex-lacheck'
 
+   * `texinfo'
+
    * `xml-xmlstarlet'
 
    * `xml-xmllint'
+
+   * `yaml-jsyaml'
+
+   * `yaml-ruby'
 
    * `zsh'
 
@@ -3198,28 +3665,36 @@ Type, Function and Variable Definition Index
 * flycheck-before-syntax-check-hook:     Syntax checking.     (line 104)
 * flycheck-buffer:                       Syntax checking.     (line  61)
 * flycheck-check-syntax-automatically:   Syntax checking.     (line  18)
-* flycheck-checker:                      Selection.           (line  64)
-* flycheck-checkers:                     Selection.           (line  10)
-* flycheck-chktexrc:                     Configuration.       (line  57)
-* flycheck-clang-include-path:           Configuration.       (line  11)
-* flycheck-clang-warnings:               Configuration.       (line  14)
-* flycheck-clear:                        Reporting.           (line 147)
-* flycheck-coffeelintrc:                 Configuration.       (line  60)
-* flycheck-completion-system:            Selection.           (line  47)
-* flycheck-copy-messages-as-kill:        Reporting.           (line 130)
+* flycheck-checker:                      Selection.           (line  81)
+* flycheck-checkers:                     Selection.           (line  11)
+* flycheck-chktexrc:                     Configuration.       (line 122)
+* flycheck-clang-definitions:            Configuration.       (line  43)
+* flycheck-clang-include-path:           Configuration.       (line  46)
+* flycheck-clang-includes:               Configuration.       (line  49)
+* flycheck-clang-language-standard:      Configuration.       (line  52)
+* flycheck-clang-ms-extensions:          Configuration.       (line  55)
+* flycheck-clang-no-rtti:                Configuration.       (line  58)
+* flycheck-clang-standard-library:       Configuration.       (line  61)
+* flycheck-clang-warnings:               Configuration.       (line  64)
+* flycheck-clear:                        Reporting.           (line 156)
+* flycheck-coffeelintrc:                 Configuration.       (line 125)
+* flycheck-completion-system:            Selection.           (line  66)
+* flycheck-copy-messages-as-kill:        Reporting.           (line 139)
 * flycheck-count-errors:                 Error API.           (line 110)
-* flycheck-cppcheck-checks:              Configuration.       (line  17)
+* flycheck-cppcheck-checks:              Configuration.       (line  67)
 * flycheck-current-errors:               Error API.           (line 106)
-* flycheck-def-config-file-var:          Definition.          (line 281)
-* flycheck-def-option-var:               Definition.          (line 297)
+* flycheck-def-config-file-var:          Definition.          (line 332)
+* flycheck-def-option-var:               Definition.          (line 348)
 * flycheck-define-checker:               Definition.          (line   9)
-* flycheck-describe-checker:             Selection.           (line  92)
-* flycheck-display-error-messages:       Reporting.           (line 110)
-* flycheck-display-errors-function:      Reporting.           (line 101)
-* flycheck-display-errors-in-list:       Reporting.           (line 118)
-* flycheck-emacs-lisp-initialize-packages: Configuration.     (line  20)
-* flycheck-emacs-lisp-load-path:         Configuration.       (line  29)
-* flycheck-emacs-lisp-package-user-dir:  Configuration.       (line  39)
+* flycheck-describe-checker:             Selection.           (line 109)
+* flycheck-disabled-checkers:            Selection.           (line  31)
+* flycheck-display-error-messages:       Reporting.           (line 119)
+* flycheck-display-errors-delay:         Reporting.           (line 103)
+* flycheck-display-errors-function:      Reporting.           (line 110)
+* flycheck-display-errors-in-list:       Reporting.           (line 127)
+* flycheck-emacs-lisp-initialize-packages: Configuration.     (line  70)
+* flycheck-emacs-lisp-load-path:         Configuration.       (line  79)
+* flycheck-emacs-lisp-package-user-dir:  Configuration.       (line  89)
 * flycheck-error <1>:                    Error API.           (line  11)
 * flycheck-error:                        Reporting.           (line  18)
 * flycheck-error-column-region:          Error API.           (line  81)
@@ -3230,84 +3705,99 @@ Type, Function and Variable Definition Index
 * flycheck-error-pos:                    Error API.           (line  94)
 * flycheck-error-sexp-region:            Error API.           (line  87)
 * flycheck-error-with-buffer:            Error API.           (line  74)
-* flycheck-flake8-maximum-complexity:    Configuration.       (line  42)
-* flycheck-flake8-maximum-line-length:   Configuration.       (line  46)
-* flycheck-flake8rc:                     Configuration.       (line  63)
+* flycheck-flake8-maximum-complexity:    Configuration.       (line  92)
+* flycheck-flake8-maximum-line-length:   Configuration.       (line  96)
+* flycheck-flake8rc:                     Configuration.       (line 128)
 * flycheck-fringe-error:                 Reporting.           (line  56)
 * flycheck-fringe-warning:               Reporting.           (line  57)
-* flycheck-google-messages:              Reporting.           (line 135)
+* flycheck-gjslintrc:                    Configuration.       (line 131)
+* flycheck-google-messages:              Reporting.           (line 144)
 * flycheck-has-errors-p:                 Error API.           (line 115)
 * flycheck-highlighting-mode:            Reporting.           (line  32)
 * flycheck-idle-change-delay:            Syntax checking.     (line  47)
 * flycheck-indication-mode:              Reporting.           (line  61)
-* flycheck-jshintrc:                     Configuration.       (line  66)
+* flycheck-jshintrc:                     Configuration.       (line 134)
 * flycheck-list-errors:                  Reporting.           (line  90)
-* flycheck-locate-config-file-functions: Configuration.       (line  90)
-* flycheck-next-error:                   Navigation.          (line  23)
+* flycheck-locate-config-file-functions: Configuration.       (line 150)
+* flycheck-next-error:                   Navigation.          (line  36)
 * flycheck-parse-xml-string:             Error parser API.    (line   7)
-* flycheck-phpcs-standard:               Configuration.       (line  50)
-* flycheck-previous-error:               Navigation.          (line  31)
+* flycheck-phpcs-standard:               Configuration.       (line 100)
+* flycheck-phpmd-rulesets:               Configuration.       (line 103)
+* flycheck-previous-error:               Navigation.          (line  44)
 * flycheck-process-error-functions:      Reporting.           (line  74)
-* flycheck-rubocoprc:                    Configuration.       (line  69)
-* flycheck-select-checker:               Selection.           (line  35)
+* flycheck-pylintrc:                     Configuration.       (line 137)
+* flycheck-rubocop-lint-only:            Configuration.       (line 106)
+* flycheck-rubocoprc:                    Configuration.       (line 140)
+* flycheck-sass-compass:                 Configuration.       (line 109)
+* flycheck-scss-compass:                 Configuration.       (line 112)
+* flycheck-select-checker:               Selection.           (line  53)
+* flycheck-set-checker-executable:       Configuration.       (line  27)
+* flycheck-standard-error-navigation:    Navigation.          (line  17)
 * flycheck-syntax-check-failed-hook:     Syntax checking.     (line 120)
-* flycheck-tidyrc:                       Configuration.       (line  72)
+* flycheck-tidyrc:                       Configuration.       (line 143)
 * flycheck-warning:                      Reporting.           (line  19)
+* LEVEL:                                 Error levels.        (line  21)
 
 
 
 Tag Table:
-Node: Top836
-Node: Introduction2203
-Node: Features3143
-Node: Installation5531
-Node: Activation7122
-Node: Usage7473
-Node: Syntax checking8096
-Node: Selection12562
-Node: Configuration15688
-Node: Reporting20456
-Node: Navigation25754
-Node: Mode line27416
-Node: Extending28322
-Node: Definition28938
-Node: Error parsers43055
-Node: Option filters44188
-Node: Examples44610
-Node: Simple example45042
-Node: Predicate example48223
-Node: Configuration example50347
-Node: Chaining example52989
-Node: API54416
-Node: Error API55204
-Node: Error parser API59401
-Node: Contribution59627
-Node: Reporting issues60305
-Node: Contributing syntax checkers61117
-Node: Contributing code61914
-Node: Unit tests63261
-Node: Changes64599
-Node: 0.165375
-Node: 0.265665
-Node: 0.365943
-Node: 0.466178
-Node: 0.566955
-Node: 0.668172
-Node: 0.6.171022
-Node: 0.771171
-Node: 0.7.172187
-Node: 0.872905
-Node: 0.974420
-Node: 0.1074917
-Node: 0.1176976
-Node: 0.1278164
-Node: 0.1379172
-Node: 0.1482067
-Node: 0.14.185889
-Node: master86128
-Node: Credits86656
-Node: GNU Free Documentation License90086
-Node: Syntax checkers115259
-Node: Definition Index116503
+Node: Top837
+Node: Introduction2210
+Node: Features3150
+Node: Installation6294
+Node: Activation7942
+Node: Usage8473
+Node: Syntax checking9096
+Node: Selection13562
+Node: Configuration17351
+Node: Reporting24809
+Node: Navigation30507
+Node: Mode line32723
+Node: Extending33629
+Node: Definition34353
+Node: Error levels50168
+Node: Error parsers51831
+Node: Option filters52966
+Node: Examples53388
+Node: Simple example53820
+Node: Predicate example56971
+Node: Configuration example59095
+Node: Chaining example61738
+Node: API63165
+Node: Error API63953
+Node: Error parser API68193
+Node: Contribution68419
+Node: Reporting issues69027
+Node: Contributing syntax checkers69860
+Node: Contributing code70632
+Node: Changes71939
+Node: 0.172747
+Node: 0.273053
+Node: 0.373331
+Node: 0.473566
+Node: 0.574343
+Node: 0.675560
+Node: 0.6.178410
+Node: 0.778559
+Node: 0.7.179575
+Node: 0.880293
+Node: 0.981808
+Node: 0.1082305
+Node: 0.1184364
+Node: 0.1285552
+Node: 0.1386560
+Node: 0.1489455
+Node: 0.14.193277
+Node: 0.1593514
+Node: master98941
+Node: Credits102067
+Node: GNU Free Documentation License106213
+Node: Syntax checkers131386
+Node: Definition Index132830
 
 End Tag Table
+
+
+Local Variables:
+coding: utf-8
+End:
