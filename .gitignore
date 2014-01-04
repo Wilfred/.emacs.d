@@ -14,4 +14,4 @@ third-party-lisp/pylookup/*.zip
 eshell/history
 eshell/lastdir
 elpa/*.txt
-elpa/**/archive-contents
+elpa/archives
