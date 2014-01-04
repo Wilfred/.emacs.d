@@ -95,7 +95,7 @@ backward."
         (sp-beginning-of-sexp arg)
       (sp-beginning-of-sexp (1- (- (prefix-numeric-value arg)))))))
 
-(defun sp-html-post-handler (id action context)
+(defun sp-html-post-handler (&optional id action context)
   (cl-case action
     (slurp-forward
      (save-excursion
@@ -160,12 +160,12 @@ backward."
      (when (sp--looking-back-p "^[ \t]*" nil t)
        (sp-previous-sexp)))))
 
-(sp-with-modes '(
-                 sgml-mode
-                 html-mode
-                 )
+(sp-with-modes sp--html-modes
   (sp-local-pair "<" ">")
   (sp-local-tag  "<" "<_>" "</_>" :transform 'sp-match-sgml-tags :post-handlers '(sp-html-post-handler)))
+
+(--each sp--html-modes
+  (add-to-list 'sp-navigate-consider-sgml-tags it))
 
 (provide 'smartparens-html)
 
