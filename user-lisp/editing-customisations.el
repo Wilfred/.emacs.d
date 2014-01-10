@@ -28,6 +28,14 @@ Ignores CHAR at point."
 ;; bind it to the usual zap-to-char shortcut
 (global-set-key (kbd "M-z") 'zap-up-to-char)
 
+(defun zap-up-to-non-whitespace ()
+  "Zap up to, but not including, the first non-whitespace character."
+  (interactive)
+  (while (looking-at (rx (or "\n" (char space))))
+    (delete-char 1)))
+
+;; Bind it to a similar keybinding to zap-up-to-char.
+(global-set-key (kbd "M-Z") 'zap-up-to-non-whitespace)
 
 ;; kill-word is less useful than kill-symbol
 (autoload 'forward-symbol "thingatpt")
