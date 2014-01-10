@@ -742,6 +742,7 @@ medium size (a few hundred LOC) files with many strings. Smartparens
 is the best solution.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'smartparens-config)
   (add-hook 'python-mode-hook 'smartparens-mode)
 #+END_SRC
 
