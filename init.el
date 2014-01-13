@@ -7,7 +7,6 @@
   (call-interactively 'org-export-as-html)
   (call-interactively 'org-babel-tangle))
 
-
 (setq org-export-html-style-extra "<link rel=\"stylesheet\" type=\"text/css\" href=\"init.css\" />")
 
 (add-to-list 'load-path "~/.emacs.d/user-lisp/")
@@ -21,7 +20,6 @@
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
 
 (package-initialize)
-
 
 ;; load the packages we've installed on another system but pulled in with git, so they aren't compiled
 (eval-when-compile '(require 'cl))
@@ -464,7 +462,6 @@ If a prefix argument is given, don't change the kill-ring."
 
 (require 'f)
 (require 's)
-
 
 (defun download-file (url directory file-name)
   "Download the file at URL into DIRECTORY.
