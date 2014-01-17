@@ -13,10 +13,7 @@
 
 (add-to-list 'load-path "~/.emacs.d/third-party-lisp/")
 
-; marmalade is a third party repo that anyone can submit to, so has
-; many more packages
 (require 'package)
-(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
 
 (package-initialize)
@@ -480,4 +477,3 @@ The FILE-NAME defaults to the one used in the URL."
   (let ((destination (f-join directory file-name)))
     (url-copy-file url destination 't)
     (find-file destination)))
-
