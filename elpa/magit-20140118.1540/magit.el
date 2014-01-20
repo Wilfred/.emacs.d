@@ -1,6 +1,6 @@
 ;;; magit.el --- control Git from Emacs
 
-;; Copyright (C) 2008-2013  The Magit Project Developers.
+;; Copyright (C) 2008-2014  The Magit Project Developers
 ;;
 ;; For a full list of contributors, see the AUTHORS.md file
 ;; at the top-level directory of this distribution and at
@@ -173,8 +173,8 @@ Also set the local value in all Magit buffers and refresh them.
 
 (defgroup magit nil
   "Controlling Git from Emacs."
-  :prefix "magit-"
-  :group 'tools)
+  :group 'tools
+  :prefix "magit-")
 
 (when (featurep 'git-commit-mode)
   (custom-add-to-group 'magit 'git-commit 'custom-group)
@@ -233,6 +233,7 @@ If no executable can be located then nil becomes the default
 value, and some important Magit commands will fallback to an
 alternative code path.  However `magit-interactive-rebase'
 will stop working at all."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type '(choice (string :tag "Executable")
                  (const :tag "Don't use Emacsclient" nil)))
@@ -251,6 +252,7 @@ needed when using Cygwin Git but not when using stand-alone Git.
 The default value is set based on that assumptions.  If this
 turns out to be wrong you can customize this option but please
 also comment on issue #816."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :set-after '(magit-git-executable)
   :type 'boolean)
@@ -270,16 +272,21 @@ deep."
   :group 'magit
   :type 'integer)
 
+(defcustom magit-push-hook '(magit-push-dwim)
+  "Hook run by `magit-push' to actually do the work.
+See `magit-push' and `magit-push-dwim' for more information."
+  :package-version '(magit . "2.0.0")
+  :group 'magit
+  :type 'hook)
+
 (defcustom magit-set-upstream-on-push nil
-  "Whether `magit-push' may use --set-upstream when pushing a branch.
+  "Whether `magit-push' may set upstream when pushing a branch.
 This only applies if the branch does not have an upstream set yet.
 
 nil        don't use --set-upstream.
 t          ask if --set-upstream should be used.
 `dontask'  always use --set-upstream.
-`refuse'   refuse to push unless a remote branch has already been set.
-
---set-upstream is supported with git > 1.7.0"
+`refuse'   refuse to push unless a remote branch has already been set."
   :group 'magit
   :type '(choice (const :tag "Never" nil)
                  (const :tag "Ask" t)
@@ -296,6 +303,7 @@ Alternatively you might want to set this to nil and instead
 enable `global-auto-revert-mode'.  Also consider additionally
 setting option `auto-revert-check-vc-info' to t.  Also see
 function `magit-maybe-turn-on-auto-revert-mode'."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type 'boolean)
 
@@ -335,21 +343,21 @@ which generates a tracking name of the form \"REMOTE-BRANCHNAME\"."
 
 (defcustom magit-commit-ask-to-stage t
   "Whether to ask to stage everything when committing and nothing is staged."
+  :package-version '(magit . "2.0.0")
   :group 'magit
-  :type 'boolean
-  :package-version '(magit . "1.3.0"))
+  :type 'boolean)
 
 (defcustom magit-commit-extend-override-date nil
   "Whether using `magit-commit-extend' changes the committer date."
+  :package-version '(magit . "2.0.0")
   :group 'magit
-  :type 'boolean
-  :package-version '(magit . "1.3.0"))
+  :type 'boolean)
 
 (defcustom magit-commit-reword-override-date nil
   "Whether using `magit-commit-reword' changes the committer date."
+  :package-version '(magit . "2.0.0")
   :group 'magit
-  :type 'boolean
-  :package-version '(magit . "1.3.0"))
+  :type 'boolean)
 
 (defcustom magit-commit-squash-commit nil
   "Whether to target the marked or current commit when squashing.
@@ -362,6 +370,7 @@ used with a prefix argument, in which case this option is ignored.
 Otherwise this controls which commit to target, either the
 current or marked commit.  Or if both can be used, which should
 be preferred."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type
   '(choice
@@ -369,22 +378,22 @@ be preferred."
     (const :tag "Prefer current commit, else use marked" current-or-marked)
     (const :tag "Prefer marked commit, else use current" marked-or-current)
     (const :tag "Use current commit, if any" current)
-    (const :tag "Use marked commit, if any" marked))
-  :package-version '(magit . "1.3.0"))
+    (const :tag "Use marked commit, if any" marked)))
 
 (defcustom magit-show-xref-buttons '(magit-diff-mode magit-commit-mode)
   "List of modes whose buffers may should contain history buttons.
 Currently only `magit-diff-mode' and `magit-commit-mode' are
 supported."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type '(repeat (choice (const magit-diff-mode)
                          (const magit-commit-mode))))
 
 (defcustom magit-merge-warn-dirty-worktree t
   "Whether to issue a warning when attempting to start a merge in a dirty worktree."
+  :package-version '(magit . "2.0.0")
   :group 'magit
-  :type 'boolean
-  :package-version '(magit . "1.3.0"))
+  :type 'boolean)
 
 (defcustom magit-sha1-abbrev-length 7
   "The number of digits to show when a sha1 is displayed in abbreviated form."
@@ -415,6 +424,7 @@ The function is called with one argument, the propertized graph
 of a single line in as a string.  It has to return the formatted
 string.  This option can also be nil, in which case the graph is
 inserted as is."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type '(choice (const :tag "insert as is" nil)
                  function))
@@ -424,6 +434,7 @@ inserted as is."
 When non-nil the author name and date are displayed in the margin
 of the log buffer if that contains a `oneline' log.  This can be
 toggled temporarily using the command `magit-log-toggle-margin'."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type 'boolean)
 
@@ -450,6 +461,7 @@ CHARACTERP is non-nil time units are shown as single characters,
 otherwise the full name of the unit is displayed.  DURATION-SPEC
 has to be a variable, its value controls which time units are
 used, how many seconds they contain, and what their names are."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type '(list (integer  :tag "Margin width")
                (choice   :tag "Time unit style"
@@ -472,6 +484,7 @@ is the time unit, UNITS is the plural of that unit.  CHAR is a
 character that can be used as abbreviation and must be unique
 amoung all elements.  SECONDS is the number of seconds in one
 UNIT.  Also see option `magit-log-margin-spec'."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type '(repeat (list (character :tag "Unit character")
                        (string    :tag "Unit singular string")
@@ -480,6 +493,7 @@ UNIT.  Also see option `magit-log-margin-spec'."
 
 (defcustom magit-log-show-gpg-status nil
   "Display signature verification information as part of the log."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type 'boolean)
 
@@ -488,6 +502,7 @@ UNIT.  Also see option `magit-log-margin-spec'."
     magit-insert-empty-line
     magit-insert-wazzup-branches)
   "Hook run to insert sections into the wazzup buffer."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type 'hook)
 
@@ -498,6 +513,7 @@ UNIT.  Also see option `magit-log-margin-spec'."
     magit-insert-empty-line
     magit-insert-cherry-commits)
   "Hook run to insert sections into the cherry buffer."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type 'hook)
 
@@ -536,6 +552,7 @@ with the `magit-insert-' prefix but do not insert a section.
 
 Note that there are already plans to improve this and to add
 similar hooks for other Magit modes."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type 'hook)
 
@@ -556,9 +573,18 @@ or objects in these sentences.
 
 If the value is `tag' the commit counts are fontified; otherwise
 they are not (due to semantic considerations)."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type '(choice (const :tag "tags are the subjects" tag)
                  (const :tag "head is the subject" head)))
+
+(defcustom magit-status-show-sequence-help t
+  "Whether to show instructions on how to proceed a stopped action.
+When this is non-nil and a commit failed to apply during a merge
+or rebase, then show instructions on how to continue."
+  :package-version '(magit . "2.0.0")
+  :group 'magit
+  :type 'boolean)
 
 (defcustom magit-process-popup-time -1
   "Popup the process buffer if a command takes longer than this many seconds."
@@ -572,6 +598,7 @@ they are not (due to semantic considerations)."
 When adding a new section would go beyond the limit set here,
 then the older half of the sections are remove.  Sections that
 belong to processes that are still running are never removed."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type 'integer)
 
@@ -581,7 +608,7 @@ This reduces the risk of accidentally losing the index.  If
 nothing at all is staged yet, then always stage without requiring
 confirmation, because it can be undone without the risk of losing
 a carefully crafted index."
-  :package-version '(magit . "1.3.0")
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type 'boolean)
 
@@ -591,12 +618,13 @@ This reduces the risk of accidentally losing of the index.  If
 there are no staged changes at all, then always unstage without
 confirmation, because it can be undone without the risk of losing
 a carefully crafted index."
-  :package-version '(magit . "1.3.0")
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type 'boolean)
 
 (defcustom magit-show-child-count nil
   "Whether to append the number of childen to section headings."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type 'boolean)
 
@@ -614,10 +642,10 @@ completion.
 
 `remote-slash-branch'  Format refs as \"remote/branch\".
 `branch-then-remote'   Format refs as \"branch (remote)\"."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type '(choice (const :tag "branch (remote)" branch-then-remote)
-                 (const :tag "remote/branch" remote-slash-branch))
-  :package-version '(magit . "1.3.0"))
+                 (const :tag "remote/branch" remote-slash-branch)))
 
 (defcustom magit-process-connection-type (not (eq system-type 'cygwin))
   "Connection type used for the git process.
@@ -631,6 +659,7 @@ If t, use ptys: this enables magit to prompt for passphrases when needed."
 (defcustom magit-process-yes-or-no-prompt-regexp
    " [\[(]\\([Yy]\\(?:es\\)?\\)[/|]\\([Nn]o?\\)[\])] ?[?:] ?$"
   "Regexp matching Yes-or-No prompts of git and its subprocesses."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type 'regexp)
 
@@ -640,12 +669,14 @@ If t, use ptys: this enables magit to prompt for passphrases when needed."
     "^.*'s password: ?$"
     "^Yubikey for .*: ?$")
   "List of regexps matching password prompts of git and its subprocesses."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type '(repeat (regexp)))
 
 (defcustom magit-process-username-prompt-regexps
   '("^Username for '.*': ?$")
   "List of regexps matching username prompts of git and its subprocesses."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type '(repeat (regexp)))
 
@@ -664,6 +695,7 @@ If t, use ptys: this enables magit to prompt for passphrases when needed."
 It should take one argument (a buffer) and display and select it.
 A common value is `pop-to-buffer'.  It can also be nil in which
 case the selected window is used."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type magit-server-window-type)
 
@@ -672,9 +704,10 @@ case the selected window is used."
 It should take one argument (a buffer) and display and select it.
 A common value is `pop-to-buffer'.  It can also be nil in which
 case the selected window is used."
+  :package-version '(magit . "2.0.0")
   :group 'magit
-  :type magit-server-window-type
-  :set-after '(server-window))
+  :set-after '(server-window)
+  :type magit-server-window-type)
 
 (defcustom magit-completing-read-function 'magit-builtin-completing-read
   "Function to be called when requesting input from the user."
@@ -709,6 +742,7 @@ to undesirable behaviour.  Also quitting a Magit buffer while
 another Magit buffer that was created earlier is still displayed
 will cause that buffer to be hidden, which might or might not be
 what you want."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type 'boolean)
 
@@ -740,17 +774,17 @@ See `magit-highlight-trailing-whitespace',
 `magit-highlight-indentation'.  The symbol t means in all diffs,
 `status' means only in the status buffer, and nil means nowhere."
   :group 'magit
+  :set 'magit-set-variable-and-refresh
   :type '(choice (const :tag "Always" t)
                  (const :tag "Never" nil)
-                 (const :tag "In status buffer" status))
-  :set 'magit-set-variable-and-refresh)
+                 (const :tag "In status buffer" status)))
 
 (defcustom magit-highlight-trailing-whitespace t
   "Whether to highlight whitespace at the end of a line in diffs.
 Used only when `magit-highlight-whitespace' is non-nil."
   :group 'magit
-  :type 'boolean
-  :set 'magit-set-variable-and-refresh)
+  :set 'magit-set-variable-and-refresh
+  :type 'boolean)
 
 (defcustom magit-highlight-indentation nil
   "Highlight the \"wrong\" indentation style.
@@ -766,11 +800,11 @@ If the value is `tabs', highlight indentation with tabs.  If the
 value is an integer, highlight indentation with at least that
 many spaces.  Otherwise, highlight neither."
   :group 'magit
+  :set 'magit-set-variable-and-refresh
   :type `(repeat (cons (string :tag "Directory regexp")
                        (choice (const :tag "Tabs" tabs)
                                (integer :tag "Spaces" :value ,tab-width)
-                               (const :tag "Neither" nil))))
-  :set 'magit-set-variable-and-refresh)
+                               (const :tag "Neither" nil))))) ;^FIXME
 
 (defcustom magit-refs-namespaces
   '(("^\\(HEAD\\)$"              magit-log-head-label-head nil)
@@ -799,6 +833,7 @@ to return a propertized label that represents the ref.
 
 Currently this variable is only used in logs and the branch
 manager but it will be used in more places in the future."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type '(repeat
           (list regexp
@@ -807,7 +842,8 @@ manager but it will be used in more places in the future."
                         (function :tag "format using function")))))
 
 (defcustom magit-show-diffstat t
-  "Whether to shod diffstat in diff and commit buffers."
+  "Whether to show diffstat in diff and commit buffers."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type 'boolean)
 
@@ -825,7 +861,9 @@ access repositories on a system with such a version.  If you see
 whitespace where you would have expected a diff, this likely is
 the cause, and the only (currently) workaround is to not make the
 problematic option a member of the default value."
+  :package-version '(magit . "2.0.0")
   :group 'magit
+  :set 'magit-set-default-diff-options
   :type '(set :greedy t
               (const :tag
                      "--minimal              Show smallest possible diff"
@@ -844,8 +882,7 @@ problematic option a member of the default value."
                      "--ignore-all-space")
               (const :tag
                      "--function-context     Show surrounding functions"
-                     "--function-context"))
-  :set 'magit-set-default-diff-options)
+                     "--function-context")))
 
 (put 'magit-diff-options 'permanent-local t)
 
@@ -884,7 +921,7 @@ One reason you might want to *not* use the background, is that
 doing so forces the use of overlays for some components of diffs.
 Using overlays potentially degrades performance when generating
 large diffs.  Also see option `magit-diff-use-overlays'."
-  :package-version '(magit . "1.3.0")
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type '(choice (const magit-item-highlight)
                  (const bold)
@@ -906,10 +943,10 @@ To select the face used for highlighting customize the option
 other face that does not use the background then you can set this
 option to nil.  Doing so could potentially improve performance
 when generating large diffs."
-  :package-version '(magit . "1.3.0")
+  :package-version '(magit . "2.0.0")
   :group 'magit
-  :type 'boolean
-  :set-after '(magit-item-highlight-face))
+  :set-after '(magit-item-highlight-face)
+  :type 'boolean)
 
 (defcustom magit-expand-staged-on-commit nil
   "Whether to expand staged changes when creating a commit.
@@ -922,6 +959,7 @@ In the event that expanding very large patches takes a long time
 \\<global-map>\\[keyboard-quit] can be used to abort that step.
 This is especially useful when you would normally not look at the
 changes, e.g. because you are committing some binary files."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type '(choice (const :tag "Expand all subsections" full)
                  (const :tag "Expand top section" t)
@@ -932,6 +970,7 @@ changes, e.g. because you are committing some binary files."
 Currently this is used only in the log margin, but might later
 be used elsewhere too.  Filenames that were abbreviated by Git
 are left as-is."
+  :package-version '(magit . "2.0.0")
   :group 'magit
   :type 'character)
 
@@ -1871,6 +1910,25 @@ the current git repository."
     (when (and head (string-match "^refs/heads/" head))
       (substring head 11))))
 
+(defun magit-get-remote/branch (&optional branch verify)
+  "Return the remote-tracking branch of BRANCH used for pulling.
+Return a string of the form \"REMOTE/BRANCH\".
+
+If optional BRANCH is nil return the remote-tracking branch of
+the current branch.  If optional VERIFY is non-nil verify that
+the remote branch exists; else return nil."
+  (save-match-data
+    (let (remote remote-branch remote/branch)
+      (and (or branch (setq branch (magit-get-current-branch)))
+           (setq remote (magit-get "branch" branch "remote"))
+           (setq remote-branch (magit-get "branch" branch "merge"))
+           (string-match "^refs/heads/\\(.+\\)" remote-branch)
+           (setq remote/branch
+                 (concat remote "/" (match-string 1 remote-branch)))
+           (or (not verify)
+               (magit-git-success "rev-parse" "--verify" remote/branch))
+           remote/branch))))
+
 (defun magit-get-tracked-branch (&optional branch qualified pretty)
   "Return the name of the tracking branch the local branch name BRANCH.
 
@@ -2160,7 +2218,7 @@ involving HEAD."
         (l (1- (length (magit-git-lines "stash" "list")))))
     (if (> n l)
         (error "No stash older than stash@{%i}" l)
-      (format "stash@{%i}" l))))
+      (format "stash@{%i}" n))))
 
 (defun magit-read-remote (prompt &optional default require-match)
   (magit-completing-read prompt (magit-git-lines "remote")
@@ -2944,7 +3002,7 @@ and CLAUSES.
                               clauses))))))
 
 (define-obsolete-function-alias 'magit-add-action
-  'magit-add-action-clauses "1.3.0")
+  'magit-add-action-clauses "2.0.0")
 
 ;;; Processes
 ;;;; Process Commands
@@ -4781,16 +4839,17 @@ when asking for user input.
         (concat
          "Merging: "
          (mapconcat 'identity (mapcar 'magit-name-rev heads) ", ")
-         "; Resolve conflicts, or press \"m A\" to Abort")))))
+         (and magit-status-show-sequence-help
+              "; Resolve conflicts, or press \"m A\" to Abort"))))))
 
 (defun magit-insert-status-rebase-lines ()
   (let ((rebase (magit-rebase-info)))
     (when rebase
       (magit-insert-line-section (line)
-        (apply 'format
-               "%s: onto %s (%s of %s); Press \"R\" to Abort, Skip, or Continue"
-               (if (nth 4 rebase) "Applying" "Rebasing")
-               rebase))
+        (concat (if (nth 4 rebase) "Applying" "Rebasing")
+               (apply 'format ": onto %s (%s of %s)" rebase)
+               (and magit-status-show-sequence-help
+                    "; Press \"R\" to Abort, Skip, or Continue")))
       (when (and (null (nth 4 rebase)) (nth 3 rebase))
         (magit-insert-line-section (line)
           (concat "Stopped: "
@@ -5045,7 +5104,7 @@ With a prefix argument, add remaining untracked files as well.
   (interactive "P")
   (when (or (not magit-stage-all-confirm)
             (not (magit-anything-staged-p))
-            (yes-or-no-p "Stage all changes?"))
+            (yes-or-no-p "Stage all changes? "))
     (if including-untracked
         (magit-run-git "add" ".")
       (magit-run-git "add" "-u" "."))))
@@ -5094,7 +5153,7 @@ With a prefix argument, add remaining untracked files as well.
             (and (not (magit-anything-unstaged-p))
                  (not (magit-git-lines "ls-files" "--others" "-t"
                                        "--exclude-standard")))
-            (yes-or-no-p "Unstage all changes?"))
+            (yes-or-no-p "Unstage all changes? "))
     (magit-run-git "reset" "HEAD" "--")))
 
 ;;;; Branching
@@ -5617,62 +5676,71 @@ ask the user what remote to use."
 (defun magit-push ()
   "Push the current branch to a remote repository.
 
-By default push to the remote specified by the git-config(1) option
-branch.<name>.remote or else origin.  Otherwise or with a prefix
-argument instead ask the user what remote to push to.
+This command runs the `magit-push-remote' hook.  By default that
+means running `magit-push-dwim'.  So unless you have customized
+the hook this command behaves like this:
 
-When pushing to branch.<name>.remote push to the branch specified by
-branch.<name>.merge.  When pushing to another remote or if the latter
-option is not set push to the remote branch with the same name as the
-local branch being pushed.  With two or more prefix arguments instead
-ask the user what branch to push to.  In this last case actually push
-even if `magit-set-upstream-on-push's value is `refuse'."
+With a single prefix argument ask the user what branch to push
+to.  With two or more prefix arguments also ask the user what
+remote to push to.  Otherwise use the remote and branch as
+configured using the Git variables `branch.<name>.remote' and
+`branch.<name>.merge'.  If the former is undefined ask the user.
+If the latter is undefined push without specifing the remote
+branch explicitly.
+
+Also see option `magit-set-upstream-on-push'."
   (interactive)
-  (or (run-hook-with-args-until-success 'magit-push-hook)
-      (let* ((branch (or (magit-get-current-branch)
-                         (error "Don't push a detached head.  That's gross")))
-             (branch-remote (and branch (magit-get "branch" branch "remote")))
-             (origin-remote (and (magit-get "remote" "origin" "url") "origin"))
-             (push-remote (if (or current-prefix-arg
-                                  (and (not branch-remote)
-                                       (not origin-remote)))
-                              (magit-read-remote
-                               (format "Push %s to remote" branch)
-                               (or branch-remote origin-remote))
-                            (or branch-remote origin-remote)))
-             ref-name ref-branch)
-        (cond ((>= (prefix-numeric-value current-prefix-arg) 16)
-               (setq ref-name (magit-read-remote-branch
-                               (format "Push %s as branch" branch)
-                               push-remote))
-               (setq ref-branch (if (string-prefix-p "refs/" ref-name)
-                                    ref-name
-                                  (concat "refs/heads/" ref-name))))
-              ((equal branch-remote push-remote)
-               (setq ref-branch (magit-get "branch" branch "merge"))))
-        (if (and (not ref-branch)
-                 (eq magit-set-upstream-on-push 'refuse))
-            (error "Not pushing since no upstream has been set")
-          (let ((set-upstream-on-push
-                 (and (not ref-branch)
-                      (or (eq magit-set-upstream-on-push 'dontask)
-                          (and (or (eq magit-set-upstream-on-push t)
-                                   (and (not branch-remote)
-                                        (eq magit-set-upstream-on-push 'askifnotset)))
-                               (yes-or-no-p "Set upstream while pushing? "))))))
-            (magit-run-git-async "push" "-v" push-remote
-                                 (if ref-branch
-                                     (format "%s:%s" branch ref-branch)
-                                   branch)
-                                 (and set-upstream-on-push "--set-upstream")
-                                 magit-custom-options)
-            ;; Although git will automatically set up the remote,
-            ;; it doesn't set up the branch to merge (at least as of Git 1.6.6.1),
-            ;; so we have to do that manually.
-            (when (and ref-branch
-                       (or set-upstream-on-push
-                           (member "-u" magit-custom-options)))
-              (magit-set ref-branch "branch" branch "merge")))))))
+  (run-hook-with-args-until-success 'magit-push-hook current-prefix-arg))
+
+(defun magit-push-dwim (arg)
+  "Push the current branch to a remote repository.
+
+With a single prefix argument ask the user what branch to push
+to.  With two or more prefix arguments also ask the user what
+remote to push to.  Otherwise use the remote and branch as
+configured using the Git variables `branch.<name>.remote' and
+`branch.<name>.merge'.  If the former is undefined ask the user.
+If the latter is undefined push without specifing the remote
+branch explicitly.
+
+Also see option `magit-set-upstream-on-push'."
+  (interactive "P")
+  (let* ((branch (or (magit-get-current-branch)
+                     (error "Don't push a detached head.  That's gross")))
+         (auto-remote (magit-get-remote branch))
+         (used-remote (if (or arg (not auto-remote))
+                          (magit-read-remote
+                           (format "Push %s to remote" branch) auto-remote)
+                        auto-remote))
+         (auto-branch (and (equal used-remote auto-remote)
+                           (magit-get "branch" branch "merge")))
+         (used-branch (if (>= (prefix-numeric-value arg) 16)
+                          (magit-read-remote-branch
+                           (format "Push %s as branch" branch)
+                           used-remote auto-branch)
+                        auto-branch)))
+    (cond ;; Pushing to what's already configured.
+          ((and auto-branch
+                (equal auto-branch used-branch)
+                (equal auto-remote used-remote)))
+          ;; Setting upstream because of magit-custom-options.
+          ((member "-u" magit-custom-options))
+          ;; Two prefix arguments; ignore magit-set-upstream-on-push.
+          ((>= (prefix-numeric-value arg) 16)
+           (and (yes-or-no-p "Set upstream while pushing? ")
+                (setq magit-custom-options
+                      (cons "-u" magit-custom-options))))
+          ;; Else honor magit-set-upstream-on-push.
+          ((eq magit-set-upstream-on-push 'refuse)
+           (error "Not pushing since no upstream has been set."))
+          ((or (eq magit-set-upstream-on-push 'dontask)
+               (and (eq magit-set-upstream-on-push t)
+                    (yes-or-no-p "Set upstream while pushing? ")))
+           (setq magit-custom-options (cons "-u" magit-custom-options))))
+    (magit-run-git-async
+     "push" "-v" used-remote
+     (if used-branch (format "%s:%s" branch used-branch) branch)
+     magit-custom-options)))
 
 ;;;; Committing
 
@@ -6028,7 +6096,8 @@ With prefix argument, changes in staging area are kept.
   (let ((buf (generate-new-buffer " *magit-input*")))
     (unwind-protect
         (progn (magit-insert-diff-item-patch diff buf)
-               (magit-run-git-with-input buf "apply" args "-"))
+               (magit-run-git-with-input
+                buf "apply" args "--ignore-space-change" "-"))
       (kill-buffer buf))))
 
 (defun magit-apply-hunk-item (hunk &rest args)
@@ -6051,7 +6120,8 @@ member of ARGS, or to the working file otherwise."
                       hunk (member "--reverse" args)
                       (region-beginning) (region-end) buf)
                    (magit-insert-hunk-item-patch hunk buf))
-                 (magit-run-git-with-input buf "apply" args "-"))
+                 (magit-run-git-with-input
+                  buf "apply" args "--ignore-space-change" "-"))
         (kill-buffer buf)))))
 
 ;;;; Cherry-Pick
@@ -6486,7 +6556,7 @@ Other key binding:
                  (mapconcat #'identity
                             (delq nil (list command option type status))
                             " "))))
-    (format "%-11s "
+    (format "%-16s "
             (propertize text 'face
                         (or (cdr (assoc label magit-reflog-labels))
                             'magit-log-reflog-label-other)))))

@@ -1,4 +1,4 @@
-This is /tmp/magit23852DOX/magit-20140101.1611/magit.info, produced by
+This is /tmp/magit259442EQ/magit-20140118.1540/magit.info, produced by
 makeinfo version 4.13 from /home/melpa/melpa/working/magit/magit.texi.
 
 INFO-DIR-SECTION Emacs
@@ -32,12 +32,13 @@ features.
 
    Magit supports GNU Emacs 23.2 or later; 24.1 or later is recommended.
 Magit supports Git 1.7.2.5 or later; 1.8.2 or later is recommended.
-The minimal versions are those available in ancient Debian oldstable.
+The minimal versions are those available in Debian oldstable.
 
    When something breaks please see the curated list of known issues
-(https://github.com/magit/magit/wiki/Known-issues) and the FAQ
+(https://github.com/magit/magit/wiki/Known-Issues) and the FAQ
 (https://github.com/magit/magit/wiki/FAQ).  If that doesn't help check
-the list of all open issues (https://github.com/magit/magit/issues).
+the list of all open issues issues
+(https://github.com/magit/magit/issues).
 
    If everything else fails please open a new issue or ask for help on
 the mailing list
@@ -117,9 +118,9 @@ started the project, and all retired and current maintainers, Phil
 Jackson, Peter J. Weisberg, Rémi Vanicat, Nicolas Dudebout, Yann
 Hodique, and Jonas Bernoulli.
 
-   (For a full list of contributors, see the AUTHORS.md file at the
-top-level directory of this distribution and at
-https://raw.github.com/magit/magit/master/AUTHORS.md)
+   For a full list of contributors, see the AUTHORS.md file at the
+top-level directory of this distribution or at
+`https://github.com/magit/magit/tree/master/AUTHORS.md'.
 
 
 File: magit.info,  Node: Sections,  Next: Status,  Prev: Acknowledgments,  Up: Top
@@ -277,18 +278,17 @@ File: magit.info,  Node: Staging and Committing,  Next: History,  Prev: Untracke
 ************************
 
 Committing with Git is a two step process: first you add the changes
-you want to commit to a 'staging area', and then you commit them to the
-repository.  This allows you to only commit a subset of your local
-changes.
+you want to commit to a 'staging area' or 'index', and then you commit
+them to the repository.  This allows you to only commit a subset of the
+changes in the working tree.  If you are not familiar with this concept
+yet, then you should change that as soon as possible using one of the
+fine Git tutorials.  If you don't, then Git and by extension Magit will
+seem rather strange.
 
-   Magit allows you to ignore the staging area if you wish.  As long as
-your staging area is unused, Magit will show your uncomitted changes in
-a section named _Changes_.
-
-   When the staging area is in use, Magit uses two sections: _Unstaged
-changes_ and _Staged changes_.  The _Staged changes_ section shows the
-changes that will be included in the next commit, while the _Unstaged
-changes_ section shows the changes that will be left out.
+   Magit shows uncommitted changes in two sections, depending on whether
+the changes have been staged yet.  The _Staged changes_ section shows
+the changes that will be included in the next commit, while the
+_Unstaged changes_ section shows the changes that will be left out.
 
    To move an unstaged hunk into the staging area, move point into the
 hunk and type `s'.  Likewise, to unstage a hunk, move point into it and
@@ -319,19 +319,19 @@ typing `k'.  The changes to discard are selected as with `s' and `u'.
    Before committing, you should write a short description of the
 changes.
 
-   Type `c' to pop up a buffer where you can write your change
+   Type `c c' to pop up a buffer where you can write your change
 description.  Once you are happy with the description, type `C-c C-c'
 in that buffer to perform the commit.
 
    If you want to write changes in a `ChangeLog' file, you can use `C-x
 4 a' on a diff hunk.
 
-   Typing `c' when the staging area is unused is a special situation.
+   Typing `c c' when the staging area is unused is a special situation.
 Normally, the next commit would be empty, but you can configure Magit
 to do something more useful by customizing the
 `magit-commit-all-when-nothing-staged' variable.  One choice is to
 instruct the subsequent `C-c C-c' to commit all changes.  Another
-choice is stage everything at the time of hitting `c'.
+choice is stage everything at the time of hitting `c c'.
 
    You can type `C-c C-a' in the buffer with the change description to
 toggle a flag that determines whether the next commit will _amend_ the
@@ -342,25 +342,9 @@ current commit in HEAD.
 This is particularly useful if you have a hook that occasionally causes
 git to refuse your commit.
 
-   Typing `C-c C-s' will toggle the `--signoff' option.  The default is
-determined by the `magit-commit-signoff' customization variable.
-
-   Typing `C-c C-e' will toggle the `--allow-empty' option.  This
-allows you to make commits that serve as notes, without including any
-changes.
-
-   Typing `C-c C-t' will toggle the option to specify the name and
-email address for the commit's author.  The default is determined by
-the `user.name' and `user.email' git configuration settings.
-
-   If you change your mind and don't want to go ahead with your commit
-while you are in the `*magit-log-edit*' buffer, you can just switch to
-another buffer, continue editing there, staging and unstaging things
-until you are happy, and then return to the `*magit-log-edit*' buffer,
-maybe via `C-x b', or by hitting `c' again in a Magit buffer.
-
-   If you want to erase the `*magit-log-edit*' buffer and bury it, you
-can hit `C-c C-k' in it.
+   To abort a commit use `C-c C-k'.  The commit message is saved and
+can later be retrieved in the commit message buffer using `M-p' and
+`M-a'.
 
    Typing `C' will also pop up the change description buffer, but in
 addition, it will try to insert a ChangeLog-style entry for the change
@@ -1052,7 +1036,7 @@ File: magit.info,  Node: Interfacing with Topgit,  Next: Interfacing with StGit,
 Topgit (http://repo.or.cz/r/topgit.git) is a patch queue manager that
 aims at being close as possible to raw Git, which makes it easy to use
 with Magit.  In particular, it does not require to use a different set
-of commands for "commit", "update",… operations.
+of commands for "commit", "update", and other operations.
 
    `magit-topgit.el' provides basic integration with Magit, mostly by
 providing a "Topics" section.
@@ -1075,10 +1059,10 @@ File: magit.info,  Node: Interfacing with StGit,  Prev: Interfacing with Topgit,
 
 StGit (http://www.procode.org/stgit) is a Python application providing
 similar functionality to Quilt (i.e. pushing/popping patches to/from a
-stack) on top of Git.  These operations are performed using Git commands
-and the patches are stored as Git commit objects, allowing easy merging
-of the StGit patches into other repositories using standard Git
-functionality.
+stack) on top of Git.  These operations are performed using Git
+commands and the patches are stored as Git commit objects, allowing
+easy merging of the StGit patches into other repositories using
+standard Git functionality.
 
    `magit-stgit.el' provides basic integration with Magit, mostly by
 providing a "Series" section, whose patches can be seen as regular
@@ -1537,40 +1521,40 @@ permit their use in free software.
 
 Tag Table:
 Node: Top796
-Node: Introduction2332
-Node: Acknowledgments3825
+Node: Introduction2331
+Node: Acknowledgments3824
 Node: Sections4361
 Node: Status6911
 Node: Untracked files9650
 Node: Staging and Committing10855
-Node: History14971
-Node: Reflogs18153
-Node: Commit Buffer18557
-Node: Diffing19883
-Node: Tagging20870
-Node: Resetting21320
-Node: Stashing22844
-Node: Branches and Remotes23915
-Node: Branches Popup24736
-Node: Remotes Popup25998
-Node: Branches in the Branch Manager26349
-Node: Remotes in the Branch Manager27521
-Node: Wazzup28082
-Node: Merging28875
-Node: Rebasing29925
-Node: Interactive Rebasing30751
-Node: Rewriting32046
-Node: Pushing and Pulling35355
-Node: Submodules37285
-Node: Bisecting37702
-Node: Finding commits not merged upstream38937
-Node: Using Magit Extensions40203
-Node: Activating extensions40499
-Node: Interfacing with Subversion41884
-Node: Interfacing with Topgit42484
-Node: Interfacing with StGit43515
-Node: Using Git Directly44484
-Node: GNU Free Documentation License44872
+Node: History14261
+Node: Reflogs17443
+Node: Commit Buffer17847
+Node: Diffing19173
+Node: Tagging20160
+Node: Resetting20610
+Node: Stashing22134
+Node: Branches and Remotes23205
+Node: Branches Popup24026
+Node: Remotes Popup25288
+Node: Branches in the Branch Manager25639
+Node: Remotes in the Branch Manager26811
+Node: Wazzup27372
+Node: Merging28165
+Node: Rebasing29215
+Node: Interactive Rebasing30041
+Node: Rewriting31336
+Node: Pushing and Pulling34645
+Node: Submodules36575
+Node: Bisecting36992
+Node: Finding commits not merged upstream38227
+Node: Using Magit Extensions39493
+Node: Activating extensions39789
+Node: Interfacing with Subversion41174
+Node: Interfacing with Topgit41774
+Node: Interfacing with StGit42812
+Node: Using Git Directly43781
+Node: GNU Free Documentation License44169
 
 End Tag Table
 
