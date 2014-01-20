@@ -70,6 +70,8 @@
 (require 'button)
 (require 'view)
 (require 'cl-lib)
+(eval-when-compile
+  (require 'cl))
 
 (defun langdoc-call-fun (b)
   (funcall (button-get b 'fun) (button-get b 'link)))
