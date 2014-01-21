@@ -1,4 +1,5 @@
 ;;;; Editing customisations -- general text munging when typing.
+(require 's)
 (require 'dash)
 
 ;; highlight region whenever mark is active
@@ -78,12 +79,7 @@ The point is also moved one character forward."
 (global-set-key (kbd "M-c") 'toggle-case-next-char)
 
 (autoload 're-find-all "regexp-utils")
-(autoload 're-search-p "regexp-utils")
 (autoload 're-match-p "regexp-utils")
-
-(defun string-contains-p (substring string)
-  "Returns t if STRING contains SUBSTRING."
-  (re-search-p (regexp-quote substring) string))
 
 (defun format-symbol (string format)
   "Convert a given string to a specified formatting convention.
@@ -91,7 +87,7 @@ The point is also moved one character forward."
  (format-symbol \"fooBar\" 'constant) => \"FOO_BAR\""
   (let ((components))
     ;; split the string into its word components
-    (if (string-contains-p "_" string)
+    (if (s-contains? "_" string)
         (setq components (split-string string "_"))
       (setq components (re-find-all "[A-Z]?[a-z]+" string)))
     ;; format each component as a lowercase string
