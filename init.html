@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2014-01-21T11:51+0000"/>
+<meta name="generated" content="2014-01-21T15:12+0000"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -160,39 +160,44 @@ for the JavaScript code in this tag.
 </li>
 <li><a href="#sec-3-6">3.6 Inserting</a></li>
 <li><a href="#sec-3-7">3.7 Killing</a></li>
-<li><a href="#sec-3-8">3.8 Files</a>
+<li><a href="#sec-3-8">3.8 Modifying and Editing</a>
 <ul>
-<li><a href="#sec-3-8-1">3.8.1 Opening</a></li>
-<li><a href="#sec-3-8-2">3.8.2 Dired</a></li>
-<li><a href="#sec-3-8-3">3.8.3 Deleting and Backups</a></li>
-<li><a href="#sec-3-8-4">3.8.4 Scratch Files</a></li>
+<li><a href="#sec-3-8-1">3.8.1 Matched Pairs</a></li>
 </ul>
 </li>
-<li><a href="#sec-3-9">3.9 As-you-type Checks</a>
+<li><a href="#sec-3-9">3.9 Files</a>
 <ul>
-<li><a href="#sec-3-9-1">3.9.1 Flymake</a></li>
-<li><a href="#sec-3-9-2">3.9.2 Flycheck</a></li>
+<li><a href="#sec-3-9-1">3.9.1 Opening</a></li>
+<li><a href="#sec-3-9-2">3.9.2 Dired</a></li>
+<li><a href="#sec-3-9-3">3.9.3 Deleting and Backups</a></li>
+<li><a href="#sec-3-9-4">3.9.4 Scratch Files</a></li>
 </ul>
 </li>
-<li><a href="#sec-3-10">3.10 Undoing</a></li>
-<li><a href="#sec-3-11">3.11 Emacs Lisp</a>
+<li><a href="#sec-3-10">3.10 As-you-type Checks</a>
 <ul>
-<li><a href="#sec-3-11-1">3.11.1 Shortcuts</a></li>
-<li><a href="#sec-3-11-2">3.11.2 Editing Parentheses</a></li>
-<li><a href="#sec-3-11-3">3.11.3 Highlighting Parentheses</a></li>
-<li><a href="#sec-3-11-4">3.11.4 Function Signatures</a></li>
-<li><a href="#sec-3-11-5">3.11.5 On-the-fly Checking</a></li>
+<li><a href="#sec-3-10-1">3.10.1 Flymake</a></li>
+<li><a href="#sec-3-10-2">3.10.2 Flycheck</a></li>
 </ul>
 </li>
-<li><a href="#sec-3-12">3.12 Python</a></li>
-<li><a href="#sec-3-13">3.13 Haskell</a></li>
-<li><a href="#sec-3-14">3.14 HTML</a></li>
-<li><a href="#sec-3-15">3.15 CSS</a></li>
-<li><a href="#sec-3-16">3.16 Less (CSS)</a></li>
-<li><a href="#sec-3-17">3.17 Org-mode</a></li>
-<li><a href="#sec-3-18">3.18 Markdown</a></li>
-<li><a href="#sec-3-19">3.19 Performance</a></li>
-<li><a href="#sec-3-20">3.20 Undocumented</a></li>
+<li><a href="#sec-3-11">3.11 Undoing</a></li>
+<li><a href="#sec-3-12">3.12 Emacs Lisp</a>
+<ul>
+<li><a href="#sec-3-12-1">3.12.1 Shortcuts</a></li>
+<li><a href="#sec-3-12-2">3.12.2 Editing Parentheses</a></li>
+<li><a href="#sec-3-12-3">3.12.3 Highlighting Parentheses</a></li>
+<li><a href="#sec-3-12-4">3.12.4 Function Signatures</a></li>
+<li><a href="#sec-3-12-5">3.12.5 On-the-fly Checking</a></li>
+</ul>
+</li>
+<li><a href="#sec-3-13">3.13 Python</a></li>
+<li><a href="#sec-3-14">3.14 Haskell</a></li>
+<li><a href="#sec-3-15">3.15 HTML</a></li>
+<li><a href="#sec-3-16">3.16 CSS</a></li>
+<li><a href="#sec-3-17">3.17 Less (CSS)</a></li>
+<li><a href="#sec-3-18">3.18 Org-mode</a></li>
+<li><a href="#sec-3-19">3.19 Markdown</a></li>
+<li><a href="#sec-3-20">3.20 Performance</a></li>
+<li><a href="#sec-3-21">3.21 Undocumented</a></li>
 </ul>
 </li>
 </ul>
@@ -885,16 +890,61 @@ type `C-u C-w' to delete the region, whilst `C-w' works as normal.
 </div>
 
 <div id="outline-container-3-8" class="outline-3">
-<h3 id="sec-3-8"><span class="section-number-3">3.8</span> Files</h3>
+<h3 id="sec-3-8"><span class="section-number-3">3.8</span> Modifying and Editing</h3>
 <div class="outline-text-3" id="text-3-8">
+
+
+<p>
+Modifying text is fundamental to Emacs, and I use many utilites to
+make life easier. Most of these are still in user-lisp/editing-customisations.el.
+</p>
+
+</div>
+
+<div id="outline-container-3-8-1" class="outline-4">
+<h4 id="sec-3-8-1"><span class="section-number-4">3.8.1</span> Matched Pairs</h4>
+<div class="outline-text-4" id="text-3-8-1">
+
+
+<p>
+Smartparens is an excellent way of editing pairs of brackets, quotes
+etc. It's similar to paredit, but can be used in lisp, other
+programming languages and even HTML.
+</p>
+<p>
+Currently, I only use a few smartparens commands, loosely based on how
+I used paredit. You can view a list of all smartparens commands with
+the command `sp-cheat-sheet'.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">smartparens</span>)
+
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">(foo bar) -&gt; foo bar</span>
+(define-key smartparens-mode-map (kbd <span style="color: #ad7fa8; font-style: italic;">"M-s"</span>) 'sp-splice-sexp)
+
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">(foo bar) -&gt; [foo bar]</span>
+(define-key smartparens-mode-map (kbd <span style="color: #ad7fa8; font-style: italic;">"M-S"</span>) 'sp-rewrap-sexp)
+</pre>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-3-9" class="outline-3">
+<h3 id="sec-3-9"><span class="section-number-3">3.9</span> Files</h3>
+<div class="outline-text-3" id="text-3-9">
 
 
 
 </div>
 
-<div id="outline-container-3-8-1" class="outline-4">
-<h4 id="sec-3-8-1"><span class="section-number-4">3.8.1</span> Opening</h4>
-<div class="outline-text-4" id="text-3-8-1">
+<div id="outline-container-3-9-1" class="outline-4">
+<h4 id="sec-3-9-1"><span class="section-number-4">3.9.1</span> Opening</h4>
+<div class="outline-text-4" id="text-3-9-1">
 
 
 <p>
@@ -987,9 +1037,9 @@ a lot and it's right next to `C-x C-f'.
 
 </div>
 
-<div id="outline-container-3-8-2" class="outline-4">
-<h4 id="sec-3-8-2"><span class="section-number-4">3.8.2</span> Dired</h4>
-<div class="outline-text-4" id="text-3-8-2">
+<div id="outline-container-3-9-2" class="outline-4">
+<h4 id="sec-3-9-2"><span class="section-number-4">3.9.2</span> Dired</h4>
+<div class="outline-text-4" id="text-3-9-2">
 
 
 <p>
@@ -1007,9 +1057,9 @@ highlighting.
 
 </div>
 
-<div id="outline-container-3-8-3" class="outline-4">
-<h4 id="sec-3-8-3"><span class="section-number-4">3.8.3</span> Deleting and Backups</h4>
-<div class="outline-text-4" id="text-3-8-3">
+<div id="outline-container-3-9-3" class="outline-4">
+<h4 id="sec-3-9-3"><span class="section-number-4">3.9.3</span> Deleting and Backups</h4>
+<div class="outline-text-4" id="text-3-9-3">
 
 
 <p>
@@ -1059,9 +1109,9 @@ modified.
 
 </div>
 
-<div id="outline-container-3-8-4" class="outline-4">
-<h4 id="sec-3-8-4"><span class="section-number-4">3.8.4</span> Scratch Files</h4>
-<div class="outline-text-4" id="text-3-8-4">
+<div id="outline-container-3-9-4" class="outline-4">
+<h4 id="sec-3-9-4"><span class="section-number-4">3.9.4</span> Scratch Files</h4>
+<div class="outline-text-4" id="text-3-9-4">
 
 
 <p>
@@ -1115,17 +1165,17 @@ It's also useful to quickly generate a minimal HTML page to play with.
 
 </div>
 
-<div id="outline-container-3-9" class="outline-3">
-<h3 id="sec-3-9"><span class="section-number-3">3.9</span> As-you-type Checks</h3>
-<div class="outline-text-3" id="text-3-9">
+<div id="outline-container-3-10" class="outline-3">
+<h3 id="sec-3-10"><span class="section-number-3">3.10</span> As-you-type Checks</h3>
+<div class="outline-text-3" id="text-3-10">
 
 
 
 </div>
 
-<div id="outline-container-3-9-1" class="outline-4">
-<h4 id="sec-3-9-1"><span class="section-number-4">3.9.1</span> Flymake</h4>
-<div class="outline-text-4" id="text-3-9-1">
+<div id="outline-container-3-10-1" class="outline-4">
+<h4 id="sec-3-10-1"><span class="section-number-4">3.10.1</span> Flymake</h4>
+<div class="outline-text-4" id="text-3-10-1">
 
 
 <p>
@@ -1178,9 +1228,9 @@ I prefer my errors underlined.
 
 </div>
 
-<div id="outline-container-3-9-2" class="outline-4">
-<h4 id="sec-3-9-2"><span class="section-number-4">3.9.2</span> Flycheck</h4>
-<div class="outline-text-4" id="text-3-9-2">
+<div id="outline-container-3-10-2" class="outline-4">
+<h4 id="sec-3-10-2"><span class="section-number-4">3.10.2</span> Flycheck</h4>
+<div class="outline-text-4" id="text-3-10-2">
 
 
 <p>
@@ -1230,9 +1280,9 @@ We use the same movement keys for flycheck as we do for flymake.
 
 </div>
 
-<div id="outline-container-3-10" class="outline-3">
-<h3 id="sec-3-10"><span class="section-number-3">3.10</span> Undoing</h3>
-<div class="outline-text-3" id="text-3-10">
+<div id="outline-container-3-11" class="outline-3">
+<h3 id="sec-3-11"><span class="section-number-3">3.11</span> Undoing</h3>
+<div class="outline-text-3" id="text-3-11">
 
 
 <p>
@@ -1250,17 +1300,17 @@ Emacs' undo facility is excellent, but undo-tree is even better.
 
 </div>
 
-<div id="outline-container-3-11" class="outline-3">
-<h3 id="sec-3-11"><span class="section-number-3">3.11</span> Emacs Lisp</h3>
-<div class="outline-text-3" id="text-3-11">
+<div id="outline-container-3-12" class="outline-3">
+<h3 id="sec-3-12"><span class="section-number-3">3.12</span> Emacs Lisp</h3>
+<div class="outline-text-3" id="text-3-12">
 
 
 
 </div>
 
-<div id="outline-container-3-11-1" class="outline-4">
-<h4 id="sec-3-11-1"><span class="section-number-4">3.11.1</span> Shortcuts</h4>
-<div class="outline-text-4" id="text-3-11-1">
+<div id="outline-container-3-12-1" class="outline-4">
+<h4 id="sec-3-12-1"><span class="section-number-4">3.12.1</span> Shortcuts</h4>
+<div class="outline-text-4" id="text-3-12-1">
 
 
 <p>
@@ -1303,9 +1353,9 @@ expand the macros in our elisp file.
 
 </div>
 
-<div id="outline-container-3-11-2" class="outline-4">
-<h4 id="sec-3-11-2"><span class="section-number-4">3.11.2</span> Editing Parentheses</h4>
-<div class="outline-text-4" id="text-3-11-2">
+<div id="outline-container-3-12-2" class="outline-4">
+<h4 id="sec-3-12-2"><span class="section-number-4">3.12.2</span> Editing Parentheses</h4>
+<div class="outline-text-4" id="text-3-12-2">
 
 
 <p>
@@ -1326,9 +1376,9 @@ the time to learn it yet.
 
 </div>
 
-<div id="outline-container-3-11-3" class="outline-4">
-<h4 id="sec-3-11-3"><span class="section-number-4">3.11.3</span> Highlighting Parentheses</h4>
-<div class="outline-text-4" id="text-3-11-3">
+<div id="outline-container-3-12-3" class="outline-4">
+<h4 id="sec-3-12-3"><span class="section-number-4">3.12.3</span> Highlighting Parentheses</h4>
+<div class="outline-text-4" id="text-3-12-3">
 
 
 <p>
@@ -1369,9 +1419,9 @@ unique colours until we're seven levels deep.
 
 </div>
 
-<div id="outline-container-3-11-4" class="outline-4">
-<h4 id="sec-3-11-4"><span class="section-number-4">3.11.4</span> Function Signatures</h4>
-<div class="outline-text-4" id="text-3-11-4">
+<div id="outline-container-3-12-4" class="outline-4">
+<h4 id="sec-3-12-4"><span class="section-number-4">3.12.4</span> Function Signatures</h4>
+<div class="outline-text-4" id="text-3-12-4">
 
 
 <p>
@@ -1389,9 +1439,9 @@ minibuffer.
 
 </div>
 
-<div id="outline-container-3-11-5" class="outline-4">
-<h4 id="sec-3-11-5"><span class="section-number-4">3.11.5</span> On-the-fly Checking</h4>
-<div class="outline-text-4" id="text-3-11-5">
+<div id="outline-container-3-12-5" class="outline-4">
+<h4 id="sec-3-12-5"><span class="section-number-4">3.12.5</span> On-the-fly Checking</h4>
+<div class="outline-text-4" id="text-3-12-5">
 
 
 <p>
@@ -1437,9 +1487,9 @@ the way for quick throwaway elisp scripts, so we switch off checkdoc.
 
 </div>
 
-<div id="outline-container-3-12" class="outline-3">
-<h3 id="sec-3-12"><span class="section-number-3">3.12</span> Python</h3>
-<div class="outline-text-3" id="text-3-12">
+<div id="outline-container-3-13" class="outline-3">
+<h3 id="sec-3-13"><span class="section-number-3">3.13</span> Python</h3>
+<div class="outline-text-3" id="text-3-13">
 
 
 <p>
@@ -1501,9 +1551,9 @@ shortcut for inserting them.
 
 </div>
 
-<div id="outline-container-3-13" class="outline-3">
-<h3 id="sec-3-13"><span class="section-number-3">3.13</span> Haskell</h3>
-<div class="outline-text-3" id="text-3-13">
+<div id="outline-container-3-14" class="outline-3">
+<h3 id="sec-3-14"><span class="section-number-3">3.14</span> Haskell</h3>
+<div class="outline-text-3" id="text-3-14">
 
 
 <p>
@@ -1532,9 +1582,9 @@ indentation.
 
 </div>
 
-<div id="outline-container-3-14" class="outline-3">
-<h3 id="sec-3-14"><span class="section-number-3">3.14</span> HTML</h3>
-<div class="outline-text-3" id="text-3-14">
+<div id="outline-container-3-15" class="outline-3">
+<h3 id="sec-3-15"><span class="section-number-3">3.15</span> HTML</h3>
+<div class="outline-text-3" id="text-3-15">
 
 
 <p>
@@ -1716,9 +1766,9 @@ TODO: document the rest of our HTML configuration.
 
 </div>
 
-<div id="outline-container-3-15" class="outline-3">
-<h3 id="sec-3-15"><span class="section-number-3">3.15</span> CSS</h3>
-<div class="outline-text-3" id="text-3-15">
+<div id="outline-container-3-16" class="outline-3">
+<h3 id="sec-3-16"><span class="section-number-3">3.16</span> CSS</h3>
+<div class="outline-text-3" id="text-3-16">
 
 
 <p>
@@ -1752,9 +1802,9 @@ they represent.
 
 </div>
 
-<div id="outline-container-3-16" class="outline-3">
-<h3 id="sec-3-16"><span class="section-number-3">3.16</span> Less (CSS)</h3>
-<div class="outline-text-3" id="text-3-16">
+<div id="outline-container-3-17" class="outline-3">
+<h3 id="sec-3-17"><span class="section-number-3">3.17</span> Less (CSS)</h3>
+<div class="outline-text-3" id="text-3-17">
 
 
 <p>
@@ -1773,9 +1823,9 @@ syntax check.
 
 </div>
 
-<div id="outline-container-3-17" class="outline-3">
-<h3 id="sec-3-17"><span class="section-number-3">3.17</span> Org-mode</h3>
-<div class="outline-text-3" id="text-3-17">
+<div id="outline-container-3-18" class="outline-3">
+<h3 id="sec-3-18"><span class="section-number-3">3.18</span> Org-mode</h3>
+<div class="outline-text-3" id="text-3-18">
 
 
 <p>
@@ -1794,9 +1844,9 @@ them.
 
 </div>
 
-<div id="outline-container-3-18" class="outline-3">
-<h3 id="sec-3-18"><span class="section-number-3">3.18</span> Markdown</h3>
-<div class="outline-text-3" id="text-3-18">
+<div id="outline-container-3-19" class="outline-3">
+<h3 id="sec-3-19"><span class="section-number-3">3.19</span> Markdown</h3>
+<div class="outline-text-3" id="text-3-19">
 
 
 <p>
@@ -1814,9 +1864,9 @@ Markdown is essentially prose, so it's nice to automatically line-wrap
 
 </div>
 
-<div id="outline-container-3-19" class="outline-3">
-<h3 id="sec-3-19"><span class="section-number-3">3.19</span> Performance</h3>
-<div class="outline-text-3" id="text-3-19">
+<div id="outline-container-3-20" class="outline-3">
+<h3 id="sec-3-20"><span class="section-number-3">3.20</span> Performance</h3>
+<div class="outline-text-3" id="text-3-20">
 
 
 <p>
@@ -1836,9 +1886,9 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 
 </div>
 
-<div id="outline-container-3-20" class="outline-3">
-<h3 id="sec-3-20"><span class="section-number-3">3.20</span> Undocumented</h3>
-<div class="outline-text-3" id="text-3-20">
+<div id="outline-container-3-21" class="outline-3">
+<h3 id="sec-3-21"><span class="section-number-3">3.21</span> Undocumented</h3>
+<div class="outline-text-3" id="text-3-21">
 
 
 
@@ -2000,7 +2050,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2014-01-21T11:51+0000</p>
+<p class="date">Date: 2014-01-21T15:12+0000</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

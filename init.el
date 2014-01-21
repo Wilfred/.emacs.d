@@ -159,6 +159,14 @@ If a prefix argument is given, don't change the kill-ring."
 
 (global-set-key (kbd "C-w") 'kill-or-delete-region)
 
+(require 'smartparens)
+
+;; (foo bar) -> foo bar
+(define-key smartparens-mode-map (kbd "M-s") 'sp-splice-sexp)
+
+;; (foo bar) -> [foo bar]
+(define-key smartparens-mode-map (kbd "M-S") 'sp-rewrap-sexp)
+
 (require 'recentf)
 
 ;; offer recently accessed files from the menu

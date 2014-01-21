@@ -398,6 +398,31 @@ type `C-u C-w' to delete the region, whilst `C-w' works as normal.
   
 #+END_SRC
 
+** Modifying and Editing
+
+Modifying text is fundamental to Emacs, and I use many utilites to
+make life easier. Most of these are still in user-lisp/editing-customisations.el.
+
+*** Matched Pairs
+
+Smartparens is an excellent way of editing pairs of brackets, quotes
+etc. It's similar to paredit, but can be used in lisp, other
+programming languages and even HTML.
+
+Currently, I only use a few smartparens commands, loosely based on how
+I used paredit. You can view a list of all smartparens commands with
+the command `sp-cheat-sheet'.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'smartparens)
+  
+  ;; (foo bar) -> foo bar
+  (define-key smartparens-mode-map (kbd "M-s") 'sp-splice-sexp)
+  
+  ;; (foo bar) -> [foo bar]
+  (define-key smartparens-mode-map (kbd "M-S") 'sp-rewrap-sexp)
+#+END_SRC
+
 ** Files
 
 *** Opening
