@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2014-01-21T11:48+0000"/>
+<meta name="generated" content="2014-01-21T11:51+0000"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -1557,6 +1557,17 @@ shop I worked at).
 
 
 <p>
+Automatically close &lt; and " character inside HTML using smartparens.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">smartparens-config</span>)
+(add-hook 'html-mode-hook 'smartparens-mode)
+</pre>
+
+
+<p>
 Much of my HTML is for Django templates. These sometimes have .dtml
 filenames, so use html-mode for those files.
 </p>
@@ -1989,7 +2000,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2014-01-21T11:48+0000</p>
+<p class="date">Date: 2014-01-21T11:51+0000</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

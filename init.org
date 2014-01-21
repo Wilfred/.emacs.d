@@ -804,6 +804,13 @@ shop I worked at).
          (setq sgml-basic-offset 4)))))
 #+END_SRC
 
+Automatically close < and " character inside HTML using smartparens.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'smartparens-config)
+  (add-hook 'html-mode-hook 'smartparens-mode)
+#+END_SRC
+
 Much of my HTML is for Django templates. These sometimes have .dtml
 filenames, so use html-mode for those files.
 

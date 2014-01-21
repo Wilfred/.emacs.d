@@ -322,6 +322,9 @@ If a prefix argument is given, don't change the kill-ring."
        (setq indent-tabs-mode nil)
        (setq sgml-basic-offset 4)))))
 
+(require 'smartparens-config)
+(add-hook 'html-mode-hook 'smartparens-mode)
+
 (add-to-list 'auto-mode-alist '("\\.dtml$" . html-mode))
 
 ;; Define coloured faces for Django syntax.
