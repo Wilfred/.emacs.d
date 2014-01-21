@@ -824,7 +824,8 @@ We often use code snippets in org-mode files, so syntax highlight
 them.
 
 #+BEGIN_SRC emacs-lisp
-  (setq org-src-fontify-natively t)
+  (eval-after-load "org" 
+   '(setq org-src-fontify-natively t))
 #+END_SRC
 
 ** Markdown
