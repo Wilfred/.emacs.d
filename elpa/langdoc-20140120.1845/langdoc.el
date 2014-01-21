@@ -1,5 +1,5 @@
 ;;; langdoc.el --- Help to define help document mode for various languages
-;; Version: 20140107.223
+;; Version: 20140120.1845
 
 ;; Copyright (C) 2013, 2014  by Tomoya Tanjo
 

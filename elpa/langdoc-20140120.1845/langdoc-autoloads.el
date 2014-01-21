@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (langdoc-define-help-mode) "langdoc" "langdoc.el"
-;;;;;;  (21209 48303 453679 89000))
+;;;;;;  (21214 22620 52711 35000))
 ;;; Generated autoloads from langdoc.el
 
 (autoload 'langdoc-define-help-mode "langdoc" "\
@@ -44,8 +44,8 @@ with a link to \"linked-str\" in help buffer .
 
 ;;;***
 
-;;;### (autoloads nil nil ("langdoc-pkg.el") (21209 48303 589485
-;;;;;;  203000))
+;;;### (autoloads nil nil ("langdoc-pkg.el") (21214 22620 146639
+;;;;;;  312000))
 
 ;;;***
 
