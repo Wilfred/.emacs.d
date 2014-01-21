@@ -7,8 +7,8 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2014-01-17T21:58+0000"/>
-<meta name="author" content=""/>
+<meta name="generated" content="2014-01-21T11:48+0000"/>
+<meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
 <style type="text/css">
@@ -186,12 +186,13 @@ for the JavaScript code in this tag.
 </li>
 <li><a href="#sec-3-12">3.12 Python</a></li>
 <li><a href="#sec-3-13">3.13 Haskell</a></li>
-<li><a href="#sec-3-14">3.14 CSS</a></li>
-<li><a href="#sec-3-15">3.15 Less (CSS)</a></li>
-<li><a href="#sec-3-16">3.16 Org-mode</a></li>
-<li><a href="#sec-3-17">3.17 Markdown</a></li>
-<li><a href="#sec-3-18">3.18 Performance</a></li>
-<li><a href="#sec-3-19">3.19 Undocumented</a></li>
+<li><a href="#sec-3-14">3.14 HTML</a></li>
+<li><a href="#sec-3-15">3.15 CSS</a></li>
+<li><a href="#sec-3-16">3.16 Less (CSS)</a></li>
+<li><a href="#sec-3-17">3.17 Org-mode</a></li>
+<li><a href="#sec-3-18">3.18 Markdown</a></li>
+<li><a href="#sec-3-19">3.19 Performance</a></li>
+<li><a href="#sec-3-20">3.20 Undocumented</a></li>
 </ul>
 </li>
 </ul>
@@ -1532,8 +1533,181 @@ indentation.
 </div>
 
 <div id="outline-container-3-14" class="outline-3">
-<h3 id="sec-3-14"><span class="section-number-3">3.14</span> CSS</h3>
+<h3 id="sec-3-14"><span class="section-number-3">3.14</span> HTML</h3>
 <div class="outline-text-3" id="text-3-14">
+
+
+<p>
+I like to indent my HTML with tabs (company policy at the first web
+shop I worked at).
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">sgml-mode</span>)
+
+<span style="color: #888a85;">; </span><span style="color: #888a85;">indent html with tabs only</span>
+(add-hook 'html-mode-hook
+  (function
+   (<span style="color: #729fcf; font-weight: bold;">lambda</span> ()
+     (<span style="color: #729fcf; font-weight: bold;">progn</span>
+       (setq indent-tabs-mode nil)
+       (setq sgml-basic-offset 4)))))
+</pre>
+
+
+<p>
+Much of my HTML is for Django templates. These sometimes have .dtml
+filenames, so use html-mode for those files.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(add-to-list 'auto-mode-alist '(<span style="color: #ad7fa8; font-style: italic;">"\\.dtml$"</span> . html-mode))
+</pre>
+
+
+<p>
+We want syntax highlighting for Django template syntax, so add extra
+font faces and use them if we see Django syntax.
+</p>
+
+
+
+<pre class="src src-emacs-lisp"><span style="color: #888a85;">;; </span><span style="color: #888a85;">Define coloured faces for Django syntax.</span>
+(<span style="color: #729fcf; font-weight: bold;">defvar</span> <span style="color: #ff6347;">django-tag-face</span> (make-face 'django-tag-face))
+(set-face-foreground 'django-tag-face <span style="color: #ad7fa8; font-style: italic;">"Orange"</span>)
+<span style="color: #888a85;">;</span>
+(<span style="color: #729fcf; font-weight: bold;">defvar</span> <span style="color: #ff6347;">django-variable-face</span> (make-face 'django-variable-face))
+(set-face-foreground 'django-variable-face <span style="color: #ad7fa8; font-style: italic;">"Green"</span>)
+
+(<span style="color: #729fcf; font-weight: bold;">defvar</span> <span style="color: #ff6347;">django-comment-face</span> (make-face 'django-comment-face))
+(set-face-foreground 'django-comment-face <span style="color: #ad7fa8; font-style: italic;">"Gray"</span>)
+
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">Use these faces for Django syntax.  </span>
+(font-lock-add-keywords
+ 'html-mode
+ '(
+   (<span style="color: #ad7fa8; font-style: italic;">"</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">(</span><span style="color: #ad7fa8; font-style: italic;">{%[</span><span style="color: #ad7fa8; font-style: italic;">^</span><span style="color: #ad7fa8; font-style: italic;">%]*%}</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">)</span><span style="color: #ad7fa8; font-style: italic;">"</span> 1 django-tag-face prepend)
+   (<span style="color: #ad7fa8; font-style: italic;">"</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">(</span><span style="color: #ad7fa8; font-style: italic;">{{[</span><span style="color: #ad7fa8; font-style: italic;">^</span><span style="color: #ad7fa8; font-style: italic;">}]*}}</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">)</span><span style="color: #ad7fa8; font-style: italic;">"</span> 1 django-variable-face prepend)
+   (<span style="color: #ad7fa8; font-style: italic;">"</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">(</span><span style="color: #ad7fa8; font-style: italic;">{#[</span><span style="color: #ad7fa8; font-style: italic;">^</span><span style="color: #ad7fa8; font-style: italic;">}]*#}</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">)</span><span style="color: #ad7fa8; font-style: italic;">"</span> 1 django-comment-face prepend)
+   (<span style="color: #ad7fa8; font-style: italic;">"</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">(</span><span style="color: #ad7fa8; font-style: italic;">{% comment %}</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">(</span><span style="color: #ad7fa8; font-style: italic;">.</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">|</span>
+<span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">)</span><span style="color: #ad7fa8; font-style: italic;">*{% endcomment %}</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">)</span><span style="color: #ad7fa8; font-style: italic;">"</span> 1 django-comment-face prepend)
+   ))
+</pre>
+
+
+<p>
+TODO: document the rest of our HTML configuration.
+</p>
+
+
+
+<pre class="src src-emacs-lisp"><span style="color: #888a85;">; </span><span style="color: #888a85;">skeletons for Django template tags</span>
+(<span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-tag-skeleton</span>
+  <span style="color: #888a85;">"Insert a {% foo %} template tag"</span>
+  <span style="color: #ad7fa8; font-style: italic;">"Template tag name: "</span>
+  <span style="color: #ad7fa8; font-style: italic;">"{% "</span> str <span style="color: #ad7fa8; font-style: italic;">" %}"</span>)
+(<span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-variable-skeleton</span>
+  <span style="color: #888a85;">"Insert a {{ foo }} template variable"</span>
+  <span style="color: #ad7fa8; font-style: italic;">"Template variable: "</span>
+  <span style="color: #ad7fa8; font-style: italic;">"{{ "</span> str <span style="color: #ad7fa8; font-style: italic;">" }}"</span>)
+(<span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-comment-skeleton</span>
+  <span style="color: #888a85;">"Insert a {# foo #} template variable"</span>
+  <span style="color: #ad7fa8; font-style: italic;">"Comment: "</span>
+  <span style="color: #ad7fa8; font-style: italic;">"{# "</span> str <span style="color: #ad7fa8; font-style: italic;">" #}"</span>)
+(<span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-block-skeleton</span>
+  <span style="color: #888a85;">"Insert {% block foo %}{% endblock %}"</span>
+  <span style="color: #ad7fa8; font-style: italic;">"Block name: "</span>
+  <span style="color: #ad7fa8; font-style: italic;">"{% block "</span> str <span style="color: #ad7fa8; font-style: italic;">" %}\n"</span> - <span style="color: #ad7fa8; font-style: italic;">"\n{% endblock %}"</span>)
+(<span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-if-else-skeleton</span>
+  <span style="color: #888a85;">"Insert {% if foo %}{% else %}{% endif %}"</span>
+  <span style="color: #ad7fa8; font-style: italic;">"If condition: "</span>
+  <span style="color: #ad7fa8; font-style: italic;">"{% if "</span> str <span style="color: #ad7fa8; font-style: italic;">" %}\n"</span> - <span style="color: #ad7fa8; font-style: italic;">"\n{% else %}\n\n{% endif %}"</span>)
+(<span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-if-skeleton</span>
+  <span style="color: #888a85;">"Insert {% if foo %}{% endif %}"</span>
+  <span style="color: #ad7fa8; font-style: italic;">"If condition: "</span>
+  <span style="color: #ad7fa8; font-style: italic;">"{% if "</span> str <span style="color: #ad7fa8; font-style: italic;">" %}"</span> - <span style="color: #ad7fa8; font-style: italic;">"{% endif %}"</span>)
+(<span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">underscore-skeleton</span>
+  <span style="color: #888a85;">"Insert &lt;%= foo %&gt;"</span>
+  <span style="color: #ad7fa8; font-style: italic;">"Contents: "</span>
+  <span style="color: #ad7fa8; font-style: italic;">"&lt;%= "</span> str <span style="color: #ad7fa8; font-style: italic;">" %&gt;"</span>)
+
+(<span style="color: #729fcf; font-weight: bold;">defvar</span> <span style="color: #ff6347;">template-skeletons</span>
+  '(template-tag-skeleton
+    template-variable-skeleton
+    template-comment-skeleton
+    template-block-skeleton
+    template-if-skeleton
+    template-if-else-skeleton
+    underscore-skeleton))
+
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">insert-django-skeleton</span> ()
+  (interactive)
+  (<span style="color: #729fcf; font-weight: bold;">let*</span> ((skeleton-names (mapcar 'symbol-name template-skeletons))
+        (skeleton-chosen (ido-completing-read <span style="color: #ad7fa8; font-style: italic;">"HTML skeleton: "</span> skeleton-names)))
+    (funcall (intern skeleton-chosen))))
+
+(define-key html-mode-map <span style="color: #ad7fa8; font-style: italic;">"\C-ct"</span> 'insert-django-skeleton)
+
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">visit-parent-django-template</span> ()
+  <span style="color: #888a85;">"In a buffer containg {% extends \"foo.html\" %}, visit foo.html."</span>
+  (interactive)
+  (<span style="color: #729fcf; font-weight: bold;">let</span> (start-pos end-pos template-name)
+    (<span style="color: #729fcf; font-weight: bold;">save-excursion</span>
+      (widen)
+      (goto-char (point-min))
+      <span style="color: #888a85;">;; </span><span style="color: #888a85;">Find the extends tag</span>
+      (<span style="color: #729fcf; font-weight: bold;">while</span> (not (looking-at <span style="color: #ad7fa8; font-style: italic;">"{% ?extends"</span>))
+        (forward-char 1))
+      <span style="color: #888a85;">;; </span><span style="color: #888a85;">Find the opening " of the file name.</span>
+      (<span style="color: #729fcf; font-weight: bold;">while</span> (not (looking-at <span style="color: #ad7fa8; font-style: italic;">"\""</span>))
+        (forward-char 1))
+      (forward-char)
+      (setq start-pos (point))
+
+      <span style="color: #888a85;">;; </span><span style="color: #888a85;">Find the closing "</span>
+      (<span style="color: #729fcf; font-weight: bold;">while</span> (not (looking-at <span style="color: #ad7fa8; font-style: italic;">"\""</span>))
+        (forward-char 1))
+      (setq end-pos (point))
+
+      (setq template-name (buffer-substring-no-properties start-pos end-pos)))
+
+    <span style="color: #888a85;">;; </span><span style="color: #888a85;">Open this file, assuming it's in the same directory.</span>
+    <span style="color: #888a85;">;; </span><span style="color: #888a85;">TODO: Search the current VCS checkout for it.</span>
+    (find-file template-name)))
+
+(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">html-linkify-region</span> (url)
+  <span style="color: #888a85;">"Wraps the region in an &lt;a&gt; tag with href set to URL."</span>
+  (interactive <span style="color: #ad7fa8; font-style: italic;">"sURL: "</span>)
+  (<span style="color: #729fcf; font-weight: bold;">let*</span> (
+         (initial-cursor-position (point))
+         (beginning (region-beginning))
+         (end (region-end))
+         (first-replacement (concat <span style="color: #ad7fa8; font-style: italic;">"&lt;a href=\""</span> url <span style="color: #ad7fa8; font-style: italic;">"\"&gt;"</span>))
+         (second-replacement <span style="color: #ad7fa8; font-style: italic;">"&lt;/a&gt;"</span>))
+  (goto-char beginning)
+  (insert first-replacement)
+  (goto-char (+ end (length first-replacement)))
+  (insert second-replacement)
+  (goto-char (+ initial-cursor-position (length first-replacement)))
+  ))
+
+<span style="color: #888a85;">; </span><span style="color: #888a85;">zen coding: converts selector-style lines to tags</span>
+<span style="color: #888a85;">; </span><span style="color: #888a85;">e.g. table&gt;tr*2 becomes &lt;table&gt;&lt;tr&gt;&lt;/tr&gt;&lt;tr&gt;&lt;/tr&gt;&lt;/table&gt;</span>
+(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">zencoding-mode</span>)
+(add-hook 'sgml-mode-hook 'zencoding-mode) <span style="color: #888a85;">;; </span><span style="color: #888a85;">Auto-start on any markup modes</span>
+
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-15" class="outline-3">
+<h3 id="sec-3-15"><span class="section-number-3">3.15</span> CSS</h3>
+<div class="outline-text-3" id="text-3-15">
 
 
 <p>
@@ -1567,9 +1741,9 @@ they represent.
 
 </div>
 
-<div id="outline-container-3-15" class="outline-3">
-<h3 id="sec-3-15"><span class="section-number-3">3.15</span> Less (CSS)</h3>
-<div class="outline-text-3" id="text-3-15">
+<div id="outline-container-3-16" class="outline-3">
+<h3 id="sec-3-16"><span class="section-number-3">3.16</span> Less (CSS)</h3>
+<div class="outline-text-3" id="text-3-16">
 
 
 <p>
@@ -1588,9 +1762,9 @@ syntax check.
 
 </div>
 
-<div id="outline-container-3-16" class="outline-3">
-<h3 id="sec-3-16"><span class="section-number-3">3.16</span> Org-mode</h3>
-<div class="outline-text-3" id="text-3-16">
+<div id="outline-container-3-17" class="outline-3">
+<h3 id="sec-3-17"><span class="section-number-3">3.17</span> Org-mode</h3>
+<div class="outline-text-3" id="text-3-17">
 
 
 <p>
@@ -1600,7 +1774,8 @@ them.
 
 
 
-<pre class="src src-emacs-lisp">(setq org-src-fontify-natively t)
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">eval-after-load</span> <span style="color: #ad7fa8; font-style: italic;">"org"</span> 
+ '(setq org-src-fontify-natively t))
 </pre>
 
 
@@ -1608,9 +1783,9 @@ them.
 
 </div>
 
-<div id="outline-container-3-17" class="outline-3">
-<h3 id="sec-3-17"><span class="section-number-3">3.17</span> Markdown</h3>
-<div class="outline-text-3" id="text-3-17">
+<div id="outline-container-3-18" class="outline-3">
+<h3 id="sec-3-18"><span class="section-number-3">3.18</span> Markdown</h3>
+<div class="outline-text-3" id="text-3-18">
 
 
 <p>
@@ -1628,9 +1803,9 @@ Markdown is essentially prose, so it's nice to automatically line-wrap
 
 </div>
 
-<div id="outline-container-3-18" class="outline-3">
-<h3 id="sec-3-18"><span class="section-number-3">3.18</span> Performance</h3>
-<div class="outline-text-3" id="text-3-18">
+<div id="outline-container-3-19" class="outline-3">
+<h3 id="sec-3-19"><span class="section-number-3">3.19</span> Performance</h3>
+<div class="outline-text-3" id="text-3-19">
 
 
 <p>
@@ -1650,9 +1825,9 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 
 </div>
 
-<div id="outline-container-3-19" class="outline-3">
-<h3 id="sec-3-19"><span class="section-number-3">3.19</span> Undocumented</h3>
-<div class="outline-text-3" id="text-3-19">
+<div id="outline-container-3-20" class="outline-3">
+<h3 id="sec-3-20"><span class="section-number-3">3.20</span> Undocumented</h3>
+<div class="outline-text-3" id="text-3-20">
 
 
 
@@ -1685,7 +1860,6 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">completion-customisations</span>)
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">structured-text-customisations</span>)
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">isearch-customisations</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">html-customisations</span>)
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">python-customisations</span>)
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">javascript-customisations</span>)
 (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">xml-customisations</span>)
@@ -1815,8 +1989,8 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2014-01-17T21:58+0000</p>
-<p class="author">Author: </p>
+<p class="date">Date: 2014-01-21T11:48+0000</p>
+<p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
 

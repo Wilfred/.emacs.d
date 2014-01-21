@@ -786,6 +786,156 @@ indentation.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 #+END_SRC
+
+** HTML
+
+I like to indent my HTML with tabs (company policy at the first web
+shop I worked at).
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'sgml-mode)
+  
+  ; indent html with tabs only
+  (add-hook 'html-mode-hook
+    (function
+     (lambda ()
+       (progn
+         (setq indent-tabs-mode nil)
+         (setq sgml-basic-offset 4)))))
+#+END_SRC
+
+Much of my HTML is for Django templates. These sometimes have .dtml
+filenames, so use html-mode for those files.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-to-list 'auto-mode-alist '("\\.dtml$" . html-mode))
+#+END_SRC
+
+We want syntax highlighting for Django template syntax, so add extra
+font faces and use them if we see Django syntax.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  ;; Define coloured faces for Django syntax.
+  (defvar django-tag-face (make-face 'django-tag-face))
+  (set-face-foreground 'django-tag-face "Orange")
+  ;
+  (defvar django-variable-face (make-face 'django-variable-face))
+  (set-face-foreground 'django-variable-face "Green")
+  
+  (defvar django-comment-face (make-face 'django-comment-face))
+  (set-face-foreground 'django-comment-face "Gray")
+
+  ;; Use these faces for Django syntax.  
+  (font-lock-add-keywords
+   'html-mode
+   '(
+     ("\\({%[^%]*%}\\)" 1 django-tag-face prepend)
+     ("\\({{[^}]*}}\\)" 1 django-variable-face prepend)
+     ("\\({#[^}]*#}\\)" 1 django-comment-face prepend)
+     ("\\({% comment %}\\(.\\|
+  \\)*{% endcomment %}\\)" 1 django-comment-face prepend)
+     ))
+#+END_SRC
+
+TODO: document the rest of our HTML configuration.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  ; skeletons for Django template tags
+  (define-skeleton template-tag-skeleton
+    "Insert a {% foo %} template tag"
+    "Template tag name: "
+    "{% " str " %}")
+  (define-skeleton template-variable-skeleton
+    "Insert a {{ foo }} template variable"
+    "Template variable: "
+    "{{ " str " }}")
+  (define-skeleton template-comment-skeleton
+    "Insert a {# foo #} template variable"
+    "Comment: "
+    "{# " str " #}")
+  (define-skeleton template-block-skeleton
+    "Insert {% block foo %}{% endblock %}"
+    "Block name: "
+    "{% block " str " %}\n" - "\n{% endblock %}")
+  (define-skeleton template-if-else-skeleton
+    "Insert {% if foo %}{% else %}{% endif %}"
+    "If condition: "
+    "{% if " str " %}\n" - "\n{% else %}\n\n{% endif %}")
+  (define-skeleton template-if-skeleton
+    "Insert {% if foo %}{% endif %}"
+    "If condition: "
+    "{% if " str " %}" - "{% endif %}")
+  (define-skeleton underscore-skeleton
+    "Insert <%= foo %>"
+    "Contents: "
+    "<%= " str " %>")
+  
+  (defvar template-skeletons
+    '(template-tag-skeleton
+      template-variable-skeleton
+      template-comment-skeleton
+      template-block-skeleton
+      template-if-skeleton
+      template-if-else-skeleton
+      underscore-skeleton))
+  
+  (defun insert-django-skeleton ()
+    (interactive)
+    (let* ((skeleton-names (mapcar 'symbol-name template-skeletons))
+          (skeleton-chosen (ido-completing-read "HTML skeleton: " skeleton-names)))
+      (funcall (intern skeleton-chosen))))
+  
+  (define-key html-mode-map "\C-ct" 'insert-django-skeleton)
+  
+  (defun visit-parent-django-template ()
+    "In a buffer containg {% extends \"foo.html\" %}, visit foo.html."
+    (interactive)
+    (let (start-pos end-pos template-name)
+      (save-excursion
+        (widen)
+        (goto-char (point-min))
+        ;; Find the extends tag
+        (while (not (looking-at "{% ?extends"))
+          (forward-char 1))
+        ;; Find the opening " of the file name.
+        (while (not (looking-at "\""))
+          (forward-char 1))
+        (forward-char)
+        (setq start-pos (point))
+  
+        ;; Find the closing "
+        (while (not (looking-at "\""))
+          (forward-char 1))
+        (setq end-pos (point))
+  
+        (setq template-name (buffer-substring-no-properties start-pos end-pos)))
+  
+      ;; Open this file, assuming it's in the same directory.
+      ;; TODO: Search the current VCS checkout for it.
+      (find-file template-name)))
+  
+  (defun html-linkify-region (url)
+    "Wraps the region in an <a> tag with href set to URL."
+    (interactive "sURL: ")
+    (let* (
+           (initial-cursor-position (point))
+           (beginning (region-beginning))
+           (end (region-end))
+           (first-replacement (concat "<a href=\"" url "\">"))
+           (second-replacement "</a>"))
+    (goto-char beginning)
+    (insert first-replacement)
+    (goto-char (+ end (length first-replacement)))
+    (insert second-replacement)
+    (goto-char (+ initial-cursor-position (length first-replacement)))
+    ))
+  
+  ; zen coding: converts selector-style lines to tags
+  ; e.g. table>tr*2 becomes <table><tr></tr><tr></tr></table>
+  (require 'zencoding-mode)
+  (add-hook 'sgml-mode-hook 'zencoding-mode) ;; Auto-start on any markup modes
+  
+#+END_SRC
    
 ** CSS
 
@@ -878,7 +1028,6 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
   (require 'completion-customisations)
   (require 'structured-text-customisations)
   (require 'isearch-customisations)
-  (require 'html-customisations)
   (require 'python-customisations)
   (require 'javascript-customisations)
   (require 'xml-customisations)
