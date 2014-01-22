@@ -421,6 +421,9 @@ the command `sp-cheat-sheet'.
   
   ;; (foo bar) -> [foo bar]
   (define-key smartparens-mode-map (kbd "M-S") 'sp-rewrap-sexp)
+  
+  ;; (foo) bar -> (foo bar)
+  (define-key smartparens-mode-map (kbd "<C-right>") 'sp-forward-slurp-sexp)
 #+END_SRC
 
 ** Files

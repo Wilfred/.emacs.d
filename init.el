@@ -167,6 +167,9 @@ If a prefix argument is given, don't change the kill-ring."
 ;; (foo bar) -> [foo bar]
 (define-key smartparens-mode-map (kbd "M-S") 'sp-rewrap-sexp)
 
+;; (foo) bar -> (foo bar)
+(define-key smartparens-mode-map (kbd "<C-right>") 'sp-forward-slurp-sexp)
+
 (require 'recentf)
 
 ;; offer recently accessed files from the menu
