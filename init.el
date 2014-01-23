@@ -302,6 +302,8 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'flycheck)
 (setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers))
 
+(eval-after-load "dash" '(dash-enable-font-lock))
+
 (require 'smartparens-config)
 (add-hook 'python-mode-hook 'smartparens-mode)
 

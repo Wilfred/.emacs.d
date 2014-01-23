@@ -758,6 +758,16 @@ the way for quick throwaway elisp scripts, so we switch off checkdoc.
   (setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers))
 #+END_SRC
 
+*** Highlighting
+
+Emacs lisp highlighting works pretty well out of the box. However,
+dash.el provides addition highlighting for its functions and variables
+used in its anaphoric macros (e.g. `it').
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (eval-after-load "dash" '(dash-enable-font-lock))
+#+END_SRC
+
 ** Python
 
 Having brackets and quotation marks closed is very useful in
