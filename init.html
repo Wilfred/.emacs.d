@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2014-01-22T11:22+0000"/>
+<meta name="generated" content="2014-01-23T16:25+0000"/>
 <meta name="author" content="Wilfred Hughes"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -191,13 +191,14 @@ for the JavaScript code in this tag.
 </li>
 <li><a href="#sec-3-13">3.13 Python</a></li>
 <li><a href="#sec-3-14">3.14 Haskell</a></li>
-<li><a href="#sec-3-15">3.15 HTML</a></li>
-<li><a href="#sec-3-16">3.16 CSS</a></li>
-<li><a href="#sec-3-17">3.17 Less (CSS)</a></li>
-<li><a href="#sec-3-18">3.18 Org-mode</a></li>
-<li><a href="#sec-3-19">3.19 Markdown</a></li>
-<li><a href="#sec-3-20">3.20 Performance</a></li>
-<li><a href="#sec-3-21">3.21 Undocumented</a></li>
+<li><a href="#sec-3-15">3.15 Ruby</a></li>
+<li><a href="#sec-3-16">3.16 HTML</a></li>
+<li><a href="#sec-3-17">3.17 CSS</a></li>
+<li><a href="#sec-3-18">3.18 Less (CSS)</a></li>
+<li><a href="#sec-3-19">3.19 Org-mode</a></li>
+<li><a href="#sec-3-20">3.20 Markdown</a></li>
+<li><a href="#sec-3-21">3.21 Performance</a></li>
+<li><a href="#sec-3-22">3.22 Undocumented</a></li>
 </ul>
 </li>
 </ul>
@@ -1586,8 +1587,27 @@ indentation.
 </div>
 
 <div id="outline-container-3-15" class="outline-3">
-<h3 id="sec-3-15"><span class="section-number-3">3.15</span> HTML</h3>
+<h3 id="sec-3-15"><span class="section-number-3">3.15</span> Ruby</h3>
 <div class="outline-text-3" id="text-3-15">
+
+
+<p>
+Vagrant files are Ruby, so use Ruby syntax highlighting for them.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(add-to-list 'auto-mode-alist '(<span style="color: #ad7fa8; font-style: italic;">"Vagrantfile"</span> . ruby-mode))
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3-16" class="outline-3">
+<h3 id="sec-3-16"><span class="section-number-3">3.16</span> HTML</h3>
+<div class="outline-text-3" id="text-3-16">
 
 
 <p>
@@ -1769,9 +1789,9 @@ TODO: document the rest of our HTML configuration.
 
 </div>
 
-<div id="outline-container-3-16" class="outline-3">
-<h3 id="sec-3-16"><span class="section-number-3">3.16</span> CSS</h3>
-<div class="outline-text-3" id="text-3-16">
+<div id="outline-container-3-17" class="outline-3">
+<h3 id="sec-3-17"><span class="section-number-3">3.17</span> CSS</h3>
+<div class="outline-text-3" id="text-3-17">
 
 
 <p>
@@ -1805,9 +1825,9 @@ they represent.
 
 </div>
 
-<div id="outline-container-3-17" class="outline-3">
-<h3 id="sec-3-17"><span class="section-number-3">3.17</span> Less (CSS)</h3>
-<div class="outline-text-3" id="text-3-17">
+<div id="outline-container-3-18" class="outline-3">
+<h3 id="sec-3-18"><span class="section-number-3">3.18</span> Less (CSS)</h3>
+<div class="outline-text-3" id="text-3-18">
 
 
 <p>
@@ -1826,9 +1846,9 @@ syntax check.
 
 </div>
 
-<div id="outline-container-3-18" class="outline-3">
-<h3 id="sec-3-18"><span class="section-number-3">3.18</span> Org-mode</h3>
-<div class="outline-text-3" id="text-3-18">
+<div id="outline-container-3-19" class="outline-3">
+<h3 id="sec-3-19"><span class="section-number-3">3.19</span> Org-mode</h3>
+<div class="outline-text-3" id="text-3-19">
 
 
 <p>
@@ -1847,9 +1867,9 @@ them.
 
 </div>
 
-<div id="outline-container-3-19" class="outline-3">
-<h3 id="sec-3-19"><span class="section-number-3">3.19</span> Markdown</h3>
-<div class="outline-text-3" id="text-3-19">
+<div id="outline-container-3-20" class="outline-3">
+<h3 id="sec-3-20"><span class="section-number-3">3.20</span> Markdown</h3>
+<div class="outline-text-3" id="text-3-20">
 
 
 <p>
@@ -1867,9 +1887,9 @@ Markdown is essentially prose, so it's nice to automatically line-wrap
 
 </div>
 
-<div id="outline-container-3-20" class="outline-3">
-<h3 id="sec-3-20"><span class="section-number-3">3.20</span> Performance</h3>
-<div class="outline-text-3" id="text-3-20">
+<div id="outline-container-3-21" class="outline-3">
+<h3 id="sec-3-21"><span class="section-number-3">3.21</span> Performance</h3>
+<div class="outline-text-3" id="text-3-21">
 
 
 <p>
@@ -1889,9 +1909,9 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 
 </div>
 
-<div id="outline-container-3-21" class="outline-3">
-<h3 id="sec-3-21"><span class="section-number-3">3.21</span> Undocumented</h3>
-<div class="outline-text-3" id="text-3-21">
+<div id="outline-container-3-22" class="outline-3">
+<h3 id="sec-3-22"><span class="section-number-3">3.22</span> Undocumented</h3>
+<div class="outline-text-3" id="text-3-22">
 
 
 
@@ -2053,7 +2073,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2014-01-22T11:22+0000</p>
+<p class="date">Date: 2014-01-23T16:25+0000</p>
 <p class="author">Author: Wilfred Hughes</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

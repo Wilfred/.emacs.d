@@ -323,6 +323,8 @@ If a prefix argument is given, don't change the kill-ring."
 
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 
+(add-to-list 'auto-mode-alist '("Vagrantfile" . ruby-mode))
+
 (require 'sgml-mode)
 
 ; indent html with tabs only

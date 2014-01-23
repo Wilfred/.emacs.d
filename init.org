@@ -815,6 +815,14 @@ indentation.
   (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 #+END_SRC
 
+** Ruby
+
+Vagrant files are Ruby, so use Ruby syntax highlighting for them.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-to-list 'auto-mode-alist '("Vagrantfile" . ruby-mode))
+#+END_SRC
+
 ** HTML
 
 I like to indent my HTML with tabs (company policy at the first web
