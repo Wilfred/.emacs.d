@@ -467,6 +467,8 @@ If a prefix argument is given, don't change the kill-ring."
 
 (add-hook 'css-mode-hook 'rainbow-mode)
 
+(add-hook 'css-mode-hook 'smartparens-mode)
+
 (require 'less-css-mode)
 (add-hook 'less-css-mode-hook 'flymake-mode)
 

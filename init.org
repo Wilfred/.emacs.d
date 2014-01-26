@@ -1011,6 +1011,13 @@ they represent.
   (add-hook 'css-mode-hook 'rainbow-mode)
 #+END_SRC
 
+Smartparens is well suited to CSS too, to automatically pair up curly
+brackets.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-hook 'css-mode-hook 'smartparens-mode)
+#+END_SRC
+
 ** Less (CSS)
 
 The less compiler doesn't give much feedback, but it does gives us a
