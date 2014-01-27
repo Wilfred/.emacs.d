@@ -36,10 +36,21 @@
 (require 'magit)
 (require 'easymenu)
 
+;;; Options
+
+(defgroup magit-blame nil
+  "Git-blame support for Magit."
+  :group 'magit-extensions)
+
 (defcustom magit-blame-ignore-whitespace t
   "Ignore whitespace when determining blame information."
-  :group 'magit
+  :group 'magit-blame
   :type 'boolean)
+
+(defcustom magit-time-format-string "%Y-%m-%dT%T%z"
+  "How to format time in magit-blame header."
+  :group 'magit-blame
+  :type 'string)
 
 (defface magit-blame-header
   '((t :inherit magit-header))
@@ -47,8 +58,7 @@
   :group 'magit-faces)
 
 (defface magit-blame-sha1
-  '((t :inherit (magit-log-sha1
-                 magit-blame-header)))
+  '((t :inherit (magit-log-sha1 magit-blame-header)))
   "Face for blame sha1."
   :group 'magit-faces)
 
@@ -67,8 +77,10 @@
   "Face for blame tag line."
   :group 'magit-faces)
 
-(defconst magit-blame-map
-  (let ((map (make-sparse-keymap "Magit:Blame")))
+;;; Keymaps
+
+(defvar magit-blame-map
+  (let ((map (make-sparse-keymap)))
     (define-key map (kbd "l") 'magit-blame-locate-commit)
     (define-key map (kbd "RET") 'magit-blame-locate-commit)
     (define-key map (kbd "q") 'magit-blame-mode)
@@ -86,6 +98,8 @@
     "---"
     ["Quit" magit-blame-mode t]))
 
+;;; Mode
+
 (defvar-local magit-blame-buffer-read-only nil)
 
 ;;;###autoload
@@ -94,7 +108,7 @@
   :keymap magit-blame-map
   :lighter " blame"
   (unless (buffer-file-name)
-    (error "Current buffer has no associated file!"))
+    (user-error "Current buffer has no associated file!"))
   (when (and (buffer-modified-p)
              (y-or-n-p (format "save %s first? " (buffer-file-name))))
     (save-buffer))
@@ -130,6 +144,8 @@
                    ,(file-name-nondirectory (buffer-file-name buffer))))
           (magit-blame-parse buffer (current-buffer)))))))
 
+;;; Commands
+
 (defun magit-blame-locate-commit (pos)
   "Jump to a commit in the branch history from an annotated blame section."
   (interactive "d")
@@ -155,10 +171,7 @@
     (when prev
       (goto-char prev))))
 
-(defcustom magit-time-format-string "%Y-%m-%dT%T%z"
-  "How to format time in magit-blame header."
-  :group 'magit
-  :type 'string)
+;;; Parse
 
 (defun magit-blame-decode-time (unixtime &optional tz)
   "Decode UNIXTIME into (HIGH LOW) format.
