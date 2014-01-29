@@ -168,7 +168,7 @@ If a prefix argument is given, don't change the kill-ring."
 (define-key smartparens-mode-map (kbd "M-S") 'sp-rewrap-sexp)
 
 ;; (foo) bar -> (foo bar)
-(define-key smartparens-mode-map (kbd "<C-right>") 'sp-forward-slurp-sexp)
+(define-key smartparens-mode-map (kbd "<C-right>") 'sp-slurp-hybrid-sexp)
 
 (require 'recentf)
 
