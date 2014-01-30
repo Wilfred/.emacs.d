@@ -170,6 +170,9 @@ If a prefix argument is given, don't change the kill-ring."
 ;; (foo) bar -> (foo bar)
 (define-key smartparens-mode-map (kbd "<C-right>") 'sp-slurp-hybrid-sexp)
 
+(require 'smartparens-config)
+(add-hook 'prog-mode-hook 'smartparens-mode)
+
 (require 'recentf)
 
 ;; offer recently accessed files from the menu
@@ -303,9 +306,6 @@ If a prefix argument is given, don't change the kill-ring."
 (setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers))
 
 (eval-after-load "dash" '(dash-enable-font-lock))
-
-(require 'smartparens-config)
-(add-hook 'python-mode-hook 'smartparens-mode)
 
 (require 'flymake-python-pyflakes)
 (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)

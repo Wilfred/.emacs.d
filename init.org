@@ -426,6 +426,13 @@ the command `sp-cheat-sheet'.
   (define-key smartparens-mode-map (kbd "<C-right>") 'sp-slurp-hybrid-sexp)
 #+END_SRC
 
+I like to use smartparens in all programming modes.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'smartparens-config)
+  (add-hook 'prog-mode-hook 'smartparens-mode)
+#+END_SRC
+
 ** Files
 
 *** Opening
@@ -686,7 +693,7 @@ expand the macros in our elisp file.
 Paredit make editing code with parentheses wonderful and has been the
 gold standard for lisp coding for some time. Smartparens has recently
 gained popularity as an paredit alternative, but I haven't invested
-the time to learn it yet.
+the time to set it up for lisp yet.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (add-hook 'emacs-lisp-mode-hook
@@ -769,17 +776,6 @@ used in its anaphoric macros (e.g. `it').
 #+END_SRC
 
 ** Python
-
-Having brackets and quotation marks closed is very useful in
-Python. Paredit isn't well suited for Python, and `electric-pair-mode`
-isn't very smart. Autopair works well, but performance is poor on
-medium size (a few hundred LOC) files with many strings. Smartparens
-is the best solution.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (require 'smartparens-config)
-  (add-hook 'python-mode-hook 'smartparens-mode)
-#+END_SRC
 
 We use pyflakes with flymake to check for coding errors.
 

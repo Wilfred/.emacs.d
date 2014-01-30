@@ -7,8 +7,8 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="init"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2014-01-29T11:50+0000"/>
-<meta name="author" content="Wilfred Hughes"/>
+<meta name="generated" content="2014-01-30T20:28+0000"/>
+<meta name="author" content=""/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
 <style type="text/css">
@@ -934,6 +934,17 @@ the command `sp-cheat-sheet'.
 </pre>
 
 
+<p>
+I like to use smartparens in all programming modes.
+</p>
+
+
+
+<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">smartparens-config</span>)
+(add-hook 'prog-mode-hook 'smartparens-mode)
+</pre>
+
+
 </div>
 </div>
 
@@ -1367,7 +1378,7 @@ expand the macros in our elisp file.
 Paredit make editing code with parentheses wonderful and has been the
 gold standard for lisp coding for some time. Smartparens has recently
 gained popularity as an paredit alternative, but I haven't invested
-the time to learn it yet.
+the time to set it up for lisp yet.
 </p>
 
 
@@ -1516,21 +1527,6 @@ used in its anaphoric macros (e.g. `it').
 <div id="outline-container-3-13" class="outline-3">
 <h3 id="sec-3-13"><span class="section-number-3">3.13</span> Python</h3>
 <div class="outline-text-3" id="text-3-13">
-
-
-<p>
-Having brackets and quotation marks closed is very useful in
-Python. Paredit isn't well suited for Python, and `electric-pair-mode`
-isn't very smart. Autopair works well, but performance is poor on
-medium size (a few hundred LOC) files with many strings. Smartparens
-is the best solution.
-</p>
-
-
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">smartparens-config</span>)
-(add-hook 'python-mode-hook 'smartparens-mode)
-</pre>
 
 
 <p>
@@ -2106,8 +2102,8 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2014-01-29T11:50+0000</p>
-<p class="author">Author: Wilfred Hughes</p>
+<p class="date">Date: 2014-01-30T20:28+0000</p>
+<p class="author">Author: </p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
 
