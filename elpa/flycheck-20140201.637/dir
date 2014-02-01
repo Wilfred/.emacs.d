@@ -15,5 +15,5 @@ File: dir,	Node: Top	This is the top of the INFO tree
 * Menu:
 
 Emacs
-* Flycheck: (flycheck).         On the fly syntax checking (aka "flymake done 
-                                  right")
+* flycheck: (flycheck.info).    On the fly syntax checking (aka "flymake done 
+                                  right").
