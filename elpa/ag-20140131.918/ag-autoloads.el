@@ -3,9 +3,10 @@
 ;;; Code:
 
 
-;;;### (autoloads (ag-kill-other-buffers ag-kill-buffers ag-regexp-project-at-point
+;;;### (autoloads (ag-kill-other-buffers ag-kill-buffers ag-project-dired-regexp
+;;;;;;  ag-project-dired ag-dired-regexp ag-dired ag-regexp-project-at-point
 ;;;;;;  ag-project-regexp ag-project-files ag-project ag-regexp ag-files
-;;;;;;  ag) "ag" "ag.el" (21168 35441 619567 136000))
+;;;;;;  ag) "ag" "ag.el" (21231 59737 303694 903000))
 ;;; Generated autoloads from ag.el
 
 (autoload 'ag "ag" "\
@@ -51,6 +52,46 @@ to the symbol under point.
 
 \(fn REGEXP)" t nil)
 
+(autoload 'ag-dired "ag" "\
+Recursively find files in DIR matching PATTERN.
+
+The PATTERN is matched against the full path to the file, not
+only against the file name.
+
+The results are presented as a `dired-mode' buffer with
+`default-directory' being DIR.
+
+See also `ag-dired-regexp'.
+
+\(fn DIR PATTERN)" t nil)
+
+(autoload 'ag-dired-regexp "ag" "\
+Recursively find files in DIR matching REGEXP.
+
+The REGEXP is matched against the full path to the file, not
+only against the file name.
+
+The results are presented as a `dired-mode' buffer with
+`default-directory' being DIR.
+
+See also `find-dired'.
+
+\(fn DIR REGEXP)" t nil)
+
+(autoload 'ag-project-dired "ag" "\
+Recursively find files in current project matching PATTERN.
+
+See also `ag-dired'.
+
+\(fn PATTERN)" t nil)
+
+(autoload 'ag-project-dired-regexp "ag" "\
+Recursively find files in current project matching REGEXP.
+
+See also `ag-dired-regexp'.
+
+\(fn REGEXP)" t nil)
+
 (autoload 'ag-kill-buffers "ag" "\
 Kill all ag-mode buffers.
 
@@ -63,7 +104,7 @@ Kill all ag-mode buffers other than the current buffer.
 
 ;;;***
 
-;;;### (autoloads nil nil ("ag-pkg.el") (21168 35441 717696 846000))
+;;;### (autoloads nil nil ("ag-pkg.el") (21231 59737 403005 709000))
 
 ;;;***
 
