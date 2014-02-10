@@ -178,10 +178,11 @@ are interchanged."
 (global-set-key (kbd "<M-up>") 'move-text-up)
 (global-set-key (kbd "<M-down>") 'move-text-down)
 
-;; ace-jump-mode -- jump to an arbitrary word quickly
+;; ace-jump-mode -- quickly jump to an arbitrary word or line
 (require 'ace-jump-mode)
 (setq act-jump-case-fold nil)
-(define-key global-map (kbd "<f11>") 'ace-jump-mode)
+(define-key global-map (kbd "<f11>") 'ace-jump-word-mode)
+(define-key global-map (kbd "C-c <f11>") 'ace-jump-line-mode)
 
 (require 'ez-query-replace)
 
