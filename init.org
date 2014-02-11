@@ -1205,4 +1205,6 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
     (let ((destination (f-join directory file-name)))
       (url-copy-file url destination 't)
       (find-file destination)))
+  
+  (setq-default dired-listing-switches "-alhv")
 #+END_SRC
