@@ -65,6 +65,7 @@
          (process-environment process-environment)) ;; temporary environment change
     (switch-to-buffer output-buffer)
     (setq default-directory project-root)
+    (setq truncate-lines nil)
     (let (buffer-read-only)
       (erase-buffer))
 
