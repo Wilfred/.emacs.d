@@ -624,3 +624,7 @@ The FILE-NAME defaults to the one used in the URL."
   (let ((destination (f-join directory file-name)))
     (url-copy-file url destination 't)
     (find-file destination)))
+
+(setq-default dired-listing-switches "-alhv")
+
+(global-anzu-mode +1)
