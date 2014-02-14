@@ -2555,7 +2555,7 @@ see `sp-pair' for description."
 If the just-typed key is a possible trigger for any pair,
 `self-insert-command' is called and the special behaviours are
 handled in its advice provided by `smartparens-mode'.  If the
-just-typed key is not a trigger, fall back to the commant that
+just-typed key is not a trigger, fall back to the command that
 would execute if smartparens-mode were disabled."
   (interactive "p")
   (if (and (member (sp--single-key-description last-command-event) sp-trigger-keys)
@@ -5677,7 +5677,8 @@ triggers that `sp-forward-slurp-sexp' does."
                                     (goto-char :beg-in)
                                     (skip-syntax-forward " ")))))))
           (unless (or (looking-at "[ \t]*$")
-                      (looking-at (sp--get-stringlike-regexp)))
+                      (looking-at (sp--get-stringlike-regexp))
+                      (looking-at (sp--get-closing-regexp)))
             (newline)))
         (sp-get (sp--next-thing-selection -1) (indent-region :beg :end))
         ;; we need to call this again to get the new structure after
