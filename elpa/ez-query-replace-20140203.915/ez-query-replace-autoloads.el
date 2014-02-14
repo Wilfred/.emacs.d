@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (ez-query-replace-repeat ez-query-replace) "ez-query-replace"
-;;;;;;  "ez-query-replace.el" (21169 52873 296289 701000))
+;;;;;;  "ez-query-replace.el" (21246 1020 574462 693000))
 ;;; Generated autoloads from ez-query-replace.el
 
 (autoload 'ez-query-replace "ez-query-replace" "\
@@ -20,8 +20,8 @@ Run `ez-query-replace' with an old FROM and TO value.
 
 ;;;***
 
-;;;### (autoloads nil nil ("ez-query-replace-pkg.el") (21169 52873
-;;;;;;  425164 297000))
+;;;### (autoloads nil nil ("ez-query-replace-pkg.el") (21246 1020
+;;;;;;  681332 531000))
 
 ;;;***
 
