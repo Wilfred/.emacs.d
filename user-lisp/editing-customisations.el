@@ -228,4 +228,12 @@ copy to the clipboard."
       (indent-rigidly (point-min) (point-max) 4)
       (clipboard-kill-region (point-min) (point-max)))))
 
+(defun kill-entire-line ()
+  "Delete the whole line at point, even if point is not at the start of the line."
+  (interactive)
+  (beginning-of-line)
+  (kill-line))
+
+(global-set-key (kbd "C-S-k") 'kill-entire-line)
+
 (provide 'editing-customisations)
