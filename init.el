@@ -173,6 +173,8 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'smartparens-config)
 (add-hook 'prog-mode-hook 'smartparens-mode)
 
+(setq sp-autoescape-string-quote nil)
+
 (require 'recentf)
 
 ;; offer recently accessed files from the menu

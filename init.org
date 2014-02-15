@@ -433,6 +433,16 @@ I like to use smartparens in all programming modes.
   (add-hook 'prog-mode-hook 'smartparens-mode)
 #+END_SRC
 
+Smartparens allows you to automatically escape string quotation marks
+inside strings. This is handy, but smartparens has a known bug:
+https://github.com/Fuco1/smartparens/issues/77
+
+Instead, we simply switch off this behaviour.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq sp-autoescape-string-quote nil)
+#+END_SRC
+
 ** Files
 
 *** Opening
