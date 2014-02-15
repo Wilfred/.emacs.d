@@ -31,8 +31,8 @@ generated from it.
   (defun export-init-org ()
     "Generate init.html and init.html from the current init.org file."
     (interactive)
-    (call-interactively 'org-export-as-html)
-    (call-interactively 'org-babel-tangle))
+    (call-interactively 'org-babel-tangle)
+    (call-interactively 'org-export-as-html))
 #+END_SRC
 
 We include an extra CSS file in the export HTML, so we can modify the
