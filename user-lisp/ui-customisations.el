@@ -84,4 +84,17 @@ Assumes that the frame is only split into two."
 
 (global-set-key (kbd "C-x 5") 'toggle-frame-split)
 
+(defun split-this-frame ()
+  "Change this frame to be split vertically, with the current buffer in both.
+All other buffers are hidden.
+
+Yes this is an obscure function, but it's pretty common in my workflow. I use
+it to open related buffers easily and discard other buffers (commonly magit)."
+  (interactive)
+  (delete-other-windows)
+  (split-window-right)
+  (other-window 1))
+
+(global-set-key (kbd "C-c C-x 2") 'split-this-frame)
+
 (provide 'ui-customisations)
