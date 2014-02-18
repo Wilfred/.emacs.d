@@ -171,6 +171,7 @@ If a prefix argument is given, don't change the kill-ring."
 (define-key smartparens-mode-map (kbd "<C-right>") 'sp-slurp-hybrid-sexp)
 
 (require 'smartparens-config)
+(require 'smartparens-html)
 (add-hook 'prog-mode-hook 'smartparens-mode)
 
 (setq sp-autoescape-string-quote nil)

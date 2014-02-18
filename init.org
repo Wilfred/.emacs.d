@@ -430,6 +430,7 @@ I like to use smartparens in all programming modes.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (require 'smartparens-config)
+  (require 'smartparens-html)
   (add-hook 'prog-mode-hook 'smartparens-mode)
 #+END_SRC
 
