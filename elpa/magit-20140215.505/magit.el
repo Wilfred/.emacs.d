@@ -84,6 +84,7 @@ Use the function by the same name instead of this variable.")
 (require 'help-mode)
 (require 'ring)
 (require 'server)
+(require 'tramp)
 (require 'view)
 
 (eval-when-compile
@@ -1749,6 +1750,11 @@ Read `completing-read' documentation for the meaning of the argument."
                    varlist)
        ,@body)))
 
+(defun magit-file-name-tramp-remote (filename)
+  (when (tramp-tramp-file-p filename)
+    (with-parsed-tramp-file-name filename nil
+      (tramp-make-tramp-file-name method user host nil))))
+
 (defun magit-file-line (file)
   "Return the first line of FILE as a string."
   (when (file-regular-p file)
@@ -1896,14 +1902,12 @@ server if necessary."
 
 (defun magit-use-emacsclient-p ()
   (and magit-emacsclient-executable
-       (not (and (fboundp 'tramp-tramp-file-p)
-                 (tramp-tramp-file-p default-directory)))))
+       (not (tramp-tramp-file-p default-directory))))
 
 (defun magit-assert-emacsclient (action)
   (unless magit-emacsclient-executable
     (user-error "Cannot %s when `magit-emacsclient-executable' is nil" action))
-  (when (and (fboundp 'tramp-tramp-file-p)
-             (tramp-tramp-file-p default-directory))
+  (when (tramp-tramp-file-p default-directory)
     (user-error "Cannot %s when accessing repository using tramp" action)))
 
 ;;;; Git Config
@@ -1935,12 +1939,13 @@ server if necessary."
   "Return absolute path to the GIT_DIR for the current repository.
 If optional PATH is non-nil it has to be a path relative to the
 GIT_DIR and its absolute path is returned"
-  (let ((gitdir (file-name-as-directory
-                 (expand-file-name
-                  (magit-git-string "rev-parse" "--git-dir")))))
-    (if path
-        (expand-file-name (convert-standard-filename path) gitdir)
-      gitdir)))
+  (let ((gitdir (magit-git-string "rev-parse" "--git-dir")))
+    (when gitdir
+      (setq gitdir (concat (magit-file-name-tramp-remote default-directory)
+                           (file-name-as-directory gitdir)))
+      (if path
+          (expand-file-name (convert-standard-filename path) gitdir)
+        gitdir))))
 
 (defun magit-no-commit-p ()
   "Return non-nil if there is no commit in the current git repository."
@@ -1954,19 +1959,22 @@ either its work tree or git control directory and return its top
 directory.  If there is no top directory, because the repository
 is bare, return the control directory instead.
 
-If optional FILE is non-nil then return the top directory of its
-repository instead.  FILE should be an existing regular file or
-directory."
+If optional FILE is non-nil then return the top directory of the
+repository that contains it.  FILE should be an existing regular
+file or directory; if it doesn't exist nil is returned."
   (let ((default-directory (or file default-directory)))
-    ;; ^ This works even if FILE isn't a directory.
-    (file-name-as-directory
-     (expand-file-name
-      (or (magit-git-string "rev-parse" "--show-toplevel")
-          (let ((gitdir (magit-git-dir)))
-            (when gitdir
-              (if (magit-git-true "rev-parse" "--is-bare-repository")
-                  gitdir
-                (file-name-directory (directory-file-name gitdir))))))))))
+    (when (file-exists-p default-directory)
+      ;; ^ This works even if FILE isn't a directory.
+      (let ((top
+             (or (magit-git-string "rev-parse" "--show-toplevel")
+                 (let ((gitdir (magit-git-dir)))
+                   (when gitdir
+                     (if (magit-git-true "rev-parse" "--is-bare-repository")
+                         gitdir
+                       (file-name-directory (directory-file-name gitdir))))))))
+        (when top
+          (concat (magit-file-name-tramp-remote default-directory)
+                  (file-name-as-directory top)))))))
 
 (defun magit-file-relative-name (file)
   "Return the path of FILE relative to the repository root.
@@ -4042,7 +4050,7 @@ Customize variable `magit-diff-refine-hunk' to change the default mode."
 
 (defun magit-wash-diffstat ()
   (when (looking-at
-         "^ ?\\(.*?\\)\\( +| +\\)\\([0-9]+\\) \\([+]*\\)?\\([-]*\\)?$")
+         "^ ?\\(.*\\)\\( +| +\\)\\([0-9]+\\) ?\\(\\+*\\)\\(-*\\)$")
     (magit-bind-match-strings (file sep cnt add del)
       (delete-region (point) (1+ (line-end-position)))
       (magit-with-section (section diffstat 'diffstat)
@@ -5466,14 +5474,13 @@ tracking brach name suggesting a sensible default."
 (defun magit-maybe-create-local-tracking-branch (rev)
   "Depending on the users wishes, create a tracking branch for
 REV... maybe."
-  (if (string-match "^\\(?:refs/\\)?remotes/\\([^/]+\\)/\\(.+\\)" rev)
-      (let* ((remote (match-string 1 rev))
-             (branch (match-string 2 rev))
-             (tracker-name (magit-get-tracking-name remote branch)))
-        (when tracker-name
-          (magit-run-git "checkout" "-b" tracker-name rev)
-          t))
-    nil))
+  (when (string-match "^\\(?:refs/\\)?remotes/\\([^/]+\\)/\\(.+\\)" rev)
+    (let* ((remote (match-string 1 rev))
+           (branch (match-string 2 rev))
+           (tracker-name (magit-get-tracking-name remote branch)))
+      (when tracker-name
+        (magit-run-git "checkout" "-b" tracker-name rev)
+        t))))
 
 ;;;###autoload
 (defun magit-checkout (revision)
@@ -5489,9 +5496,10 @@ If REVISION is a remote branch, offer to create a local tracking branch.
                            (unless (string= current-branch default)
                              default)
                            current-branch))))
-  (unless (magit-maybe-create-local-tracking-branch revision)
-    (magit-save-some-buffers)
-    (magit-run-git "checkout" revision)))
+  (or (magit-maybe-create-local-tracking-branch revision)
+      (progn
+        (magit-save-some-buffers)
+        (magit-run-git "checkout" revision))))
 
 ;;;###autoload
 (defun magit-create-branch (branch parent)
@@ -5980,13 +5988,14 @@ Also see option `magit-set-upstream-on-push'."
 (defun magit-push-dwim (arg)
   "Push the current branch to a remote repository.
 
-With a single prefix argument ask the user what branch to push
-to.  With two or more prefix arguments also ask the user what
-remote to push to.  Otherwise use the remote and branch as
-configured using the Git variables `branch.<name>.remote' and
-`branch.<name>.merge'.  If the former is undefined ask the user.
-If the latter is undefined push without specifing the remote
-branch explicitly.
+With a single prefix argument ask the user what remote to push
+to.  With two or more prefix arguments also ask the user the
+name of the remote branch to push to.
+
+Otherwise use the remote and branch as configured using the
+Git variables `branch.<name>.remote' and `branch.<name>.merge'.
+If the former is undefined ask the user.  If the latter is
+undefined push without specifing the remote branch explicitly.
 
 Also see option `magit-set-upstream-on-push'."
   (interactive "P")
@@ -7249,23 +7258,30 @@ from the parent keymap `magit-mode-map' are also available.")
 ;;;; Miscellaneous Commands
 
 ;;;###autoload
-(defun magit-init (dir)
-  "Initialize git repository in the DIR directory."
-  (interactive (list (read-directory-name "Directory for Git repository: ")))
-  (let* ((dir (file-name-as-directory (expand-file-name dir)))
-         (topdir (magit-get-top-dir dir)))
-    (when (or (not topdir)
-              (yes-or-no-p
-               (format
-                (if (string-equal topdir dir)
-                    "There is already a Git repository in %s. Reinitialize? "
-                  "There is a Git repository in %s. Create another in %s? ")
-                topdir dir)))
-      (unless (file-directory-p dir)
-        (and (y-or-n-p (format "Directory %s does not exists.  Create it? " dir))
-             (make-directory dir)))
-      (let ((default-directory dir))
-        (magit-run-git "init")))))
+(defun magit-init (directory)
+  "Create or reinitialize a Git repository.
+Read directory name and initialize it as new Git repository.
+
+If the directory is below an existing repository, then the user
+has to confirm that a new one should be created inside; or when
+the directory is the root of the existing repository, whether
+it should be reinitialized.
+
+Non-interactively DIRECTORY is always (re-)initialized."
+  (interactive
+   (let* ((dir (file-name-as-directory
+                (expand-file-name
+                 (read-directory-name "Create repository in: "))))
+          (top (magit-get-top-dir dir)))
+     (if (and top
+              (not (yes-or-no-p
+                    (if (string-equal top dir)
+                        (format "Reinitialize existing repository %s? " dir)
+                      (format "%s is a repository.  Create another in %s? "
+                              top dir)))))
+         (user-error "Abort")
+       dir)))
+  (magit-run-git "init" directory))
 
 (defun magit-copy-item-as-kill ()
   "Copy sha1 of commit at point into kill ring."
