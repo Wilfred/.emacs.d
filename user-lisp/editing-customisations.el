@@ -231,11 +231,17 @@ copy to the clipboard."
 (defun kill-entire-line ()
   "Delete the whole line at point, even if point is not at the start of the line."
   (interactive)
-  (let ((column (current-column)))
+  (let ((initial-column (current-column)))
     (beginning-of-line)
     (kill-line)
-    ;; Go to the column on the next line.
-    (forward-char column)))
+    
+    ;; Go to the same column on the next line, or as close as we can
+    ;; if the following line isn't long enough.
+    (let (current-line-length (progn (end-of-line) (current-column)))
+      (forward-char
+       (if (> initial-column current-line-length)
+           current-line-length
+         initial-column)))))
 
 (global-set-key (kbd "C-S-k") 'kill-entire-line)
 
