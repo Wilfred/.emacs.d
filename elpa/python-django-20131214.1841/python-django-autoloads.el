@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (python-django-open-project) "python-django" "python-django.el"
-;;;;;;  (20899 17763 195875 803000))
+;;;;;;  (21257 2362 507076 369000))
 ;;; Generated autoloads from python-django.el
 
 (autoload 'python-django-open-project "python-django" "\
@@ -34,8 +34,8 @@ settings module (the same happens when called with two or more
 
 ;;;***
 
-;;;### (autoloads nil nil ("python-django-pkg.el") (20899 17763 265434
-;;;;;;  223000))
+;;;### (autoloads nil nil ("python-django-pkg.el") (21257 2362 598000
+;;;;;;  258000))
 
 ;;;***
 
