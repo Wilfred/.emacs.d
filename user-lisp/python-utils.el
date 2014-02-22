@@ -1,11 +1,10 @@
-(require 'file-utils)
 (require 'ag)
 (require 'dash)
 (require 's)
 (require 'f)
 (require 'python)
 
-(defcustom virtualenvs-root (expand-file-name "~/.envs")
+(defcustom virtualenvs-root (expand-file-name "~/.py_envs")
   "Absolute path to the directory that contains all the virtualenvs."
   :type 'file
   :group 'python)
@@ -16,8 +15,8 @@
   (unless (file-exists-p virtualenvs-root)
     (user-error "`virtualenvs-root' is set to %s, which doesn't exist" virtualenvs-root))
   (let* ((virtualenv-names
-          (no-dot-directories (directory-files virtualenvs-root)))
-         
+          (-map 'f-filename
+                (f-entries virtualenvs-root)))
          (virtualenv-name
           (ido-completing-read
            (format

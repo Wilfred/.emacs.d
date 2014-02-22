@@ -17,15 +17,4 @@ returning the path where FILE-NAME can be found."
     (when directory-path
         (f-join directory-path file-name))))
 
-(autoload 'vc-git-root "vc-git")
-(autoload 'vc-svn-root "vc-svn")
-
-(autoload '--remove "dash" nil t)
-
-(defun no-dot-directories (directories)
-  "Exclude the . and .. directory from a list."
-  (--remove (or (string= "." (file-name-nondirectory it))
-                (string= ".." (file-name-nondirectory it)))
-            directories))
-
 (provide 'file-utils)
