@@ -26,7 +26,8 @@
               "not set"))
            virtualenv-names))
          (virtualenv-path (f-join virtualenvs-root virtualenv-name)))
-    (setq python-shell-virtualenv-path virtualenv-path)))
+    (setq python-shell-virtualenv-path virtualenv-path)
+    (setq python-shell-interpreter (f-join virtualenv-path "bin" "python"))))
 
 (defun virtualenv-search--dwim-at-point ()
   "If there's an active selection, return that.
