@@ -38,12 +38,12 @@
 
 (defconst trifle-font-lock-keywords
   (list
-   `(,(regexp-opt '("if" "let" "function" "macro" "quote" "while" "set!" "set-symbol!") 'symbols) . font-lock-builtin-face))
+   `(,(regexp-opt '("if" "let" "function" "macro" "quote" "while" "set!" "set-symbol!") 'symbols) . font-lock-builtin-face)
+   `(":[a-z]+" . font-lock-constant-face))
   "Highlighting for Trifle mode")
 
 (defvar trifle-mode-syntax-table
   (make-syntax-table))
-
 
 (define-derived-mode trifle-mode lisp-mode "Trifle"
   "Major mode for editing Trifle lisp code."
