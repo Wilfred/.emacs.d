@@ -76,5 +76,7 @@
                       "git push --tags"
                       "git checkout develop")))
 
+;; TODO: implement git-flow-release-retry
+
 (provide 'git-flow-release)
 ;;; git-flow-release.el ends here
