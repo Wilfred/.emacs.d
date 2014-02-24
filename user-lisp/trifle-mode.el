@@ -38,7 +38,7 @@
 
 (defconst trifle-font-lock-keywords
   (list
-   `(,(regexp-opt '("if" "let" "function" "macro" "quote" "while" "set!" "set-symbol!") 'symbols) . font-lock-builtin-face)
+   `(,(regexp-opt '("if" "let" "function" "macro" "quote" "unquote" "unquote*" "while" "set!" "set-symbol!") 'symbols) . font-lock-builtin-face)
    `(":[a-z]+" . font-lock-constant-face))
   "Highlighting for Trifle mode")
 
