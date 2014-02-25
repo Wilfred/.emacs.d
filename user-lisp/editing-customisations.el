@@ -237,7 +237,8 @@ copy to the clipboard."
     
     ;; Go to the same column on the next line, or as close as we can
     ;; if the following line isn't long enough.
-    (let (current-line-length (progn (end-of-line) (current-column)))
+    (let ((current-line-length (progn (end-of-line) (current-column))))
+      (beginning-of-line)
       (forward-char
        (if (> initial-column current-line-length)
            current-line-length
