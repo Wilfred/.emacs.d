@@ -13,7 +13,9 @@
   "Convenience for setting `python-shell-virtualenv-path'."
   (interactive)
   (unless (file-exists-p virtualenvs-root)
-    (user-error "`virtualenvs-root' is set to %s, which doesn't exist" virtualenvs-root))
+    (setq virtualenvs-root
+          (ido-read-directory-name "Virtualenvs location: "
+                                   (expand-file-name "~"))))
   (let* ((virtualenv-names
           (-map 'f-filename
                 (f-entries virtualenvs-root)))
