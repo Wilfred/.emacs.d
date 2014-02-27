@@ -4,13 +4,13 @@
 
 
 ;;;### (autoloads (helm-dash-at-point helm-dash helm-dash-install-docset)
-;;;;;;  "helm-dash" "helm-dash.el" (21217 41876 517157 131000))
+;;;;;;  "helm-dash" "helm-dash.el" (21263 23406 287587 989000))
 ;;; Generated autoloads from helm-dash.el
 
 (autoload 'helm-dash-install-docset "helm-dash" "\
 Download docset with specified NAME and move its stuff to docsets-path.
 
-\(fn)" t nil)
+\(fn DOCSET-NAME)" t nil)
 
 (autoload 'helm-dash "helm-dash" "\
 Bring up a Dash search interface in helm.
@@ -25,8 +25,8 @@ point as prefilled search.
 
 ;;;***
 
-;;;### (autoloads nil nil ("helm-dash-pkg.el") (21217 41876 627086
-;;;;;;  468000))
+;;;### (autoloads nil nil ("helm-dash-pkg.el") (21263 23406 427743
+;;;;;;  559000))
 
 ;;;***
 
