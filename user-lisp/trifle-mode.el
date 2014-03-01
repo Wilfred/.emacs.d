@@ -26,6 +26,8 @@
 ;; Boston, MA 02110-1301, USA.
 
 ;;; Code:
+(require 'smartparens) ;; sp-up-sexp
+(require 'dash) ;; --dotimes
 
 (defvar trifle-mode-hook nil)
 
@@ -50,5 +52,30 @@
   "Major mode for editing Trifle lisp code."
   :syntax-table trifle-mode-syntax-table
   (set (make-local-variable 'font-lock-defaults) '(trifle-font-lock-keywords)))
+
+(defun trifle-indent ()
+  "Indent the current line according to Trifle indent rules.
+For every level of parentheses, indent by two spaces."
+  (interactive)
+  (let ((sexp-depth 0))
+    ;; Calculate sexp depth by calling sp-up-sexp until we cannot go
+    ;; up any further.
+    (save-excursion
+      (while (sp-up-sexp)
+        (incf sexp-depth)))
+
+    (back-to-indentation)
+    (let ((target-indent (* sexp-depth 2))
+          (current-indent (current-column)))
+      (cond
+       ;; Indent more if we haven't indented enough.
+       ((< current-indent target-indent)
+        (--dotimes (- target-indent  current-indent)
+          (insert " ")))
+       ;; Unindent if we're too indented.
+       ((> current-indent target-indent)
+        (delete-char (- target-indent current-indent))))
+      )
+    ))
 
 (provide 'trifle-mode)
