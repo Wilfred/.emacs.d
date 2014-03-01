@@ -29,8 +29,7 @@
 (require 'cider)
 
 ;; Trifle configuration
-;; todo: write a proper major mode
-(add-to-list 'auto-mode-alist '("\\.tfl$" . lisp-mode))
+(require 'trifle-mode)
 
 ;; convenience function for Trifle indentation
 ;; todo: full-blown indentation functionality
