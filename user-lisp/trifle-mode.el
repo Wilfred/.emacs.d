@@ -45,6 +45,7 @@
 (defvar trifle-mode-syntax-table
   (make-syntax-table))
 
+;;;###autoload
 (define-derived-mode trifle-mode lisp-mode "Trifle"
   "Major mode for editing Trifle lisp code."
   :syntax-table trifle-mode-syntax-table
