@@ -5,7 +5,7 @@ This is the Emacs environment I (Wilfred Hughes) use for development.
 ** Licensing
 
 Code I've written (init.el and files under `user-lisp/') is BSD
-licensed, see COPYING.
+licensed, see [[file:COPYING][COPYING]].
 
 ** Reading This Document
 
