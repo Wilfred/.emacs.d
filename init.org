@@ -115,7 +115,7 @@ files named `FOO-utils.el'.
 #+END_SRC
 
 Code that I haven't written lives in third-party-lisp. This directory
-should ultimately disappear once all these packages live in MELPA.
+should ultimately disappear once all these packages live in [[http://melpa.milkbox.net/][MELPA]].
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (add-to-list 'load-path "~/.emacs.d/third-party-lisp/")
@@ -363,7 +363,7 @@ http://emacsredux.com/blog/2013/03/26/smarter-open-line/ .
 
 ** Killing
 
-It's handy to also delete the trailing newline when using `C-k'.
+It's handy to also delete the trailing newline when using [[elisp:(describe-key%20(kbd%20"C-k"))][C-k]].
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (defadvice kill-line (around kill-line-remove-newline activate)
