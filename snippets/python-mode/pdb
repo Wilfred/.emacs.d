@@ -1,0 +1,5 @@
+# -*- coding: utf-8 -*-
+# name: pdb
+# key: pdb
+# --
+import pdb; pdb.set_trace()
