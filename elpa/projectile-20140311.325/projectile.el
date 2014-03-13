@@ -5,7 +5,7 @@
 ;; Author: Bozhidar Batsov <bozhidar@batsov.com>
 ;; URL: https://github.com/bbatsov/projectile
 ;; Keywords: project, convenience
-;; Version: 20140219.857
+;; Version: 20140311.325
 ;; X-Original-Version: 0.10.0
 ;; Package-Requires: ((s "1.6.0") (dash "1.5.0") (pkg-info "0.4"))
 
@@ -640,6 +640,18 @@ Operates on filenames relative to the project root."
     "Switch to buffer: "
     (projectile-project-buffer-names))))
 
+(defun projectile-project-buffers-other-buffer ()
+  "Switch to the most recently selected buffer project buffer.
+Only buffers not visible in windows are returned."
+  (interactive)
+  (switch-to-buffer (car (projectile-project-buffers-non-visible))) nil t)
+
+(defun projectile-project-buffers-non-visible ()
+  "Get a list of non visible project buffers."
+  (-filter (lambda (buffer)
+             (not (get-buffer-window buffer 'visible)))
+           (projectile-project-buffers)))
+
 (defun projectile-multi-occur ()
   "Do a `multi-occur' in the project's buffers."
   (interactive)
@@ -905,8 +917,8 @@ With a prefix ARG invalidates the cache first."
    ((projectile-verify-files projectile-python-pip)'python)
    ((projectile-verify-files projectile-python-egg) 'python)
    ((projectile-verify-files projectile-symfony) 'symfony)
-   ((projectile-verify-files projectile-maven) 'maven)
    ((projectile-verify-files projectile-lein) 'lein)
+   ((projectile-verify-files projectile-maven) 'maven)
    ((projectile-verify-files projectile-rebar) 'rebar)
    ((projectile-verify-files projectile-sbt) 'sbt)
    ((projectile-verify-files projectile-make) 'make)
@@ -1014,34 +1026,36 @@ With a prefix ARG invalidates the cache first."
                     (s-equals? (concat current-file-basename test-affix) basename))))
             (projectile-current-project-files))))
 
-(defun projectile-grep ()
-  "Perform rgrep in the project."
-  (interactive)
+(defun projectile-grep (&optional arg)
+  "Perform rgrep in the project.
+
+With a prefix ARG asks for files (globbing-aware) which to grep in."
+  (interactive "P")
   (let ((roots (projectile-get-project-directories))
         (search-regexp (if (and transient-mark-mode mark-active)
                            (buffer-substring (region-beginning) (region-end))
                          (read-string (projectile-prepend-project-name "Grep for: ")
-                                      (projectile-symbol-at-point)))))
+                                      (projectile-symbol-at-point))))
+        (files (and arg (read-string (projectile-prepend-project-name "Grep in: ")))))
     (dolist (root-dir roots)
       (require 'grep)
       ;; in git projects users have the option to use `vc-git-grep' instead of `rgrep'
       (if (and (eq (projectile-project-vcs) 'git) projectile-use-git-grep)
-          (vc-git-grep search-regexp "'*'" root-dir)
+          (vc-git-grep search-regexp (or files "") root-dir)
         ;; paths for find-grep should relative and without trailing /
         (let ((grep-find-ignored-directories (-union (-map (lambda (dir) (s-chop-suffix "/" (file-relative-name dir root-dir)))
                                                            (cdr (projectile-ignored-directories))) grep-find-ignored-directories))
               (grep-find-ignored-files (-union (-map (lambda (file) (file-relative-name file root-dir)) (projectile-ignored-files)) grep-find-ignored-files)))
           (grep-compute-defaults)
-          (rgrep search-regexp "* .*" root-dir))))))
+          (rgrep search-regexp (or files "* .*") root-dir))))))
 
-(defvar ack-and-a-half-arguments)
 (defun projectile-ack (regexp)
   "Run an ack search with REGEXP in the project."
   (interactive
    (list (read-from-minibuffer
           (projectile-prepend-project-name "Ack search for: ")
           (projectile-symbol-at-point))))
-  (if (fboundp 'ack-and-a-half)
+  (if (require 'ack-and-a-half nil 'noerror)
       (let* ((saved-arguments ack-and-a-half-arguments)
              (ack-and-a-half-arguments
               (append saved-arguments
@@ -1069,25 +1083,39 @@ With a prefix ARG invalidates the cache first."
              (projectile-ignored-directories-rel) " "))
 
 (defun projectile-regenerate-tags ()
-  "Regenerate the project's etags."
+  "Regenerate the project's [e|g]tags."
   (interactive)
-  (let* ((project-root (projectile-project-root))
-         (tags-exclude (projectile-tags-exclude-patterns))
-         (default-directory project-root))
-    (shell-command (format projectile-tags-command tags-exclude))
-    (visit-tags-table project-root t)))
+  (if (boundp 'ggtags-mode)
+      (progn
+        (let* ((ggtags-project-root (projectile-project-root))
+               (default-directory ggtags-project-root))
+          (ggtags-ensure-project)
+          (ggtags-update-tags t)))
+    (let* ((project-root (projectile-project-root))
+           (tags-exclude (projectile-tags-exclude-patterns))
+           (default-directory project-root))
+      (shell-command (format projectile-tags-command tags-exclude))
+      (visit-tags-table project-root t))))
 
 (defun projectile-find-tag ()
   "Find tag in project."
   (interactive)
-  (visit-tags-table (projectile-project-root) t)
-  (tags-completion-table)
-  (let (tag-names)
-    (mapc (lambda (x)
-            (unless (integerp x)
-              (push (prin1-to-string x t) tag-names)))
-          tags-completion-table)
-    (find-tag (projectile-completing-read "Find tag: " tag-names))))
+  (let ((tags (if (boundp 'ggtags-mode)
+                  (progn
+                    (ggtags-completion-table)
+                    (projectile--tags ggtags-completion-table))
+                (visit-tags-table (projectile-project-root) t)
+                (tags-completion-table)
+                (projectile--tags tags-completion-table))))
+    (find-tag (projectile-completing-read "Find tag: " tags))))
+
+(defun projectile--tags (completion-table)
+  "Find tags using COMPLETION-TABLE."
+  (-reject 'null
+           (-map (lambda (x)
+                   (unless (integerp x)
+                     (prin1-to-string x t)))
+                 completion-table)))
 
 (defmacro projectile-with-default-dir (dir &rest body)
   "Invoke in DIR the BODY."
@@ -1167,7 +1195,7 @@ With a prefix argument ARG prompts you for a directory on which to run the repla
                         (read-directory-name "Replace in directory: ")
                       (projectile-project-root)))
          (files (projectile-files-with-string old-text directory)))
-    (tags-query-replace old-text new-text nil files)))
+    (tags-query-replace old-text new-text nil (cons 'list files))))
 
 (defun projectile-symbol-at-point ()
   "Get the symbol at point and strip its properties."
@@ -1503,7 +1531,7 @@ is chosen."
   (projectile-vc))
 
 (def-projectile-commander-method ?R
-  "Regenerate the project's etags."
+  "Regenerate the project's [e|g]tags."
   (projectile-regenerate-tags))
 
 (def-projectile-commander-method ?g
@@ -1529,7 +1557,6 @@ is chosen."
 (def-projectile-commander-method ?e
   "Find recently visited file in project."
   (projectile-recentf))
-
 
 ;;; Minor mode
 (defvar projectile-mode-map
@@ -1561,6 +1588,7 @@ is chosen."
       (define-key prefix-map (kbd "T") 'projectile-find-test-file)
       (define-key prefix-map (kbd "v") 'projectile-vc)
       (define-key prefix-map (kbd "z") 'projectile-cache-current-file)
+      (define-key prefix-map (kbd "ESC") 'projectile-project-buffers-other-buffer)
       (define-key map projectile-keymap-prefix prefix-map))
     map)
   "Keymap for Projectile mode.")
@@ -1585,7 +1613,7 @@ is chosen."
    "--"
    ["Cache current file" projectile-cache-current-file]
    ["Invalidate cache" projectile-invalidate-cache]
-   ["Regenerate etags" projectile-regenerate-tags]
+   ["Regenerate [e|g]tags" projectile-regenerate-tags]
    "--"
    ["Compile project" projectile-compile-project]
    ["Test project" projectile-test-project]
@@ -1659,5 +1687,9 @@ Otherwise behave as if called interactively.
   (projectile-global-mode -1))
 
 (provide 'projectile)
+
+;; Local Variables:
+;; indent-tabs-mode: nil
+;; End:
 
 ;;; projectile.el ends here
