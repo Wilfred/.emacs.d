@@ -1,6 +1,6 @@
 This is org, produced by makeinfo version 4.13 from org.texi.
 
-This manual is for Org version 8.2.5h (release_8.2.5h-30-gdd810b).
+This manual is for Org version 8.2.5h (release_8.2.5h-32-g9639ed).
 
    Copyright (C) 2004-2014 Free Software Foundation, Inc.
 
@@ -26,7 +26,7 @@ File: org,  Node: Top,  Next: Introduction,  Prev: (dir),  Up: (dir)
 Org Mode Manual
 ***************
 
-This manual is for Org version 8.2.5h (release_8.2.5h-30-gdd810b).
+This manual is for Org version 8.2.5h (release_8.2.5h-32-g9639ed).
 
    Copyright (C) 2004-2014 Free Software Foundation, Inc.
 
@@ -9126,10 +9126,10 @@ File: org,  Node: Emphasis and monospace,  Next: Horizontal rules,  Prev: Footno
 Emphasis and monospace
 ----------------------
 
-You can make words *bold*, /italic/, _underlined_, `=code=' and
-`~verbatim~', and, if you must, `+strike-through+'.  Text in the code
-and verbatim string is not processed for Org mode specific syntax, it
-is exported verbatim.
+You can make words *bold*, /italic/, _underlined_, `=verbatim=' and
+`~code~', and, if you must, `+strike-through+'.  Text in the code and
+verbatim string is not processed for Org mode specific syntax, it is
+exported verbatim.
 
    To turn off fontification for marked up text, you can set
 `org-fontify-emphasized-text' to `nil'.  To narrow down the list of
