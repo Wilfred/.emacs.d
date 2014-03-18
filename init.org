@@ -26,10 +26,6 @@ init.org is the source file that I edit, and init.el and init.html are
 generated from it.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (require 'org)
-  (require 'org-compat)
-  (require 'org-html)
-  
   (defun export-init-org ()
     "Generate init.html and init.html from the current init.org file."
     (interactive)

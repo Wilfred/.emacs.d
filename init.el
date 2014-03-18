@@ -1,6 +1,4 @@
 
-(require 'org)
-
 (defun export-init-org ()
   "Generate init.html and init.html from the current init.org file."
   (interactive)
