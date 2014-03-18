@@ -5,7 +5,7 @@
 ;; Author: Bozhidar Batsov <bozhidar@batsov.com>
 ;; URL: https://github.com/bbatsov/projectile
 ;; Keywords: project, convenience
-;; Version: 20140311.325
+;; Version: 20140317.1106
 ;; X-Original-Version: 0.10.0
 ;; Package-Requires: ((s "1.6.0") (dash "1.5.0") (pkg-info "0.4"))
 
@@ -157,6 +157,7 @@ Otherwise consider the current directory the project root."
     ".bzr"
     "_darcs"
     ".tox"
+    ".svn"
     "build")
   "A list of directories globally ignored by projectile."
   :group 'projectile
@@ -521,7 +522,7 @@ Files are returned as relative paths to the project root."
   :group 'projectile
   :type 'string)
 
-(defcustom projectile-svn-command "find . -type f -print0"
+(defcustom projectile-svn-command "svn list -R . | grep -v '$/' | tr '\\n' '\\0'"
   "Command used by projectile to get the files in a svn project."
   :group 'projectile
   :type 'string)
