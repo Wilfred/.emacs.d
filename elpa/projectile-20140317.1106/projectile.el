@@ -425,6 +425,34 @@ Returns nil if no window configuration was found"
 
 
 ;;; Project root related utilities
+(defun projectile-locate-dominating-file-top (file name)
+  "Look up the directory hierarchy from FILE for a directory containing NAME.
+If multiple directories are found, return the parentmost (i.e. closest to /).
+
+Note unlike `locate-dominating-file', NAME may be a file or directory."
+  (let* ((absolute-path (f-expand file))
+         (directory-path (f-dirname absolute-path))
+         (current-dir-matches (f-exists? (f-join directory-path name))))
+    (if (f-root? directory-path)
+        (if current-dir-matches
+            ;; / contains NAME, so return this directory.
+            directory-path
+          ;; / does not contain NAME, we're done.
+          nil)
+      (or
+       ;; If there's an ancestor directory that contains this NAME, return it.
+       (repo-root--locate-dominating-file-top
+        (f-parent file) name)
+       ;; Otherwise, return this directory if it contains NAME.
+       (if current-dir-matches directory-path)))))
+
+;; Note vc-svn-root doesn't exist on Emacs 23.4. In Subversion v1.7
+;; only the root has a .svn directory, whereas previously every
+;; subdirectory has a .svn directory. We support both.
+(defun projectile-svn-project-root (file)
+  "Find the root path of the Subversion repository that contains FILE."
+  (repo-root--locate-dominating-file-top file ".svn"))
+
 (defun projectile-project-root ()
   "Retrieves the root directory of a project if available.
 The current directory is assumed to be the project's root otherwise."
@@ -434,8 +462,9 @@ The current directory is assumed to be the project's root otherwise."
                (-remove #'null)
                (car)
                (projectile-file-truename))
+             (projectile-svn-project-root (file-truename default-directory))
              (if projectile-require-project-root
-                 (error "You're not in a project")
+                 (user-error "You're not in a project")
                default-directory))))
     project-root))
 
