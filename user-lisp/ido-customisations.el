@@ -11,7 +11,6 @@
 ; reduce how often we get 'directory too big' problems:
 (setq ido-max-directory-size 100000)
 
-
 ;; when using ido for opening files, show last modified first:
 ;; this version from http://jqian.googlecode.com/svn-history/r145/trunk/emacsconf/config/30-elisp.el
 (add-hook 'ido-make-file-list-hook 'ido-sort-mtime)
@@ -41,6 +40,14 @@
    (delq nil (mapcar
               (lambda (x) (if (string-equal (substring x 0 1) ".") x))
               ido-temp-list))))
+
+;; When opening files, create their parent directories if they don't exist.
+(defadvice find-file (before make-directory-maybe (filename &optional wildcards) activate)
+  "Create parent directory if not exists while visiting file."
+  (unless (file-exists-p filename)
+    (let ((dir (file-name-directory filename)))
+      (unless (file-exists-p dir)
+        (make-directory dir)))))
 
 (require 'smex)
 (smex-initialize)
