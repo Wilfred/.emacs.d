@@ -1,4 +1,4 @@
-
+(require 'ido)
 
 ;; ido-mode -- fuzzy completion
 (setq ido-enable-flex-matching t)
