@@ -4,14 +4,16 @@
 
 
 ;;;### (autoloads (ag-kill-other-buffers ag-kill-buffers ag-project-dired-regexp
-;;;;;;  ag-project-dired ag-dired-regexp ag-dired ag-regexp-project-at-point
-;;;;;;  ag-project-regexp ag-project-files ag-project ag-regexp ag-files
-;;;;;;  ag) "ag" "ag.el" (21231 59737 303694 903000))
+;;;;;;  ag-project-dired ag-dired-regexp ag-dired ag-project-regexp
+;;;;;;  ag-project-files ag-project ag-regexp ag-files ag) "ag" "ag.el"
+;;;;;;  (21293 47842 651765 494000))
 ;;; Generated autoloads from ag.el
 
 (autoload 'ag "ag" "\
 Search using ag in a given DIRECTORY for a given search STRING,
 with STRING defaulting to the symbol under point.
+
+If called with a prefix, prompts for flags to pass to ag.
 
 \(fn STRING DIRECTORY)" t nil)
 
@@ -19,10 +21,15 @@ with STRING defaulting to the symbol under point.
 Search using ag in a given DIRECTORY and file type regex FILE-REGEX
 for a given search STRING, with STRING defaulting to the symbol under point.
 
+If called with a prefix, prompts for flags to pass to ag.
+
 \(fn STRING FILE-REGEX DIRECTORY)" t nil)
 
 (autoload 'ag-regexp "ag" "\
 Search using ag in a given directory for a given regexp.
+The regexp should be in PCRE syntax, not Emacs regexp syntax.
+
+If called with a prefix, prompts for flags to pass to ag.
 
 \(fn STRING DIRECTORY)" t nil)
 
@@ -30,27 +37,30 @@ Search using ag in a given directory for a given regexp.
 Guess the root of the current project and search it with ag
 for the given string.
 
+If called with a prefix, prompts for flags to pass to ag.
+
 \(fn STRING)" t nil)
 
 (autoload 'ag-project-files "ag" "\
 Search using ag in a given DIRECTORY and file type regex FILE-REGEX
 for a given search STRING, with STRING defaulting to the symbol under point.
 
+If called with a prefix, prompts for flags to pass to ag.
+
 \(fn STRING FILE-REGEX)" t nil)
 
 (autoload 'ag-project-regexp "ag" "\
 Guess the root of the current project and search it with ag
-for the given regexp.
+for the given regexp. The regexp should be in PCRE syntax, not
+Emacs regexp syntax.
+
+If called with a prefix, prompts for flags to pass to ag.
 
 \(fn REGEXP)" t nil)
 
 (defalias 'ag-project-at-point 'ag-project)
 
-(autoload 'ag-regexp-project-at-point "ag" "\
-Same as ``ag-regexp-project'', but with the search regexp defaulting
-to the symbol under point.
-
-\(fn REGEXP)" t nil)
+(defalias 'ag-regexp-project-at-point 'ag-project-regexp)
 
 (autoload 'ag-dired "ag" "\
 Recursively find files in DIR matching PATTERN.
@@ -67,11 +77,12 @@ See also `ag-dired-regexp'.
 
 (autoload 'ag-dired-regexp "ag" "\
 Recursively find files in DIR matching REGEXP.
+REGEXP should be in PCRE syntax, not Emacs regexp syntax.
 
 The REGEXP is matched against the full path to the file, not
 only against the file name.
 
-The results are presented as a `dired-mode' buffer with
+Results are presented as a `dired-mode' buffer with
 `default-directory' being DIR.
 
 See also `find-dired'.
@@ -104,7 +115,7 @@ Kill all ag-mode buffers other than the current buffer.
 
 ;;;***
 
-;;;### (autoloads nil nil ("ag-pkg.el") (21231 59737 403005 709000))
+;;;### (autoloads nil nil ("ag-pkg.el") (21293 47842 759065 127000))
 
 ;;;***
 

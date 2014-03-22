@@ -1,15 +1,15 @@
 ;;; ag.el --- A front-end for ag ('the silver searcher'), the C ack replacement.
 
-;; Copyright (C) 2013 Wilfred Hughes <me@wilfred.me.uk>
+;; Copyright (C) 2013-2014 Wilfred Hughes <me@wilfred.me.uk>
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 January 2013
-;; Version: 20140131.918
-;; X-Original-Version: 0.37
+;; Version: 20140314.1626
+;; X-Original-Version: 0.42
 
 ;;; Commentary:
 
-;; Please see README.md for documentation, or read in online at
+;; Please see README.md for documentation, or read it online at
 ;; https://github.com/Wilfred/ag.el/#agel
 
 ;;; License:
@@ -36,6 +36,12 @@
 (eval-when-compile (require 'cl)) ;; dolist, defun*, flet
 (require 'dired) ;; dired-sort-inhibit
 
+(defcustom ag-executable
+  "ag"
+  "Name of the ag executable to use."
+  :type 'string
+  :group 'ag)
+
 (defcustom ag-arguments
   (list "--smart-case" "--nogroup" "--column" "--")
   "Default arguments passed to ag."
@@ -50,8 +56,9 @@ This requires the ag command to support --color-match, which is only in v0.14+"
   :group 'ag)
 
 (defcustom ag-reuse-buffers nil
-  "Non-nil means we reuse the existing search results buffer, rather than
-creating one buffer per unique search."
+  "Non-nil means we reuse the existing search results buffer or
+dired results buffer, rather than creating one buffer per unique
+search."
   :type 'boolean
   :group 'ag)
 
@@ -117,19 +124,19 @@ different window, according to `ag-open-in-other-window'."
 
 (defun ag/buffer-name (search-string directory regexp)
   (cond
-   (ag-reuse-buffers "*ag*")
-   (regexp (format "*ag regexp:%s dir:%s*" search-string directory))
-   (:else (format "*ag text:%s dir:%s*" search-string directory))))
+   (ag-reuse-buffers "*ag search*")
+   (regexp (format "*ag search regexp:%s dir:%s*" search-string directory))
+   (:else (format "*ag search text:%s dir:%s*" search-string directory))))
 
 (defun* ag/search (string directory
                           &key (regexp nil) (file-regex nil))
   "Run ag searching for the STRING given in DIRECTORY.
 If REGEXP is non-nil, treat STRING as a regular expression."
   (let ((default-directory (file-name-as-directory directory))
-        (arguments (if regexp
-                       ag-arguments
-                     (cons "--literal" ag-arguments)))
+        (arguments ag-arguments)
         (shell-command-switch "-c"))
+    (unless regexp
+        (setq arguments (cons "--literal" arguments)))
     (if ag-highlight-search
         (setq arguments (append '("--color" "--color-match" "30;43") arguments))
       (setq arguments (append '("--nocolor") arguments)))
@@ -137,16 +144,20 @@ If REGEXP is non-nil, treat STRING as a regular expression."
       (setq arguments (append `("--file-search-regex" ,file-regex) arguments)))
     (unless (file-exists-p default-directory)
       (error "No such directory %s" default-directory))
-    (compilation-start
-     (mapconcat 'shell-quote-argument
-                (append '("ag") arguments (list string "."))
-                " ")
-     'ag-mode
-     `(lambda (mode-name) ,(ag/buffer-name string directory regexp)))))
+    (let ((command-string
+           (mapconcat 'shell-quote-argument
+                      (append (list ag-executable) arguments (list string "."))
+                      " ")))
+      (when current-prefix-arg
+        (setq command-string (read-from-minibuffer "ag command: " command-string)))
+      (compilation-start
+       command-string
+       'ag-mode
+       `(lambda (mode-name) ,(ag/buffer-name string directory regexp))))))
 
 (defun ag/dwim-at-point ()
   "If there's an active selection, return that.
-Otherwise, get the symbol at point."
+Otherwise, get the symbol at point, as a string."
   (cond ((use-region-p)
          (buffer-substring-no-properties (region-beginning) (region-end)))
         ((symbol-at-point)
@@ -175,7 +186,13 @@ Returns an empty string otherwise."
     longest-string))
 
 (autoload 'vc-git-root "vc-git")
-(autoload 'vc-svn-root "vc-svn")
+
+(require 'vc-svn)
+;; Emacs 23.4 doesn't provide vc-svn-root.
+(unless (functionp 'vc-svn-root)
+  (defun vc-svn-root (file)
+    (vc-find-root file vc-svn-admin-directory)))
+
 (autoload 'vc-hg-root "vc-hg")
 
 (defun ag/project-root (file-path)
@@ -211,7 +228,11 @@ roots."
                   (forward-line 1))
                 (goto-char beg)
                 (beginning-of-line)
-                (replace-string default-directory "")
+
+                ;; Remove occurrences of default-directory.
+                (while (search-forward default-directory nil t)
+                  (replace-match "" nil t))
+                
                 (goto-char (point-max))
                 (if (search-backward "\n" (process-mark proc) t)
                     (progn
@@ -268,7 +289,9 @@ matched literally."
 ;;;###autoload
 (defun ag (string directory)
   "Search using ag in a given DIRECTORY for a given search STRING,
-with STRING defaulting to the symbol under point."
+with STRING defaulting to the symbol under point.
+
+If called with a prefix, prompts for flags to pass to ag."
    (interactive (list (read-from-minibuffer "Search string: " (ag/dwim-at-point))
                       (read-directory-name "Directory: ")))
    (ag/search string directory))
@@ -276,7 +299,9 @@ with STRING defaulting to the symbol under point."
 ;;;###autoload
 (defun ag-files (string file-regex directory)
   "Search using ag in a given DIRECTORY and file type regex FILE-REGEX
-for a given search STRING, with STRING defaulting to the symbol under point."
+for a given search STRING, with STRING defaulting to the symbol under point.
+
+If called with a prefix, prompts for flags to pass to ag."
   (interactive (list (read-from-minibuffer "Search string: " (ag/dwim-at-point))
                      (read-from-minibuffer "In filenames matching PCRE: " (ag/buffer-extension-regex))
                      (read-directory-name "Directory: ")))
@@ -284,21 +309,28 @@ for a given search STRING, with STRING defaulting to the symbol under point."
 
 ;;;###autoload
 (defun ag-regexp (string directory)
-  "Search using ag in a given directory for a given regexp."
+  "Search using ag in a given directory for a given regexp.
+The regexp should be in PCRE syntax, not Emacs regexp syntax.
+
+If called with a prefix, prompts for flags to pass to ag."
   (interactive "sSearch regexp: \nDDirectory: ")
   (ag/search string directory :regexp t))
 
 ;;;###autoload
 (defun ag-project (string)
   "Guess the root of the current project and search it with ag
-for the given string."
+for the given string.
+
+If called with a prefix, prompts for flags to pass to ag."
   (interactive (list (read-from-minibuffer "Search string: " (ag/dwim-at-point))))
   (ag/search string (ag/project-root default-directory)))
 
 ;;;###autoload
 (defun ag-project-files (string file-regex)
   "Search using ag in a given DIRECTORY and file type regex FILE-REGEX
-for a given search STRING, with STRING defaulting to the symbol under point."
+for a given search STRING, with STRING defaulting to the symbol under point.
+
+If called with a prefix, prompts for flags to pass to ag."
   (interactive (list (read-from-minibuffer "Search string: " (ag/dwim-at-point))
                      (read-from-minibuffer "In filenames matching PCRE: " (ag/buffer-extension-regex))))
   (ag/search string (ag/project-root default-directory) :file-regex file-regex))
@@ -306,22 +338,22 @@ for a given search STRING, with STRING defaulting to the symbol under point."
 ;;;###autoload
 (defun ag-project-regexp (regexp)
   "Guess the root of the current project and search it with ag
-for the given regexp."
-  (interactive "sSearch regexp: ")
+for the given regexp. The regexp should be in PCRE syntax, not
+Emacs regexp syntax.
+
+If called with a prefix, prompts for flags to pass to ag."
+  (interactive (list (read-from-minibuffer "Search regexp: "
+                                           (ag/escape-pcre (ag/dwim-at-point)))))
   (ag/search regexp (ag/project-root default-directory) :regexp t))
 
 (autoload 'symbol-at-point "thingatpt")
 
 ;;;###autoload
 (defalias 'ag-project-at-point 'ag-project)
+(make-obsolete 'ag-project-at-point 'ag-project "0.19")
 
 ;;;###autoload
-(defun ag-regexp-project-at-point (regexp)
-  "Same as ``ag-regexp-project'', but with the search regexp defaulting
-to the symbol under point."
-   (interactive (list (read-from-minibuffer "Search regexp: " (ag/dwim-at-point))))
-
-   (ag/search regexp (ag/project-root default-directory) :regexp t))
+(defalias 'ag-regexp-project-at-point 'ag-project-regexp) ; TODO: mark as obsolete
 
 ;;;###autoload
 (defun ag-dired (dir pattern)
@@ -340,11 +372,12 @@ See also `ag-dired-regexp'."
 ;;;###autoload
 (defun ag-dired-regexp (dir regexp)
   "Recursively find files in DIR matching REGEXP.
+REGEXP should be in PCRE syntax, not Emacs regexp syntax.
 
 The REGEXP is matched against the full path to the file, not
 only against the file name.
 
-The results are presented as a `dired-mode' buffer with
+Results are presented as a `dired-mode' buffer with
 `default-directory' being DIR.
 
 See also `find-dired'."
@@ -352,8 +385,10 @@ See also `find-dired'."
   (let* ((dired-buffers dired-buffers) ;; do not mess with regular dired buffers
          (orig-dir dir)
          (dir (file-name-as-directory (expand-file-name dir)))
-         (buffer-name (concat "ag-dired pattern:" regexp " dir:" dir))
-         (cmd (concat "ag --nocolor -g '" regexp "' " dir " | xargs -r -d '\\n' ls " dired-listing-switches " &")))
+         (buffer-name (if ag-reuse-buffers
+                          "*ag dired*"
+                        (format "*ag dired pattern:%s dir:%s*" regexp dir)))
+         (cmd (concat "ag --nocolor -g '" regexp "' " dir " | grep -v '^$' | xargs -I {} ls " dired-listing-switches " {} &")))
     (with-current-buffer (get-buffer-create buffer-name)
       (switch-to-buffer (current-buffer))
       (widen)
