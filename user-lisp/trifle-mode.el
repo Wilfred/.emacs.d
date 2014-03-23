@@ -62,6 +62,7 @@ For every level of parentheses, indent by two spaces."
     ;; Calculate sexp depth by calling sp-up-sexp until we cannot go
     ;; up any further.
     (save-excursion
+      (end-of-line)
       (while (sp-up-sexp)
         (incf sexp-depth)))
 
