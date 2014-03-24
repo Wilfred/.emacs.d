@@ -40,9 +40,9 @@
 
 (defconst trifle-font-lock-keywords
   (list
+   `(";.*" . font-lock-comment-face)
    `(,(regexp-opt '("if" "let" "function" "macro" "quote" "unquote" "unquote*" "while" "set!" "set-symbol!") 'symbols) . font-lock-builtin-face)
-   `(":[a-z]+" . font-lock-constant-face)
-   `(";.*" . font-lock-comment-face))
+   `(":[a-z]+" . font-lock-constant-face))
   "Highlighting for Trifle mode")
 
 (defvar trifle-mode-syntax-table
