@@ -51,4 +51,7 @@
     ;; backward one char so the user can enter the argument for the superclass's function
     (backward-char)))
 
+(define-key python-mode-map (kbd "C-M-n") 'python-nav-forward-statement)
+(define-key python-mode-map (kbd "C-M-p") 'python-nav-backward-statement)
+
 (provide 'python-customisations)
