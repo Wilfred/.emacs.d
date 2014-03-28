@@ -424,6 +424,7 @@ Symbol is defined as a chunk of text recognized by
                          inferior-emacs-lisp-mode
                          lisp-interaction-mode
                          scheme-mode
+                         scheme-interaction-mode
                          inferior-scheme-mode
                          geiser-repl-mode
                          lisp-mode
@@ -443,6 +444,7 @@ Symbol is defined as a chunk of text recognized by
                          nxml-mode
                          web-mode
                          jinja2-mode
+                         html-erb-mode
                          )
   "List of HTML modes.")
 
@@ -520,6 +522,7 @@ You can enable pre-set bindings by customizing
 (defvar smartparens-strict-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map [remap delete-char] 'sp-delete-char)
+    (define-key map [remap delete-forward-char] 'sp-delete-char)
     (define-key map [remap backward-delete-char-untabify] 'sp-backward-delete-char)
     (define-key map [remap backward-delete-char] 'sp-backward-delete-char)
     (define-key map [remap delete-backward-char] 'sp-backward-delete-char)
@@ -3679,32 +3682,36 @@ pairs!"
   (let ((case-fold-search nil))
     (search-forward-regexp regexp bound noerror count)))
 
-(defmacro sp--get-bounds (name docstring test)
-  "Generate a function called NAME that return the bounds of
-object bounded by TEST."
-  (declare (indent 1)
-           (debug (&define name stringp def-form)))
-  `(defun ,name ()
-     ,docstring
-     (when ,test
-       (let ((open (save-excursion
-                     (while (and ,test (not (bobp)))
-                       (forward-char -1))
-                     (if (bobp) (point) (1+ (point)))))
-             (close (save-excursion
-                      (while (and ,test (not (eobp)))
-                        (forward-char 1))
-                      (if (eobp) (point) (1- (point))))))
-         (cons open close)))))
-
-(sp--get-bounds sp-get-quoted-string-bounds
+(defun sp-get-quoted-string-bounds ()
   "If the point is inside a quoted string, return its bounds."
-  (nth 3 (syntax-ppss)))
+  (when (nth 3 (syntax-ppss))
+    (let ((open (save-excursion
+                  (while (nth 3 (syntax-ppss))
+                    (backward-char 1))
+                  (point)))
+          (close (save-excursion
+                   (while (nth 3 (syntax-ppss))
+                     (forward-char 1))
+                   (point))))
+      (cons open close))))
 
-(sp--get-bounds sp-get-comment-bounds
+(defun sp-get-comment-bounds ()
   "If the point is inside a comment, return its bounds."
-  (or (sp-point-in-comment)
-      (looking-at "[[:space:]]+;;")))
+  (when (or (sp-point-in-comment)
+            (looking-at "[[:space:]]+\\s<"))
+    (let ((open (save-excursion
+                  (while (and (not (bobp))
+                              (or (sp-point-in-comment)
+                                  (looking-at "[[:space:]]+\\s<")))
+                    (backward-char 1))
+                  (point)))
+          (close (save-excursion
+                   (while (and (not (eobp))
+                               (or (sp-point-in-comment)
+                                   (looking-at "[[:space:]]+\\s<")))
+                     (forward-char 1))
+                   (point))))
+      (cons open close))))
 
 (defun sp--get-string-or-comment-bounds ()
   "Get the bounds of string or comment the point is in."
@@ -4307,13 +4314,17 @@ This function simply transforms BOUNDS, which is a cons (BEG
 . END) into format compatible with `sp-get-sexp'."
   (let* ((bob (= (point-min) (car bounds)))
          (eob (= (point-max) (cdr bounds)))
-         (cl (char-to-string (char-after (if eob (1- (cdr bounds)) (cdr bounds))))))
-    (list :beg (if bob (car bounds) (1- (car bounds)))
-          :end (if eob (cdr bounds) (1+ (cdr bounds)))
-          :op cl
-          :cl cl
-          :prefix ""
-          :suffix "")))
+         ;; if the closing and opening isn't the same token, we should
+         ;; return nil
+         (op (char-to-string (char-after (car bounds))))
+         (cl (char-to-string (char-before (cdr bounds)))))
+    (when (equal op cl)
+      (list :beg (car bounds)
+            :end (cdr bounds)
+            :op cl
+            :cl cl
+            :prefix ""
+            :suffix ""))))
 
 (defun sp-get-string (&optional back)
   "Find the nearest string after point, or before if BACK is non-nil.
@@ -4333,8 +4344,8 @@ returned by `sp-get-sexp'."
           (sp--get-string r))
       (save-excursion
         (sp-skip-into-string back)
-        (let ((r (sp-get-quoted-string-bounds)))
-          (when r (sp--get-string r)))))))
+        (--when-let (sp-get-quoted-string-bounds)
+          (sp--get-string it))))))
 
 (defun sp-get-whitespace ()
   "Get the whitespace around point.
@@ -5139,12 +5150,18 @@ Examples:
                       ;; if the expression is empty remove everything inside
                       (if (sp-compare-sexps ok prev)
                           (sp-get ok (delete-region :beg-in :end-in))
-                        (delete-region (sp-get prev :end) (point)))))
+                        (when (save-excursion
+                                (skip-chars-backward " \t\n")
+                                (= (point) (sp-get prev :end-suf)))
+                          (delete-region (sp-get prev :end-suf) (point))))))
                 (goto-char (sp-get ok :beg-in))
                 (let ((next (sp-get-thing)))
                   (if (sp-compare-sexps ok next)
                       (sp-get ok (delete-region :beg-in :end-in))
-                    (delete-region (point) (sp-get next :beg))))))))
+                    (when (save-excursion
+                            (skip-chars-forward " \t\n")
+                            (= (point) (sp-get next :beg-prf)))
+                      (delete-region (point) (sp-get next :beg-prf)))))))))
       ;; on forward up, we can detect that the pair was not closed.
       ;; Therefore, jump sexps backwards until we hit the error, then
       ;; extract the opening pair and insert it at point.  Only works
