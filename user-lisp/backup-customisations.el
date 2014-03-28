@@ -1,4 +1,5 @@
 (require 'f)
+(require 'backup-each-save)
 
 (defun backup-each-save-show ()
   "Show the directory (using dired) containing backups of the current buffer."
