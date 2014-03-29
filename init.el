@@ -509,15 +509,6 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'eshell-customisations)
 (require 'swoop-customisations)
 
-;; stolen from http://demonastery.org/2013/04/emacs-narrow-to-region-indirect/
-(defun narrow-to-region-indirect (start end)
-  "Restrict editing in this buffer to the current region, indirectly."
-  (interactive "r")
-  (let ((buf (clone-indirect-buffer nil nil)))
-    (with-current-buffer buf
-      (narrow-to-region start end))
-    (switch-to-buffer buf)))
-
 (setq ag-highlight-search 't)
 (global-set-key (kbd "<f5>") 'ag-project-at-point)
 
