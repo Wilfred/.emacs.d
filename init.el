@@ -509,6 +509,8 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'eshell-customisations)
 (require 'swoop-customisations)
 
+(ignore-errors (require 'site-customisations))
+
 (setq ag-highlight-search 't)
 (global-set-key (kbd "<f5>") 'ag-project-at-point)
 
