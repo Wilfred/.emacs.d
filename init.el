@@ -181,14 +181,10 @@ If a prefix argument is given, don't change the kill-ring."
 
 (global-set-key (kbd "C-x C-r") 'ido-recentf-open)
 
-(require 'find-file-in-repository)
+(require 'projectile)
+(projectile-global-mode)
 
-(defadvice find-file-in-repository (around disable-ido-flex-matching activate)
-  (let ((ido-enable-flex-matching nil)
-        (ido-case-fold t))
-    ad-do-it))
-
-(global-set-key (kbd "C-x C-g") 'find-file-in-repository)
+(global-set-key (kbd "C-x C-g") 'projectile-find-file)
 
 (require 'dired+)
 

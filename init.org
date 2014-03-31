@@ -466,38 +466,24 @@ as read only with `read-only-mode', mapped to `C-x C-q'.)
 
 Most of the time though, it's helpful to be able to pick a file in the
 same source code repository as the current buffer. There are several
-tools to do this. The best I've found is `find-file-in-repository'.
+tools to do this. I've played with `find-file-in-repository',
+`projectile' and `find-file-in-project'.
 
-`find-file-in-repository' uses command line commands to find out the
-contents of your repository. For example, for git, it uses `git
-ls-files` (see elisp:ffir-repository types for the full list). This
-makes it very fast, and ensures that files ignored by git are ignored.
-
-Alternatives worth mentioning are `projectile' and
-`find-file-in-project'. `projectile' seems to have the most users, but
-I've found it to be a little bit slower, even with external
-commands. `find-file-in-project' seems unmaintained.
+`find-file-in-project' seems unmaintained. `find-file-in-repository'
+is fast and works well, but is only lightly maintained and doesn't
+support some version control systems. `projectile' is fast enough,
+actively maintained and featureful.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (require 'find-file-in-repository)
+  (require 'projectile)
+  (projectile-global-mode)
 #+END_SRC
 
-Ido can become very slow with large lists. This is largely due to
-flexible matching, used when there isn't an exact substring match. We
-switch off flexible matching with `find-file-in-repository'.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (defadvice find-file-in-repository (around disable-ido-flex-matching activate)
-    (let ((ido-enable-flex-matching nil)
-          (ido-case-fold t))
-      ad-do-it))
-#+END_SRC
-
-We bind `find-file-in-repository' to `C-x C-g', as we use it
+We bind `projectile-find-file' to `C-x C-g', as we use it
 a lot and it's right next to `C-x C-f'.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (global-set-key (kbd "C-x C-g") 'find-file-in-repository)
+  (global-set-key (kbd "C-x C-g") 'projectile-find-file)
 #+END_SRC
 
 *** Dired
