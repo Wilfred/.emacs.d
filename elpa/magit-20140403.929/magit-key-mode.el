@@ -230,14 +230,14 @@
       ("f" "Fixup"  magit-commit-fixup)
       ("s" "Squash" magit-commit-squash))
      (switches
-      ("-r" "Replace the tip of current branch" "--amend")
-      ("-R" "Claim authorship and reset author date" "--reset-author")
       ("-a" "Stage all modified and deleted files" "--all")
       ("-e" "Allow empty commit" "--allow-empty")
       ("-v" "Show diff of changes to be committed" "--verbose")
       ("-n" "Bypass git hooks" "--no-verify")
-      ("-s" "Add Signed-off-by line" "--signoff"))
+      ("-s" "Add Signed-off-by line" "--signoff")
+      ("-R" "Claim authorship and reset author date" "--reset-author"))
      (arguments
+      ("=A" "Override the author" "--author=" read-from-minibuffer)
       ("=S" "Sign using gpg" "--gpg-sign=" magit-read-gpg-secret-key)))
 
     (merging
@@ -258,6 +258,7 @@
       ("s" "Stop" magit-rewrite-stop)
       ("a" "Abort" magit-rewrite-abort)
       ("f" "Finish" magit-rewrite-finish)
+      ("d" "Diff pending" magit-rewrite-diff-pending)
       ("*" "Set unused" magit-rewrite-set-unused)
       ("." "Set used" magit-rewrite-set-used)))
 
@@ -276,7 +277,7 @@
       ("-D" "use current timestamp for author date" "--ignore-date")
       ("-b" "pass -b flag to git-mailinfo" "--keep-non-patch"))
      (arguments
-      ("=p" "format the patch(es) are in" "--patch-format")))
+      ("=p" "format the patch(es) are in" "--patch-format=" read-from-minibuffer)))
 
     (submodule
      (man-page "git-submodule")
@@ -505,7 +506,8 @@ Do not customize this (used in the `magit-key-mode' implementation).")
     (set-window-configuration magit-pre-key-mode-window-conf)
     (kill-buffer magit-key-mode-last-buffer)
     (when func
-      (call-interactively func))))
+      (setq this-command func)
+      (call-interactively this-command))))
 
 (defun magit-key-mode-add-argument (for-group arg-name input-func)
   (let ((input (funcall input-func (concat arg-name ": "))))
