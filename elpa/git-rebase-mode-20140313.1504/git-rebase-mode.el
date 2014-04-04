@@ -1,11 +1,10 @@
 ;;; git-rebase-mode.el --- Major mode for editing git rebase files
 
-;; Copyright (C) 2010  Phil Jackson
-;; Copyright (C) 2011  Peter J Weisberg
+;; Copyright (C) 2010-2014  The Magit Project Developers
 
 ;; Author: Phil Jackson <phil@shellarchive.co.uk>
 ;; Maintainer: Jonas Bernoulli <jonas@bernoul.li>
-;; Version: 20130912.1429
+;; Version: 20140313.1504
 ;; X-Original-Version: 0.14.0
 ;; Homepage: https://github.com/magit/git-modes
 ;; Keywords: convenience vc git
@@ -34,14 +33,14 @@
 ;;; Code:
 
 (require 'easymenu)
-(require 'rx)
 (require 'server)
 (require 'thingatpt)
 
 ;;; Options
+;;;; Variables
 
 (defgroup git-rebase nil
-  "Customize Git-Rebase mode"
+  "Edit Git rebase sequences."
   :group 'tools)
 
 (defcustom git-rebase-auto-advance nil
@@ -49,68 +48,67 @@
   :group 'git-rebase
   :type 'boolean)
 
+(defcustom git-rebase-remove-instructions nil
+  "Whether to remove the instructions from the rebase buffer.
+Because you have seen them before and can still remember."
+  :group 'git-rebase
+  :type 'boolean)
+
+;;;; Faces
+
 (defgroup git-rebase-faces nil
-  "Customize Git-Rebase mode faces."
+  "Faces used by Git-Rebase mode."
   :group 'faces
   :group 'git-rebase)
 
-(defface git-rebase-killed-action-face
+(defface git-rebase-hash
+  '((((class color) (background light))
+     :foreground "firebrick")
+    (((class color) (background dark))
+     :foreground "tomato"))
+  "Face for commit hashes."
+  :group 'git-rebase-faces)
+
+(defface git-rebase-description nil
+  "Face for commit descriptions."
+  :group 'git-rebase-faces)
+
+(defface git-rebase-killed-action
   '((((class color))
      :inherit font-lock-comment-face
      :strike-through t))
-  "Action lines in the rebase TODO list that have been commented out."
+  "Face for commented action and exec lines."
   :group 'git-rebase-faces)
 
-(defface git-rebase-description-face
-  '((t :inherit font-lock-comment-face))
-  "Face for one-line commit descriptions."
-  :group 'git-rebase-faces)
+(define-obsolete-face-alias 'git-rebase-description-face
+  'git-rebase-description "1.0.0")
+(define-obsolete-face-alias 'git-rebase-killed-action-face
+  'git-rebase-killed-action "1.0.0")
 
 ;;; Regexps
 
 (defconst git-rebase-action-line-re
-  (rx
-   line-start
-   (? "#")
-   (group
-    (|
-     (any "presf")
-     "pick"
-     "reword"
-     "edit"
-     "squash"
-     "fixup"))
-   (char space)
-   (group
-    (** 4 40 hex-digit)) ;sha1
-   (char space)
-   (group
-    (* not-newline)))
-  "Regexp that matches an action line in a rebase buffer.")
+  (concat "^#?"
+          "\\([efprs]\\|pick\\|reword\\|edit\\|squash\\|fixup\\) "
+          "\\([a-z0-9]\\{4,40\\}\\) "
+          "\\(.*\\)")
+  "Regexp matching action lines in rebase buffers.")
 
 (defconst git-rebase-exec-line-re
-  (rx
-   line-start
-   (? "#")
-   (group
-    (| "x"
-       "exec"))
-   (char space)
-   (group
-    (* not-newline)))
-  "Regexp that matches an exec line in a rebase buffer.")
+  "^#?\\(x\\|exec\\)[[:space:]]\\(.*\\)"
+  "Regexp matching exec lines in rebase buffer.")
 
 (defconst git-rebase-dead-line-re
-  (rx-to-string `(and line-start
-                      (char ?#)
-                      (or (regexp ,(substring git-rebase-action-line-re 1))
-                          (regexp ,(substring git-rebase-exec-line-re 1)))) t)
-  "Regexp that matches a commented-out exec or action line in a rebase buffer.")
+  (format "^#\\(?:%s\\|%s\\)"
+          (substring git-rebase-action-line-re 1)
+          (substring git-rebase-exec-line-re 1))
+  "Regexp matching commented action and exex lines in rebase buffers.")
 
 ;;; Keymaps
 
 (defvar git-rebase-mode-map
   (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map special-mode-map)
     (define-key map (kbd "q")       'git-rebase-server-edit)
     (define-key map (kbd "C-c C-c") 'git-rebase-server-edit)
     (define-key map (kbd "a")       'git-rebase-abort)
@@ -153,8 +151,6 @@
 ;;; Utilities
 
 (defun git-rebase-edit-line (change-to)
-  "Change the keyword at the start of the current action line to
-that of CHANGE-TO."
   (when (git-rebase-looking-at-action)
     (let ((buffer-read-only nil)
           (start (point)))
@@ -256,7 +252,7 @@ connection."
   (when (and (not (eq (char-after (point-at-bol)) ?#))
              (git-rebase-looking-at-action-or-exec))
     (beginning-of-line)
-    (let ((buffer-read-only nil))
+    (let ((inhibit-read-only t))
       (insert "#"))
     (forward-line)))
 
@@ -314,7 +310,7 @@ exec line was commented out, also uncomment it."
       (let ((commit (match-string 2)))
         (if (fboundp 'magit-show-commit)
             (let ((default-directory (expand-file-name "../../")))
-              (magit-show-commit commit nil nil 'select))
+              (magit-show-commit commit))
           (shell-command (concat "git show " commit)))))))
 
 (defun git-rebase-backward-line (&optional n)
@@ -333,18 +329,19 @@ Rebase files are generated when you run 'git rebase -i' or run
 `magit-interactive-rebase'.  They describe how Git should perform
 the rebase.  See the documentation for git-rebase (e.g., by
 running 'man git-rebase' at the command line) for details."
-  (setq font-lock-defaults '(git-rebase-mode-font-lock-keywords t t)))
+  (setq font-lock-defaults '(git-rebase-mode-font-lock-keywords t t))
+  (when git-rebase-remove-instructions
+    (let ((inhibit-read-only t))
+      (flush-lines "^\\($\\|#\\)"))))
 
 (defvar git-rebase-mode-font-lock-keywords
-  (list
-   (list git-rebase-action-line-re
-         '(1 font-lock-keyword-face)
-         '(2 font-lock-builtin-face)
-         '(3 'git-rebase-description-face))
-   (list git-rebase-exec-line-re
-         '(1 font-lock-keyword-face))
-   (list (rx line-start (char "#") (* not-newline)) 0 font-lock-comment-face)
-   (list git-rebase-dead-line-re 0 ''git-rebase-killed-action-face t))
+  `((,git-rebase-action-line-re
+     (1 font-lock-keyword-face)
+     (2 'git-rebase-hash)
+     (3 'git-rebase-description))
+    (,git-rebase-exec-line-re 1 font-lock-keyword-face)
+    ("^#.*"                   0 font-lock-comment-face)
+    (,git-rebase-dead-line-re 0 'git-rebase-killed-action t))
   "Font lock keywords for Git-Rebase mode.")
 
 (defun git-rebase-mode-show-keybindings ()
@@ -373,7 +370,7 @@ By default, this is the same except for the \"pick\" command."
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist
-             '("git-rebase-todo" . git-rebase-mode))
+             '("/git-rebase-todo\\'" . git-rebase-mode))
 
 (provide 'git-rebase-mode)
 ;; Local Variables:

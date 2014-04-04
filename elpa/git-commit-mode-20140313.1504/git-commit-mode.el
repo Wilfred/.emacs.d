@@ -2,11 +2,13 @@
 
 ;; Copyright (c) 2010-2012  Florian Ragwitz
 ;; Copyright (c) 2012-2013  Sebastian Wiesner
+;; Copyright (C) 2010-2014  The Magit Project Developers
 
-;; Authors: Sebastian Wiesner <lunaryorn@gmail.com>
+;; Authors: Jonas Bernoulli <jonas@bernoul.li>
+;;	Sebastian Wiesner <lunaryorn@gmail.com>
 ;;	Florian Ragwitz <rafl@debian.org>
 ;; Maintainer: Jonas Bernoulli <jonas@bernoul.li>
-;; Version: 20130919.341
+;; Version: 20140313.1504
 ;; X-Original-Version: 0.14.0
 ;; Homepage: https://github.com/magit/git-modes
 ;; Keywords: convenience vc git
@@ -64,14 +66,13 @@
 
 (require 'log-edit)
 (require 'ring)
-(require 'saveplace)
 (require 'server)
 
 ;;; Options
 ;;;; Variables
 
 (defgroup git-commit nil
-  "Mode for editing git commit messages"
+  "Edit Git commit messages."
   :prefix "git-commit-"
   :group 'tools)
 
@@ -119,7 +120,7 @@ and `git-commit-abort'."
 ;;;; Faces
 
 (defgroup git-commit-faces nil
-  "Faces for highlighting git commit messages"
+  "Faces for highlighting Git commit messages."
   :prefix "git-commit-"
   :group 'git-commit
   :group 'faces)
@@ -198,6 +199,10 @@ default comments in git commit messages"
     (define-key map (kbd "C-c M-s") 'git-commit-save-message)
     (define-key map (kbd "M-p")     'git-commit-prev-message)
     (define-key map (kbd "M-n")     'git-commit-next-message)
+    (define-key map [remap server-edit]          'git-commit-commit)
+    (define-key map [remap kill-buffer]          'git-commit-abort)
+    (define-key map [remap ido-kill-buffer]      'git-commit-abort)
+    (define-key map [remap iswitchb-kill-buffer] 'git-commit-abort)
     ;; Old bindings to avoid confusion
     (define-key map (kbd "C-c C-x s") 'git-commit-signoff)
     (define-key map (kbd "C-c C-x a") 'git-commit-ack)
@@ -207,6 +212,34 @@ default comments in git commit messages"
     (define-key map (kbd "C-c C-x p") 'git-commit-reported)
     map)
   "Key map used by `git-commit-mode'.")
+
+;;; Menu
+
+(require 'easymenu)
+(easy-menu-define git-commit-mode-menu git-commit-mode-map
+  "Git Commit Mode Menu"
+  '("Commit"
+    ["Previous" git-commit-prev-message t]
+    ["Next" git-commit-next-message t]
+    "-"
+    ["Ack" git-commit-ack :active t
+     :help "Insert an 'Acked-by' header"]
+    ["Sign-Off" git-commit-signoff :active t
+     :help "Insert a 'Signed-off-by' header"]
+    ["Tested-by" git-commit-test :active t
+     :help "Insert a 'Tested-by' header"]
+    ["Reviewed-by" git-commit-review :active t
+     :help "Insert a 'Reviewed-by' header"]
+    ["CC" git-commit-cc t
+     :help "Insert a 'Cc' header"]
+    ["Reported" git-commit-reported :active t
+     :help "Insert a 'Reported-by' header"]
+    ["Suggested" git-commit-suggested t
+     :help "Insert a 'Suggested-by' header"]
+    "-"
+    ["Save" git-commit-save-message t]
+    ["Cancel" git-commit-abort t]
+    ["Commit" git-commit-commit t]))
 
 ;;; Committing
 
@@ -248,6 +281,8 @@ Return t, if the commit was successful, or nil otherwise."
       (message "Commit canceled due to stylistic errors.")
     (save-buffer)
     (run-hooks 'git-commit-kill-buffer-hook)
+    (remove-hook 'kill-buffer-query-functions
+                 'git-commit-kill-buffer-noop t)
     (git-commit-restore-previous-winconf
       (if (git-commit-buffer-clients)
           (server-edit)
@@ -258,15 +293,27 @@ Return t, if the commit was successful, or nil otherwise."
   "Abort the commit.
 The commit message is saved to the kill ring."
   (interactive)
+  (when (< emacs-major-version 24)
+    ;; Emacsclient doesn't exit with non-zero when -error is used.
+    ;; Instead cause Git to error out by feeding it an empty file.
+    (erase-buffer))
   (save-buffer)
   (run-hooks 'git-commit-kill-buffer-hook)
+  (remove-hook 'kill-buffer-hook 'server-kill-buffer t)
+  (remove-hook 'kill-buffer-query-functions 'git-commit-kill-buffer-noop t)
   (git-commit-restore-previous-winconf
-    (let ((clients (git-commit-buffer-clients)))
+    (let ((buffer  (current-buffer))
+          (clients (git-commit-buffer-clients)))
       (if clients
-          (dolist (client clients)
-            (server-send-string client "-error Commit aborted by user")
-            (delete-process client))
+          (progn
+            (dolist (client clients)
+              (ignore-errors
+                (server-send-string client "-error Commit aborted by user"))
+              (delete-process client))
+            (when (buffer-live-p buffer)
+              (kill-buffer buffer)))
         (kill-buffer))))
+  (accept-process-output nil 0.1)
   (message (concat "Commit aborted."
                    (when (memq 'git-commit-save-message
                                git-commit-kill-buffer-hook)
@@ -282,9 +329,15 @@ The commit message is saved to the kill ring."
 (defun git-commit-save-message ()
   "Save current message to `log-edit-comment-ring'."
   (interactive)
-  (let ((message (buffer-string)))
-    (when (or (ring-empty-p log-edit-comment-ring)
-              (not (equal message (ring-ref log-edit-comment-ring 0))))
+  (let ((message (buffer-substring
+                  (point-min)
+                  (git-commit-find-pseudo-header-position))))
+    (when (and (string-match "^\\s-*\\sw" message)
+               (or (ring-empty-p log-edit-comment-ring)
+                   (not (ring-member log-edit-comment-ring message))))
+      ;; if index is nil, we end up cycling back to message we just saved!
+      (unless log-edit-comment-ring-index
+        (setq log-edit-comment-ring-index 0))
       (ring-insert log-edit-comment-ring message))))
 
 (defun git-commit-prev-message (arg)
@@ -292,14 +345,15 @@ The commit message is saved to the kill ring."
 With a numeric prefix ARG, go back ARG comments."
   (interactive "*p")
   (git-commit-save-message)
-  (log-edit-previous-comment arg))
+  (save-restriction
+    (narrow-to-region (point-min) (git-commit-find-pseudo-header-position))
+    (log-edit-previous-comment arg)))
 
 (defun git-commit-next-message (arg)
   "Cycle forward through message history, after saving current message.
 With a numeric prefix ARG, go forward ARG comments."
   (interactive "*p")
-  (git-commit-save-message)
-  (log-edit-next-comment arg))
+  (git-commit-prev-message (- arg)))
 
 ;;; Headers
 
@@ -311,17 +365,14 @@ before any trailing comments git or the user might have
 inserted."
   (save-excursion
     (goto-char (point-max))
-    (if (not (re-search-backward "^\\S<.+$" nil t))
-        ;; no comment lines anywhere before end-of-buffer, so we
-        ;; want to insert right there
-        (point-max)
-      ;; there's some comments at the end, so we want to insert before
-      ;; those; keep going until we find the first non-empty line
-      ;; NOTE: if there is no newline at the end of (point),
-      ;; (forward-line 1) will take us to (point-at-eol).
-      (if (eq (point-at-bol) (point-at-eol)) (re-search-backward "^.+$" nil t))
-      (forward-line 1)
-      (point))))
+    (if (re-search-backward "^[^#\n]" nil t)
+        ;; we found last non-empty non-comment line, headers go after
+        (forward-line 1)
+      ;; there's only blanks & comments, headers go before comments
+      (goto-char (point-min))
+      (and (re-search-forward "^#" nil t) (forward-line 0)))
+    (skip-chars-forward "\n")
+    (point)))
 
 (defun git-commit-determine-pre-for-pseudo-header ()
   "Find the characters to insert before the pseudo header.
@@ -555,14 +606,38 @@ basic structure of and errors in git commit messages."
        (concat paragraph-start "\\|*\\|("))
   ;; Treat lines starting with a hash/pound as comments
   (set (make-local-variable 'comment-start) "#")
+  (set (make-local-variable 'comment-start-skip)
+       (concat "^" (regexp-quote comment-start) "+"
+               "\\s-*"))
+  (set (make-local-variable 'comment-use-syntax) nil)
   ;; Do not remember point location in commit messages
-  (when (fboundp 'toggle-save-place)
+  (when (boundp 'save-place)
     (setq save-place nil))
   ;; If the commit summary is empty, insert a newline after point
   (when (string= "" (buffer-substring-no-properties
                      (line-beginning-position)
                      (line-end-position)))
-    (open-line 1)))
+    (open-line 1))
+  ;; Make sure `git-commit-abort' cannot be by-passed
+  (add-hook 'kill-buffer-query-functions
+            'git-commit-kill-buffer-noop nil t)
+  ;; Make the wrong usage info from `server-execute' go way
+  (run-with-timer 0.01 nil (lambda (m) (message "%s" m))
+                  (substitute-command-keys
+                   (concat "Type \\[git-commit-commit] "
+                           (let ((n (buffer-file-name)))
+                             (cond ((equal n "TAG_EDITMSG") "to tag")
+                                   ((or (equal n "NOTES_EDITMSG")
+                                        (equal n "PULLREQ_EDITMSG"))
+                                    "when done")
+                                   (t "to commit")))
+                           " (\\[git-commit-abort] to abort)."))))
+
+(defun git-commit-kill-buffer-noop ()
+  (message
+   (substitute-command-keys
+    "Don't kill this buffer.  Instead abort using \\[git-commit-abort]."))
+  nil)
 
 (defun git-commit-mode-flyspell-verify ()
   (not (nth 4 (syntax-ppss)))) ; not inside a comment
@@ -576,6 +651,10 @@ basic structure of and errors in git commit messages."
                    "/MERGE_MSG\\'" "/TAG_EDITMSG\\'"
                    "/PULLREQ_EDITMSG\\'"))
   (add-to-list 'auto-mode-alist (cons pattern 'git-commit-mode)))
+
+(defun git-commit-auto-mode-enable ()
+  (message "git-commit-auto-mode-enable is obsolete and doesn't do anything"))
+(make-obsolete 'git-commit-auto-mode-enable "This mode is a noop now" "")
 
 (provide 'git-commit-mode)
 ;; Local Variables:
