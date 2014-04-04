@@ -5,9 +5,24 @@
 
 ;;;### (autoloads (org-fancy-narrow-to-subtree fancy-narrow-to-page
 ;;;;;;  org-fancy-narrow-to-element fancy-narrow-to-defun org-fancy-narrow-to-block
-;;;;;;  fancy-narrow-mode fancy-widen fancy-narrow-to-region) "fancy-narrow"
-;;;;;;  "fancy-narrow.el" (21302 5584 78238 386000))
+;;;;;;  fancy-narrow-mode fancy-widen fancy-narrow-to-region fancy-narrow-active-p)
+;;;;;;  "fancy-narrow" "fancy-narrow.el" (21311 13213 474861 607000))
 ;;; Generated autoloads from fancy-narrow.el
+
+(autoload 'fancy-narrow-active-p "fancy-narrow" "\
+If the current buffer fancy-narrowed?
+
+\(fn)" nil nil)
+
+(defvar fancy-narrow--beginning nil "\
+")
+
+(make-variable-buffer-local 'fancy-narrow--beginning)
+
+(defvar fancy-narrow--end nil "\
+")
+
+(make-variable-buffer-local 'fancy-narrow--end)
 
 (autoload 'fancy-narrow-to-region "fancy-narrow" "\
 Like `narrow-to-region', except it still displays the unreachable text.
@@ -80,8 +95,8 @@ Like `org-narrow-to-subtree', except using `fancy-narrow-to-region'.
 
 ;;;***
 
-;;;### (autoloads nil nil ("fancy-narrow-pkg.el") (21302 5584 202593
-;;;;;;  800000))
+;;;### (autoloads nil nil ("fancy-narrow-pkg.el") (21311 13213 578723
+;;;;;;  760000))
 
 ;;;***
 

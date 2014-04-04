@@ -4,8 +4,8 @@
 
 ;; Author: Artur Malabarba <bruce.connor.am@gmail.com>
 ;; URL: http://github.com/Bruce-Connor/fancy-narrow-region
-;; Version: 20140328.221
-;; X-Original-Version: 0.9.1
+;; Version: 20140402.229
+;; X-Original-Version: 0.9.4
 ;; Keywords: faces convenience
 ;; Prefix: fancy-narrow
 ;; Separator: -
@@ -51,15 +51,16 @@
 ;; 
 
 ;;; Change Log:
-;; 0.8  - 2014/03/27 - Use overlays to improve deemphasizing.
-;; 0.6  - 2014/03/26 - Successive narrowing results in intersection of previous and new regions.
-;; 0.6  - 2014/03/26 - Flycheck protection.
-;; 0.5  - 2014/03/25 - define-minor-mode.
-;; 0.2a - 2014/03/25 - Stickiness, better motion, and font-lock.
-;; 0.1a - 2014/03/17 - Created File.
+;; 0.9.4 - 2014/04/02 - Fix multiple narrows. Fix font lock.
+;; 0.8   - 2014/03/27 - Use overlays to improve deemphasizing.
+;; 0.6   - 2014/03/26 - Successive narrowing results in intersection of previous and new regions.
+;; 0.6   - 2014/03/26 - Flycheck protection.
+;; 0.5   - 2014/03/25 - define-minor-mode.
+;; 0.2a  - 2014/03/25 - Stickiness, better motion, and font-lock.
+;; 0.1a  - 2014/03/17 - Created File.
 ;;; Code:
 
-(defconst fancy-narrow-version "0.9.1" "Version of the fancy-narrow-region.el package.")
+(defconst fancy-narrow-version "0.9.4" "Version of the fancy-narrow-region.el package.")
 (defun fancy-narrow-bug-report ()
   "Opens github issues page in a web browser. Please send any bugs you find.
 Please include your emacs and fancy-narrow-region versions."
@@ -85,34 +86,78 @@ Please include your emacs and fancy-narrow-region versions."
   :type 'list
   :group 'fancy-narrow-region)
 
-(defadvice command-execute (after fancy-narrow-after-command-execute-advice () activate)
+;;;###autoload
+(defun fancy-narrow-active-p ()
+  "If the current buffer fancy-narrowed?"
+  (and (boundp 'fancy-narrow--beginning) (boundp 'fancy-narrow--end)
+       fancy-narrow--beginning fancy-narrow--end))
+
+(defadvice command-execute
+    (after fancy-narrow-after-command-execute-advice () activate)
   "Run `fancy-narrow--motion-function' after every command."
-  (when (and fancy-narrow--beginning fancy-narrow--end)
+  (when (fancy-narrow-active-p)
     (fancy-narrow--motion-function)))
-(defadvice point-min (around fancy-narrow-around-point-min-advice () activate)
+(defadvice point-min
+    (around fancy-narrow-around-point-min-advice () activate)
   "Return the start of narrowed region."
-  (if (markerp fancy-narrow--beginning)
+  (if (fancy-narrow-active-p)
       (setq ad-return-value (marker-position fancy-narrow--beginning))
     ad-do-it))
-(defadvice point-min-marker (around fancy-narrow-around-point-min-advice () activate)
+(defadvice point-min-marker
+    (around fancy-narrow-around-point-min-advice () activate)
   "Return the start of narrowed region."
-  (if (markerp fancy-narrow--beginning)
+  (if (fancy-narrow-active-p)
       (setq ad-return-value fancy-narrow--beginning)
     ad-do-it))
-(defadvice point-max (around fancy-narrow-around-point-max-advice () activate)
+(defadvice point-max
+    (around fancy-narrow-around-point-max-advice () activate)
   "Return the start of narrowed region."
-  (if (markerp fancy-narrow--end)
+  (if (fancy-narrow-active-p)
       (setq ad-return-value (marker-position fancy-narrow--end))
     ad-do-it))
-(defadvice point-max-marker (around fancy-narrow-around-point-max-advice () activate)
+(defadvice point-max-marker
+    (around fancy-narrow-around-point-max-advice () activate)
   "Return the start of narrowed region."
-  (if (markerp fancy-narrow--end)
+  (if (fancy-narrow-active-p)
       (setq ad-return-value fancy-narrow--end)
     ad-do-it))
 
+(defun fancy-narrow--advise-function (function)
+  (eval 
+   `(defadvice ,function
+        (around fancy-narrow-around-advice () activate)
+      (if (not (fancy-narrow-active-p))
+          ad-do-it
+        (save-restriction 
+          (narrow-to-region fancy-narrow--end fancy-narrow--beginning)
+          ad-do-it)))))
+
+(mapc 'fancy-narrow--advise-function
+      '(perform-replace
+        buffer-string buffer-substring
+        buffer-substring-no-properties        
+        re-search-backward re-search-forward
+        search-backward-regexp search-forward-regexp
+        search-backward search-forward
+        forward-line  beginning-of-line end-of-line
+        mark-whole-buffer
+        delete-blank-lines
+        kill-whole-line kill-line
+        forward-char backward-char
+        forward-word backward-word 
+        forward-sexp backward-sexp 
+        forward-paragraph backward-paragraph
+        beginning-of-buffer end-of-buffer
+        end-of-defun beginning-of-defun
+        goto-char  eobp bobp))
+
+;;;###autoload
 (defvar fancy-narrow--beginning nil "")
+;;;###autoload
 (make-variable-buffer-local 'fancy-narrow--beginning)
+;;;###autoload
 (defvar fancy-narrow--end nil "")
+;;;###autoload
 (make-variable-buffer-local 'fancy-narrow--end)
 
 (defun fancy-narrow--motion-function (&rest ignore)
@@ -154,11 +199,12 @@ To widen the region again afterwards use `fancy-widen'."
     ;; If it was already active, just become narrower.
     (when fancy-narrow--beginning (setq l (max l fancy-narrow--beginning)))
     (when fancy-narrow--end (setq r (max r fancy-narrow--end)))
-    ;; unless it was already active, patch font-lock and flyspell
-    (unless (and fancy-narrow--beginning fancy-narrow--end)
+    (if (and fancy-narrow--beginning fancy-narrow--end)
+        ;; If it was already active, widen first, so we don't "advise" ourselves.
+        (fancy-widen)
+      ;; unless it was already active, patch font-lock and flyspell
       (unless font-lock-mode
-        (setq fancy-narrow--wasnt-font-lock t)
-        (font-lock-mode 1))
+        (setq fancy-narrow--wasnt-font-lock t))
       (when flyspell-mode
         (setq fancy-narrow--was-flyspell t)
         (flyspell-mode 0)))
@@ -166,8 +212,15 @@ To widen the region again afterwards use `fancy-widen'."
     (add-text-properties (point-min) l fancy-narrow-properties-stickiness)
     (fancy-narrow--propertize-region (point-min) l)
     (fancy-narrow--propertize-region r (point-max))
-    (setq fancy-narrow--beginning (copy-marker l nil)
-          fancy-narrow--end (copy-marker r t))
+    (if fancy-narrow--wasnt-font-lock
+        (progn
+          (font-lock-fontify-region r (point-max))
+          (font-lock-fontify-region (point-min) l))
+      ;; We have to ask to refontify the region, because apparently we
+      ;; broke fontlocking somewhere above.
+      (font-lock-fontify-region l r))
+    (setq fancy-narrow--beginning (copy-marker l nil))
+    (setq fancy-narrow--end (copy-marker r t))
     (unless modified
       (set-buffer-modified-p nil))))
 
@@ -179,8 +232,8 @@ To widen the region again afterwards use `fancy-widen'."
 (defun fancy-narrow--propertize-region (l r)
   (let* ((left (= l (point-min)))
          (s (if left 'fancy-narrow--overlay-left 'fancy-narrow--overlay-right)))
+    (if (overlayp (eval s)) (delete-overlay (eval s)))
     (set s (make-overlay l r nil (null left) (null left)))
-    ;; (overlay-put (eval s) 'display (buffer-substring-no-properties l r))
     (overlay-put (eval s) 'face 'fancy-narrow-blocked-face)
     (add-text-properties l r fancy-narrow-properties)))
 
@@ -365,4 +418,3 @@ Binds that are replaced are:
 
 (provide 'fancy-narrow)
 ;;; fancy-narrow.el ends here.
-
