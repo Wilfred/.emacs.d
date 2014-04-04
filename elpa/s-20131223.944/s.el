@@ -3,8 +3,8 @@
 ;; Copyright (C) 2012 Magnar Sveen
 
 ;; Author: Magnar Sveen <magnars@gmail.com>
-;; Version: 20130617.1851
-;; X-Original-Version: 1.6.1
+;; Version: 20131223.944
+;; X-Original-Version: 1.9.0
 ;; Keywords: strings
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -146,7 +146,7 @@ This is a simple wrapper around the built-in `split-string'."
   (s-chop-suffixes '("\n" "\r") s))
 
 (defun s-truncate (len s)
-  "If S is longer than LEN, cut it down and add ... at the end."
+  "If S is longer than LEN, cut it down to LEN - 3 and add ... at the end."
   (if (> (length s) len)
       (format "%s..." (substring s 0 (- len 3)))
     s))
@@ -174,7 +174,7 @@ This is a simple wrapper around the built-in `split-string'."
             s)))
 
 (defun s-pad-right (len padding s)
-  "If S is shorter than LEN, pad it with PADDING on the left."
+  "If S is shorter than LEN, pad it with PADDING on the right."
   (let ((extra (max 0 (- len (length s)))))
     (concat s
             (make-string extra (string-to-char padding)))))
@@ -265,6 +265,14 @@ This is a simple wrapper around the built-in `string-match-p'."
   "Is S nil or the empty string?"
   (or (null s) (string= "" s)))
 
+(defun s-present? (s)
+  "Is S anything but nil or the empty string?"
+  (not (s-blank? s)))
+
+(defun s-presence (s)
+  "Return S if it's `s-present?', otherwise return nil."
+  (and (s-present? s) s))
+
 (defun s-lowercase? (s)
   "Are all the letters in S in lower case?"
   (let ((case-fold-search nil))
@@ -286,7 +294,7 @@ This is a simple wrapper around the built-in `string-match-p'."
   "In S, is the first letter upper case, and all other letters lower case?"
   (let ((case-fold-search nil))
     (s--truthy?
-     (string-match-p "^[A-ZÆØÅ][^A-ZÆØÅ]*$" s))))
+     (string-match-p "^[[:upper:]][^[:upper:]]*$" s))))
 
 (defun s-numeric? (s)
   "Is S a number?"
@@ -360,7 +368,7 @@ Each element itself is a list of matches, as per
 `match-string'. Multiple matches at the same position will be
 ignored after the first."
   (let ((all-strings ())
-  (i 0))
+        (i 0))
     (while (and (< i (length string))
                 (string-match regex string i))
       (setq i (1+ (match-beginning 0)))
@@ -405,9 +413,11 @@ When START is non-nil the search will start at that index."
 (defun s-split-words (s)
   "Split S into list of words."
   (s-split
-   "[^A-Za-z0-9]+"
+   "[^[:word:]0-9]+"
    (let ((case-fold-search nil))
-     (replace-regexp-in-string "\\([a-z]\\)\\([A-Z]\\)" "\\1 \\2" s))
+     (replace-regexp-in-string
+      "\\([[:lower:]]\\)\\([[:upper:]]\\)" "\\1 \\2"
+      (replace-regexp-in-string "\\([[:upper:]]\\)\\([[:upper:]][0-9[:lower:]]\\)" "\\1 \\2" s)))
    t))
 
 (defun s--mapcar-head (fn-head fn-rest list)
@@ -432,7 +442,7 @@ When START is non-nil the search will start at that index."
   (s-join "-" (mapcar 'downcase (s-split-words s))))
 
 (defun s-capitalized-words (s)
-  "Convert S to Capitalized Words."
+  "Convert S to Capitalized words."
   (let ((words (s-split-words s)))
     (s-join " " (cons (capitalize (car words)) (mapcar 'downcase (cdr words))))))
 
@@ -440,6 +450,10 @@ When START is non-nil the search will start at that index."
   "Convert S to Titleized Words."
   (s-join " " (mapcar 's-titleize (s-split-words s))))
 
+(defun s-word-initials (s)
+  "Convert S to its initials."
+  (s-join "" (mapcar (lambda (ss) (substring ss 0 1))
+                     (s-split-words s))))
 
 ;; Errors for s-format
 (progn
@@ -528,6 +542,16 @@ The values of the variables are interpolated with \"%s\" unless
 the variable `s-lex-value-as-lisp' is `t' and then they are
 interpolated with \"%S\"."
   (s-lex-fmt|expand format-str))
+
+(defun s-count-matches (regexp s &optional start end)
+  "Count occurrences of `regexp' in `s'.
+
+`start', inclusive, and `end', exclusive, delimit the part of `s'
+to match. "
+  (with-temp-buffer
+    (insert s)
+    (goto-char (point-min))
+    (count-matches regexp (or start 1) (or end (point-max)))))
 
 (provide 's)
 ;;; s.el ends here
