@@ -3,8 +3,8 @@
 ;;; Code:
 
 
-;;;### (autoloads (smex-initialize smex) "smex" "smex.el" (20993
-;;;;;;  4218 936630 919000))
+;;;### (autoloads (smex-initialize smex) "smex" "smex.el" (21311
+;;;;;;  14086 503072 874000))
 ;;; Generated autoloads from smex.el
 
 (autoload 'smex "smex" "\
@@ -19,7 +19,7 @@
 
 ;;;***
 
-;;;### (autoloads nil nil ("smex-pkg.el") (20993 4219 50981 210000))
+;;;### (autoloads nil nil ("smex-pkg.el") (21311 14086 630909 854000))
 
 ;;;***
 
