@@ -5,7 +5,7 @@
 ;; Author: Bozhidar Batsov <bozhidar@batsov.com>
 ;; URL: https://github.com/bbatsov/projectile
 ;; Keywords: project, convenience
-;; Version: 20140330.404
+;; Version: 20140402.534
 ;; X-Original-Version: 0.10.0
 ;; Package-Requires: ((s "1.6.0") (dash "1.5.0") (pkg-info "0.4"))
 
@@ -252,7 +252,7 @@ project."
 The saved data can be restored with `projectile-unserialize'."
   (when (file-writable-p filename)
     (with-temp-file filename
-      (insert (prin1-to-string data)))))
+      (insert (let (print-length) (prin1-to-string data))))))
 
 (defun projectile-unserialize (filename)
   "Read data serialized by `projectile-serialize' from FILENAME."
