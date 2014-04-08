@@ -81,11 +81,15 @@ scratch buffer, clearing its contents first."
 
 (push #'save-persistent-scratch kill-emacs-hook)
 
-(defun scratchy-recreate nil
+(defun scratchy-recreate ()
   "Create or recreate the *scratch* buffer."
   (interactive)
   (switch-to-buffer (get-buffer-create "*scratch*"))
   (lisp-interaction-mode))
+
+;; TODO
+(defun scratchy-new ()
+  "Create a new scratch buffer, even if one already exists.")
 
 (defadvice kill-buffer (around scratchy-prevent-scratch-kill disable)
   "Bury the *scratch* buffer instead of killing it."
