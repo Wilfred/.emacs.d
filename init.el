@@ -260,6 +260,9 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'undo-tree)
 (global-undo-tree-mode)
 
+(require 'diminish)
+(diminish 'undo-tree-mode)
+
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'eval-defun)
 
 (define-key emacs-lisp-mode-map (kbd "C-c d") 'toggle-debug-on-error)
@@ -609,3 +612,6 @@ The FILE-NAME defaults to the one used in the URL."
 (setq-default dired-listing-switches "-alhv")
 
 (global-anzu-mode +1)
+
+(require 'diminish)
+(diminish 'anzu-mode)

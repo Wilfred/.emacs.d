@@ -645,6 +645,14 @@ Emacs' undo facility is excellent, but undo-tree is even better.
   (global-undo-tree-mode)
 #+END_SRC
 
+Since we're using it the whole time, it's not very informative to show
+it on the mode line. Hide it.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'diminish)
+  (diminish 'undo-tree-mode)
+#+END_SRC
+
 ** Emacs Lisp
 
 *** Shortcuts
@@ -1188,4 +1196,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
   (setq-default dired-listing-switches "-alhv")
   
   (global-anzu-mode +1)
+  
+  (require 'diminish)
+  (diminish 'anzu-mode)
 #+END_SRC

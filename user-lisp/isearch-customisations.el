@@ -6,6 +6,9 @@
 ;; use highlight-symbol-mode in all programming modes
 (add-hook 'prog-mode-hook '(lambda () (highlight-symbol-mode 1)))
 
+(require 'diminish)
+(diminish 'highlight-symbol-mode)
+
 ;; no delay before highlighting
 (setq highlight-symbol-idle-delay 0)
 
