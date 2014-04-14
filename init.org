@@ -1022,9 +1022,8 @@ syntax check.
 We often use code snippets in org-mode files, so syntax highlight
 them.
 
-#+BEGIN_SRC emacs-lisp
-  (eval-after-load "org" 
-   '(setq org-src-fontify-natively t))
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq org-src-fontify-natively t)
 #+END_SRC
 
 ** Markdown

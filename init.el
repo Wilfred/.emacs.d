@@ -462,6 +462,8 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'less-css-mode)
 (add-hook 'less-css-mode-hook 'flymake-mode)
 
+(setq org-src-fontify-natively t)
+
 (add-hook 'markdown-mode-hook 'auto-fill-mode)
 
 (setq gc-cons-threshold (* 10 1024 1024))
