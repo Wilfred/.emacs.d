@@ -288,6 +288,9 @@ If a prefix argument is given, don't change the kill-ring."
 
 (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
 
+(require 'diminish)
+(diminish 'eldoc-mode)
+
 (add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
 
 (setq-default flycheck-emacs-lisp-initialize-packages t)

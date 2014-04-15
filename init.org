@@ -730,6 +730,13 @@ minibuffer.
   (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
 #+END_SRC
 
+We don't want this minor mode to be shown in the minibuffer, however.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'diminish)
+  (diminish 'eldoc-mode)
+#+END_SRC
+
 *** On-the-fly Checking
 
 It's really useful to use flycheck when coding elisp. It detects
