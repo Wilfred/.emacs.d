@@ -172,6 +172,7 @@ are interchanged."
 
 ;; use expand-region to grow the region according to the current mode's syntax
 (require 'expand-region)
+(require 'python-mode-expansions)
 (global-set-key (kbd "C-=") 'er/expand-region)
 
 (require 'move-text)
