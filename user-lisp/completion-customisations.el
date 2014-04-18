@@ -67,4 +67,8 @@
 ; always spaces, never tabs
 (setq-default indent-tabs-mode nil)
 
+;; Don't show 'AC' in the mode line.
+(require 'diminish)
+(diminish 'auto-complete-mode)
+
 (provide 'completion-customisations)
