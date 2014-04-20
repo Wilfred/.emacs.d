@@ -42,4 +42,7 @@
   (let ((indent-size (- (point) (line-beginning-position))))
     (delete-backward-char indent-size)))
 
+;; Common Lisp configuration
+(setq inferior-lisp-program "/usr/bin/sbcl")
+
 (provide 'lisp-customisations)
