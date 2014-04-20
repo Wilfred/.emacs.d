@@ -45,4 +45,7 @@
 ;; Common Lisp configuration
 (setq inferior-lisp-program "/usr/bin/sbcl")
 
+(require 'slime)
+(define-key slime-mode-map (kbd "C-c e") 'slime-eval-defun)
+
 (provide 'lisp-customisations)
