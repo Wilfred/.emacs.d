@@ -2,6 +2,7 @@
 (require 'f)
 
 (defun new-blog-post ()
+  "Create a new blog post with appropriate filename and header."
   (interactive)
   (let* ((dir (ido-read-directory-name "Posts directory: "))
          (title (read-string "Post title: "))
@@ -14,3 +15,13 @@ title: \"%s\"
 ---
 
 " title))))
+
+(defun convert-creole ()
+  "Convert creole text in the current buffer to markdown."
+  (interactive)
+  ;; h2 headings
+  (query-replace-regexp "^==\\(.*\\)$" "##\\1")
+  ;; inline code
+  (query-replace-regexp "{{{\\(.*?\\)}}}" "`\\1`")
+  ;; links
+  (query-replace-regexp "\\[\\[\\(.*?\\)|\\(.*?\\)\\]\\]" "[\\2](\\1)"))
