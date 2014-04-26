@@ -582,9 +582,6 @@ If a prefix argument is given, don't change the kill-ring."
  '(js2-function-param-face ((((class color)) (:foreground "Green"))))
  '(smerge-refined-change ((t (:background "black")))))
 
-;; (require 'timing)
-;; (message "Spent %.2f seconds executing .emacs.d/init.el."
-;;          (time-difference *emacs-load-start* (current-time)))
 (put 'narrow-to-region 'disabled nil)
 
 (defun indent-buffer ()
