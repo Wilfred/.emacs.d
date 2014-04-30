@@ -778,11 +778,15 @@ used in its anaphoric macros (e.g. `it').
 
 ** Python
 
-We use pyflakes with flymake to check for coding errors.
+We use pyflakes with flycheck to check for coding errors. Flycheck
+includes other Python checkers so we also disable those.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (require 'flymake-python-pyflakes)
-  (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
+  (require 'flycheck-pyflakes)
+  (add-hook 'python-mode-hook 'flycheck-mode)
+  
+  (add-to-list 'flycheck-disabled-checkers 'python-flake8)
+  (add-to-list 'flycheck-disabled-checkers 'python-pylint)
 #+END_SRC
 
 I like to write docstrings with example usage. These examples aren't

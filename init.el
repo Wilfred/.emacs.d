@@ -301,8 +301,11 @@ If a prefix argument is given, don't change the kill-ring."
 
 (eval-after-load "dash" '(dash-enable-font-lock))
 
-(require 'flymake-python-pyflakes)
-(add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
+(require 'flycheck-pyflakes)
+(add-hook 'python-mode-hook 'flycheck)
+
+(add-to-list 'flycheck-disabled-checkers 'python-flake8)
+(add-to-list 'flycheck-disabled-checkers 'python-pylint)
 
 (setenv "PYFLAKES_NODOCTEST" "y")
 
