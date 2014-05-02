@@ -302,7 +302,7 @@ If a prefix argument is given, don't change the kill-ring."
 (eval-after-load "dash" '(dash-enable-font-lock))
 
 (require 'flycheck-pyflakes)
-(add-hook 'python-mode-hook 'flycheck)
+(add-hook 'python-mode-hook 'flycheck-mode)
 
 (add-to-list 'flycheck-disabled-checkers 'python-flake8)
 (add-to-list 'flycheck-disabled-checkers 'python-pylint)
