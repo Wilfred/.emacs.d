@@ -113,6 +113,7 @@
       ("rh" "Reflog" magit-reflog))
      (switches
       ("-m" "Only merge commits" "--merges")
+      ("-s" "No merge commits" "--no-merges")
       ("-do" "Date Order" "--date-order")
       ("-f" "First parent" "--first-parent")
       ("-i" "Case insensitive patterns" "-i")
@@ -303,7 +304,7 @@
       ("d" "Set default" magit-set-default-diff-options)
       ("c" "Save default" magit-save-default-diff-options)
       ("r" "Reset to default" magit-reset-diff-options)
-      ("h" "Toggle Hunk Refinement" magit-toggle-diff-refine-hunk))
+      ("h" "Toggle Hunk Refinement" magit-diff-toggle-refine-hunk))
      (switches
       ("-m" "Show smallest possible diff" "--minimal")
       ("-p" "Use patience diff algorithm" "--patience")
@@ -337,7 +338,7 @@ same name."
   (when (assoc group magit-key-mode-groups)
     (magit-key-mode-delete-group group))
   (setq magit-key-mode-groups
-        (cons (list group (list 'actions) (list 'switches))
+        (cons (list group (list 'actions) (list 'switches) (list 'arguments))
               magit-key-mode-groups)))
 
 (defun magit-key-mode-key-defined-p (for-group key)

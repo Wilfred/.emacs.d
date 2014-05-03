@@ -1,4 +1,4 @@
-This is /tmp/magit1966589y/magit-20140403.929/magit.info, produced by
+This is /tmp/magit1659ruP/magit-20140502.1536/magit.info, produced by
 makeinfo version 4.13 from /home/melpa/melpa/working/magit/magit.texi.
 
 INFO-DIR-SECTION Emacs
@@ -294,6 +294,10 @@ _Unstaged changes_ section shows the changes that will be left out.
 hunk and type `s'.  Likewise, to unstage a hunk, move point into it and
 type `u'.  If point is in a diff header when you type `s' or `u', all
 hunks belonging to that diff are moved at the same time.
+
+   Currently it is only possible to stage from the status buffer.
+Staging and unstaging from diff buffers that show unstaged and staged
+changes is not possible yet.
 
    If the region is active when you type `s' or `u', only the changes
 in the region are staged or unstaged.  (This works line by line: if the
@@ -1524,34 +1528,34 @@ Node: Sections4360
 Node: Status6910
 Node: Untracked files9649
 Node: Staging and Committing10854
-Node: History14093
-Node: Reflogs17275
-Node: Commit Buffer17679
-Node: Diffing19005
-Node: Tagging19992
-Node: Resetting20442
-Node: Stashing21966
-Node: Branches and Remotes23037
-Node: Branches Popup23858
-Node: Remotes Popup25120
-Node: Branches in the Branch Manager25471
-Node: Remotes in the Branch Manager26643
-Node: Wazzup27204
-Node: Merging27997
-Node: Rebasing29047
-Node: Interactive Rebasing29873
-Node: Rewriting31168
-Node: Pushing and Pulling34477
-Node: Submodules36407
-Node: Bisecting36855
-Node: Finding commits not merged upstream38090
-Node: Using Magit Extensions39356
-Node: Activating extensions39652
-Node: Interfacing with Subversion41037
-Node: Interfacing with Topgit41637
-Node: Interfacing with StGit42675
-Node: Using Git Directly43644
-Node: GNU Free Documentation License44032
+Node: History14259
+Node: Reflogs17441
+Node: Commit Buffer17845
+Node: Diffing19171
+Node: Tagging20158
+Node: Resetting20608
+Node: Stashing22132
+Node: Branches and Remotes23203
+Node: Branches Popup24024
+Node: Remotes Popup25286
+Node: Branches in the Branch Manager25637
+Node: Remotes in the Branch Manager26809
+Node: Wazzup27370
+Node: Merging28163
+Node: Rebasing29213
+Node: Interactive Rebasing30039
+Node: Rewriting31334
+Node: Pushing and Pulling34643
+Node: Submodules36573
+Node: Bisecting37021
+Node: Finding commits not merged upstream38256
+Node: Using Magit Extensions39522
+Node: Activating extensions39818
+Node: Interfacing with Subversion41203
+Node: Interfacing with Topgit41803
+Node: Interfacing with StGit42841
+Node: Using Git Directly43810
+Node: GNU Free Documentation License44198
 
 End Tag Table
 

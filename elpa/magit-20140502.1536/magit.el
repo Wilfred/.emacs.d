@@ -279,17 +279,20 @@ tramp to connect to servers with ancient Git versions."
 (defcustom magit-emacsclient-executable
   (ignore-errors
     (shell-quote-argument
-     (let ((version (format "%s.%s"
-                            emacs-major-version
-                            emacs-minor-version)))
-       (or (let ((exec-path (list (expand-file-name "bin" invocation-directory)
-                                  invocation-directory)))
-             (or (executable-find (format "emacsclient-%s" version))
-                 (executable-find (format "emacsclient-%s.exe" version))
-                 (executable-find "emacsclient")
-                 (executable-find "emacsclient.exe")))
-           (executable-find (format "emacsclient-%s" version))
+     (let ((version
+            (format "%s.%s" emacs-major-version emacs-minor-version)))
+       (or (and (eq system-type 'darwin)
+                (let ((exec-path
+                       (list (expand-file-name "bin" invocation-directory))))
+                  (executable-find "emacsclient")))
+           (executable-find (format "emacsclient%s"   version))
+           (executable-find (format "emacsclient-%s"   version))
+           (executable-find (format "emacsclient%s.exe" version))
            (executable-find (format "emacsclient-%s.exe" version))
+           (executable-find (format "emacsclient%s"   emacs-major-version))
+           (executable-find (format "emacsclient-%s"   emacs-major-version))
+           (executable-find (format "emacsclient%s.exe" emacs-major-version))
+           (executable-find (format "emacsclient-%s.exe" emacs-major-version))
            (executable-find "emacsclient")
            (executable-find "emacsclient.exe")))))
   "The Emacsclient executable.
@@ -960,10 +963,20 @@ The function is called with one argument, the propertized graph
 of a single line in as a string.  It has to return the formatted
 string.  This option can also be nil, in which case the graph is
 inserted as is."
-  :package-version '(magit . "2.0.0")
+  :package-version '(magit . "2.1.0")
   :group 'magit-log
   :type '(choice (const :tag "insert as is" nil)
+                 (function-item magit-log-format-unicode-graph)
                  function))
+
+(defcustom magit-log-format-unicode-graph-alist
+  '((?/ . ?╱) (?| . ?│) (?\\ . ?╲) (?* . ?◆) (?o . ?◇))
+  "Alist used by `magit-log-format-unicode-graph' to translate chars."
+  :package-version '(magit . "2.1.0")
+  :group 'magit-log
+  :type '(repeat (cons :format "%v\n"
+                       (character :format "replace %v ")
+                       (character :format "with %v"))))
 
 (defcustom magit-log-show-gpg-status nil
   "Display signature verification information as part of the log."
@@ -3713,7 +3726,7 @@ of the Windows \"Powershell\"."
   (if magit-process-quote-curly-braces
       (mapcar (apply-partially 'replace-regexp-in-string
                                "{\\([0-9]+\\)}" "\\\\{\\1\\\\}")
-              args)
+              (magit-flatten-onelevel args))
     args))
 
 ;;;; Mode Api
@@ -4049,7 +4062,8 @@ the current repository."
                    (not (string-prefix-p gitdir file))
                    (member (file-relative-name file topdir) tracked)
                    (let ((auto-revert-mode t))
-                     (auto-revert-handler))))))))))
+                     (auto-revert-handler)
+                     (run-hooks 'magit-revert-buffer-hook))))))))))
 
 ;;; (misplaced)
 ;;;; Diff Options
@@ -5074,7 +5088,7 @@ return the buffer, without displaying it."
        (hunk   (setq section parent))
        (diff   (setq section it)))
      (if section
-         (setq rev  (cadr (magit-diff-range section))
+         (setq rev  (car (magit-diff-range section))
                file (magit-section-info section))
        (unless rev
          (setq rev (magit-get-current-branch))))
@@ -5588,6 +5602,15 @@ With two prefix args, remove ignored files as well."
     (if orig
         (magit-diff orig nil "-R")
       (user-error "No rewrite in progress"))))
+
+(defun magit-rewrite-diff-pending-transition ()
+  (interactive)
+  (message "Please remove magit-insert-pending-changes from your magit-status-sections-hook, or move to magit-rewrite-diff-pending"))
+
+(define-obsolete-function-alias
+  'magit-insert-pending-changes 'magit-rewrite-diff-pending-transition
+  "382351845e"
+  "https://github.com/magit/magit/commit/382351845eca2425713f640f9bb55756c9ddf723")
 
 ;;;;; Fetching
 
@@ -6450,6 +6473,21 @@ Other key binding:
                  (magit-wash-log-line 'long abbrev))))))
       (forward-line)))
   t)
+
+(defun magit-log-format-unicode-graph (string)
+  "Translate ascii characters to unicode characters.
+Whether that actually is an improvment depends on the unicode
+support of the font in use.  The translation is done using the
+alist in `magit-log-format-unicode-graph-alist'."
+  (replace-regexp-in-string
+   "[/|\\*o ]"
+   (lambda (str)
+     (propertize
+      (string (or (cdr (assq (aref str 0)
+                             magit-log-format-unicode-graph-alist))
+                  (aref str 0)))
+      'face (get-text-property 0 'face str)))
+   string))
 
 (defun magit-format-log-margin (&optional author date)
   (when magit-log-show-margin
