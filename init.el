@@ -517,6 +517,8 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'eshell-customisations)
 (require 'swoop-customisations)
 
+(require 'compilation-customisations)
+
 (ignore-errors (require 'site-customisations))
 
 (setq ag-highlight-search 't)

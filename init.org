@@ -1103,6 +1103,8 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
   (require 'eshell-customisations)
   (require 'swoop-customisations)
   
+  (require 'compilation-customisations)
+  
   (ignore-errors (require 'site-customisations))
   
   (setq ag-highlight-search 't)
