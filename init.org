@@ -1131,6 +1131,8 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
   
   (require 'tags-utils)
   
+  (require 'blog-utils)
+  
   ;; crontab mode for files named
   (require 'crontab-mode)
   (add-to-list 'auto-mode-alist '("crontab.*?\\'" . crontab-mode))

@@ -545,6 +545,8 @@ If a prefix argument is given, don't change the kill-ring."
 
 (require 'tags-utils)
 
+(require 'blog-utils)
+
 ;; crontab mode for files named
 (require 'crontab-mode)
 (add-to-list 'auto-mode-alist '("crontab.*?\\'" . crontab-mode))
