@@ -25,3 +25,5 @@ title: \"%s\"
   (query-replace-regexp "{{{\\(.*?\\)}}}" "`\\1`")
   ;; links
   (query-replace-regexp "\\[\\[\\(.*?\\)|\\(.*?\\)\\]\\]" "[\\2](\\1)"))
+
+(provide 'blog-utils)
