@@ -23,6 +23,8 @@ title: \"%s\"
   (query-replace-regexp "^==\\(.*\\)$" "##\\1")
   ;; inline code
   (query-replace-regexp "{{{\\(.*?\\)}}}" "`\\1`")
+  ;; italics (note bold syntax is the same in markdown and creole
+  (query-replace-regexp "//\\([[:alnum:]]*\\)//" "_\\1_")
   ;; links
   (query-replace-regexp "\\[\\[\\(.*?\\)|\\(.*?\\)\\]\\]" "[\\2](\\1)"))
 
