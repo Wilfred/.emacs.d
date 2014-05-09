@@ -509,6 +509,7 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'c-customisations)
 (require 'sh-customisations)
 (require 'coffee-customisations)
+(require 'rust-customisations)
 
 (require 'startup-customisations)
 

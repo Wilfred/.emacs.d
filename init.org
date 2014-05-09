@@ -1095,6 +1095,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
   (require 'c-customisations)
   (require 'sh-customisations)
   (require 'coffee-customisations)
+  (require 'rust-customisations)
   
   (require 'startup-customisations)
   
