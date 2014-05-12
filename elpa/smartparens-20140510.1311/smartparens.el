@@ -2621,7 +2621,10 @@ would execute if smartparens-mode were disabled."
               (when (and (eq sp-last-operation 'sp-self-insert)
                          sp-point-inside-string
                          sp-autoescape-string-quote
-                         (eq (preceding-char) ?\"))
+                         (or (and (eq (preceding-char) ?\")
+                                  (eq sp-point-inside-string ?\"))
+                             (and (eq (preceding-char) ?')
+                                  (eq sp-point-inside-string ?'))))
                 (save-excursion
                   (backward-char 1)
                   (insert sp-escape-char))))))
@@ -3293,8 +3296,8 @@ followed by word.  It is disabled by default.  See
                                 (not (equal open-pair close-pair)))))
                           (not (run-hook-with-args-until-success
                                 'sp-autoinsert-inhibit-functions
-                                open-pair
-                                (or sp-point-inside-string (sp-point-in-comment))))))
+                                 open-pair
+                                 (or sp-point-inside-string (sp-point-in-comment))))))
                  (when pair (delete-char (- (length pair))))))
           ;; if this pair could not be inserted, we try the procedure
           ;; again with this pair removed from sp-pair-list to give
@@ -3326,16 +3329,18 @@ followed by word.  It is disabled by default.  See
           (when (and sp-autoescape-string-quote
                      sp-point-inside-string
                      (or
-                      (and (equal open-pair "\"") (equal close-pair "\""))
-                      (and (equal open-pair "'") (equal close-pair "'")))
+                      (and (equal open-pair "\"") (equal close-pair "\"")
+                           (eq sp-point-inside-string ?\"))
+                      (and (equal open-pair "'") (equal close-pair "'")
+                           (eq sp-point-inside-string ?')))
                      (or (not (memq major-mode sp-autoescape-string-quote-if-empty))
                          ;; Test if the string is empty here, by which
                          ;; we mean the point is surrounded by the
                          ;; string delimiters.  This enables us to
                          ;; write e.g. """""" in python docs.
-                         (flet ((check-quote (delimiter)
-                                             (and (equal (char-after (1+ (point))) delimiter)
-                                                  (equal (char-before (1- (point))) delimiter))))
+                         (cl-flet ((check-quote (delimiter)
+                                                (and (equal (char-after (1+ (point))) delimiter)
+                                                     (equal (char-before (1- (point))) delimiter))))
                            (not (or (check-quote ?\")
                                     (check-quote ?'))))))
             (save-excursion
@@ -3686,15 +3691,18 @@ pairs!"
   "If the point is inside a quoted string, return its bounds."
   (when (nth 3 (syntax-ppss))
     (let ((open (save-excursion
-                  (while (nth 3 (syntax-ppss))
+                  (while (and (not (bobp))
+                              (nth 3 (syntax-ppss)))
                     (backward-char 1))
                   (point)))
           (close (save-excursion
-                   (while (nth 3 (syntax-ppss))
+                   (while (and (not (eobp))
+                               (nth 3 (syntax-ppss)))
                      (forward-char 1))
                    (point))))
       (cons open close))))
 
+;; TODO: the repeated conditions are ugly, refactor this!
 (defun sp-get-comment-bounds ()
   "If the point is inside a comment, return its bounds."
   (when (or (sp-point-in-comment)
@@ -3702,14 +3710,26 @@ pairs!"
     (let ((open (save-excursion
                   (while (and (not (bobp))
                               (or (sp-point-in-comment)
-                                  (looking-at "[[:space:]]+\\s<")))
+                                  (save-excursion
+                                    (backward-char 1)
+                                    (looking-at "[[:space:]]+\\s<"))))
                     (backward-char 1))
+                  (when (not (or (bobp)
+                                 (or (sp-point-in-comment)
+                                     (save-excursion
+                                       (backward-char 1)
+                                       (looking-at "[[:space:]]+\\s<")))))
+                    (forward-char))
                   (point)))
           (close (save-excursion
                    (while (and (not (eobp))
                                (or (sp-point-in-comment)
                                    (looking-at "[[:space:]]+\\s<")))
                      (forward-char 1))
+                   (when (not (or (eobp)
+                                  (or (sp-point-in-comment)
+                                      (looking-at "[[:space:]]+\\s<"))))
+                     (backward-char 1))
                    (point))))
       (cons open close))))
 
@@ -4087,14 +4107,14 @@ See `sp-get-hybrid-sexp' for definition."
   "Get the end of hybrid sexp.
 See `sp-get-hybrid-sexp' for definition."
   (save-excursion
-    (flet ((skip-prefix-backward
-            (p)
-            (save-excursion
-              (goto-char p)
-              (save-restriction
-                (sp--narrow-to-line)
-                (skip-syntax-backward " .")
-                (point)))))
+    (cl-flet ((skip-prefix-backward
+               (p)
+               (save-excursion
+                 (goto-char p)
+                 (save-restriction
+                   (sp--narrow-to-line)
+                   (skip-syntax-backward " .")
+                   (point)))))
       (let ((p (progn (when (sp-point-in-symbol) (sp-backward-sexp)) (point)))
             (le (line-end-position))
             (cur (--if-let (save-excursion (sp-forward-sexp)) it (list :beg (1+ (point-max))))) ;hack
@@ -6038,7 +6058,8 @@ Examples:
         (forward-fn (if forward 'forward-char 'backward-char))
         (next-char-fn (if forward 'following-char 'preceding-char))
         (looking (if forward 'sp--looking-at 'sp--looking-back))
-        (eob-test (if forward '(eobp) '(bobp))))
+        (eob-test (if forward '(eobp) '(bobp)))
+        (comment-bound (if forward 'cdr 'car)))
     `(let ((in-comment (sp-point-in-comment))
            ;; HACK: if we run out of current context this might skip a
            ;; pair that was not allowed before.  However, such a call is
@@ -6060,6 +6081,9 @@ Examples:
                                  (,looking allowed-strings))))
                    (or (member (char-syntax (,next-char-fn)) '(?< ?> ?! ?| ?\ ?\\ ?\" ?' ?.))
                        (unless in-comment (sp-point-in-comment))))
+         (when (and (not in-comment)
+                    (sp-point-in-comment))
+           (goto-char (,comment-bound (sp-get-comment-bounds))))
          (,forward-fn 1)))))
 
 (defun sp-skip-forward-to-symbol (&optional stop-at-string stop-after-string stop-inside-string)
