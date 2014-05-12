@@ -17,7 +17,7 @@
 
 ;; Keywords: vc tools
 ;; Package: magit
-;; Package-Requires: ((cl-lib "0.3") (git-commit-mode "0.14.0") (git-rebase-mode "0.14.0"))
+;; Package-Requires: ((emacs "23.2") (cl-lib "0.3") (git-commit-mode "0.14.0") (git-rebase-mode "0.14.0"))
 
 ;; Magit requires at least GNU Emacs 23.2 and Git 1.7.2.5.
 ;; These are the versions shipped by Debian oldstable (6.0, Squeeze).
@@ -1825,8 +1825,8 @@ Read `completing-read' documentation for the meaning of the argument."
                                id-str
                              (epg-decode-dn id-obj))))))
                (epg-list-keys (epg-make-context epa-protocol) nil t))))
-  (magit-completing-read prompt keys nil t nil nil
-                         (or (car magit-gpg-secret-key-hist) (car keys)))))
+    (magit-completing-read prompt keys nil t nil 'magit-gpg-secret-key-hist
+                           (car (or magit-gpg-secret-key-hist keys)))))
 
 ;;;; Various Utilities
 
@@ -3528,8 +3528,6 @@ tracked in the current repository are reverted if
                              (mapconcat 'identity (cons program args) " "))
                   (insert "\n"))))
         (set-marker-insertion-type (magit-section-content-beginning s) nil)
-        (unless (get-buffer-window (current-buffer) t)
-          (magit-section-set-hidden s t))
         (insert "\n")
         (backward-char 2)
         (cons (current-buffer) s)))))
