@@ -3,7 +3,7 @@
 ;; Copyright (C) 2012 Magnar Sveen
 
 ;; Author: Magnar Sveen <magnars@gmail.com>
-;; Version: 20140327.116
+;; Version: 20140512.201
 ;; X-Original-Version: 2.6.0
 ;; Keywords: lists
 
@@ -79,10 +79,12 @@ special values."
   (let ((l (make-symbol "list"))
         (c (make-symbol "continue")))
     `(let ((,l ,list)
-           (,c t))
+           (,c t)
+           (it-index 0))
        (while (and ,l ,c)
          (let ((it (car ,l)))
            (if (not ,pred) (setq ,c nil) ,@body))
+         (setq it-index (1+ it-index))
          (!cdr ,l)))))
 
 (defun -each-while (list pred fn)
@@ -276,6 +278,10 @@ through the REP function."
       (-mapcat '-flatten l)
     (list l)))
 
+(defun -flatten-n (num list)
+  "Flatten NUM levels of a nested LIST."
+  (-last-item (--iterate (--mapcat (-list it) it) list (1+ num))))
+
 (defun -concat (&rest lists)
   "Returns a new list with the concatenation of the elements in the supplied LISTS."
   (apply 'append lists))
@@ -338,7 +344,7 @@ To get the first item in the list no questions asked, use `car'."
   "Returns the first item of LIST, or nil on an empty list.")
 
 (defun -last-item (list)
-  "Returns the first item of LIST, or nil on an empty list."
+  "Returns the last item of LIST, or nil on an empty list."
   (car (last list)))
 
 (defmacro --count (pred list)
@@ -427,14 +433,19 @@ Returns `nil` both if all items match the predicate, and if none of the items ma
 (defalias '-only-some-p '-only-some?)
 (defalias '--only-some-p '--only-some?)
 
-(defun -slice (list from &optional to)
+(defun -slice (list from &optional to step)
   "Return copy of LIST, starting from index FROM to index TO.
-FROM or TO may be negative."
+
+FROM or TO may be negative.  These values are then interpreted
+modulo the length of the list.
+
+If STEP is a number, only each STEPth item in the resulting
+section is returned.  Defaults to 1."
   (let ((length (length list))
-        (new-list nil)
-        (index 0))
+        (new-list nil))
     ;; to defaults to the end of the list
     (setq to (or to length))
+    (setq step (or step 1))
     ;; handle negative indices
     (when (< from 0)
       (setq from (mod from length)))
@@ -442,11 +453,10 @@ FROM or TO may be negative."
       (setq to (mod to length)))
 
     ;; iterate through the list, keeping the elements we want
-    (while (< index to)
-      (when (>= index from)
-        (!cons (car list) new-list))
-      (!cdr list)
-      (setq index (1+ index)))
+    (--each-while list (< it-index to)
+      (when (and (>= it-index from)
+                 (= (mod (- from it-index) step) 0))
+        (push it new-list)))
     (nreverse new-list)))
 
 (defun -take (n list)
@@ -804,20 +814,108 @@ groupings are equal to the length of the shortest input list.
 
 If two lists are provided as arguments, return the groupings as a list
 of cons cells. Otherwise, return the groupings as a list of lists. "
-  (let* ((n (-min (-map 'length lists)))
-         (level-lists (-map (-partial '-take n) lists))
-         results)
-    (while (> n 0)
-      (let ((split-lists (-map (-partial '-split-at 1) level-lists)))
-        (setq results (cons (-map 'caar split-lists) results))
-        (setq level-lists (-map 'cadr split-lists))
-        (setq n (1- n))))
+  (let (results)
+    (while (-none? 'null lists)
+      (setq results (cons (mapcar 'car lists) results))
+      (setq lists (mapcar 'cdr lists)))
     (setq results (nreverse results))
     (if (= (length lists) 2)
         ; to support backward compatability, return
         ; a cons cell if two lists were provided
         (--map (cons (car it) (cadr it)) results)
       results)))
+
+(defun -zip-fill (fill-value &rest lists)
+  "Zip LISTS, with FILL-VALUE padded onto the shorter lists. The
+lengths of the returned groupings are equal to the length of the
+longest input list."
+  (apply '-zip (apply '-pad (cons fill-value lists))))
+
+(defun -cycle (list)
+  "Returns an infinite copy of LIST that will cycle through the
+elements and repeat from the beginning."
+  (let ((newlist (-map 'identity list)))
+    (nconc newlist newlist)))
+
+(defun -pad (fill-value &rest lists)
+  "Appends FILL-VALUE to the end of each list in LISTS such that they
+will all have the same length."
+  (let* ((annotations (-annotate 'length lists))
+         (n (-max (-map 'car annotations))))
+    (--map (append (cdr it) (-repeat (- n (car it)) fill-value)) annotations)))
+
+(defun -annotate (fn list)
+  "Returns a list of cons cells where each cell is FN applied to each
+element of LIST paired with the unmodified element of LIST."
+  (-zip (-map fn list) list))
+
+(defmacro --annotate (form list)
+  "Anaphoric version of `-annotate'."
+  (declare (debug (form form)))
+  `(-annotate (lambda (it) ,form) ,list))
+
+(defun dash--table-carry (lists restore-lists &optional re)
+  "Helper for `-table' and `-table-flat'.
+
+If a list overflows, carry to the right and reset the list.
+
+Return how many lists were re-seted."
+  (while (and (not (car lists))
+              (not (equal lists '(nil))))
+    (setcar lists (car restore-lists))
+    (pop (cadr lists))
+    (!cdr lists)
+    (!cdr restore-lists)
+    (when re
+      (push (nreverse (car re)) (cadr re))
+      (setcar re nil)
+      (!cdr re))))
+
+(defun -table (fn &rest lists)
+  "Compute outer product of LISTS using function FN.
+
+The function FN should have the same arity as the number of
+supplied lists.
+
+The outer product is computed by applying fn to all possible
+combinations created by taking one element from each list in
+order.  The dimension of the result is (length lists).
+
+See also: `-table-flat'."
+  (let ((restore-lists (copy-sequence lists))
+        (last-list (last lists))
+        (re (--map nil (number-sequence 1 (length lists)))))
+    (while (car last-list)
+      (let ((item (apply fn (-map 'car lists))))
+        (push item (car re))
+        (pop (car lists))
+        (dash--table-carry lists restore-lists re)))
+    (nreverse (car (last re)))))
+
+(defun -table-flat (fn &rest lists)
+  "Compute flat outer product of LISTS using function FN.
+
+The function FN should have the same arity as the number of
+supplied lists.
+
+The outer product is computed by applying fn to all possible
+combinations created by taking one element from each list in
+order.  The results are flattened, ignoring the tensor structure
+of the result.  This is equivalent to calling:
+
+    (-flatten-n (1- (length lists)) (-table fn lists))
+
+but the implementation here is much more efficient.
+
+See also: `-flatten-n', `-table'."
+  (let ((restore-lists (copy-sequence lists))
+        (last-list (last lists))
+        re)
+    (while (car last-list)
+      (push (apply fn (-map 'car lists)) re)
+      (pop (car lists))
+      (dash--table-carry lists restore-lists))
+    (nreverse re)))
 
 (defun -partial (fn &rest args)
   "Takes a function FN and fewer than the normal arguments to FN,
@@ -1370,6 +1468,7 @@ structure such as plist or alist."
                              "-replace-where"
                              "--replace-where"
                              "-flatten"
+                             "-flatten-n"
                              "-concat"
                              "-mapcat"
                              "--mapcat"
@@ -1444,6 +1543,13 @@ structure such as plist or alist."
                              "-zip-with"
                              "--zip-with"
                              "-zip"
+                             "-zip-fill"
+                             "-cycle"
+                             "-pad"
+                             "-annotate"
+                             "--annotate"
+                             "-table"
+                             "-table-flat"
                              "-partial"
                              "-elem-index"
                              "-elem-indices"
