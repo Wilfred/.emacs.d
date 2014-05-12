@@ -1,7 +1,7 @@
-;;; cider-util.el --- Common utility functions that don't belong anywhere else
+;;; cider-util.el --- Common utility functions that don't belong anywhere else -*- lexical-binding: t -*-
 
-;; Copyright © 2012-2013 Tim King, Phil Hagelberg
-;; Copyright © 2013 Bozhidar Batsov, Hugo Duncan, Steve Purcell
+;; Copyright © 2012-2014 Tim King, Phil Hagelberg
+;; Copyright © 2013-2014 Bozhidar Batsov, Hugo Duncan, Steve Purcell
 ;;
 ;; Author: Tim King <kingtim@gmail.com>
 ;;         Phil Hagelberg <technomancy@gmail.com>
@@ -35,6 +35,17 @@
 ;;; Compatibility
 (eval-and-compile
   ;; `setq-local' for Emacs 24.2 and below
+  (unless (fboundp 'defvar-local)
+    (defmacro defvar-local (var val &optional docstring)
+      "Define VAR as a buffer-local variable with default value VAL.
+Like `defvar' but additionally marks the variable as being automatically
+buffer-local wherever it is set."
+      (declare (debug defvar) (doc-string 3))
+      `(progn
+         (defvar ,var ,val ,docstring)
+         (make-variable-buffer-local ',var))))
+
+  ;; `setq-local' for Emacs 24.2 and below
   (unless (fboundp 'setq-local)
     (defmacro setq-local (var val)
       "Set variable VAR to value VAL in current buffer."
@@ -43,7 +54,7 @@
 (defun cider-util--hash-keys (hashtable)
   "Return a list of keys in HASHTABLE."
   (let ((keys '()))
-    (maphash (lambda (k v) (setq keys (cons k keys))) hashtable)
+    (maphash (lambda (k _v) (setq keys (cons k keys))) hashtable)
     keys))
 
 (defun cider-util--clojure-buffers ()
@@ -51,6 +62,26 @@
   (-filter
    (lambda (buffer) (with-current-buffer buffer (derived-mode-p 'clojure-mode)))
    (buffer-list)))
+
+(defun cider-font-lock-as-clojure (string)
+  "Font-lock STRING as Clojure code."
+  (with-temp-buffer
+    (insert string)
+    (clojure-mode)
+    (font-lock-fontify-buffer)
+    (buffer-string)))
+
+(defun cider-format-pprint-eval (form)
+  "Return a string of Clojure code that will eval and pretty-print FORM."
+  (format "(let [x %s] (clojure.pprint/pprint x) x)" form))
+
+(autoload 'pkg-info-version-info "pkg-info.el")
+
+(defun cider--version ()
+  "Retrieve CIDER's version."
+  (condition-case nil
+      (pkg-info-version-info 'cider)
+    (error cider-version)))
 
 (provide 'cider-util)
 

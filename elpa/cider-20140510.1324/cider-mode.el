@@ -1,4 +1,4 @@
-;;; cider-mode.el --- Minor mode for REPL interactions
+;;; cider-mode.el --- Minor mode for REPL interactions -*- lexical-binding: t -*-
 
 ;; Copyright © 2012-2013 Tim King, Phil Hagelberg
 ;; Copyright © 2013 Bozhidar Batsov, Hugo Duncan, Steve Purcell
@@ -45,16 +45,18 @@
     (define-key map (kbd "C-c M-e") 'cider-eval-last-sexp-to-repl)
     (define-key map (kbd "C-c M-p") 'cider-insert-last-sexp-in-repl)
     (define-key map (kbd "C-c C-p") 'cider-pprint-eval-last-sexp)
+    (define-key map (kbd "C-c C-f") 'cider-pprint-eval-defun-at-point)
     (define-key map (kbd "C-c C-r") 'cider-eval-region)
     (define-key map (kbd "C-c C-n") 'cider-eval-ns-form)
     (define-key map (kbd "C-c M-:") 'cider-read-and-eval)
     (define-key map (kbd "C-c C-m") 'cider-macroexpand-1)
     (define-key map (kbd "C-c M-m") 'cider-macroexpand-all)
     (define-key map (kbd "C-c M-n") 'cider-repl-set-ns)
+    (define-key map (kbd "C-c M-i") 'cider-inspect)
+    (define-key map (kbd "C-c M-t") 'cider-toggle-trace)
     (define-key map (kbd "C-c C-d") 'cider-doc)
     (define-key map (kbd "C-c C-s") 'cider-src)
     (define-key map (kbd "C-c C-z") 'cider-switch-to-repl-buffer)
-    (define-key map (kbd "C-c C-Z") 'cider-switch-to-relevant-repl-buffer)
     (define-key map (kbd "C-c M-o") 'cider-find-and-clear-repl-buffer)
     (define-key map (kbd "C-c C-k") 'cider-load-current-buffer)
     (define-key map (kbd "C-c C-l") 'cider-load-file)
@@ -104,6 +106,7 @@
     ["Display documentation" cider-doc]
     ["Display source" cider-src]
     ["Display JavaDoc" cider-javadoc]
+    ["Inspect" cider-inspect]
     "--"
     ["Set ns" cider-repl-set-ns]
     ["Switch to REPL" cider-switch-to-repl-buffer]
@@ -120,4 +123,5 @@
     ["Version info" cider-version]))
 
 (provide 'cider-mode)
+
 ;;; cider-mode.el ends here

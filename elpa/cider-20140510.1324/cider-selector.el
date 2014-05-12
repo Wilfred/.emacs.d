@@ -1,7 +1,7 @@
-;;; cider-selector.el --- Buffer selection command inspired by SLIME's selector
+;;; cider-selector.el --- Buffer selection command inspired by SLIME's selector -*- lexical-binding: t -*-
 
-;; Copyright © 2012-2013 Tim King, Phil Hagelberg
-;; Copyright © 2013 Bozhidar Batsov, Hugo Duncan, Steve Purcell
+;; Copyright © 2012-2014 Tim King, Phil Hagelberg
+;; Copyright © 2013-2014 Bozhidar Batsov, Hugo Duncan, Steve Purcell
 ;;
 ;; Author: Tim King <kingtim@gmail.com>
 ;;         Phil Hagelberg <technomancy@gmail.com>
@@ -34,8 +34,11 @@
 (require 'cider-interaction)
 (require 'cider-repl) ; for cider-find-or-create-repl-buffer
 
+(defconst cider-selector-help-buffer "*Selector Help*"
+  "The name of the selector's help buffer.")
+
 (defvar cider-selector-methods nil
-  "List of buffer-selection methods for the `cider-select' command.
+  "List of buffer-selection methods for the `cider-selector' command.
 Each element is a list (KEY DESCRIPTION FUNCTION).
 DESCRIPTION is a one-line description of what the key selects.")
 
@@ -105,9 +108,9 @@ is chosen.  The returned buffer is selected with
                   #'< :key #'car))))
 
 (def-cider-selector-method ?? "Selector help buffer."
-  (ignore-errors (kill-buffer "*Select Help*"))
-  (with-current-buffer (get-buffer-create "*Select Help*")
-    (insert "Select Methods:\n\n")
+  (ignore-errors (kill-buffer cider-selector-help-buffer))
+  (with-current-buffer (get-buffer-create cider-selector-help-buffer)
+    (insert "CIDER Selector Methods:\n\n")
     (loop for (key line nil) in cider-selector-methods
           do (insert (format "%c:\t%s\n" key line)))
     (goto-char (point-min))
@@ -120,22 +123,22 @@ is chosen.  The returned buffer is selected with
          cider-selector-methods :key #'car)
 
 (def-cider-selector-method ?c
-  "most recently visited clojure-mode buffer."
+  "Most recently visited clojure-mode buffer."
   (cider--recently-visited-buffer 'clojure-mode))
 
 (def-cider-selector-method ?e
-  "most recently visited emacs-lisp-mode buffer."
+  "Most recently visited emacs-lisp-mode buffer."
   (cider--recently-visited-buffer 'emacs-lisp-mode))
 
 (def-cider-selector-method ?q "Abort."
   (top-level))
 
 (def-cider-selector-method ?r
-  "Current *nrepl* buffer."
+  "Current REPL buffer."
   (cider-find-or-create-repl-buffer))
 
 (def-cider-selector-method ?n
-  "NREPL connections buffer."
+  "Connections browser buffer."
   (nrepl-connection-browser)
   nrepl--connection-browser-buffer-name)
 
@@ -144,9 +147,10 @@ is chosen.  The returned buffer is selected with
   nrepl-event-buffer-name)
 
 (def-cider-selector-method ?s
- "Cycle to the next Clojure connection."
+ "Cycle to the next CIDER connection's REPL."
  (cider-rotate-connection)
  (cider-find-or-create-repl-buffer))
 
 (provide 'cider-selector)
+
 ;;; cider-selector.el ends here

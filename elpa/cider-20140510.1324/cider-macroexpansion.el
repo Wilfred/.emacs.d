@@ -1,4 +1,4 @@
-;;; cider-macroexpansion.el --- Macro expansion support
+;;; cider-macroexpansion.el --- Macro expansion support -*- lexical-binding: t -*-
 
 ;; Copyright © 2012-2013 Tim King, Phil Hagelberg
 ;; Copyright © 2013 Bozhidar Batsov, Hugo Duncan, Steve Purcell
@@ -53,8 +53,8 @@ This variable specifies both what was expanded and the expander.")
    "(clojure.pprint/write (%s '%s) :suppress-namespaces false :dispatch clojure.pprint/code-dispatch)"
    expander expr))
 
-(defun cider-macroexpand-expr (expander expr &optional buffer)
-  "Macroexpand, use EXPANDER, the given EXPR from BUFFER."
+(defun cider-macroexpand-expr (expander expr)
+  "Macroexpand, use EXPANDER, the given EXPR."
   (let* ((form (cider-macroexpand-form expander expr))
          (expansion (plist-get (cider-eval-sync form nrepl-buffer-ns) :stdout)))
     (setq cider-last-macroexpand-expression form)
@@ -162,4 +162,5 @@ and point is placed at CURRENT-POINT."
   cider-macroexpansion-minor-mode-map)
 
 (provide 'cider-macroexpansion)
+
 ;;; cider-macroexpansion.el ends here
