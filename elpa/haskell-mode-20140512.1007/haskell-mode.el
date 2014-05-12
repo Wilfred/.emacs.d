@@ -139,7 +139,7 @@
 (declare-function haskell-process-generate-tags "haskell-process" (&optional and-then-find-this-tag))
 (declare-function haskell-session "haskell-session" ())
 (declare-function haskell-session-all-modules "haskell-session" (&optional DONTCREATE))
-(declare-function haskell-session-cabal-dir "haskell-session" (session))
+(declare-function haskell-session-cabal-dir "haskell-session" (session &optional no-prompt))
 (declare-function haskell-session-maybe "haskell-session" ())
 (declare-function haskell-session-tags-filename "haskell-session" (session))
 (declare-function haskell-session-current-dir "haskell-session" (session))
@@ -198,7 +198,7 @@ sure all haskell customize definitions have been loaded."
   (interactive)
   ;; make sure all modules with (defcustom ...)s are loaded
   (mapc 'require
-        '(haskell-checkers haskell-doc haskell-font-lock haskell-indentation haskell-indent haskell-interactive-mode haskell-menu haskell-process haskell-yas inf-haskell))
+        '(haskell-checkers haskell-compile haskell-doc haskell-font-lock haskell-indentation haskell-indent haskell-interactive-mode haskell-menu haskell-process haskell-yas inf-haskell))
   (customize-browse 'haskell))
 
 ;; Are we looking at a literate script?
@@ -346,6 +346,13 @@ be set to the preferred literate style."
 (defun haskell-ident-at-point ()
   "Return the identifier under point, or nil if none found.
 May return a qualified name."
+  (let ((reg (haskell-ident-pos-at-point)))
+    (when reg
+      (buffer-substring-no-properties (car reg) (cdr reg)))))
+
+(defun haskell-ident-pos-at-point ()
+  "Return the span of the identifier under point, or nil if none found.
+May return a qualified name."
   (save-excursion
     ;; Skip whitespace if we're on it.  That way, if we're at "map ", we'll
     ;; see the word "map".
@@ -383,7 +390,7 @@ May return a qualified name."
                     (looking-at "[[:upper:]]"))
           (setq start (point)))
         ;; This is it.
-        (buffer-substring-no-properties start end)))))
+        (cons start end)))))
 
 (defun haskell-delete-indentation (&optional arg)
   "Like `delete-indentation' but ignoring Bird-style \">\"."
@@ -610,6 +617,45 @@ If nil, use the Hoogle web-site."
 ;;;###autoload
 (defalias 'hoogle 'haskell-hoogle)
 
+(defvar hoogle-server-process-name "emacs-local-hoogle")
+(defvar hoogle-server-buffer-name (format "*%s*" hoogle-server-process-name))
+(defvar hoogle-port-number 49513 "Port number.")
+
+(defun hoogle-start-server ()
+  "Start hoogle local server."
+  (interactive)
+  (unless (hoogle-server-live-p)
+    (start-process
+     hoogle-server-process-name
+     (get-buffer-create hoogle-server-buffer-name) "/bin/sh" "-c"
+     (format "hoogle server -p %i" hoogle-port-number))))
+
+(defun hoogle-server-live-p ()
+  "Whether hoogle server is live or not."
+  (condition-case err
+      (process-live-p (get-buffer-create hoogle-server-buffer-name))
+    (error nil)))
+
+(defun hoogle-kill-server ()
+  "Kill hoogle server if it is live."
+  (interactive)
+  (when (hoogle-server-live-p)
+    (kill-process (get-buffer-create hoogle-server-buffer-name))))
+
+;;;###autoload
+(defun hoogle-lookup-from-local ()
+  "Lookup by local hoogle."
+  (interactive)
+  (if (hoogle-server-live-p)
+      (browse-url (format "http://localhost:%i/?hoogle=%s"
+                          hoogle-port-number
+                          (read-string "hoogle: " (haskell-ident-at-point))))
+    (when (y-or-n-p
+           "hoogle server not found, start hoogle server?")
+      (if (executable-find "hoogle")
+          (hoogle-start-server)
+        (error "hoogle is not installed")))))
+
 ;;;###autoload
 (defun haskell-hayoo (query)
   "Do a Hayoo search for QUERY."
@@ -632,6 +678,15 @@ If nil, use the Hoogle web-site."
                  (const "ghc -fno-code")
                  (string :tag "Other command")))
 
+(defcustom haskell-completing-read-function 'ido-completing-read
+  "Default function to use for completion."
+  :group 'haskell
+  :type '(choice
+          (function-item :tag "ido" :value ido-completing-read)
+          (function-item :tag "helm" :value helm--completing-read-default)
+          (function-item :tag "completing-read" :value completing-read)
+          (function :tag "Custom function")))
+
 (defcustom haskell-stylish-on-save nil
   "Whether to run stylish-haskell on the buffer before saving."
   :group 'haskell
@@ -644,6 +699,9 @@ If nil, use the Hoogle web-site."
 
 (defvar haskell-saved-check-command nil
   "Internal use.")
+
+(defcustom haskell-indent-spaces 2
+  "Number of spaces to indent inwards.")
 
 ;; Like Python.  Should be abstracted, sigh.
 (defun haskell-check (command)
@@ -705,7 +763,7 @@ Brings up the documentation for haskell-mode-hook."
     (cond ((save-excursion (forward-word -1)
                            (looking-at "^import$"))
            (insert " ")
-           (let ((module (ido-completing-read "Module: " (haskell-session-all-modules))))
+           (let ((module (funcall haskell-completing-read-function "Module: " (haskell-session-all-modules))))
              (insert module)
              (haskell-mode-format-imports)))
           ((not (string= "" (save-excursion (forward-char -1) (haskell-ident-at-point))))
@@ -724,11 +782,10 @@ Brings up the documentation for haskell-mode-hook."
     (ignore-errors (when (and (boundp 'haskell-session) haskell-session)
                      (haskell-process-generate-tags))))
   (when haskell-stylish-on-save
-    (ignore-errors (haskell-mode-stylish-buffer)))
-  (let ((before-save-hook '())
-        (after-save-hook '()))
-    (basic-save-buffer))
-  )
+    (ignore-errors (haskell-mode-stylish-buffer))
+    (let ((before-save-hook '())
+          (after-save-hook '()))
+      (basic-save-buffer))))
 
 (defun haskell-mode-buffer-apply-command (cmd)
   "Execute shell command CMD with current buffer as input and
@@ -790,13 +847,28 @@ remains unchanged."
 (defun haskell-mode-tag-find (&optional next-p)
   "The tag find function, specific for the particular session."
   (interactive "P")
-  (let ((tags-file-name (haskell-session-tags-filename (haskell-session)))
-        (tags-revert-without-query t)
-        (ident (haskell-ident-at-point)))
-    (when (not (string= "" (haskell-trim ident)))
-      (cond ((file-exists-p tags-file-name)
-             (find-tag ident next-p))
-            (t (haskell-process-generate-tags ident))))))
+  (cond
+   ((eq 'font-lock-string-face
+        (get-text-property (point) 'face))
+    (let* ((string (save-excursion
+                    (buffer-substring-no-properties
+                     (1+ (search-backward-regexp "\"" (line-beginning-position) nil 1))
+                     (1- (progn (forward-char 1)
+                                (search-forward-regexp "\"" (line-end-position) nil 1))))))
+           (fp (expand-file-name string
+                                  (haskell-session-cabal-dir (haskell-session)))))
+      (find-file
+       (read-file-name
+        ""
+        fp
+        fp))))
+   (t (let ((tags-file-name (haskell-session-tags-filename (haskell-session)))
+            (tags-revert-without-query t)
+            (ident (haskell-ident-at-point)))
+        (when (not (string= "" (haskell-trim ident)))
+          (cond ((file-exists-p tags-file-name)
+                 (find-tag ident next-p))
+                (t (haskell-process-generate-tags ident))))))))
 
 ;; From Bryan O'Sullivan's blog:
 ;; http://www.serpentine.com/blog/2007/10/09/using-emacs-to-insert-scc-annotations-in-haskell-code/
@@ -844,6 +916,46 @@ given a prefix arg."
     (rgrep sym
            "*.hs" ;; TODO: common Haskell extensions.
            (haskell-session-current-dir (haskell-session)))))
+
+(defun haskell-fontify-as-mode (text mode)
+  "Fontify TEXT as MODE, returning the fontified text."
+  (with-temp-buffer
+    (funcall mode)
+    (insert text)
+    (font-lock-fontify-buffer)
+    (buffer-substring (point-min) (point-max))))
+
+(defun haskell-guess-module-name ()
+  "Guess the current module name of the buffer."
+  (interactive)
+  (let ((components (loop for part
+                          in (reverse (split-string (buffer-file-name) "/"))
+                          while (let ((case-fold-search nil))
+                                  (string-match "^[A-Z]+" part))
+                          collect (replace-regexp-in-string "\\.l?hs$" "" part))))
+    (mapconcat 'identity (reverse components) ".")))
+
+(defun haskell-auto-insert-module-template ()
+  "Insert a module template for the newly created buffer."
+  (interactive)
+  (when (and (= (point-min)
+                (point-max))
+             (buffer-file-name))
+    (insert
+     "-- | "
+     "\n"
+     "\n"
+     "module "
+     )
+    (let ((name (haskell-guess-module-name)))
+      (if (string= name "")
+          (insert "")
+        (insert name)))
+    (insert " where"
+            "\n"
+            "\n")
+    (goto-char (point-min))
+    (forward-char 4)))
 
 
 ;; Provide ourselves:

@@ -119,7 +119,7 @@ This will either look for a Cabal file or a \"module\" statement in the file."
   :group 'inferior-haskell
   (set (make-local-variable 'comint-prompt-regexp)
        ;; Whay the backslash in [\\._[:alnum:]]?
-       "^\\*?[[:upper:]][\\._[:alnum:]]*\\(?: \\*?[[:upper:]][\\._[:alnum:]]*\\)*> \\|^λ?> $")
+       "^\\*?[[:upper:]][\\._[:alnum:]]*\\(?: \\*?[[:upper:]][\\._[:alnum:]]*\\)*\\( λ\\)?> \\|^λ?> $")
   (set (make-local-variable 'comint-input-autoexpand) nil)
   (add-hook 'comint-preoutput-filter-functions
             'inferior-haskell-send-decl-post-filter)
@@ -734,7 +734,8 @@ so that it can be obtained more quickly next time.")
 (defvar inferior-haskell-ghc-internal-ident-alist
   ;; FIXME: Fill this table, ideally semi-automatically.
   '(("GHC.Base.return" . "Control.Monad.return")
-    ("GHC.List" . "Data.List")))
+    ("GHC.Base.String" . "Data.String.String")
+    ("GHC.List"        . "Data.List")))
 
 (defun inferior-haskell-map-internal-ghc-ident (ident)
   "Try to translate some internal GHC identifier to its alter ego in haskell docs."
@@ -771,9 +772,12 @@ we load it."
                             (format "Find documentation of (default %s): " sym)
                           "Find documentation of: ")
                         nil nil sym))))
-  (setq sym (inferior-haskell-map-internal-ghc-ident sym))
   (let* (;; Find the module and look it up in the alist
          (module (inferior-haskell-get-module sym))
+         (full-name (inferior-haskell-map-internal-ghc-ident (concat module "." sym)))
+         (success (string-match "\\(.*\\)\\.\\(.*\\)" full-name))
+         (module (match-string 1 full-name))
+         (sym (match-string 2 full-name))
          (alist-record (assoc module (inferior-haskell-module-alist)))
          (package (nth 1 alist-record))
          (file-name (concat (subst-char-in-string ?. ?- module) ".html"))
@@ -781,11 +785,11 @@ we load it."
          (url (if (or (eq inferior-haskell-use-web-docs 'always)
                       (and (not (file-exists-p local-path))
                            (eq inferior-haskell-use-web-docs 'fallback)))
-                  (concat inferior-haskell-web-docs-base package "/" file-name
-                          ;; Jump to the symbol anchor within Haddock.
-                          "#v:" sym)
+                  (concat inferior-haskell-web-docs-base package "/" file-name)
                 (and (file-exists-p local-path)
-                     (concat "file://" local-path)))))
+                     (concat "file://" local-path))))
+         ;; Jump to the symbol within Haddock.
+         (url (concat url "#v:" sym)))
     (if url (browse-url url) (error "Local file doesn't exist"))))
 
 (provide 'inf-haskell)

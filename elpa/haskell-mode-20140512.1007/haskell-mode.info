@@ -1,5 +1,5 @@
 This is
-/home/melpa/melpa/working/haskell-mode-20130728.1338/haskell-mode.info,
+/tmp/haskell-mode283951oS/haskell-mode-20140512.1007/haskell-mode.info,
 produced by makeinfo version 4.13 from
 /home/melpa/melpa/working/haskell-mode/haskell-mode.texi.
 
@@ -37,6 +37,7 @@ interpreter (e.g. GHCi).
 * Editing Haskell Code::
 * Unicode::
 * Indentation::
+* Compilation::
 * haskell-decl-scan-mode::
 * inferior-haskell-mode::
 * haskell-interactive-mode::
@@ -221,7 +222,7 @@ can turn it off by setting `input-method-highlight-flag' to `nil' via
 `M-x customize-variable'.
 
 
-File: haskell-mode.info,  Node: Indentation,  Next: haskell-decl-scan-mode,  Prev: Unicode,  Up: Top
+File: haskell-mode.info,  Node: Indentation,  Next: Compilation,  Prev: Unicode,  Up: Top
 
 6 Indentation
 *************
@@ -317,7 +318,7 @@ conveying the block structure. However, most Haskell programs written
 by humans use indentation for block structuring.
 
 
-File: haskell-mode.info,  Node: haskell-decl-scan-mode,  Next: inferior-haskell-mode,  Prev: Indentation,  Up: Top
+File: haskell-mode.info,  Node: haskell-decl-scan-mode,  Next: inferior-haskell-mode,  Prev: Compilation,  Up: Top
 
 7 `haskell-decl-scan-mode'
 **************************
@@ -374,9 +375,68 @@ need to add the following to your Emacs initialization:
        '(add-to-list 'which-func-modes 'haskell-mode))
 
 
+File: haskell-mode.info,  Node: Compilation,  Next: haskell-decl-scan-mode,  Prev: Indentation,  Up: Top
+
+8 Compilation
+*************
+
+Haskell mode comes equipped with a specialized "Compilation mode"
+tailored to GHC's compiler messages with optional support for Cabal
+projects. *Note Compilation Mode: (emacs)Compilation Mode, for more
+information about the basic commands provided by the Compilation mode
+which are available in the Haskell compilation sub-mode as well. The
+additional features provided compared to Emacs' basic Compilation mode
+are:
+
+   * DWIM-style auto-detection of compile command (including support
+     for CABAL projects)
+
+   * Support for GHC's compile messages and recognizing error, warning
+     and info source locations (including `-ferror-spans' syntax)
+
+   * Support for filtering out GHC's uninteresting `Loading package...'
+     linker messages
+
+   In order to use it, invoke the `haskell-compile' command instead of
+`compile' as you would for the ordinary Compilation mode. It's
+recommended to bind `haskell-compile' to a convenient key binding. For
+instance, you can add the following to your Emacs initialization to
+bind `haskell-compile' to `C-c C-c'.
+
+     (eval-after-load "haskell-mode"
+         '(define-key haskell-mode-map (kbd "C-c C-c") 'haskell-compile))
+
+     (eval-after-load "haskell-cabal"
+         '(define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-compile))
+
+The following description assumes that `haskell-compile' has been bound
+to `C-c C-c'.
+
+   When invoked, `haskell-compile' tries to guess how to compile the
+Haskell program your currently visited buffer belongs to, by searching
+for a `.cabal' file in the current of enclosing parent folders. If a
+`.cabal' file was found, the command defined in the
+`haskell-compile-cabal-build-command' option is used. Moreover, when
+requesting to compile a `.cabal'-file is detected and a negative prefix
+argument (e.g. `C-- C-c C-c') was given, the alternative
+`haskell-compile-cabal-build-command-alt' is invoked. By default,
+`haskell-compile-cabal-build-command-alt' contains a `cabal clean -s'
+command in order to force a full rebuild.
+
+   Otherwise if no `.cabal' could be found, a single-module compilation
+is assumed and `haskell-compile-command' is used (_if_ the currently
+visited buffer contains Haskell source code).
+
+   You can also inspect and modify the compile command to be invoked
+temporarily by invoking `haskell-compile' with a prefix argument (e.g.
+`C-u C-c C-c'). If later-on you want to recompile using the same
+customized compile command, invoke `recompile' (bound to `g') inside
+the `*haskell-compilation*' buffer.
+
+
 File: haskell-mode.info,  Node: inferior-haskell-mode,  Next: haskell-interactive-mode,  Prev: haskell-decl-scan-mode,  Up: Top
 
-8 `inferior-haskell-mode'
+9 `inferior-haskell-mode'
 *************************
 
 The major mode `inferior-haskell-mode' provides support for interacting
@@ -410,8 +470,8 @@ auto-detected by default, but is customizable via the
 
 File: haskell-mode.info,  Node: haskell-interactive-mode,  Next: haskell-cabal-mode,  Prev: inferior-haskell-mode,  Up: Top
 
-9 `haskell-interactive-mode'
-****************************
+10 `haskell-interactive-mode'
+*****************************
 
 An alternative mode providing a REPL (read–eval–print loop) via GHCi
 sessions is called `haskell-interactive-mode', which effectively
@@ -452,7 +512,7 @@ associate with.
 
 File: haskell-mode.info,  Node: haskell-cabal-mode,  Next: Concept index,  Prev: haskell-interactive-mode,  Up: Top
 
-10 `haskell-cabal-mode'
+11 `haskell-cabal-mode'
 ***********************
 
 `haskell-cabal-mode' is a major mode for editing Cabal package
@@ -500,6 +560,7 @@ Function index
 
 * haskell-cabal-mode:                    haskell-cabal-mode.   (line  6)
 * haskell-cabal-visit-file:              haskell-cabal-mode.   (line 11)
+* haskell-compile:                       Compilation.          (line  6)
 * haskell-customize:                     Getting Started.      (line 13)
 * haskell-decl-scan-mode:                haskell-decl-scan-mode.
                                                                (line  6)
@@ -541,6 +602,9 @@ Variable index
 * Menu:
 
 * haskell-cabal-mode-hook:               haskell-cabal-mode.   (line  6)
+* haskell-compile-cabal-build-command:   Compilation.          (line 38)
+* haskell-compile-cabal-build-command-alt: Compilation.        (line 38)
+* haskell-compile-command:               Compilation.          (line 38)
 * haskell-decl-scan-mode-hook:           haskell-decl-scan-mode.
                                                                (line  6)
 * haskell-mode-hook:                     Getting Started.      (line 18)
@@ -553,23 +617,24 @@ Variable index
 
 Tag Table:
 Node: Top781
-Node: Introduction1404
-Node: Getting Help and Reporting Bugs1915
-Node: Getting Started3357
-Node: Editing Haskell Code4560
-Ref: Editing Haskell Code-Footnote-16437
-Ref: Editing Haskell Code-Footnote-26540
-Ref: Editing Haskell Code-Footnote-36591
-Node: Unicode6690
-Node: Indentation8303
-Ref: Indentation-Footnote-112192
-Node: haskell-decl-scan-mode12376
-Node: inferior-haskell-mode14507
-Node: haskell-interactive-mode15384
-Node: haskell-cabal-mode17191
-Node: Concept index18042
-Node: Function index18786
-Node: Variable index21183
+Node: Introduction1420
+Node: Getting Help and Reporting Bugs1931
+Node: Getting Started3373
+Node: Editing Haskell Code4576
+Ref: Editing Haskell Code-Footnote-16453
+Ref: Editing Haskell Code-Footnote-26556
+Ref: Editing Haskell Code-Footnote-36607
+Node: Unicode6706
+Node: Indentation8319
+Ref: Indentation-Footnote-112197
+Node: haskell-decl-scan-mode12381
+Node: Compilation14512
+Node: inferior-haskell-mode17160
+Node: haskell-interactive-mode18037
+Node: haskell-cabal-mode19846
+Node: Concept index20697
+Node: Function index21441
+Node: Variable index23911
 
 End Tag Table
 
