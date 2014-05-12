@@ -3,8 +3,9 @@
 ;;; Code:
 
 
-;;;### (autoloads (projectile-global-mode projectile-mode projectile-commander)
-;;;;;;  "projectile" "projectile.el" (21311 13941 599635 191000))
+;;;### (autoloads (projectile-global-mode projectile-mode projectile-mode-line-lighter
+;;;;;;  projectile-commander) "projectile" "projectile.el" (21361
+;;;;;;  13209 110678 729000))
 ;;; Generated autoloads from projectile.el
 
 (autoload 'projectile-commander "projectile" "\
@@ -17,8 +18,10 @@ See `def-projectile-commander-method' for defining new methods.
 
 \(fn)" t nil)
 
-(defconst projectile-mode-line-lighter " Projectile" "\
+(defvar projectile-mode-line-lighter "Projectile" "\
 The default lighter for `projectile-mode'.")
+
+(custom-autoload 'projectile-mode-line-lighter "projectile" t)
 
 (autoload 'projectile-mode "projectile" "\
 Minor mode to assist project management and navigation.
@@ -58,8 +61,8 @@ See `projectile-mode' for more information on Projectile mode.
 
 ;;;***
 
-;;;### (autoloads nil nil ("projectile-pkg.el") (21311 13941 697376
-;;;;;;  234000))
+;;;### (autoloads nil nil ("projectile-pkg.el") (21361 13209 170811
+;;;;;;  250000))
 
 ;;;***
 
