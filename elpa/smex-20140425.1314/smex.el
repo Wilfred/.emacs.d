@@ -4,7 +4,8 @@
 ;;
 ;; Author: Cornelius Mika <cornelius.mika@gmail.com> and contributors
 ;; URL: http://github.com/nonsequitur/smex/
-;; Version: 20140131.1006
+;; Package-Requires: ((emacs "24"))
+;; Version: 20140425.1314
 ;; X-Original-Version: 3.0
 ;; Keywords: convenience, usability
 
@@ -115,9 +116,12 @@ Set this to nil to disable fuzzy matching."
           (execute-extended-command current-prefix-arg chosen-item-name)
         (smex-rank chosen-item)))))
 
+;;;###autoload
 (defun smex-major-mode-commands ()
   "Like `smex', but limited to commands that are relevant to the active major mode."
   (interactive)
+  (unless smex-initialized-p
+    (smex-initialize))
   (let ((commands (delete-dups (append (smex-extract-commands-from-keymap (current-local-map))
                                        (smex-extract-commands-from-features major-mode)))))
     (setq commands (smex-sort-according-to-cache commands))

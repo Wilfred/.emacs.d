@@ -3,12 +3,17 @@
 ;;; Code:
 
 
-;;;### (autoloads (smex-initialize smex) "smex" "smex.el" (21311
-;;;;;;  14086 503072 874000))
+;;;### (autoloads (smex-initialize smex-major-mode-commands smex)
+;;;;;;  "smex" "smex.el" (21361 13226 893802 815000))
 ;;; Generated autoloads from smex.el
 
 (autoload 'smex "smex" "\
 
+
+\(fn)" t nil)
+
+(autoload 'smex-major-mode-commands "smex" "\
+Like `smex', but limited to commands that are relevant to the active major mode.
 
 \(fn)" t nil)
 
@@ -19,7 +24,7 @@
 
 ;;;***
 
-;;;### (autoloads nil nil ("smex-pkg.el") (21311 14086 630909 854000))
+;;;### (autoloads nil nil ("smex-pkg.el") (21361 13226 951755 170000))
 
 ;;;***
 
