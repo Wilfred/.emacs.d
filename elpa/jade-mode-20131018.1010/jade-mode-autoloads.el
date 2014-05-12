@@ -3,8 +3,8 @@
 ;;; Code:
 
 
-;;;### (autoloads (jade-mode) "jade-mode" "jade-mode.el" (21009 5320
-;;;;;;  950546 973000))
+;;;### (autoloads (jade-mode) "jade-mode" "jade-mode.el" (21361 13262
+;;;;;;  370000 835000))
 ;;; Generated autoloads from jade-mode.el
 
 (autoload 'jade-mode "jade-mode" "\
@@ -16,8 +16,8 @@ Major mode for editing jade node.js templates
 
 ;;;***
 
-;;;### (autoloads nil nil ("jade-mode-pkg.el") (21009 5321 46118
-;;;;;;  462000))
+;;;### (autoloads nil nil ("jade-mode-pkg.el") (21361 13262 432476
+;;;;;;  935000))
 
 ;;;***
 

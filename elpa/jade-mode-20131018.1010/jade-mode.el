@@ -1,5 +1,5 @@
 ;;; jade-mode.el --- Major mode for editing .jade files
-;; Version: 20130220.1245
+;; Version: 20131018.1010
 ;;;
 ;;; URL: https://github.com/brianc/jade-mode
 ;;; Author: Brian M. Carlson and other contributors
@@ -41,6 +41,7 @@ For detail, see `comment-dwim'."
   (eval-when-compile
     (regexp-opt
      '("if" "else" "for" "in" "each" "case" "when" "default" "block" "extends"
+       "block append" "block prepend" "append" "prepend"
        "include" "yield" "mixin") 'words))
   "Jade keywords.")
 
