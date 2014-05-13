@@ -5,8 +5,8 @@
 
 ;;;### (autoloads (anzu-replace-at-cursor-thing anzu-query-replace-regexp
 ;;;;;;  anzu-query-replace anzu-query-replace-at-cursor-thing anzu-query-replace-at-cursor
-;;;;;;  global-anzu-mode anzu-mode) "anzu" "anzu.el" (21242 46894
-;;;;;;  247956 876000))
+;;;;;;  global-anzu-mode anzu-mode) "anzu" "anzu.el" (21362 36087
+;;;;;;  17635 662000))
 ;;; Generated autoloads from anzu.el
 
 (autoload 'anzu-mode "anzu" "\
@@ -30,7 +30,7 @@ otherwise, disable it.  If called from Lisp, enable the mode if
 ARG is omitted or nil.
 
 Anzu mode is enabled in all buffers where
-`(lambda nil (unless (minibufferp) (anzu-mode t)))' would do it.
+`anzu--turn-on' would do it.
 See `anzu-mode' for more information on Anzu mode.
 
 \(fn &optional ARG)" t nil)
@@ -62,7 +62,7 @@ See `anzu-mode' for more information on Anzu mode.
 
 ;;;***
 
-;;;### (autoloads nil nil ("anzu-pkg.el") (21242 46894 330546 688000))
+;;;### (autoloads nil nil ("anzu-pkg.el") (21362 36087 75387 375000))
 
 ;;;***
 
