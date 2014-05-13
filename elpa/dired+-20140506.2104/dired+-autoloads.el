@@ -28,18 +28,17 @@
 ;;;;;;  diredp-copy-this-file diredp-rename-this-file diredp-upcase-this-file
 ;;;;;;  diredp-downcase-this-file diredp-capitalize-this-file diredp-delete-this-file
 ;;;;;;  diredp-capitalize dired-mark-files-regexp dired-do-delete
-;;;;;;  dired-do-flagged-delete dired-goto-file diredp-prev-subdir
-;;;;;;  diredp-next-subdir diredp-prev-dirline diredp-next-dirline
-;;;;;;  diredp-previous-line diredp-next-line diredp-up-directory-reuse-dir-buffer
-;;;;;;  diredp-up-directory dired-do-find-marked-files dired-maybe-insert-subdir
-;;;;;;  dired-do-load dired-do-byte-compile dired-do-compress diredp-ediff
-;;;;;;  diredp-omit-unmarked diredp-omit-marked diredp-toggle-find-file-reuse-dir
-;;;;;;  diredp-mouse-find-file-reuse-dir-buffer diredp-find-file-reuse-dir-buffer
-;;;;;;  diredp-do-bookmark-in-bookmark-file diredp-set-bookmark-file-bookmark-for-marked
-;;;;;;  diredp-mouse-do-bookmark diredp-do-bookmark diredp-mouse-do-set-tag-value
-;;;;;;  diredp-do-set-tag-value diredp-mouse-do-paste-replace-tags
-;;;;;;  diredp-do-paste-replace-tags diredp-mouse-do-paste-add-tags
-;;;;;;  diredp-do-paste-add-tags diredp-mouse-do-remove-all-tags
+;;;;;;  dired-do-flagged-delete diredp-prev-subdir diredp-next-subdir
+;;;;;;  diredp-prev-dirline diredp-next-dirline diredp-previous-line
+;;;;;;  diredp-next-line diredp-up-directory-reuse-dir-buffer diredp-up-directory
+;;;;;;  dired-do-find-marked-files dired-maybe-insert-subdir dired-do-load
+;;;;;;  dired-do-byte-compile dired-do-compress diredp-ediff diredp-omit-unmarked
+;;;;;;  diredp-omit-marked diredp-toggle-find-file-reuse-dir diredp-mouse-find-file-reuse-dir-buffer
+;;;;;;  diredp-find-file-reuse-dir-buffer diredp-do-bookmark-in-bookmark-file
+;;;;;;  diredp-set-bookmark-file-bookmark-for-marked diredp-mouse-do-bookmark
+;;;;;;  diredp-do-bookmark diredp-mouse-do-set-tag-value diredp-do-set-tag-value
+;;;;;;  diredp-mouse-do-paste-replace-tags diredp-do-paste-replace-tags
+;;;;;;  diredp-mouse-do-paste-add-tags diredp-do-paste-add-tags diredp-mouse-do-remove-all-tags
 ;;;;;;  diredp-do-remove-all-tags diredp-mouse-do-untag diredp-do-untag
 ;;;;;;  diredp-mouse-do-tag diredp-do-tag diredp-unmark-files-tagged-not-all
 ;;;;;;  diredp-unmark-files-tagged-some diredp-unmark-files-tagged-none
@@ -54,18 +53,49 @@
 ;;;;;;  diredp-list-marked-recursive diredp-marked-recursive-other-window
 ;;;;;;  diredp-marked-recursive diredp-do-grep-recursive diredp-do-query-replace-regexp-recursive
 ;;;;;;  diredp-do-find-marked-files-recursive diredp-set-bookmark-file-bookmark-for-marked-recursive
-;;;;;;  diredp-do-bookmark-in-bookmark-file-recursive diredp-do-bookmark-recursive
-;;;;;;  diredp-image-dired-comment-files-recursive diredp-image-dired-delete-tag-recursive
-;;;;;;  diredp-image-dired-tag-files-recursive diredp-image-dired-display-thumbs-recursive
-;;;;;;  diredp-do-print-recursive diredp-do-hardlink-recursive diredp-do-symlink-recursive
+;;;;;;  diredp-do-bookmark-in-bookmark-file-recursive diredp-do-bookmark-dirs-recursive
+;;;;;;  diredp-do-bookmark-recursive diredp-image-dired-comment-files-recursive
+;;;;;;  diredp-image-dired-delete-tag-recursive diredp-image-dired-tag-files-recursive
+;;;;;;  diredp-image-dired-display-thumbs-recursive diredp-do-print-recursive
+;;;;;;  diredp-do-hardlink-recursive diredp-do-symlink-recursive
 ;;;;;;  diredp-do-shell-command-recursive diredp-insert-subdirs-recursive
-;;;;;;  diredp-insert-subdirs diredp-dired-inserted-subdirs diredp-dired-this-subdir
-;;;;;;  diredp-fileset diredp-dired-union-other-window diredp-dired-union
-;;;;;;  diredp-dired-for-files-other-window diredp-dired-for-files
-;;;;;;  diredp-dired-files-other-window diredp-dired-files diredp-wrap-around-flag
-;;;;;;  diredp-w32-local-drives diredp-prompt-for-bookmark-prefix-flag
-;;;;;;  diff-switches) "dired+" "dired+.el" (20993 4269 973295 467000))
+;;;;;;  diredp-insert-subdirs diredp-list-marked diredp-mouse-find-line-file-other-window
+;;;;;;  diredp-find-line-file-other-window diredp-dired-inserted-subdirs
+;;;;;;  diredp-dired-this-subdir diredp-fileset-other-window diredp-fileset
+;;;;;;  diredp-dired-union-other-window diredp-dired-union diredp-dired-for-files-other-window
+;;;;;;  diredp-dired-for-files diredp-dired-files-other-window diredp-dired-files
+;;;;;;  image-dired-dired-toggle-marked-thumbs image-dired-dired-insert-marked-thumbs
+;;;;;;  diredp-wrap-around-flag diredp-w32-local-drives diredp-prompt-for-bookmark-prefix-flag
+;;;;;;  diff-switches diredp-image-preview-in-tooltip diredp-auto-focus-frame-for-thumbnail-tooltip-flag)
+;;;;;;  "dired+" "dired+.el" (21362 36082 427695 812000))
 ;;; Generated autoloads from dired+.el
+
+(defvar diredp-auto-focus-frame-for-thumbnail-tooltip-flag nil "\
+*Non-nil means automatically focus the frame for a thumbnail tooltip.
+If nil then you will not see a thumbnail image tooltip when you
+mouseover an image-file name in Dired, unless you first give the frame
+the input focus (e.g., by clicking its title bar).
+
+This option has no effect if `diredp-image-preview-in-tooltip' is nil.
+It also has no effect for Emacs versions prior to Emacs 22.")
+
+(custom-autoload 'diredp-auto-focus-frame-for-thumbnail-tooltip-flag "dired+" t)
+
+(defvar diredp-image-preview-in-tooltip (or (and (boundp 'image-dired-thumb-size) image-dired-thumb-size) 100) "\
+*Whether and what kind of image preview to show in a tooltip.
+The possible values are:
+
+ `nil'       : do not show a tooltip preview
+ integer N>0 : show a thumbnail preview of that size
+ `full'      : show a full-size preview of the image
+
+To enable tooltip image preview you must turn on `tooltip-mode' and
+load library `image-dired.el'.  See also option
+`diredp-auto-focus-frame-for-thumbnail-tooltip-flag'.
+
+This option has no effect for Emacs versions prior to Emacs 22.")
+
+(custom-autoload 'diredp-image-preview-in-tooltip "dired+" t)
 
 (defvar diff-switches "-c" "\
 *A string or list of strings specifying switches to be passed to diff.")
@@ -88,6 +118,19 @@ name and DESCRIPTION describes DRIVE.")
 *Non-nil means Dired \"next\" commands wrap around to buffer beginning.")
 
 (custom-autoload 'diredp-wrap-around-flag "dired+" t)
+
+(autoload 'image-dired-dired-insert-marked-thumbs "dired+" "\
+Insert thumbnails before file names of marked files in the Dired buffer.
+
+\(fn)" t nil)
+
+(autoload 'image-dired-dired-toggle-marked-thumbs "dired+" "\
+Toggle thumbnails in front of file names in Dired.
+If no files are marked, insert or hide thumbnails on the current line.
+With a numeric prefix arg N, ignore marked files and act on the next N
+files (previous -N files, if N < 0).
+
+\(fn &optional ARG)" t nil)
 
 (autoload 'diredp-dired-files "dired+" "\
 Like `dired', but non-positive prefix arg prompts for files to list.
@@ -172,6 +215,11 @@ Open Dired on the files in fileset FLSET-NAME.
 
 \(fn FLSET-NAME)" t nil)
 
+(autoload 'diredp-fileset-other-window "dired+" "\
+Open Dired in another window on the files in fileset FLSET-NAME.
+
+\(fn FLSET-NAME)" t nil)
+
 (autoload 'diredp-dired-this-subdir "dired+" "\
 Open Dired for the subdir at or above point.
 If point is not on a subdir line, but is in an inserted subdir
@@ -191,6 +239,39 @@ With a prefix arg, create the Dired buffers but do not display them.
 Markings and current Dired switches are preserved.
 
 \(fn &optional NO-SHOW-P MSGP)" t nil)
+
+(autoload 'diredp-find-line-file-other-window "dired+" "\
+Visit file named by current line, in another window.
+The full text of the line is used as the file name.
+
+\(fn)" t nil)
+
+(autoload 'diredp-mouse-find-line-file-other-window "dired+" "\
+Visit file named by clicked line, in another window.
+The full text of the line is used as the file name.
+
+\(fn E)" t nil)
+
+(autoload 'diredp-list-marked "dired+" "\
+List the marked files in this Dired buffer.
+A prefix arg specifies files to use instead of the marked files:
+
+ * Numeric prefix arg N: The next N files (previous -N, if < 0).
+ * C-u C-u: All files, but no directories.
+ * C-u C-u C-u: All files and directories, except `.' and `..'
+ * C-u C-u C-u C-u: All files and directories, including `.' and `..'
+ * Any other prefix arg: The current line's file only.
+
+\(Note that a prefix arg acts
+
+You can use `RET' or `mouse-2' to visit any of the files.
+If `tooltip-mode' is on then moving the mouse over image-file names
+shows image previews.
+
+Non-interactively, non-nil arg PREDICATE is a file-name predicate.
+List only the files for which it returns non-nil.
+
+\(fn &optional ARG PREDICATE)" t nil)
 
 (autoload 'diredp-insert-subdirs "dired+" "\
 Insert the marked subdirectories.
@@ -328,6 +409,35 @@ Dired buffer and all subdirs, recursively.
 
 \(fn &optional IGNORE-MARKS-P PREFIX)" t nil)
 
+(autoload 'diredp-do-bookmark-dirs-recursive "dired+" "\
+Bookmark this Dired buffer and marked subdirectory Dired buffers, recursively.
+Create a Dired bookmark for this directory and for each of its marked
+subdirectories.  Handle each of the marked subdirectory similarly:
+bookmark it and its marked subdirectories, and so on, recursively.
+Name each of these Dired bookmarks with the Dired buffer name.
+
+After creating the Dired bookmarks, create a sequence bookmark, named
+`DIRBUF and subdirs', where DIRBUF is the name of the original buffer.
+This bookmark represents the whole Dired tree rooted in the directory
+where you invoked the command.  Jumping to this sequence bookmark
+restores all of the Dired buffers making up the tree, by jumping to
+each of their bookmarks.
+
+With a prefix arg, bookmark the marked and unmarked subdirectory Dired
+buffers, recursively, that is, ignore markings.
+
+Note:
+
+* If there is more than one Dired buffer for a given subdirectory then
+  only the first such is used.
+
+* This command creates new bookmarks.  It never updates or overwrites
+  an existing bookmark.
+
+You need library `Bookmark+' for this command.
+
+\(fn IGNORE-MARKS-P &optional MSG-P)" t nil)
+
 (autoload 'diredp-do-bookmark-in-bookmark-file-recursive "dired+" "\
 Bookmark files here and below in BOOKMARK-FILE and save BOOKMARK-FILE.
 Like `diredp-do-bookmark-in-bookmark-file', but act recursively on
@@ -402,12 +512,19 @@ Same as `diredp-marked-recursive', but uses a different window.
 
 (autoload 'diredp-list-marked-recursive "dired+" "\
 List the files marked here and in marked subdirs, recursively.
-See `diredp-do-find-marked-files-recursive' for a description of the
-files included.  In particular, if no files are marked here or in a
-marked subdir, then all files in the directory are included.
+The files included are those that are marked in the current Dired
+buffer, or all files in the directory if none are marked.  Marked
+subdirectories are handled recursively in the same way.
 
-Non-interactively, non-nil PREDICATE is a file-name predicate.  List
-only the files for which it returns non-nil.
+With a prefix argument, all marks are ignored: all files in this Dired
+buffer and all descendent directories are included.
+
+You can use `RET' or `mouse-2' to visit any of the files.
+If `tooltip-mode' is on then moving the mouse over image-file names
+shows image previews.
+
+Non-interactively, non-nil arg PREDICATE is a file-name predicate.
+List only the files for which it returns non-nil.
 
 \(fn &optional IGNORE-MARKS-P PREDICATE)" t nil)
 
@@ -1055,7 +1172,7 @@ Creates a buffer if necessary.
 
 With a prefix arg, Dired the parent directory in another window.
 
-On MS Windows, if you already at the root directory, invoke
+On MS Windows, if you are already at the root directory, invoke
 `diredp-w32-drives' to visit a navigable list of Windows drives.
 
 \(fn &optional OTHER-WINDOW)" t nil)
@@ -1121,11 +1238,6 @@ When called interactively and not on a subdir line, go to this subdir's line.
 Otherwise, this is a mirror image of `diredp-next-subdir'.
 
 \(fn ARG &optional NO-ERROR-IF-NOT-FOUND NO-SKIP)" t nil)
-
-(autoload 'dired-goto-file "dired+" "\
-Go to line describing file FILE in this dired buffer.
-
-\(fn FILE)" t nil)
 
 (autoload 'dired-do-flagged-delete "dired+" "\
 In Dired, delete the files flagged for deletion.
@@ -1352,7 +1464,7 @@ Examples:
   Mark zero-length files: `(equal 0 size)'
   Mark files last modified on Feb 2: `(string-match \"Feb  2\" time)'
   Mark uncompiled Emacs Lisp files (`.el' file without a `.elc' file):
-     First, dired just the source files: `dired *.el'.
+     First, Dired just the source files: `dired *.el'.
      Then, use \\[dired-mark-sexp] with this sexp:
           (not (file-exists-p (concat name \"c\")))
 
@@ -1401,12 +1513,12 @@ In Dired, visit the file or directory name you click on.
 \(fn EVENT)" t nil)
 
 (autoload 'diredp-mouse-find-file "dired+" "\
-Replace dired in its window by this file or directory.
+Replace Dired in its window by this file or directory.
 
 \(fn EVENT)" t nil)
 
 (autoload 'diredp-mouse-view-file "dired+" "\
-Examine this file in view mode, returning to dired when done.
+Examine this file in view mode, returning to Dired when done.
 When file is a directory, show it in this buffer if it is inserted;
 otherwise, display it in another buffer.
 
@@ -1509,7 +1621,7 @@ In Dired, delete this file, upon confirmation.
 Run a shell COMMAND on this file.
 If there is output, it goes to a separate buffer.
 
-No automatic redisplay of dired buffers is attempted, as there's no
+No automatic redisplay of Dired buffers is attempted, as there's no
 telling what files the command may have changed.  Type
 \\[dired-do-redisplay] to redisplay.
 
@@ -1580,7 +1692,7 @@ Send a bug report about a Dired+ problem.
 
 ;;;***
 
-;;;### (autoloads nil nil ("dired+-pkg.el") (20993 4270 94195 626000))
+;;;### (autoloads nil nil ("dired+-pkg.el") (21362 36082 521993 967000))
 
 ;;;***
 
