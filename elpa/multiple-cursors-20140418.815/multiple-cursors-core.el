@@ -29,6 +29,8 @@
 
 (require 'rect)
 
+(defvar mc--read-char)
+
 (defface mc/cursor-face
   '((t (:inverse-video t)))
   "The face used for fake cursors"
@@ -230,6 +232,8 @@ cursor with updated info."
 ;; Intercept some reading commands so you won't have to
 ;; answer them for every single cursor
 
+(defvar mc--read-char nil)
+(defvar multiple-cursors-mode nil)
 (defadvice read-char (around mc-support activate)
   (if (not multiple-cursors-mode)
       ad-do-it
@@ -237,6 +241,7 @@ cursor with updated info."
       (setq mc--read-char ad-do-it))
     (setq ad-return-value mc--read-char)))
 
+(defvar mc--read-quoted-char nil)
 (defadvice read-quoted-char (around mc-support activate)
   (if (not multiple-cursors-mode)
       ad-do-it
@@ -423,7 +428,7 @@ So you can paste it in later with `yank-rectangle'."
     (unless (mc--all-equal entries)
       (setq killed-rectangle entries))))
 
-(defvar mc/unsupported-minor-modes '(auto-complete-mode flyspell-mode)
+(defvar mc/unsupported-minor-modes '(auto-complete-mode flyspell-mode jedi-mode)
   "List of minor-modes that does not play well with multiple-cursors.
 They are temporarily disabled when multiple-cursors are active.")
 
