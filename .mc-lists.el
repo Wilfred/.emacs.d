@@ -4,13 +4,16 @@
 (setq mc/cmds-to-run-for-all
       '(
         beginning-of-line-dwim
+        forward-sexp
         sp--self-insert-command
         yas-expand
         zap-up-to-char
+        zap-up-to-non-whitespace
         ))
 
 (setq mc/cmds-to-run-once
       '(
+        ag-project-at-point
         smex
         sp-rewrap-sexp
         sp-splice-sexp
