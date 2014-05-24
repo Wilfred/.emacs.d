@@ -4,7 +4,7 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 January 2013
-;; Version: 20140314.1626
+;; Version: 20140322.948
 ;; X-Original-Version: 0.42
 
 ;;; Commentary:
@@ -44,7 +44,10 @@
 
 (defcustom ag-arguments
   (list "--smart-case" "--nogroup" "--column" "--")
-  "Default arguments passed to ag."
+  "Default arguments passed to ag.
+
+Ag.el requires --nogroup and --column, so we recommend you add any
+additional arguments to the start of this list."
   :type '(repeat (string))
   :group 'ag)
 
@@ -123,6 +126,7 @@ different window, according to `ag-open-in-other-window'."
 (define-key ag-mode-map (kbd "n") 'compilation-next-error)
 
 (defun ag/buffer-name (search-string directory regexp)
+  "Return a buffer name formatted according to ag.el conventions."
   (cond
    (ag-reuse-buffers "*ag search*")
    (regexp (format "*ag search regexp:%s dir:%s*" search-string directory))
@@ -439,7 +443,7 @@ See also `ag-dired-regexp'."
 
 ;;;###autoload
 (defun ag-kill-buffers ()
-  "Kill all ag-mode buffers."
+  "Kill all `ag-mode' buffers."
   (interactive)
   (dolist (buffer (buffer-list))
     (when (eq (buffer-local-value 'major-mode buffer) 'ag-mode)
@@ -447,7 +451,7 @@ See also `ag-dired-regexp'."
 
 ;;;###autoload
 (defun ag-kill-other-buffers ()
-  "Kill all ag-mode buffers other than the current buffer."
+  "Kill all `ag-mode' buffers other than the current buffer."
   (interactive)
   (let ((current-buffer (current-buffer)))
     (dolist (buffer (buffer-list))
