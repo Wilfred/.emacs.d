@@ -19,13 +19,18 @@ title: \"%s\"
 (defun convert-creole ()
   "Convert creole text in the current buffer to markdown."
   (interactive)
+  (goto-char (point-min))
   ;; h2 headings
   (query-replace-regexp "^==\\(.*\\)$" "##\\1")
+  (goto-char (point-min))
   ;; inline code
   (query-replace-regexp "{{{\\(.*?\\)}}}" "`\\1`")
+  (goto-char (point-min))
   ;; italics (note bold syntax is the same in markdown and creole
   (query-replace-regexp "//\\([[:alnum:]]*\\)//" "_\\1_")
+  (goto-char (point-min))
   ;; links
-  (query-replace-regexp "\\[\\[\\(.*?\\)|\\(.*?\\)\\]\\]" "[\\2](\\1)"))
+  (query-replace-regexp "\\[\\[\\(.*?\\)|\\(.*?\\)\\]\\]" "[\\2](\\1)")
+  (goto-char (point-min)))
 
 (provide 'blog-utils)
