@@ -1,11 +1,12 @@
 (function range (max)
   "Return a list of integers from 0 to max - 1."
-    (case
+  (case
     ((< max 0)
-      ;; indent this next line:
+      ;; try indenting this next line, with point before and with point after the paren.
       (throw value-error
         (join "The function `range` requires a number greater than 0, but got: "
           (printable max)
+          ;; try indenting this next line.
         )
       )
     )
