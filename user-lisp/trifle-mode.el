@@ -52,7 +52,8 @@
 (define-derived-mode trifle-mode lisp-mode "Trifle"
   "Major mode for editing Trifle lisp code."
   :syntax-table trifle-mode-syntax-table
-  (set (make-local-variable 'font-lock-defaults) '(trifle-font-lock-keywords)))
+  (set (make-local-variable 'font-lock-defaults) '(trifle-font-lock-keywords))
+  (setq indent-line-function 'trifle-indent))
 
 (defun trifle-indent ()
   "Indent the current line according to Trifle indent rules.
