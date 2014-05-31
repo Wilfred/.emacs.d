@@ -1,13 +1,13 @@
 ;;; macrostep.el --- interactive macro stepper for Emacs Lisp
 
-;; Copyright (C) 2012 Jonathan Oddie <j.j.oddie@gmail.com>
+;; Copyright (C) 2012-2014 Jonathan Oddie <j.j.oddie@gmail.com>
 
 ;; Author:     joddie <j.j.oddie@gmail.com>
 ;; Maintainer: joddie <j.j.oddie@gmail.com>
 ;; Created:    16 January 2012
-;; Updated:    04 May 2013
-;; Version: 20130504.1520
-;; X-Original-Version:    0.6
+;; Updated:    11 May 2014
+;; Version: 20140529.1746
+;; X-Original-Version:    0.7
 ;; Keywords:   lisp, languages, macro, debugging
 ;; Url:        https://github.com/joddie/macrostep
 
@@ -48,11 +48,14 @@
 ;;   macro-expanded code. The heads of macro sub-forms are fontified using
 ;;   `macrostep-macro-face'. Uninterned symbols (gensyms) are fontified
 ;;   based on which step in the expansion created them, to distinguish them
-;;   from normal symbols and from other gensyms with the same print name.
-;;   Use `customize-group' with the `macrostep' group to customize these
-;;   faces.
-;;
-;;
+;;   from normal symbols and from other gensyms with the same print
+;;   name. Use `customize-group' with the `macrostep' group to customize
+;;   these faces.
+
+;;   Both macros defined by `defmacro' and local macros created by
+;;   `macrolet' and `cl-macrolet' can be expanded.
+
+
 ;; 2 Key-bindings and usage
 ;; ========================
 ;;
@@ -160,15 +163,20 @@
 ;;     24 & for plugging macrostep in his [EmacsConf presentation]!
 ;;   - George Kettleborough for bug reports, and patches to highlight the
 ;;     expanded region and properly handle backquotes.
-;;
-;;
+;;   - Nic Ferrier for suggesting support for local definitions within
+;;     macrolet forms
+
+
 ;;   [EmacsConf presentation] http://youtu.be/RvPFZL6NJNQ
 ;;
 ;;
 ;; 6 Changelog
 ;; ===========
 ;;
-;;   - v0.6, 2013-05-94: better handling of quote and backquote
+
+;;   - v0.7, 2014-05-11: expand locally-defined macros within (cl-)macrolet
+;;     forms
+;;   - v0.6, 2013-05-04: better handling of quote and backquote
 ;;   - v0.5, 2013-04-16: highlight region, maintain cleaner buffer state
 ;;   - v0.4, 2013-04-07: only enter macrostep-mode on successful
 ;;     macro-expansion
@@ -180,7 +188,11 @@
 ;; We use `pp-buffer' to pretty-print macro expansions
 (require 'pp)
 (require 'ring)
-(eval-when-compile (require 'cl))
+;; `cl-macs' is needed at run-time to support `cl-macrolet'
+(require 'cl-macs)
+(eval-when-compile
+  (require 'cl)
+  (require 'pcase))
 
 
 ;;; Constants and dynamically bound variables
@@ -203,6 +215,10 @@
 (defvar macrostep-saved-read-only nil
   "Saved value of buffer-read-only upon entering macrostep mode.")
 (make-variable-buffer-local 'macrostep-saved-read-only)
+
+(defvar macrostep-environment nil
+  "Local macro-expansion environment, including macros declared by `cl-macrolet'.")
+(make-variable-buffer-local 'macrostep-environment)
 
 ;;; Faces
 (defgroup macrostep nil
@@ -322,7 +338,7 @@ quit and return to normal editing.
 
     ;; Exiting mode: collapse any remaining overlays
     (when macrostep-overlays (macrostep-collapse-all))
-    :; Restore undo info & read-only state
+    ;; Restore undo info & read-only state
     (setq buffer-undo-list macrostep-saved-undo-list
           buffer-read-only macrostep-saved-read-only
           macrostep-saved-undo-list nil)
@@ -346,7 +362,8 @@ buffer temporarily read-only. If macrostep-mode is active and the
 form following point is not a macro form, search forward in the
 buffer and expand the next macro form found, if any."
   (interactive)
-  (let ((sexp (macrostep-sexp-at-point)))
+  (let ((sexp (macrostep-sexp-at-point))
+        (macrostep-environment (macrostep-environment-at-point)))
     (when (not (macrostep-macro-form-p sexp))
       (condition-case nil
 	  (progn
@@ -458,26 +475,34 @@ If no more macro expansions are visible after this, exit
 	  (eq (car form) 'lambda)) 	; hack
       nil
     (condition-case err
-        (let ((fun (indirect-function (car form))))
-          (and (consp fun)
-               (or (eq (car fun) 'macro)
-                   (and
-                    (eq (car fun) 'autoload)
-                    (eq (nth 4 fun) 'macro)))))
+        (or
+         ;; Locally bound as a macro?
+         (assq (car form) macrostep-environment)
+         ;; Globally defined?
+         (let ((fun (indirect-function (car form))))
+           (and (consp fun)
+                (or (eq (car fun) 'macro)
+                    (and
+                     (eq (car fun) 'autoload)
+                     (eq (nth 4 fun) 'macro))))))
       (error nil))))
 
 (defun macrostep-macro-definition (form)
   "Return, as a function, the macro definition to apply in expanding FORM."
-  (let ((fun (indirect-function (car form))))
-    (if (consp fun)
-        (case (car fun)
-          ((macro)
-           (cdr fun))
+  (or
+   ;; Locally bound by `macrolet'
+   (cdr (assq (car form) macrostep-environment))
+   ;; Globally defined
+   (let ((fun (indirect-function (car form))))
+     (if (consp fun)
+         (case (car fun)
+           ((macro)
+            (cdr fun))
 
-          ((autoload)
-           (load-library (nth 1 fun))
-           (macrostep-macro-definition form)))
-      (error "(%s ...) is not a macro form" form))))
+           ((autoload)
+            (load-library (nth 1 fun))
+            (macrostep-macro-definition form)))
+       (error "(%s ...) is not a macro form" form)))))
 
 (defun macrostep-expand-1 (form)
   "Return result of macro-expanding the top level of FORM by exactly one step.
@@ -485,6 +510,47 @@ Unlike `macroexpand', this function does not continue macro
 expansion until a non-macro-call results."
   (if (not (macrostep-macro-form-p form)) form
     (apply (macrostep-macro-definition form) (cdr form))))
+
+(defun macrostep-environment-at-point ()
+  "Return the local macro-expansion environment at point, if any.
+
+The local environment includes macros declared by any `macrolet'
+or `cl-macrolet' forms surrounding point.
+
+The return value is an alist of elements (NAME . FUNCTION), where
+NAME is the symbol locally bound to the macro and FUNCTION is the
+lambda expression that returns its expansion."
+  (save-excursion
+    (let
+        ((enclosing-form
+          (ignore-errors
+            (backward-up-list)
+            (read (copy-marker (point))))))
+      (pcase enclosing-form
+        (`(,(or `macrolet `cl-macrolet) ,bindings . ,_)
+          (let ((binding-environment
+                 (macrostep-bindings-to-environment bindings))
+                (enclosing-environment
+                 (macrostep-environment-at-point)))
+            (append binding-environment enclosing-environment)))
+        (`nil nil)
+        (_ (macrostep-environment-at-point))))))
+
+(defun macrostep-bindings-to-environment (bindings)
+  "Return the macro-expansion environment declared by BINDINGS as an alist.
+
+BINDINGS is a list in the form expected by `macrolet' or
+`cl-macrolet'.  The return value is an alist, as described in
+`macrostep-environment-at-point'."
+  ;; So that the later elements of bindings properly shadow the
+  ;; earlier ones in the returned environment, we must reverse the
+  ;; list before mapping over it.
+  (cl-loop for (name . forms) in (reverse bindings)
+           collect
+           ;; Adapted from the definition of `cl-macrolet':
+           (let ((res (cl--transform-lambda forms name)))
+             (eval (car res))
+             (cons name `(lambda ,@(cdr res))))))
 
 (defun macrostep-overlay-at-point ()
   "Return the innermost macro stepper overlay at point."
@@ -652,36 +718,60 @@ expansion will not be fontified.  See also
 	     (macrostep-print-sexp (cadr sexp)))
 
 	    (t				; other list form
-             ;; Is it an (unquoted) macro form?
-	     (if (and (not quoted-form-p)
-                      (macrostep-macro-form-p sexp))
-                 (progn
-                   ;; Save the real expansion as a text property on the
-                   ;; opening paren
-                   (macrostep-propertize
-                       (insert "(")
-                     'macrostep-expanded-text sexp)
-                   ;; Fontify the head of the macro
-                   (macrostep-propertize
-                       (prin1 head (current-buffer))
-                     'font-lock-face 'macrostep-macro-face)
-                   (when (cdr sexp) (insert " "))
-                   (setq sexp (cdr sexp)))
-               ;; Not a macro form
-               (insert "("))
-
-	     ;; Print remaining list elements
-             (while sexp
-               (if (listp sexp)
+             ;; If the sexp is a (cl-)macrolet form, the
+             ;; macro-expansion environment should be extended using
+             ;; its bindings while printing the body forms in order to
+             ;; correctly mark any uses of locally-bound macros. (See
+             ;; `with-js' in `js.el.gz' for an example of a macro that
+             ;; works this way).
+             (let ((extended-environment
+                    (pcase sexp
+                      (`(,(or `cl-macrolet `macrolet) ,bindings . ,_)
+                        (append (macrostep-bindings-to-environment bindings)
+                                macrostep-environment))
+                      (_ macrostep-environment))))
+               
+               ;; Is it an (unquoted) macro form?
+               (if (and (not quoted-form-p)
+                        (macrostep-macro-form-p sexp))
                    (progn
-                     (macrostep-print-sexp (car sexp) quoted-form-p)
-                     (when (cdr sexp) (insert " "))
-                     (setq sexp (cdr sexp)))
-                 ;; Print tail of dotted list
-                 (insert ". ")
-                 (macrostep-print-sexp sexp)
-                 (setq sexp nil)))
-	     (insert ")")))))
+                     ;; Save the real expansion as a text property on the
+                     ;; opening paren
+                     (macrostep-propertize
+                         (insert "(")
+                       'macrostep-expanded-text sexp)
+                     ;; Fontify the head of the macro
+                     (macrostep-propertize
+                         (macrostep-print-sexp head)
+                       'font-lock-face 'macrostep-macro-face))
+                 ;; Not a macro form
+                 (insert "(")
+                 (macrostep-print-sexp head quoted-form-p))
+
+               ;; Print remaining list elements
+               (setq sexp (cdr sexp))
+               (when sexp (insert " "))
+               ;; macrostep-environment will be setq'd after printing
+               ;; the second element of the list (i.e., the binding
+               ;; list in a macrolet form)
+               (let ((macrostep-environment macrostep-environment))
+                 (while sexp
+                   (if (listp sexp)
+                       (progn
+                         (macrostep-print-sexp (car sexp) quoted-form-p)
+                         (when (cdr sexp) (insert " "))
+                         (setq sexp (cdr sexp))
+                         ;; At this point the first and second
+                         ;; elements of the list have been printed, so
+                         ;; it is time to extend the macro-expansion
+                         ;; environment inside a macrolet for the body
+                         ;; forms.
+                         (setq macrostep-environment extended-environment))
+                     ;; Print tail of dotted list
+                     (insert ". ")
+                     (macrostep-print-sexp sexp)
+                     (setq sexp nil))))
+               (insert ")"))))))
 
    ;; Print everything except symbols and lists as normal
    (t (prin1 sexp (current-buffer)))))
