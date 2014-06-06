@@ -27,4 +27,4 @@ projectile.cache
 projectile-bookmarks.eld
 
 # Customisations that we don't want in git.
-user-lisp/site-cusomisations.el
+user-lisp/site-customisations.el
