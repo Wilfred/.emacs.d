@@ -3,6 +3,7 @@
 
 (setq mc/cmds-to-run-for-all
       '(
+        backward-sexp
         beginning-of-line-dwim
         forward-sexp
         sp--self-insert-command
