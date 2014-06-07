@@ -25,6 +25,9 @@
 ;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 ;; Boston, MA 02110-1301, USA.
 
+;;; Commentary:
+;; Basic highlighting and indentation for Trifle programs.
+
 ;;; Code:
 (require 'smartparens) ;; sp-up-sexp
 (require 'dash) ;; --dotimes
@@ -33,7 +36,7 @@
 
 (defvar trifle-mode-map
   (make-sparse-keymap)
-  "Keymap for Trifle lisp major mode")
+  "Keymap for Trifle Lisp major mode.")
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.tfl$" . trifle-mode))
@@ -43,7 +46,7 @@
    `(";.*" . font-lock-comment-face)
    `(,(regexp-opt '("if" "let" "function" "macro" "quote" "unquote" "unquote*" "while" "set!" "set-symbol!") 'symbols) . font-lock-builtin-face)
    `(,(rx (or (group (regexp ":[a-z]+")) (group "#false") (group "#true") (group "#null"))) . font-lock-constant-face))
-  "Highlighting for Trifle mode")
+  "Highlighting for Trifle mode.")
 
 (defvar trifle-mode-syntax-table
   (make-syntax-table))
@@ -84,3 +87,4 @@ For every level of parentheses, indent by two spaces."
     ))
 
 (provide 'trifle-mode)
+;;; trifle-mode.el ends here
