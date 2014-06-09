@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (vr/query-replace vr/replace vr/mc-mark) "visual-regexp"
-;;;;;;  "visual-regexp.el" (21377 52420 600717 797000))
+;;;;;;  "visual-regexp.el" (21398 5526 90162 40000))
 ;;; Generated autoloads from visual-regexp.el
 
 (autoload 'vr/mc-mark "visual-regexp" "\
@@ -24,8 +24,8 @@ Use vr/query-replace like you would use query-replace-regexp.
 
 ;;;***
 
-;;;### (autoloads nil nil ("visual-regexp-pkg.el") (21377 52420 716726
-;;;;;;  355000))
+;;;### (autoloads nil nil ("visual-regexp-pkg.el") (21398 5526 269121
+;;;;;;  690000))
 
 ;;;***
 
