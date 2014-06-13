@@ -263,6 +263,9 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'diminish)
 (diminish 'undo-tree-mode)
 
+(require 'diminish)
+(diminish 'magit-auto-revert-mode)
+
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'eval-defun)
 
 (define-key emacs-lisp-mode-map (kbd "C-c d") 'toggle-debug-on-error)

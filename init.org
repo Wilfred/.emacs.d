@@ -653,6 +653,14 @@ it on the mode line. Hide it.
   (diminish 'undo-tree-mode)
 #+END_SRC
 
+Magit-Auto-Revert is also harmless and we always want it enabled, so
+we don't want to see it shown on the mode line either.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'diminish)
+  (diminish 'magit-auto-revert-mode)
+#+END_SRC
+
 ** Emacs Lisp
 
 *** Shortcuts
