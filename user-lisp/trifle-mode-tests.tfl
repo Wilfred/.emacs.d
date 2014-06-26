@@ -1,3 +1,4 @@
+; Indentation tests.
 (function range (max)
   "Return a list of integers from 0 to max - 1."
   (case
@@ -12,3 +13,12 @@
     )
   )
 )
+
+; Highlighting tests.
+; This is a comment despite "quotes"
+; This is a comment despite (list)
+; this is a comment despite #true
+
+; Built-in symbols that are important.
+(macro foo (x) x)
+(function bar (x) (let (a 1) a))

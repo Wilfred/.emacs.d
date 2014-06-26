@@ -45,7 +45,8 @@
   (list
    `(";.*" . font-lock-comment-face)
    `(,(regexp-opt '("if" "let" "function" "macro" "quote" "unquote" "unquote*" "while" "set!" "set-symbol!") 'symbols) . font-lock-builtin-face)
-   `(,(rx (or (group (regexp ":[a-z]+")) (group "#false") (group "#true") (group "#null"))) . font-lock-constant-face))
+   `(,(rx (or (group (regexp ":[a-z]+")) (group "#false") (group "#true") (group "#null"))) . font-lock-constant-face)
+   `("\"[^\"]+?\"" . font-lock-string-face))
   "Highlighting for Trifle mode.")
 
 (defvar trifle-mode-syntax-table
