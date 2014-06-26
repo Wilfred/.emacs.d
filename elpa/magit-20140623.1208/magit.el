@@ -17,7 +17,7 @@
 
 ;; Keywords: vc tools
 ;; Package: magit
-;; Package-Requires: ((emacs "23.2") (cl-lib "0.3") (git-commit-mode "0.14.0") (git-rebase-mode "0.14.0"))
+;; Package-Requires: ((cl-lib "0.3") (git-commit-mode "0.14.0") (git-rebase-mode "0.14.0"))
 
 ;; Magit requires at least GNU Emacs 23.2 and Git 1.7.2.5.
 ;; These are the versions shipped by Debian oldstable (6.0, Squeeze).
@@ -252,7 +252,11 @@ aborts and returns that value."
                           (file-executable-p alt))
                      alt
                    exe)))))
-      (executable-find "git") "git")
+      ;; When the only cost is finding the executable, then it it
+      ;; better not to cache the full path.  It might not be installed
+      ;; in the same location on machines whose repositories are
+      ;; accessed using Tramp.
+      "git")
   "The Git executable used by Magit."
   :group 'magit-process
   :type 'string)
@@ -276,37 +280,59 @@ tramp to connect to servers with ancient Git versions."
   :set-after '(magit-git-executable)
   :type 'string)
 
-(defcustom magit-emacsclient-executable
-  (ignore-errors
-    (shell-quote-argument
-     (let ((version
-            (format "%s.%s" emacs-major-version emacs-minor-version)))
-       (or (and (eq system-type 'darwin)
-                (let ((exec-path
-                       (list (expand-file-name "bin" invocation-directory))))
-                  (executable-find "emacsclient")))
-           (executable-find (format "emacsclient%s"   version))
-           (executable-find (format "emacsclient-%s"   version))
-           (executable-find (format "emacsclient%s.exe" version))
-           (executable-find (format "emacsclient-%s.exe" version))
-           (executable-find (format "emacsclient%s"   emacs-major-version))
-           (executable-find (format "emacsclient-%s"   emacs-major-version))
-           (executable-find (format "emacsclient%s.exe" emacs-major-version))
-           (executable-find (format "emacsclient-%s.exe" emacs-major-version))
-           (executable-find "emacsclient")
-           (executable-find "emacsclient.exe")))))
+(defun magit-locate-emacsclient ()
+  "Search for a suitable Emacsclient executable."
+  (let ((path (cons (directory-file-name invocation-directory)
+                    (cl-copy-list exec-path)))
+        fixup client)
+    (when (eq system-type 'darwin)
+      (setq fixup (expand-file-name "bin" invocation-directory))
+      (when (file-directory-p fixup)
+        (push fixup path))
+      (when (string-match-p "Cellar" invocation-directory)
+        (setq fixup (expand-file-name "../../../bin" invocation-directory))
+        (when (file-directory-p fixup)
+          (push fixup path))))
+    (setq path (delete-dups path))
+    (setq client (magit-locate-emacsclient-1 path 3))
+    (if client
+        (shell-quote-argument client)
+      (display-warning 'magit (format "\
+Cannot determine a suitable Emacsclient
+
+Determining an Emacsclient executable suitable for the
+current Emacs instance failed.  For more information
+please see https://github.com/magit/magit/wiki/Emacsclient."))
+      nil)))
+
+(defun magit-take (n l) ; until we get to use `-take' from dash
+  (let (r) (dotimes (_ n) (and l (push (pop l) r))) (nreverse r)))
+
+(defun magit-locate-emacsclient-1 (path depth)
+  (let* ((version-lst (magit-take depth (split-string emacs-version "\\.")))
+         (version-reg (concat "^" (mapconcat #'identity version-lst "\\."))))
+    (or (locate-file-internal
+         "emacsclient" path
+         (cl-mapcan
+          (lambda (v) (cl-mapcar (lambda (e) (concat v e)) exec-suffixes))
+          (nconc (cl-mapcon (lambda (v)
+                              (setq v (mapconcat #'identity (reverse v) "."))
+                              (list v (concat "-" v)))
+                            (reverse version-lst))
+                 (list "")))
+         (lambda (exec)
+           (ignore-errors
+             (string-match-p version-reg (magit-emacsclient-version exec)))))
+        (and (> depth 1)
+             (magit-locate-emacsclient-1 path (1- depth))))))
+
+(defun magit-emacsclient-version (exec)
+  (cadr (split-string (car (process-lines exec "--version")))))
+
+(defcustom magit-emacsclient-executable (magit-locate-emacsclient)
   "The Emacsclient executable.
-
-The default value is the full path to the emacsclient executable
-located in the same directory as the executable of the current
-Emacs instance.  If the emacsclient cannot be located in that
-directory then the first executable found anywhere on the
-`exec-path' is used instead.
-
-If no executable can be located then nil becomes the default
-value, and some important Magit commands will fallback to an
-alternative code path.  However `magit-interactive-rebase'
-will stop working at all."
+If the default is nil, or commiting or rebasing is somehow broken,
+please see https://github.com/magit/magit/wiki/Emacsclient."
   :package-version '(magit . "2.0.0")
   :group 'magit-process
   :type '(choice (string :tag "Executable")
@@ -1825,7 +1851,7 @@ Read `completing-read' documentation for the meaning of the argument."
                                id-str
                              (epg-decode-dn id-obj))))))
                (epg-list-keys (epg-make-context epa-protocol) nil t))))
-    (magit-completing-read prompt keys nil t nil 'magit-gpg-secret-key-hist
+    (magit-completing-read prompt keys nil nil nil 'magit-gpg-secret-key-hist
                            (car (or magit-gpg-secret-key-hist keys)))))
 
 ;;;; Various Utilities
@@ -6014,7 +6040,7 @@ depending on the value of option `magit-commit-squash-commit'.
            (let ((limit (save-excursion
                           (or (and (re-search-forward "^\\* " nil t)
                                    (match-beginning 0))
-                              (progn (point-max)
+                              (progn (goto-char (point-max))
                                      (forward-comment -1000)
                                      (point))))))
              (cond ((re-search-forward
@@ -7103,7 +7129,7 @@ If there is no commit at point, then prompt for one."
                                (default-value 'magit-highlight-indentation)
                                :from-end t))))))
       (when (and magit-highlight-trailing-whitespace
-                 (looking-at (concat prefix ".*\\([ \t]+\\)$")))
+                 (looking-at (concat prefix ".*?\\([ \t]+\\)$")))
         (magit-put-face-property (match-beginning 1) (match-end 1)
                                  'magit-whitespace-warning-face))
       (when (or (and (eq indent 'tabs)
