@@ -5,6 +5,8 @@
       '(
         backward-sexp
         beginning-of-line-dwim
+        c-electric-delete-forward
+        c-electric-slash
         forward-sexp
         sp--self-insert-command
         yas-expand
