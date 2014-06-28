@@ -33,7 +33,7 @@
 ;; Afterwards, if a TOC is already present, it will update the one present in buffer.
 
 ;; Here is a possible output:
-;; <!-- markdown-toc start - Don't edit this section. Run M-x mardown-toc/generate-toc again -->
+;; <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc/generate-toc again -->
 ;; **Table of Contents**
 
 ;; - [some markdown page title](#some-markdown-page-title)
@@ -91,7 +91,12 @@
 
 (defun markdown-toc/--to-link (title)
   "Given a TITLE, return the markdown link associated."
-  (format "[%s](#%s)" title (replace-regexp-in-string " " "-" (downcase title))))
+  (format "[%s](#%s)" title
+          (->>
+            title
+            downcase
+            (replace-regexp-in-string "[^a-z0-9 -]" "")
+            (s-replace " " "-"))))
 
 (defun markdown-toc/--to-markdown-toc (level-title-toc-list)
   "Given LEVEL-TITLE-TOC-LIST, a list of pair level, title, return a TOC string."
@@ -101,7 +106,7 @@
              (format "%s- %s" (markdown-toc/--symbol " " nb-spaces) (markdown-toc/--to-link title))))
     (s-join "\n")))
 
-(defconst *markdown-toc/header-toc-start* "<!-- markdown-toc start - Don't edit this section. Run M-x mardown-toc/generate-toc again -->")
+(defconst *markdown-toc/header-toc-start* "<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc/generate-toc again -->")
 (defconst *markdown-toc/header-toc-title* "**Table of Contents**")
 (defconst *markdown-toc/header-toc-end*   "<!-- markdown-toc end -->")
 
