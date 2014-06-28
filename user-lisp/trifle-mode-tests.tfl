@@ -22,3 +22,6 @@
 ; Built-in symbols that are important.
 (macro foo (x) x)
 (function bar (x) (let (a 1) a))
+
+; Characters
+(setq baz 'x')

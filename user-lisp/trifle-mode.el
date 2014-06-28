@@ -43,14 +43,12 @@
 
 (defconst trifle-font-lock-keywords
   (list
-   `(";.*" . font-lock-comment-face)
-   `(,(regexp-opt '("if" "let" "function" "macro" "quote" "unquote" "unquote*" "while" "set!" "set-symbol!") 'symbols) . font-lock-builtin-face)
-   `(,(rx (or (group (regexp ":[a-z]+")) (group "#false") (group "#true") (group "#null"))) . font-lock-constant-face)
-   `("\"[^\"]+?\"" . font-lock-string-face))
+   `(,(regexp-opt '("if" "let" "function" "macro" "quote" "unquote" "unquote*" "while" "set!" "set-symbol!" "throw") 'symbols) . font-lock-builtin-face)
+   `(,(rx (or (group (regexp ":[a-z]+")) (group "#false") (group "#true") (group "#null"))) . font-lock-constant-face))
   "Highlighting for Trifle mode.")
 
 (defvar trifle-mode-syntax-table
-  (make-syntax-table))
+  (make-syntax-table lisp-mode-syntax-table))
 
 ;;;###autoload
 (define-derived-mode trifle-mode lisp-mode "Trifle"
