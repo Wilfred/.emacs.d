@@ -1,14 +1,15 @@
 ;;; clojure-mode.el --- Major mode for Clojure code
 
-;; Copyright © 2007-2013 Jeffrey Chu, Lennart Staflin, Phil Hagelberg
+;; Copyright © 2007-2014 Jeffrey Chu, Lennart Staflin, Phil Hagelberg
+;; Copyright © 2013-2014 Bozhidar Batsov
 ;;
 ;; Authors: Jeffrey Chu <jochu0@gmail.com>
 ;;       Lennart Staflin <lenst@lysator.liu.se>
 ;;       Phil Hagelberg <technomancy@gmail.com>
 ;;       Bozhidar Batsov <bozhidar@batsov.com>
 ;; URL: http://github.com/clojure-emacs/clojure-mode
-;; Version: 20140512.740
-;; X-Original-Version: 2.1.1
+;; Version: 20140624.723
+;; X-Original-Version: 3.0.0-cvs
 ;; Keywords: languages, lisp
 
 ;; This file is not part of GNU Emacs.
@@ -72,278 +73,8 @@
 (require 'tramp)
 (require 'inf-lisp)
 (require 'imenu)
-(require 'easymenu)
 
-(declare-function clojure-test-jump-to-implementation  "clojure-test-mode")
 (declare-function lisp-fill-paragraph  "lisp-mode" (&optional justify))
-
-(defconst clojure-font-lock-keywords
-  (eval-when-compile
-    `(;; Definitions
-      (,(concat "(\\(?:clojure.core/\\)?\\("
-                (regexp-opt '("defn" "defn-" "def" "defonce"
-                              "defmulti" "defmethod" "defmacro"
-                              "defstruct" "deftype" "defprotocol"
-                              "defrecord" "deftest" "def\\[a-z\\]"
-                              "ann"))
-                ;; Function declarations
-                "\\)\\>"
-                ;; Any whitespace
-                "[ \r\n\t]*"
-                ;; Possibly type or metadata
-                "\\(?:#?^\\(?:{[^}]*}\\|\\sw+\\)[ \r\n\t]*\\)*"
-                "\\(\\sw+\\)?")
-       (1 font-lock-keyword-face)
-       (2 font-lock-function-name-face nil t))
-      ;; (fn name? args ...)
-      (,(concat "(\\(?:clojure.core/\\)?\\(fn\\)[ \t]+"
-                ;; Possibly type
-                "\\(?:#?^\\sw+[ \t]*\\)?"
-                ;; Possibly name
-                "\\(t\\sw+\\)?" )
-       (1 font-lock-keyword-face)
-       (2 font-lock-function-name-face nil t))
-
-      (,(concat "(\\(\\(?:[a-z\.-]+/\\)?def\[a-z\-\]*-?\\)"
-                ;; Function declarations
-                "\\>"
-                ;; Any whitespace
-                "[ \r\n\t]*"
-                ;; Possibly type or metadata
-                "\\(?:#?^\\(?:{[^}]*}\\|\\sw+\\)[ \r\n\t]*\\)*"
-                "\\(\\sw+\\)?")
-       (1 font-lock-keyword-face)
-       (2 font-lock-function-name-face nil t))
-      ;; Deprecated functions
-      (,(concat
-         "(\\(?:clojure.core/\\)?"
-         (regexp-opt
-          '("add-watcher" "remove-watcher" "add-classpath") t)
-         "\\>")
-       1 font-lock-warning-face)
-      ;; Control structures
-      (,(concat
-         "(\\(?:clojure.core/\\)?"
-         (regexp-opt
-          '("let" "letfn" "do"
-            "case" "cond" "condp"
-            "for" "loop" "recur"
-            "when" "when-not" "when-let" "when-first" "when-some"
-            "if" "if-let" "if-not" "if-some"
-            "." ".." "->" "->>" "doto"
-            "and" "or"
-            "dosync" "doseq" "dotimes" "dorun" "doall"
-            "load" "import" "unimport" "ns" "in-ns" "refer"
-            "try" "catch" "finally" "throw"
-            "with-open" "with-local-vars" "binding"
-            "gen-class" "gen-and-load-class" "gen-and-save-class"
-            "handler-case" "handle") t)
-         "\\>")
-       1 font-lock-keyword-face)
-      ;; Built-ins
-      (,(concat
-         "(\\(?:clojure.core/\\)?"
-         (regexp-opt
-          '("*" "*1" "*2" "*3" "*agent*"
-            "*allow-unresolved-vars*" "*assert*" "*clojure-version*" "*command-line-args*" "*compile-files*"
-            "*compile-path*" "*e" "*err*" "*file*" "*flush-on-newline*"
-            "*in*" "*macro-meta*" "*math-context*" "*ns*" "*out*"
-            "*print-dup*" "*print-length*" "*print-level*" "*print-meta*" "*print-readably*"
-            "*read-eval*" "*source-path*" "*use-context-classloader*" "*warn-on-reflection*" "+"
-            "-" "/"
-            "<" "<=" "=" "==" ">"
-            ">=" "accessor" "aclone"
-            "agent" "agent-errors" "aget" "alength" "alias"
-            "all-ns" "alter" "alter-meta!" "alter-var-root" "amap"
-            "ancestors" "apply" "areduce" "array-map" "as->"
-            "aset" "aset-boolean" "aset-byte" "aset-char" "aset-double"
-            "aset-float" "aset-int" "aset-long" "aset-short" "assert"
-            "assoc" "assoc!" "assoc-in" "associative?" "atom"
-            "await" "await-for" "await1" "bases" "bean"
-            "bigdec" "bigint" "bit-and" "bit-and-not"
-            "bit-clear" "bit-flip" "bit-not" "bit-or" "bit-set"
-            "bit-shift-left" "bit-shift-right" "bit-test" "bit-xor" "boolean"
-            "boolean-array" "booleans" "bound-fn" "bound-fn*" "bound?" "butlast"
-            "byte" "byte-array" "bytes" "cast" "char"
-            "char-array" "char-escape-string" "char-name-string" "char?" "chars"
-            "chunk" "chunk-append" "chunk-buffer" "chunk-cons" "chunk-first"
-            "chunk-next" "chunk-rest" "chunked-seq?" "class" "class?"
-            "clear-agent-errors" "clojure-version" "coll?" "comment" "commute"
-            "comp" "comparator" "compare" "compare-and-set!" "compile"
-            "complement" "concat" "cond->" "cond->>" "conj"
-            "conj!" "cons" "constantly" "construct-proxy" "contains?"
-            "count" "counted?" "create-ns" "create-struct" "cycle"
-            "dec" "decimal?" "declare" "definline" "defmacro"
-            "defmethod" "defmulti" "defn" "defn-" "defonce"
-            "defstruct" "delay" "delay?" "deliver" "deref"
-            "derive" "descendants" "destructure" "disj" "disj!"
-            "dissoc" "dissoc!" "distinct" "distinct?"
-            "doc"
-            "double" "double-array" "doubles" "drop"
-            "drop-last" "drop-while" "empty" "empty?" "ensure"
-            "enumeration-seq" "eval" "even?" "every?"
-            "extend" "extend-protocol" "extend-type" "extends?" "extenders" "ex-info" "ex-data"
-            "false?" "ffirst" "file-seq" "filter" "filterv" "find" "find-doc"
-            "find-ns" "find-var" "first" "flatten" "float" "float-array"
-            "float?" "floats" "flush" "fn" "fn?"
-            "fnext" "force" "format" "frequencies" "future"
-            "future-call" "future-cancel" "future-cancelled?" "future-done?" "future?"
-            "gen-interface" "gensym" "get" "get-in"
-            "get-method" "get-proxy-class" "get-thread-bindings" "get-validator" "group-by"
-            "hash" "hash-map" "hash-set" "identical?" "identity"
-            "ifn?" "inc"
-            "init-proxy" "instance?" "int" "int-array" "integer?"
-            "interleave" "intern" "interpose" "into" "into-array"
-            "ints" "io!" "isa?" "iterate" "iterator-seq"
-            "juxt" "keep" "keep-indexed" "key" "keys" "keyword" "keyword?"
-            "last" "lazy-cat" "lazy-seq"
-            "line-seq" "list" "list*" "list?"
-            "load-file" "load-reader" "load-string" "loaded-libs" "locking"
-            "long" "long-array" "longs" "macroexpand"
-            "macroexpand-1" "make-array" "make-hierarchy" "map" "mapv" "map?"
-            "map-indexed" "mapcat" "max" "max-key" "memfn" "memoize"
-            "merge" "merge-with" "meta" "method-sig" "methods"
-            "min" "min-key" "mix-collection-hash" "mod" "name" "namespace"
-            "neg?" "newline" "next" "nfirst" "nil?"
-            "nnext" "not" "not-any?" "not-empty" "not-every?"
-            "not=" "ns-aliases" "ns-imports" "ns-interns"
-            "ns-map" "ns-name" "ns-publics" "ns-refers" "ns-resolve"
-            "ns-unalias" "ns-unmap" "nth" "nthnext" "num"
-            "number?" "odd?" "parents" "partial"
-            "partition" "partition-all" "partition-by" "pcalls" "peek" "persistent!" "pmap"
-            "pop" "pop!" "pop-thread-bindings" "pos?" "pr"
-            "pr-str" "prefer-method" "prefers" "primitives-classnames" "print"
-            "print-ctor" "print-doc" "print-dup" "print-method" "print-namespace-doc"
-            "print-simple" "print-special-doc" "print-str" "printf" "println"
-            "println-str" "prn" "prn-str" "promise" "proxy"
-            "proxy-call-with-super" "proxy-mappings" "proxy-name" "proxy-super" "push-thread-bindings"
-            "pvalues" "quot" "rand" "rand-int" "range"
-            "ratio?" "rational?" "rationalize" "re-find" "re-groups"
-            "re-matcher" "re-matches" "re-pattern" "re-seq" "read"
-            "read-line" "read-string" "reify" "reduce" "reduce-kv" "ref" "ref-history-count"
-            "ref-max-history" "ref-min-history" "ref-set" "refer-clojure"
-            "release-pending-sends" "rem" "remove" "remove-method" "remove-ns"
-            "repeat" "repeatedly" "replace" "replicate"
-            "require" "reset!" "reset-meta!" "resolve" "rest"
-            "resultset-seq" "reverse" "reversible?" "rseq" "rsubseq"
-            "satisfies?" "second" "select-keys" "send" "send-off" "send-via" "seq"
-            "seq?" "seque" "sequence" "sequential?" "set"
-            "set-agent-send-executor!" "set-agent-send-off-executor!"
-            "set-validator!" "set?" "short" "short-array" "shorts"
-            "shutdown-agents" "slurp" "some" "some->" "some->>" "some?" "sort" "sort-by"
-            "sorted-map" "sorted-map-by" "sorted-set" "sorted-set-by" "sorted?"
-            "special-form-anchor" "special-symbol?" "specify" "specify!" "spit" "split-at" "split-with" "str"
-            "stream?" "string?" "struct" "struct-map" "subs"
-            "subseq" "subvec" "supers" "swap!" "symbol"
-            "symbol?" "sync" "syntax-symbol-anchor" "take" "take-last"
-            "take-nth" "take-while" "test" "the-ns" "time"
-            "to-array" "to-array-2d" "trampoline" "transient" "tree-seq"
-            "true?" "type" "unchecked-add" "unchecked-dec" "unchecked-divide"
-            "unchecked-inc" "unchecked-multiply" "unchecked-negate" "unchecked-remainder" "unchecked-subtract"
-            "underive" "unsigned-bit-shift-right" "unquote" "unquote-splicing" "update-in" "update-proxy"
-            "use" "val" "vals" "var-get" "var-set"
-            "var?" "vary-meta" "vec" "vector" "vector?"
-            "while"
-            "with-bindings" "with-bindings*" "with-in-str" "with-loading-context"
-            "with-meta" "with-out-str" "with-precision"
-            "with-redefs" "with-redefs-fn" "xml-seq" "zero?" "zipmap"
-            ) t)
-         "\\>")
-       1 font-lock-builtin-face)
-      ;; Other namespaces in clojure.jar
-      (,(concat
-         "(\\(?:\.*/\\)?"
-         (regexp-opt
-          '(;; clojure.inspector
-            "atom?" "collection-tag" "get-child" "get-child-count" "inspect"
-            "inspect-table" "inspect-tree" "is-leaf" "list-model" "list-provider"
-            ;; clojure.main
-            "load-script" "main" "repl" "repl-caught" "repl-exception"
-            "repl-prompt" "repl-read" "skip-if-eol" "skip-whitespace" "with-bindings"
-            ;; clojure.set
-            "difference" "index" "intersection" "join" "map-invert"
-            "project" "rename" "rename-keys" "select" "union"
-            ;; clojure.stacktrace
-            "e" "print-cause-trace" "print-stack-trace" "print-throwable" "print-trace-element"
-            ;; clojure.template
-            "do-template" "apply-template"
-            ;; clojure.test
-            "*initial-report-counters*" "*load-tests*" "*report-counters*" "*stack-trace-depth*" "*test-out*"
-            "*testing-contexts*" "*testing-vars*" "are" "assert-any" "assert-expr"
-            "assert-predicate" "compose-fixtures" "deftest" "deftest-" "file-position"
-            "function?" "get-possibly-unbound-var" "inc-report-counter" "is" "join-fixtures"
-            "report" "run-all-tests" "run-tests" "set-test" "successful?"
-            "test-all-vars" "test-ns" "test-var" "test-vars" "testing" "testing-contexts-str"
-            "testing-vars-str" "try-expr" "use-fixtures" "with-test" "with-test-out"
-            ;; clojure.walk
-            "keywordize-keys" "macroexpand-all" "postwalk" "postwalk-demo" "postwalk-replace"
-            "prewalk" "prewalk-demo" "prewalk-replace" "stringify-keys" "walk"
-            ;; clojure.xml
-            "*current*" "*sb*" "*stack*" "*state*" "attrs"
-            "content" "content-handler" "element" "emit" "emit-element"
-            ;; clojure.zip
-            "append-child" "branch?" "children" "down" "edit"
-            "end?" "insert-child" "insert-left" "insert-right" "left"
-            "leftmost" "lefts" "make-node" "next" "node"
-            "path" "prev" "remove" "replace" "right"
-            "rightmost" "rights" "root" "seq-zip" "up"
-            ) t)
-         "\\>")
-       1 font-lock-builtin-face)
-      ;; core.async control structures
-      (,(concat
-         "(\\(?:\.*/\\)?"
-         (regexp-opt '("alt!" "alt!!" "go" "go-loop") t) "\\>")
-       1 font-lock-keyword-face)
-      ;; core.async
-      (,(concat
-         "(\\(?:clojure.core.async/\\)?"
-         (regexp-opt
-          '(
-            "<!" "<!!" ">!" ">!!" "admix" "alts!" "alts!!"
-            "buffer" "chan" "close!" "do-alts" "dropping-buffer" "filter<" "filter>"
-            "into" "map" "map<" "map>" "mapcat<" "mapcat>" "merge"
-            "mix" "mult" "onto-chan" "partition" "partition-by" "pipe" "pub" "put!"
-            "reduce" "remove<" "remove>" "sliding-buffer" "solo-mode" "split" "sub"
-            "take" "take!" "tap" "thread" "thread-call" "timeout" "to-chan" "toggle"
-            "unblocking-buffer?" "unique" "unmix" "unmix-all" "unsub" "unsub-all"
-            "untap" "untap-all"
-            ) t)
-         "\\>")
-       1 font-lock-builtin-face)
-      ;; clojure.core.typed
-      (,(concat
-         "(\\(?:clojure.core.typed/\\)?"
-         (regexp-opt
-          '(
-            "ann-form" "cf" "defprotocol>" "doseq>" "dotimes>" "fn>"
-            "for>" "into-array>" "let-fn>" "loop>" "pfn>" "ref>"
-            "tc-ignore" "var>"
-            ) t)
-         "\\>")
-       1 font-lock-builtin-face)
-      ;; Constant values (keywords), including as metadata e.g. ^:static
-      ("\\<^?:\\(\\sw\\|\\s_\\)+\\(\\>\\|\\_>\\)" 0 font-lock-constant-face)
-      ;; Meta type hint #^Type or ^Type
-      ("\\(#?^\\)\\(\\(\\sw\\|\\s_\\)+\\)"
-       (1 font-lock-preprocessor-face)
-       (2 font-lock-type-face))
-
-      ;; Java interop highlighting
-      ;; .foo .barBaz .qux01 .-flibble .-flibbleWobble
-      ("\\<\\.-?[a-z][a-zA-Z0-9]*\\>" 0 font-lock-preprocessor-face)
-      ;; Foo Bar$Baz Qux_ World_OpenUDP
-      ("\\<[A-Z][a-zA-Z0-9_]*[a-zA-Z0-9/$_]+\\>" 0 font-lock-preprocessor-face)
-      ;; Foo/Bar foo.bar.Baz foo.Bar/baz
-      ("\\<[a-zA-Z]+\\.[a-zA-Z0-9._]*[A-Z]+[a-zA-Z0-9/.$]*\\>" 0 font-lock-preprocessor-face)
-      ;; fooBar
-      ("[a-z]*[A-Z]+[a-z][a-zA-Z0-9$]*\\>" 0 font-lock-preprocessor-face)
-      ;; Foo. BarBaz. Qux$Quux. Corge9.
-      ("\\<[A-Z][a-zA-Z0-9$]*\\.\\>" 0 font-lock-type-face) 
-      ;; Highlight grouping constructs in regular expressions
-      (clojure-mode-font-lock-regexp-groups
-       (1 'font-lock-regexp-grouping-construct prepend))))
-  "Default expressions to highlight in Clojure mode.")
 
 (defgroup clojure nil
   "A mode for Clojure"
@@ -351,19 +82,6 @@
   :group 'languages
   :link '(url-link :tag "Github" "https://github.com/clojure-emacs/clojure-mode")
   :link '(emacs-commentary-link :tag "Commentary" "clojure-mode"))
-
-(defcustom clojure-font-lock-comment-sexp nil
-  "Set to non-nil to enable fontification of (comment...) forms.
-If you change this option, use M-x clojure-mode to restart clojure mode.
-This option is experimental."
-  :type 'boolean
-  :group 'clojure
-  :safe 'booleanp)
-
-(make-obsolete-variable
- 'clojure-font-lock-comment-sexp
- "This option will be removed in the next major clojure-mode release."
- "2.2")
 
 (defcustom clojure-load-command  "(clojure.core/load-file \"%s\")\n"
   "Format-string for building a Clojure expression to load a file.
@@ -425,32 +143,31 @@ For example, \[ is allowed in :db/id[:db.part/user]."
     (define-key map (kbd "C-c C-e") 'lisp-eval-last-sexp)
     (define-key map (kbd "C-c C-l") 'clojure-load-file)
     (define-key map (kbd "C-c C-r") 'lisp-eval-region)
-    (define-key map (kbd "C-c C-t") 'clojure-jump-between-tests-and-code)
     (define-key map (kbd "C-c C-z") 'clojure-display-inferior-lisp-buffer)
     (define-key map (kbd "C-:") 'clojure-toggle-keyword-string)
+    (easy-menu-define clojure-mode-menu map "Clojure Mode menu"
+      '("Clojure"
+        ["Eval Top-Level Expression" lisp-eval-defun]
+        ["Eval Last Expression" lisp-eval-last-sexp]
+        ["Eval Region" lisp-eval-region]
+        "--"
+        ["Run Inferior Lisp" clojure-display-inferior-lisp-buffer]
+        ["Display Inferior Lisp Buffer" clojure-display-inferior-lisp-buffer]
+        ["Load File" clojure-load-file]
+        "--"
+        ["Toggle between string & keyword" clojure-toggle-keyword-string]
+        ["Mark string" clojure-mark-string]
+        ["Insert ns form at point" clojure-insert-ns-form-at-point]
+        ["Insert ns form at beginning" clojure-insert-ns-form]
+        ["Update ns form" clojure-update-ns]
+        "--"
+        ["Version" clojure-mode-display-version]))
     map)
   "Keymap for Clojure mode.  Inherits from `lisp-mode-shared-map'.")
-
-(easy-menu-define clojure-mode-menu clojure-mode-map
-  "Menu for Clojure mode."
-  '("Clojure"
-    ["Eval Function Definition" lisp-eval-defun]
-    ["Eval Last Sexp" lisp-eval-last-sexp]
-    ["Eval Region" lisp-eval-region]
-    "--"
-    ["Run Inferior Lisp" clojure-display-inferior-lisp-buffer]
-    ["Display Inferior Lisp Buffer" clojure-display-inferior-lisp-buffer]
-    ["Load File" clojure-load-file]
-    "--"
-    ["Toggle between string & keyword" clojure-toggle-keyword-string]
-    ["Jump Between Test and Code" clojure-jump-between-tests-and-code]))
 
 (defvar clojure-mode-syntax-table
   (let ((table (copy-syntax-table emacs-lisp-mode-syntax-table)))
     (modify-syntax-entry ?~ "'   " table)
-    ;; can't safely make commas whitespace since it will apply even
-    ;; inside string literals--ick!
-    ;; (modify-syntax-entry ?, "    " table)
     (modify-syntax-entry ?\{ "(}" table)
     (modify-syntax-entry ?\} "){" table)
     (modify-syntax-entry ?\[ "(]" table)
@@ -465,16 +182,7 @@ For example, \[ is allowed in :db/id[:db.part/user]."
 This holds a cons cell of the form `(DIRECTORY . FILE)'
 describing the last `clojure-load-file' or `clojure-compile-file' command.")
 
-(defvar clojure-test-ns-segment-position -1
-  "Which segment of the ns is \"test\" inserted in your test name convention.
-
-Customize this depending on your project's conventions. Negative
-numbers count from the end:
-
-  leiningen.compile -> leiningen.test.compile (uses 1)
-  clojure.http.client -> clojure.http.test.client (uses -1)")
-
-(defconst clojure-mode-version "2.1.1"
+(defconst clojure-mode-version "3.0.0-snapshot"
   "The current version of `clojure-mode'.")
 
 (defun clojure-mode-display-version ()
@@ -533,18 +241,7 @@ ENDP and DELIMITER."
 (define-derived-mode clojure-mode clojure-parent-mode "Clojure"
   "Major mode for editing Clojure code.
 
-Commands:
-Delete converts tabs to spaces as it moves back.
-Blank lines separate paragraphs.
-Semicolons start comments.
-
-\\{clojure-mode-map}
-
-Note that `run-lisp' may be used either to start an inferior Lisp
-job or to switch back to an existing one.
-
-Entry to this mode calls the value of `clojure-mode-hook' if that
-value is non-nil."
+\\{clojure-mode-map}"
   (setq-local imenu-create-index-function
               (lambda ()
                 (imenu--generic-function '((nil clojure-match-next-def 0)))))
@@ -574,7 +271,7 @@ value is non-nil."
                              'clojure-no-space-after-tag)))))
 
 (defsubst clojure-in-docstring-p ()
-  "Is point in a docstring?"
+  "Check whether point is in a docstring."
   (eq (get-text-property (1- (point-at-eol)) 'face)
       'font-lock-doc-face))
 
@@ -604,7 +301,7 @@ This only takes care of filling docstring correctly."
                              clojure-docstring-fill-column
                            fill-column))
             (fill-prefix (clojure-adaptive-fill-function)))
-	(when fill-prefix (do-auto-fill))))))
+        (when fill-prefix (do-auto-fill))))))
 
 (defun clojure-display-inferior-lisp-buffer ()
   "Display a buffer bound to `inferior-lisp-buffer'."
@@ -649,21 +346,134 @@ Called by `imenu--generic-function'."
               (set-match-data (list def-beg def-end)))))
         (goto-char start)))))
 
+(defconst clojure-font-lock-keywords
+  (eval-when-compile
+    `(;; Top-level variable definition
+      (,(concat "(\\(?:clojure.core/\\)?\\("
+                (regexp-opt '("def" "defonce"))
+                ;; variable declarations
+                "\\)\\>"
+                ;; Any whitespace
+                "[ \r\n\t]*"
+                ;; Possibly type or metadata
+                "\\(?:#?^\\(?:{[^}]*}\\|\\sw+\\)[ \r\n\t]*\\)*"
+                "\\(\\sw+\\)?")
+       (1 font-lock-keyword-face)
+       (2 font-lock-variable-name-face nil t))
+      ;; Type definition
+      (,(concat "(\\(?:clojure.core/\\)?\\("
+                (regexp-opt '("defstruct" "deftype" "defprotocol"
+                              "defrecord"))
+                ;; type declarations
+                "\\)\\>"
+                ;; Any whitespace
+                "[ \r\n\t]*"
+                ;; Possibly type or metadata
+                "\\(?:#?^\\(?:{[^}]*}\\|\\sw+\\)[ \r\n\t]*\\)*"
+                "\\(\\sw+\\)?")
+       (1 font-lock-keyword-face)
+       (2 font-lock-type-face nil t))
+      ;; Function definition (anything that starts with def and is not
+      ;; listed above)
+      (,(concat "(\\(?:[a-z\.-]+/\\)?\\(def\[a-z\-\]*-?\\)"
+                ;; Function declarations
+                "\\>"
+                ;; Any whitespace
+                "[ \r\n\t]*"
+                ;; Possibly type or metadata
+                "\\(?:#?^\\(?:{[^}]*}\\|\\sw+\\)[ \r\n\t]*\\)*"
+                "\\(\\sw+\\)?")
+       (1 font-lock-keyword-face)
+       (2 font-lock-function-name-face nil t))
+      ;; (fn name? args ...)
+      (,(concat "(\\(?:clojure.core/\\)?\\(fn\\)[ \t]+"
+                ;; Possibly type
+                "\\(?:#?^\\sw+[ \t]*\\)?"
+                ;; Possibly name
+                "\\(t\\sw+\\)?" )
+       (1 font-lock-keyword-face)
+       (2 font-lock-function-name-face nil t))
+      ;; lambda arguments - %, %1, %2, etc
+      ("\\<%[1-9]?" (0 font-lock-variable-name-face))
+      ;; (ns namespace)
+      (,(concat "(\\(?:clojure.core/\\)?ns[ \t]+"
+                ;; namespace
+                "\\(\\sw+\\)" )
+       (1 font-lock-type-face nil t))
+      ;; Special forms & control structures
+      (,(concat
+         "(\\(?:clojure.core/\\)?"
+         (regexp-opt
+          '("let" "letfn" "do"
+            "case" "cond" "condp"
+            "for" "loop" "recur"
+            "when" "when-not" "when-let" "when-first" "when-some"
+            "if" "if-let" "if-not" "if-some"
+            "." ".." "->" "->>" "doto"
+            "and" "or"
+            "dosync" "doseq" "dotimes" "dorun" "doall"
+            "load" "import" "unimport" "ns" "in-ns" "refer"
+            "try" "catch" "finally" "throw"
+            "with-open" "with-local-vars" "binding"
+            "gen-class" "gen-and-load-class" "gen-and-save-class"
+            "handler-case" "handle" "var" "declare") t)
+         "\\>")
+       1 font-lock-keyword-face)
+      (,(concat
+         "\\<"
+         (regexp-opt
+          '("*1" "*2" "*3" "*agent*"
+            "*allow-unresolved-vars*" "*assert*" "*clojure-version*"
+            "*command-line-args*" "*compile-files*"
+            "*compile-path*" "*e" "*err*" "*file*" "*flush-on-newline*"
+            "*in*" "*macro-meta*" "*math-context*" "*ns*" "*out*"
+            "*print-dup*" "*print-length*" "*print-level*"
+            "*print-meta*" "*print-readably*"
+            "*read-eval*" "*source-path*"
+            "*use-context-classloader*" "*warn-on-reflection*") t)
+         "\\>")
+       0 font-lock-builtin-face)
+      ;; Dynamic variables - *something*
+      ("\\<\\*[a-z-]*\\*\\>" 0 font-lock-variable-name-face)
+      ;; Global constants - nil, true, false
+      (,(concat
+         "\\<"
+         (regexp-opt
+          '("true" "false" "nil") t)
+         "\\>")
+       0 font-lock-constant-face)
+      ;; Character literals - \1, \a, \newline, \u0000
+      ("\\\\[a-z0-9]+\\>" 0 font-lock-string-face)
+      ;; Constant values (keywords), including as metadata e.g. ^:static
+      ("\\<^?:\\(\\sw\\|\\s_\\)+\\(\\>\\|\\_>\\)" 0 font-lock-constant-face)
+      ;; Meta type hint #^Type or ^Type
+      ("\\(#?^\\)\\(\\(\\sw\\|\\s_\\)+\\)"
+       (1 font-lock-preprocessor-face)
+       (2 font-lock-type-face))
+      ;; Java interop highlighting
+      ;; CONST SOME_CONST (optionally prefixed by /)
+      ("\\(?:\\<\\|/\\)\\([A-Z]+\\|\\([A-Z]+_[A-Z1-9_]+\\)\\)\\>" 1 font-lock-constant-face)
+      ;; .foo .barBaz .qux01 .-flibble .-flibbleWobble
+      ("\\<\\.-?[a-z][a-zA-Z0-9]*\\>" 0 font-lock-preprocessor-face)
+      ;; Foo Bar$Baz Qux_ World_OpenUDP Foo. Babylon15.
+      ("\\(?:\\<\\|\\.\\)\\([A-Z][a-zA-Z0-9_]*[a-zA-Z0-9$_]+\\.?\\>\\)" 1 font-lock-type-face)
+      ;; foo.bar.baz
+      ("\\<[a-z][a-z0-9_-]+\\.\\([a-z][a-z0-9_-]+\\.?\\)+" 0 font-lock-type-face)
+      ;; foo/ Foo/
+      ("\\<\\([a-zA-Z][a-z0-9_-]*\\)/" 1 font-lock-type-face)
+      ;; fooBar
+      ("\\(?:\\<\\|/\\)\\([a-z]+[A-Z]+[a-z][a-zA-Z0-9$]*\\>\\)" 1 font-lock-preprocessor-face)
+      ;; Highlight grouping constructs in regular expressions
+      (clojure-mode-font-lock-regexp-groups
+       (1 'font-lock-regexp-grouping-construct prepend))))
+  "Default expressions to highlight in Clojure mode.")
+
 (defun clojure-mode-font-lock-setup ()
   "Configures font-lock for editing Clojure code."
   (interactive)
   (setq-local font-lock-multiline t)
   (add-to-list 'font-lock-extend-region-functions
                'clojure-font-lock-extend-region-def t)
-
-  (when clojure-font-lock-comment-sexp
-    (add-to-list 'font-lock-extend-region-functions
-                 'clojure-font-lock-extend-region-comment t)
-    (make-local-variable 'clojure-font-lock-keywords)
-    (add-to-list 'clojure-font-lock-keywords
-                 'clojure-font-lock-mark-comment t)
-    (setq-local open-paren-in-column-0-is-defun-start nil))
-
   (setq font-lock-defaults
         '(clojure-font-lock-keywords    ; keywords
           nil nil
@@ -747,57 +557,9 @@ point) to check."
                    (clojure-string-start t))
           (throw 'found t))))))
 
-(defun clojure-find-block-comment-start (limit)
-  "Search for (comment...) or #_ style block comments.
-Places point at the beginning of the expression.
-
-LIMIT denotes the maximum number of characters (relative to the
-point) to check."
-  (let ((pos (re-search-forward "\\((comment\\>\\|#_\\)" limit t)))
-    (when pos
-      (forward-char (- (length (match-string 1))))
-      pos)))
-
-(defun clojure-font-lock-extend-region-comment ()
-  "Set region boundaries to contain (comment ..) and #_ sexp entirely.
-
-This does not work if there is a whitespace between an opening
-parenthesis and \"comment\", but this omission allows the
-function to run faster."
-  (let ((changed nil))
-    (goto-char font-lock-beg)
-    (condition-case nil (beginning-of-defun) (error nil))
-    (let ((pos (clojure-find-block-comment-start font-lock-end)))
-      (when pos
-        (when (< (point) font-lock-beg)
-          (setq font-lock-beg (point)
-                changed t))
-        (condition-case nil (forward-sexp) (error nil))
-        (when (> (point) font-lock-end)
-          (setq font-lock-end (point)
-                changed t))))
-    changed))
-
-(defun clojure-font-lock-mark-comment (limit)
-  "Mark all (comment ..) and #_ forms with `font-lock-comment-face'.
-
-LIMIT denotes the maximum number of characters (relative to the
-point) to check."
-  (let (pos)
-    (while (and (< (point) limit)
-                (setq pos (clojure-find-block-comment-start limit)))
-      (when pos
-        (condition-case nil
-            (add-text-properties (point)
-                                 (progn
-                                   (forward-sexp)
-                                   (point))
-                                 '(face font-lock-comment-face multiline t))
-          (error (forward-char 8))))))
-  nil)
-
 ;; Docstring positions
 (put 'ns 'clojure-doc-string-elt 2)
+(put 'def 'clojure-doc-string-elt 2)
 (put 'defn 'clojure-doc-string-elt 2)
 (put 'defn- 'clojure-doc-string-elt 2)
 (put 'defmulti 'clojure-doc-string-elt 2)
@@ -808,11 +570,10 @@ point) to check."
 
 
 (defun clojure-forward-sexp (n)
-  ;; FIXME: The reference to Slime is outdated here.
   "Move forward across one balanced Clojure expression (sexp).
 
 It treats record literals like #user.Foo[1] and #user.Foo{:size 1}
-as a single sexp so that slime will send them properly.
+as a single sexp so that CIDER will send them properly.
 
 This behavior may not be intuitive when the user presses C-M-f, but
 since these are single objects this behavior is okay."
@@ -1085,7 +846,7 @@ nil."
         (let ((beg (match-beginning 2)))
           (when beg
             (if regex
-                (and (char-equal ?# (char-before beg)) (1- beg))
+                (and (char-before beg) (char-equal ?# (char-before beg)) (1- beg))
               (when (not (char-equal ?# (char-before beg)))
                 beg))))))))
 
@@ -1121,12 +882,6 @@ returned."
         (re-search-forward "[^\\]\\\(\\\"\\)")
         (match-beginning 1)))))
 
-(defun clojure-docstring-start+end-points ()
-  "Return the start and end points of the string at point as a cons."
-  (if (and (fboundp 'paredit-string-start+end-points) paredit-mode)
-      (paredit-string-start+end-points)
-    (cons (clojure-string-start) (clojure-string-end))))
-
 (defun clojure-mark-string ()
   "Mark the string at point."
   (interactive)
@@ -1137,7 +892,7 @@ returned."
 (defun clojure-toggle-keyword-string ()
   "Convert the string or keyword at (point) from string->keyword or keyword->string."
   (interactive)
-  (let* ((original-point (point)))
+  (let ((original-point (point)))
     (while (and (> (point) 1)
                 (not (equal "\"" (buffer-substring-no-properties (point) (+ 1 (point)))))
                 (not (equal ":" (buffer-substring-no-properties (point) (+ 1 (point))))))
@@ -1154,9 +909,9 @@ returned."
 (defun clojure-delete-and-extract-sexp ()
   "Delete the sexp and return it."
   (interactive)
-  (let* ((begin (point)))
+  (let ((begin (point)))
     (forward-sexp)
-    (let* ((result (buffer-substring-no-properties begin (point))))
+    (let ((result (buffer-substring-no-properties begin (point))))
       (delete-region begin (point))
       result)))
 
@@ -1251,55 +1006,28 @@ Useful if a file has been renamed."
         (when (re-search-forward regexp nil t)
           (match-string-no-properties 4))))))
 
-(define-obsolete-function-alias 'clojure-find-package 'clojure-find-ns)
-
-;; Test navigation:
-(defun clojure-in-tests-p ()
-  "Check whether the current file is a test file.
-
-Two checks are made - whether the namespace of the file has the
-word test in it and whether the file lives under the test/ directory."
-  (or (string-match-p "test\." (clojure-find-ns))
-      (string-match-p "/test" (buffer-file-name))))
-
-(defun clojure-underscores-for-hyphens (namespace)
-  "Replace all hyphens in NAMESPACE with underscores."
-  (replace-regexp-in-string "-" "_" namespace))
-
-(defun clojure-test-for (namespace)
-  "Return the path of the test file for the given NAMESPACE."
-  (let* ((namespace (clojure-underscores-for-hyphens namespace))
-         (segments (split-string namespace "\\.")))
-    (format "%stest/%s_test.clj"
-            (file-name-as-directory
-             (locate-dominating-file buffer-file-name "src/"))
-            (mapconcat 'identity segments "/"))))
-
-(defvar clojure-test-for-fn 'clojure-test-for
-  "The function that will return the full path of the Clojure test file for the given namespace.")
-
-(defun clojure-jump-to-test ()
-  "Jump from implementation file to test."
-  (interactive)
-  (find-file (funcall clojure-test-for-fn (clojure-find-ns))))
-
-(make-obsolete 'clojure-jump-to-test
-               "use projectile or toggle.el instead." "2.1.1")
-
-(defun clojure-jump-between-tests-and-code ()
-  "Jump between implementation and related test file."
-  (interactive)
-  (if (clojure-in-tests-p)
-      (clojure-test-jump-to-implementation)
-    (clojure-jump-to-test)))
+(defun clojure-find-def ()
+  "Find the var declaration macro and symbol name of the current form.
+Returns a list pair, e.g. (\"defn\" \"abc\") or (\"deftest\" \"some-test\")."
+  (let ((re (concat "(\\(?:\\(?:\\sw\\|\\s_\\)+/\\)?"
+                    ;; Declaration
+                    "\\(def\\sw*\\)\\>"
+                    ;; Any whitespace
+                    "[ \r\n\t]*"
+                    ;; Possibly type or metadata
+                    "\\(?:#?^\\(?:{[^}]*}\\|\\(?:\\sw\\|\\s_\\)+\\)[ \r\n\t]*\\)*"
+                    ;; Symbol name
+                    "\\(\\(?:\\sw\\|\\s_\\)+\\)")))
+    (save-excursion
+      (unless (looking-at re)
+        (beginning-of-defun))
+      (when (search-forward-regexp re nil t)
+        (list (match-string 1)
+              (match-string 2))))))
 
 ;;;###autoload
-(progn
-  (add-to-list 'auto-mode-alist '("\\.clj[sx]?\\'" . clojure-mode))
-  (add-to-list 'auto-mode-alist '("\\.dtm\\'" . clojure-mode))
-  (add-to-list 'auto-mode-alist '("\\.edn\\'" . clojure-mode))
-  (add-to-list 'interpreter-mode-alist '("jark" . clojure-mode))
-  (add-to-list 'interpreter-mode-alist '("cake" . clojure-mode)))
+(add-to-list 'auto-mode-alist
+             '("\\.\\(clj[sx]?\\|dtm\\|edn\\)\\'" . clojure-mode))
 
 (provide 'clojure-mode)
 

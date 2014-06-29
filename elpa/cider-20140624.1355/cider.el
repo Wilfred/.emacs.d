@@ -71,13 +71,34 @@
 Normally it won't be used, unless `pkg-info' fails to extract the
 version from the CIDER package or library.")
 
+(defcustom cider-lein-command
+  "lein"
+  "The command used to execute Leiningen 2.x."
+  :type 'string
+  :group 'cider)
+
+(defcustom cider-lein-parameters
+  "repl :headless"
+  "Params passed to lein to start an nREPL server via `cider-jack-in'."
+  :type 'string
+  :group 'cider)
+
 (defcustom cider-known-endpoints nil
   "Specify a list of custom endpoints where each endpoint is a list.
 For example: '((\"label\" \"host\" \"port\")).
 The label is optional so that '(\"host\" \"port\") will suffice.
-This variable is used by the CIDER command."
+This variable is used by `cider-connect'."
   :type 'list
   :group 'cider)
+
+;; TODO: Implement a check for `cider-lein-command' over tramp
+(defun cider--lein-present-p ()
+  "Check if `cider-lein-command' is on the `exec-path'.
+
+In case `default-directory' is non-local we assume the command is available."
+  (or (file-remote-p default-directory)
+      (executable-find cider-lein-command)
+      (executable-find (concat cider-lein-command ".bat"))))
 
 ;;;###autoload
 (defun cider-version ()
@@ -92,32 +113,36 @@ If PROMPT-PROJECT is t, then prompt for the project for which to
 start the server."
   (interactive "P")
   (setq cider-current-clojure-buffer (current-buffer))
-  (let* ((project (when prompt-project
-                    (read-directory-name "Project: ")))
-         (project-dir (nrepl-project-directory-for
-                       (or project (nrepl-current-dir)))))
-    (when (nrepl-check-for-repl-buffer nil project-dir)
-      (let* ((nrepl-project-dir project-dir)
-             (cmd (if project
-                      (format "cd %s && %s" project cider-server-command)
-                    cider-server-command))
-             (default-directory (or project-dir default-directory))
-             (nrepl-buffer-name (generate-new-buffer-name
-                                 (nrepl-server-buffer-name)))
-             (process
-              (progn
-                ;; the buffer has to be created before the proc:
-                (get-buffer-create nrepl-buffer-name)
-                (start-file-process-shell-command
-                 "nrepl-server"
-                 nrepl-buffer-name
-                 cmd))))
-        (set-process-filter process 'nrepl-server-filter)
-        (set-process-sentinel process 'nrepl-server-sentinel)
-        (set-process-coding-system process 'utf-8-unix 'utf-8-unix)
-        (with-current-buffer (process-buffer process)
-          (setq nrepl-project-dir project-dir))
-        (message "Starting nREPL server...")))))
+  (if (cider--lein-present-p)
+      (let* ((project (when prompt-project
+                        (read-directory-name "Project: ")))
+             (project-dir (nrepl-project-directory-for
+                           (or project (nrepl-current-dir))))
+             (server-command (if prompt-project
+                                 (read-string (format "Server command: %s " cider-lein-command) cider-lein-parameters)
+                               cider-lein-parameters)))
+        (when (nrepl-check-for-repl-buffer nil project-dir)
+          (let* ((nrepl-project-dir project-dir)
+                 (cmd (format "%s %s" cider-lein-command cider-lein-parameters))
+                 (default-directory (or project-dir default-directory))
+                 (nrepl-buffer-name (generate-new-buffer-name
+                                     (nrepl-server-buffer-name)))
+                 (process
+                  (progn
+                    ;; the buffer has to be created before the proc:
+                    (get-buffer-create nrepl-buffer-name)
+                    (start-file-process-shell-command
+                     "nrepl-server"
+                     nrepl-buffer-name
+                     cmd))))
+            (set-process-filter process 'nrepl-server-filter)
+            (set-process-sentinel process 'nrepl-server-sentinel)
+            (set-process-coding-system process 'utf-8-unix 'utf-8-unix)
+            (with-current-buffer (process-buffer process)
+              (setq nrepl-project-dir project-dir))
+            (message "Starting nREPL server via %s..."
+                     (propertize cmd 'face 'font-lock-keyword-face)))))
+    (message "The %s executable (specified by `cider-lein-command') isn't on your exec-path" cider-lein-command)))
 
 (defun cider-known-endpoint-candidates ()
   "Known endpoint candidates for establishing an nREPL connection.
@@ -125,7 +150,7 @@ A default will be included consisting of `nrepl-default-host' and
 `nrepl-default-port'."
   (-distinct
    (mapcar (lambda (endpoint)
-             (mapconcat 'identity endpoint " "))
+             (cider-string-join endpoint " "))
            (cons (list (nrepl-current-host) (nrepl-default-port))
                  cider-known-endpoints))))
 

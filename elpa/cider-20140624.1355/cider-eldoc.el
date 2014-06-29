@@ -1,7 +1,7 @@
 ;;; cider-eldoc.el --- eldoc support for Clojure -*- lexical-binding: t -*-
 
-;; Copyright © 2012-2013 Tim King, Phil Hagelberg
-;; Copyright © 2013 Bozhidar Batsov, Hugo Duncan, Steve Purcell
+;; Copyright © 2012-2014 Tim King, Phil Hagelberg
+;; Copyright © 2013-2014 Bozhidar Batsov, Hugo Duncan, Steve Purcell
 ;;
 ;; Author: Tim King <kingtim@gmail.com>
 ;;         Phil Hagelberg <technomancy@gmail.com>
@@ -94,7 +94,17 @@ POS is the index of current argument."
 
 (defun cider-eldoc--arglist-op-fn (thing)
   "Return the arglist for THING using nREPL info op."
-  (cider-get-var-attr thing "arglists"))
+  (let* ((var-info (cider-var-info thing t))
+         (candidates (cdadr (assoc "candidates" var-info))))
+    (if candidates
+        (->> candidates
+          (-map (lambda (x) (cdr (assoc "arglists-str" x))))
+          (-map 'read)
+          -flatten
+          -distinct)
+      (let ((arglists (cider-get-var-attr var-info "arglists-str")))
+        (when arglists
+          (read arglists))))))
 
 (defun cider-eldoc-arglist (thing)
   "Return the arglist for THING."

@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (cider-connect cider-jack-in cider-version) "cider"
-;;;;;;  "cider.el" (21361 13202 234068 898000))
+;;;;;;  "cider.el" (21423 59529 695352 907000))
 ;;; Generated autoloads from cider.el
 
 (autoload 'cider-version "cider" "\
@@ -29,7 +29,7 @@ Connect to an nREPL server identified by HOST and PORT.
 ;;;***
 
 ;;;### (autoloads (cider-inspect) "cider-inspector" "cider-inspector.el"
-;;;;;;  (21361 13202 84070 118000))
+;;;;;;  (21423 59529 548688 386000))
 ;;; Generated autoloads from cider-inspector.el
 
 (autoload 'cider-inspect "cider-inspector" "\
@@ -40,25 +40,25 @@ Eval the string EXPRESSION and inspect the result.
 ;;;***
 
 ;;;### (autoloads (cider-macroexpand-all cider-macroexpand-1) "cider-macroexpansion"
-;;;;;;  "cider-macroexpansion.el" (21361 13202 207402 448000))
+;;;;;;  "cider-macroexpansion.el" (21423 59529 652020 208000))
 ;;; Generated autoloads from cider-macroexpansion.el
 
 (autoload 'cider-macroexpand-1 "cider-macroexpansion" "\
-Invoke 'macroexpand-1' on the expression at point.
+Invoke 'macroexpand-1' on the expression preceding point.
 If invoked with a PREFIX argument, use 'macroexpand' instead of
 'macroexpand-1'.
 
 \(fn &optional PREFIX)" t nil)
 
 (autoload 'cider-macroexpand-all "cider-macroexpansion" "\
-Invoke 'clojure.walk/macroexpand-all' on the expression at point.
+Invoke 'clojure.walk/macroexpand-all' on the expression preceding point.
 
 \(fn)" t nil)
 
 ;;;***
 
-;;;### (autoloads (cider-mode) "cider-mode" "cider-mode.el" (21361
-;;;;;;  13202 334068 83000))
+;;;### (autoloads (cider-mode) "cider-mode" "cider-mode.el" (21423
+;;;;;;  59529 805351 298000))
 ;;; Generated autoloads from cider-mode.el
 
 (autoload 'cider-mode "cider-mode" "\
@@ -71,7 +71,7 @@ Minor mode for REPL interaction from a Clojure buffer.
 ;;;***
 
 ;;;### (autoloads (cider-scratch) "cider-scratch" "cider-scratch.el"
-;;;;;;  (21361 13202 110736 567000))
+;;;;;;  (21423 59529 572021 378000))
 ;;; Generated autoloads from cider-scratch.el
 
 (autoload 'cider-scratch "cider-scratch" "\
@@ -82,7 +82,7 @@ Create a scratch buffer.
 ;;;***
 
 ;;;### (autoloads (cider-selector) "cider-selector" "cider-selector.el"
-;;;;;;  (21361 13202 54070 362000))
+;;;;;;  (21423 59529 518688 825000))
 ;;; Generated autoloads from cider-selector.el
 
 (autoload 'cider-selector "cider-selector" "\
@@ -97,9 +97,10 @@ See `def-cider-selector-method' for defining new methods.
 
 ;;;***
 
-;;;### (autoloads nil nil ("cider-client.el" "cider-eldoc.el" "cider-interaction.el"
-;;;;;;  "cider-pkg.el" "cider-repl.el" "cider-stacktrace.el" "cider-util.el"
-;;;;;;  "nrepl-client.el") (21361 13202 585312 972000))
+;;;### (autoloads nil nil ("cider-client.el" "cider-doc.el" "cider-eldoc.el"
+;;;;;;  "cider-interaction.el" "cider-pkg.el" "cider-repl.el" "cider-stacktrace.el"
+;;;;;;  "cider-test.el" "cider-util.el" "nrepl-client.el") (21423
+;;;;;;  59530 25815 165000))
 
 ;;;***
 
