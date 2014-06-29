@@ -3,7 +3,7 @@
 ;; Copyright (C) 2012 Magnar Sveen
 
 ;; Author: Magnar Sveen <magnars@gmail.com>
-;; Version: 20131223.944
+;; Version: 20140620.1657
 ;; X-Original-Version: 1.9.0
 ;; Keywords: strings
 
@@ -50,7 +50,7 @@
 
 (defun s-split (separator s &optional omit-nulls)
   "Split S into substrings bounded by matches for regexp SEPARATOR.
-If OMIT-NULLS is t, zero-length substrings are omitted.
+If OMIT-NULLS is non-nil, zero-length substrings are omitted.
 
 This is a simple wrapper around the built-in `split-string'."
   (split-string s separator omit-nulls))
