@@ -4,7 +4,7 @@
 ;;
 ;; Author:   Eric Beuscher <beuscher@eecs.tulane.edu>
 ;; Created:  2 Feb 1998
-;; Version: 20140627.1319
+;; Version: 20140628.522
 ;; X-Original-Version:  0.2
 ;; Keywords: bison-mode, yacc-mode
 
@@ -71,14 +71,14 @@
 
 ;;;; todo:  should make available a way to use C-electricity if in C sexps
 
-;;;;  these are the lines i use to set up correct auto-ing
-;;(autoload 'bison-mode "bison-mode.el")
-;;(add-to-set! auto-mode-alist '("\\.y$" . bison-mode))
-;;(add-to-set! auto-mode-alist '("\\.l$" . bison-mode))
-
 ;;; Code:
 
 (require 'cc-mode)
+
+;;;###autoload
+(add-to-list 'auto-mode-alist '("\\.y\\'" . bison-mode))
+;;;###autoload
+(add-to-list 'auto-mode-alist '("\\.l\\'" . bison-mode))
 
 ;; *************** internal vars ***************
 

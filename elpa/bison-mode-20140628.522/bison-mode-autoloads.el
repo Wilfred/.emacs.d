@@ -3,9 +3,13 @@
 ;;; Code:
 
 
-;;;### (autoloads (bison-mode) "bison-mode" "bison-mode.el" (21422
-;;;;;;  44994 430754 168000))
+;;;### (autoloads (bison-mode) "bison-mode" "bison-mode.el" (21423
+;;;;;;  59533 325299 821000))
 ;;; Generated autoloads from bison-mode.el
+
+(add-to-list 'auto-mode-alist '("\\.y\\'" . bison-mode))
+
+(add-to-list 'auto-mode-alist '("\\.l\\'" . bison-mode))
 
 (autoload 'bison-mode "bison-mode" "\
 Major mode for editing bison/yacc files.
@@ -14,8 +18,8 @@ Major mode for editing bison/yacc files.
 
 ;;;***
 
-;;;### (autoloads nil nil ("bison-mode-pkg.el") (21422 44994 511507
-;;;;;;  715000))
+;;;### (autoloads nil nil ("bison-mode-pkg.el") (21423 59533 423585
+;;;;;;  738000))
 
 ;;;***
 
