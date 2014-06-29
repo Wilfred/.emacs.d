@@ -4,8 +4,8 @@
 
 
 ;;;### (autoloads (browse-kill-ring browse-kill-ring-default-keybindings)
-;;;;;;  "browse-kill-ring" "browse-kill-ring.el" (21317 48343 969780
-;;;;;;  775000))
+;;;;;;  "browse-kill-ring" "browse-kill-ring.el" (21423 59531 941986
+;;;;;;  715000))
 ;;; Generated autoloads from browse-kill-ring.el
 
 (autoload 'browse-kill-ring-default-keybindings "browse-kill-ring" "\
@@ -23,8 +23,8 @@ Display items in the `kill-ring' in another buffer.
 
 ;;;***
 
-;;;### (autoloads nil nil ("browse-kill-ring-pkg.el") (21317 48344
-;;;;;;  41336 246000))
+;;;### (autoloads nil nil ("browse-kill-ring-pkg.el") (21423 59531
+;;;;;;  997003 766000))
 
 ;;;***
 
