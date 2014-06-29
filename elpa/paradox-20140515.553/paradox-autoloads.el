@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (paradox-list-packages paradox--refresh-star-count)
-;;;;;;  "paradox" "paradox.el" (21340 2130 943803 185000))
+;;;;;;  "paradox" "paradox.el" (21423 59434 946750 382000))
 ;;; Generated autoloads from paradox.el
 
 (autoload 'paradox--refresh-star-count "paradox" "\
@@ -22,7 +22,7 @@ mode-line.
 ;;;***
 
 ;;;### (autoloads nil nil ("paradox-compat.el" "paradox-pkg.el")
-;;;;;;  (21340 2130 971831 107000))
+;;;;;;  (21423 59434 978492 94000))
 
 ;;;***
 
