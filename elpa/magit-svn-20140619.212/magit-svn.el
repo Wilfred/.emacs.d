@@ -1,5 +1,5 @@
 ;;; magit-svn.el --- git-svn plug-in for Magit
-;; Version: 20140206.713
+;; Version: 20140619.212
 
 ;; Copyright (C) 2010-2014  The Magit Project Developers
 ;;
@@ -66,10 +66,7 @@
                        ,(concat "r" rev)
                        ,@(when branch (list branch))))))
     (if sha
-        (magit-show-commit
-         (magit-with-section (section commit sha)
-           (setf (magit-section-info section) sha)
-           sha))
+        (magit-show-commit sha)
       (user-error "Revision %s could not be mapped to a commit" rev))))
 
 ;;;###autoload

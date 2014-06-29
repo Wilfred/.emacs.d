@@ -6,7 +6,7 @@
 ;;;### (autoloads (turn-on-magit-svn magit-svn-mode magit-svn-fetch-externals
 ;;;;;;  magit-svn-remote-update magit-svn-dcommit magit-svn-rebase
 ;;;;;;  magit-svn-create-tag magit-svn-create-branch magit-svn-find-rev)
-;;;;;;  "magit-svn" "magit-svn.el" (21287 11580 303058 823000))
+;;;;;;  "magit-svn" "magit-svn.el" (21423 59468 339588 368000))
 ;;; Generated autoloads from magit-svn.el
 
 (autoload 'magit-svn-find-rev "magit-svn" "\
@@ -57,8 +57,8 @@ Unconditionally turn on `magit-svn-mode'.
 
 ;;;***
 
-;;;### (autoloads nil nil ("magit-svn-pkg.el") (21287 11580 397387
-;;;;;;  0))
+;;;### (autoloads nil nil ("magit-svn-pkg.el") (21423 59468 399609
+;;;;;;  982000))
 
 ;;;***
 
