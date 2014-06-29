@@ -1,9 +1,9 @@
 ;;; paredit.el --- minor mode for editing parentheses  -*- Mode: Emacs-Lisp -*-
 
-;; Copyright (C) 2005--2013 Taylor R. Campbell
+;; Copyright (C) 2005--2014 Taylor R. Campbell
 
 ;; Author: Taylor R. Campbell
-;; Version: 20130722.1324
+;; Version: 20140128.1248
 ;; X-Original-Version: 24 (beta)
 ;; Created: 2005-07-31
 ;; Keywords: lisp
@@ -1229,11 +1229,18 @@ With a `C-u' prefix argument, simply delete a character forward,
          (delete-char +1))              ;   delimiters.
         ((eq ?\; (char-after))
          (paredit-forward-delete-comment-start))
+        ((eq (char-syntax (char-after)) ?\) )
+         (if (paredit-handle-sexp-errors
+                 (save-excursion (forward-char) (backward-sexp) t)
+               nil)
+             (message "End of list!")
+             (progn
+               (message "Deleting spurious closing delimiter.")
+               (delete-char +1))))
         ;; Just delete a single character, if it's not a closing
         ;; delimiter.  (The character literal case is already handled
         ;; by now.)
-        ((not (eq (char-syntax (char-after)) ?\) ))
-         (delete-char +1))))
+        (t (delete-char +1))))
 
 (defun paredit-forward-delete-in-string ()
   (let ((start+end (paredit-string-start+end-points)))
@@ -1321,9 +1328,17 @@ With a `C-u' prefix argument, simply delete a character backward,
          (delete-char +1))              ;   delimiters.
         ((bolp)
          (paredit-backward-delete-maybe-comment-end))
+        ((eq (char-syntax (char-before)) ?\( )
+         (if (paredit-handle-sexp-errors
+                 (save-excursion (backward-char) (forward-sexp) t)
+               nil)
+             (message "Beginning of list!")
+             (progn
+               (message "Deleting spurious closing delimiter.")
+               (delete-char -1))))
         ;; Delete it, unless it's an opening delimiter.  The case of
         ;; character literals is already handled by now.
-        ((not (eq (char-syntax (char-before)) ?\( ))
+        (t
          ;; Turn off the @#&*&!^&(%^ botch in GNU Emacs 24 that changed
          ;; `backward-delete-char' and `backward-delete-char-untabify'
          ;; semantically so that they delete the region in transient
