@@ -1,11 +1,10 @@
 ;;; git-rebase-mode.el --- Major mode for editing git rebase files
+;; Version: 20140605.520
 
 ;; Copyright (C) 2010-2014  The Magit Project Developers
 
 ;; Author: Phil Jackson <phil@shellarchive.co.uk>
 ;; Maintainer: Jonas Bernoulli <jonas@bernoul.li>
-;; Version: 20140313.1504
-;; X-Original-Version: 0.14.0
 ;; Homepage: https://github.com/magit/git-modes
 ;; Keywords: convenience vc git
 
