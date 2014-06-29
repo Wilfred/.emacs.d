@@ -4,8 +4,8 @@
 
 
 ;;;### (autoloads (js2-imenu-extras-mode js2-imenu-extras-setup)
-;;;;;;  "js2-imenu-extras" "js2-imenu-extras.el" (20993 4238 569963
-;;;;;;  437000))
+;;;;;;  "js2-imenu-extras" "js2-imenu-extras.el" (21423 59474 489497
+;;;;;;  502000))
 ;;; Generated autoloads from js2-imenu-extras.el
 
 (autoload 'js2-imenu-extras-setup "js2-imenu-extras" "\
@@ -21,13 +21,13 @@ Toggle Imenu support for frameworks and structural patterns.
 ;;;***
 
 ;;;### (autoloads (js2-mode js2-minor-mode) "js2-mode" "js2-mode.el"
-;;;;;;  (20993 4238 699963 431000))
+;;;;;;  (21423 59474 426165 104000))
 ;;; Generated autoloads from js2-mode.el
 
 (autoload 'js2-minor-mode "js2-mode" "\
 Minor mode for running js2 as a background linter.
 This allows you to use a different major mode for JavaScript editing,
-such as `espresso-mode', while retaining the asynchronous error/warning
+such as `js-mode', while retaining the asynchronous error/warning
 highlighting features of `js2-mode'.
 
 \(fn &optional ARG)" t nil)
@@ -39,8 +39,8 @@ Major mode for editing JavaScript code.
 
 ;;;***
 
-;;;### (autoloads nil nil ("js2-mode-pkg.el") (20993 4238 764975
-;;;;;;  199000))
+;;;### (autoloads nil nil ("js2-mode-pkg.el") (21423 59474 545765
+;;;;;;  358000))
 
 ;;;***
 
