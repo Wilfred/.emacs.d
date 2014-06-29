@@ -3,7 +3,7 @@
 ;; Copyright (C) 2009-2014  Free Software Foundation, Inc
 
 ;; Author: Toby Cubitt <toby-undo-tree@dr-qubit.org>
-;; Version: 20140110.616
+;; Version: 20140509.522
 ;; X-Original-Version: 0.6.6
 ;; Keywords: convenience, files, undo, redo, history, tree
 ;; URL: http://www.dr-qubit.org/emacs.php
@@ -1715,13 +1715,13 @@ Comparison is done with `eq'."
 (defun undo-tree-copy-list (undo-list)
   ;; Return a deep copy of first changeset in `undo-list'. Object id's are
   ;; replaced by corresponding objects from `buffer-undo-tree' object-pool.
-  (when undo-list
     (let (copy p)
       ;; if first element contains an object id, replace it with object from
       ;; pool, discarding element entirely if it's been GC'd
-      (while (null copy)
+    (while (and undo-list (null copy))
 	(setq copy
 	      (undo-tree-restore-GC-elts-from-pool (pop undo-list))))
+    (when copy
       (setq copy (list copy)
 	    p copy)
       ;; copy remaining elements, replacing object id's with objects from
