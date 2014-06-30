@@ -192,13 +192,14 @@
     java-mode malabar-mode clojure-mode clojurescript-mode  scala-mode
     scheme-mode
     ocaml-mode tuareg-mode coq-mode haskell-mode agda-mode agda2-mode
-    perl-mode cperl-mode python-mode ruby-mode lua-mode
+    perl-mode cperl-mode python-mode ruby-mode lua-mode tcl-mode
     ecmascript-mode javascript-mode js-mode js2-mode php-mode css-mode
     makefile-mode sh-mode fortran-mode f90-mode ada-mode
     xml-mode sgml-mode
     ts-mode
     sclang-mode
-    verilog-mode)
+    verilog-mode
+    qml-mode)
   "Major modes `auto-complete-mode' can run on."
   :type '(repeat symbol)
   :group 'auto-complete)
@@ -704,6 +705,10 @@ If there is no common part, this will be nil.")
   (let ((point (re-search-backward "[\"<>' \t\r\n]" nil t)))
     (if point (1+ point))))
 
+(defsubst ac-windows-remote-file-p (file)
+  (and (memq system-type '(ms-dos windows-nt cygwin))
+       (string-match-p "\\`\\(?://\\|\\\\\\\\\\)" file)))
+
 (defun ac-prefix-valid-file ()
   "Existed (or to be existed) file prefix."
   (let* ((line-beg (line-beginning-position))
@@ -716,7 +721,8 @@ If there is no common part, this will be nil.")
                       (and (setq file (and (string-match "^[^/]*/" file)
                                            (match-string 0 file)))
                            (file-directory-p file))))
-        start)))
+        (unless (ac-windows-remote-file-p file)
+          start))))
 
 (defun ac-prefix-c-dot ()
   "C-like languages dot(.) prefix."
