@@ -792,9 +792,11 @@ includes other Python checkers so we also disable those.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (require 'flycheck-pyflakes)
   (add-hook 'python-mode-hook 'flycheck-mode)
-  
-  (add-to-list 'flycheck-disabled-checkers 'python-flake8)
-  (add-to-list 'flycheck-disabled-checkers 'python-pylint)
+
+  (add-hook 'python-mode-hook
+            (lambda ()
+              (add-to-list 'flycheck-disabled-checkers 'python-flake8)
+              (add-to-list 'flycheck-disabled-checkers 'python-pylint)))
 #+END_SRC
 
 I like to write docstrings with example usage. These examples aren't
