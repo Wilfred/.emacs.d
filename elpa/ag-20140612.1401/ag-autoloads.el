@@ -6,7 +6,7 @@
 ;;;### (autoloads (ag-kill-other-buffers ag-kill-buffers ag-project-dired-regexp
 ;;;;;;  ag-project-dired ag-dired-regexp ag-dired ag-project-regexp
 ;;;;;;  ag-project-files ag-project ag-regexp ag-files ag) "ag" "ag.el"
-;;;;;;  (21365 2045 626934 613000))
+;;;;;;  (21423 59537 111911 142000))
 ;;; Generated autoloads from ag.el
 
 (autoload 'ag "ag" "\
@@ -115,7 +115,7 @@ Kill all `ag-mode' buffers other than the current buffer.
 
 ;;;***
 
-;;;### (autoloads nil nil ("ag-pkg.el") (21365 2045 707382 77000))
+;;;### (autoloads nil nil ("ag-pkg.el") (21423 59537 163453 368000))
 
 ;;;***
 
