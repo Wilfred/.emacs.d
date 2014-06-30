@@ -8,6 +8,7 @@
         c-electric-delete-forward
         c-electric-slash
         forward-sexp
+        kill-or-delete-region
         sp--self-insert-command
         yas-expand
         zap-up-to-char
@@ -17,6 +18,7 @@
 (setq mc/cmds-to-run-once
       '(
         ag-project-at-point
+        mouse-set-region
         smex
         sp-rewrap-sexp
         sp-splice-sexp
