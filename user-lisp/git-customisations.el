@@ -7,5 +7,9 @@
 
 (setq magit-turn-on-auto-revert-mode nil)
 
+;; Add `N' to the magit popup shown when you press `?'.
+;; See https://github.com/magit/magit/issues/1396
+(magit-key-mode-insert-action 'dispatch "N" "SVN" 'magit-key-mode-popup-svn)
+
 (provide 'git-customisations)
 
