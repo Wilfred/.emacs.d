@@ -5,7 +5,7 @@
 
 ;;;### (autoloads (ace-jump-mode ace-jump-line-mode ace-jump-word-mode
 ;;;;;;  ace-jump-char-mode ace-jump-mode-pop-mark) "ace-jump-mode"
-;;;;;;  "ace-jump-mode.el" (21362 35956 439346 462000))
+;;;;;;  "ace-jump-mode.el" (21423 59538 645222 73000))
 ;;; Generated autoloads from ace-jump-mode.el
 
 (autoload 'ace-jump-mode-pop-mark "ace-jump-mode" "\
@@ -56,8 +56,8 @@ You can constrol whether use the case sensitive via
 
 ;;;***
 
-;;;### (autoloads nil nil ("ace-jump-mode-pkg.el") (21362 35956 513874
-;;;;;;  521000))
+;;;### (autoloads nil nil ("ace-jump-mode-pkg.el") (21423 59538 699259
+;;;;;;  229000))
 
 ;;;***
 
