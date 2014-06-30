@@ -21,6 +21,7 @@
 (ad-activate 'hippie-expand)
 
 (require 'dash)
+(require 'hippie-exp)
 
 ;; only consider buffers in the same mode with try-expand-dabbrev-all-buffers
 (defun try-expand-dabbrev-matching-buffers (old)
