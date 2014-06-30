@@ -2,7 +2,8 @@
 
 ;; Copyright (C) 2009, Chris Done
 
-;; Version: 0.5.1
+;; Version: 20140213.22
+;; X-Original-Version: 0.5.1
 ;; Author: Chris Done <chrisdone@gmail.com>
 ;; URL: https://github.com/rooney/zencoding
 ;; Last-Updated: 2011-12-31 Sat
@@ -550,10 +551,26 @@
             (sib2 (zencoding-transform-ast (caddr ast) tag-maker)))
         (concat sib1 "\n" sib2))))))
 
+(defun zencoding-indent-size ()
+  "Calculate indent size using current mode as a guidance"
+  (let ((mode (with-current-buffer (current-buffer) major-mode)))
+    (cond
+     ((string= mode "nxml-mode") nxml-child-indent)
+     ((string= mode "html-mode") sgml-basic-offset)
+     ((string= mode "sgml-mode") sgml-basic-offset)
+     (t 4)
+     ))
+  )
+
 (defun zencoding-indent (text)
   "Indent the text"
   (if text
-      (replace-regexp-in-string "\n" "\n    " (concat "\n" text))
+      (replace-regexp-in-string
+       "\n"
+       (concat
+        "\n"
+        (make-string (zencoding-indent-size) ?\ ))
+       (concat "\n" text))
     nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

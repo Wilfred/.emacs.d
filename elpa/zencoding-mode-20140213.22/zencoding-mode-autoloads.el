@@ -5,7 +5,7 @@
 
 ;;;### (autoloads (zencoding-preview zencoding-expand-yas zencoding-mode
 ;;;;;;  zencoding-expand-line) "zencoding-mode" "zencoding-mode.el"
-;;;;;;  (20782 7666))
+;;;;;;  (21423 59358 467838 805000))
 ;;; Generated autoloads from zencoding-mode.el
 
 (autoload 'zencoding-expand-line "zencoding-mode" "\
@@ -56,7 +56,8 @@ accept it or skip it.
 
 ;;;***
 
-;;;### (autoloads nil nil ("zencoding-mode-pkg.el") (20782 7666 314302))
+;;;### (autoloads nil nil ("zencoding-mode-pkg.el") (21423 59358
+;;;;;;  640926 571000))
 
 ;;;***
 
