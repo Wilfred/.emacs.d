@@ -658,6 +658,7 @@ we don't want to see it shown on the mode line either.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (require 'diminish)
+  (require 'magit)
   (diminish 'magit-auto-revert-mode)
 #+END_SRC
 
