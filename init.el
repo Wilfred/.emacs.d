@@ -111,7 +111,8 @@ the start of the line."
 (global-set-key [(meta m)] 'jump-char-forward)
 (global-set-key [(shift meta m)] 'jump-char-backward)
 
-(keyfreq-mode)
+(keyfreq-mode 1)
+(keyfreq-autosave-mode 1)
 
 (defun smart-open-line ()
   "Insert an empty line after the current line.

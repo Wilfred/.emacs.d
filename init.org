@@ -328,7 +328,8 @@ look at frequent commands to see if we need to create custom commands
 or different keybindings for common commands.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (keyfreq-mode)
+  (keyfreq-mode 1)
+  (keyfreq-autosave-mode 1)
 #+END_SRC
 
 ** Inserting
