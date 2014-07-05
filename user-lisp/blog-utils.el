@@ -27,7 +27,7 @@ title: \"%s\"
   (query-replace-regexp "{{{\\(.*?\\)}}}" "`\\1`")
   (goto-char (point-min))
   ;; italics (note bold syntax is the same in markdown and creole
-  (query-replace-regexp "//\\([[:alnum:]]*\\)//" "_\\1_")
+  (query-replace-regexp "//\\(.*?\\)//" "_\\1_")
   (goto-char (point-min))
   ;; links
   (query-replace-regexp "\\[\\[\\(.*?\\)|\\(.*?\\)\\]\\]" "[\\2](\\1)")
