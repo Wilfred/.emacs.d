@@ -41,7 +41,7 @@
 (defvar swoop-parameters (ht-create 'equal)
   "To hand over current state to swoop-multi")
 (defvar swoop-match-beginning-line nil)
-(defvar swoop-split-dinominator 3000)
+(defvar swoop-split-denominator 3000)
 
 (defvar swoop--target-buffer nil)
 (defvar swoop--target-window nil)
@@ -193,28 +193,33 @@ the selected line position will be at the other side of the list."
           (swoop-action-goto-line-bottom)))))
 (cl-defun swoop-line-move ($direction)
   (with-selected-window swoop-window
-    (cl-case $direction
-      (up     (swoop-line-backward))
-      (down   (swoop-line-forward))
-      (top    (goto-char (point-min))
-              (swoop-line-forward))
-      (bottom (goto-char (point-max))
-              (swoop-line-backward))
-      (init (cond
-             ((and (bobp) (eobp))
-              (cl-return-from swoop-line-move nil))
-             ((bobp)
-              (swoop-line-forward)
-              (move-beginning-of-line 1))
-             ((eobp)
-              (swoop-line-backward)
-              (move-beginning-of-line 1))
-             (t (move-beginning-of-line 1)))))
-    (move-overlay
-     swoop-overlay-buffer-selection
-     (point) (min (1+ (point-at-eol)) (point-max)))
-    (swoop-line-move-within-target-window)
-    (swoop-recenter)))
+    (let ((current-pos (point)) is-init)
+      (cl-case $direction
+        (up     (swoop-line-backward))
+        (down   (swoop-line-forward))
+        (top    (unless (eq (point-min) (point-max))
+                  (goto-char (point-min))
+                  (swoop-line-forward)))
+        (bottom (unless (eq (point-min) (point-max))
+                  (goto-char (point-max))
+                  (swoop-line-backward)))
+        (init   (cond
+                 ((and (bobp) (eobp))
+                  (cl-return-from swoop-line-move nil))
+                 ((bobp)
+                  (swoop-line-forward)
+                  (move-beginning-of-line 1))
+                 ((eobp)
+                  (swoop-line-backward)
+                  (move-beginning-of-line 1))
+                 (t (move-beginning-of-line 1)))
+                 (setq is-init t)))
+      (when (or (not (eq current-pos (point))) is-init)
+        (move-overlay
+         swoop-overlay-buffer-selection
+         (point) (min (1+ (point-at-eol)) (point-max)))
+        (swoop-line-move-within-target-window)
+        (swoop-recenter)))))
 
 ;; Window configuration
 (defvar swoop-display-function
@@ -324,8 +329,6 @@ the selected line position will be at the other side of the list."
    ;; PCRE
    ((and swoop-use-pcre
          (not swoop-use-migemo))
-    (setq $input (replace-regexp-in-string "\*" "\\\\*" $input))
-    (setq $input (replace-regexp-in-string "\+" "\\\\+" $input))
     (setq $input (swoop-pcre-convert $input)))
    ;; MIGEMO
    ((and swoop-use-migemo
@@ -334,8 +337,7 @@ the selected line position will be at the other side of the list."
    (t
     (if (string-match "^\\\\b$" $input)    (setq $input nil))
     (if (string-match "[^\\]\\\\$" $input) (setq $input nil))
-    (setq $input (replace-regexp-in-string "\*" "\\\\*" $input))
-    (setq $input (replace-regexp-in-string "\+" "\\\\+" $input))))
+    (if (string-match "\\[[^\]]*$" $input) (setq $input nil))))
   $input)
 
 ;; Unveil a hidden target block of lines
@@ -372,7 +374,7 @@ swoop-overlay-target-buffer-selection moved."
            ($line-format    (concat "%0"
                                     (number-to-string $max-line-digit)
                                     "s: "))
-           ($by swoop-split-dinominator)   ; Buffer divide by
+           ($by swoop-split-denominator)   ; Buffer divide by
            ($result  (/ $max-line $by))    ; Result of division
            ($rest    (% $max-line $by))    ; Rest of division
            ;; Number of divided parts of a buffer
@@ -615,6 +617,7 @@ swoop-overlay-target-buffer-selection moved."
   (with-current-buffer $buf
     (save-excursion
       (goto-char (point-min))
+      (overlay-recenter (point-max))
       (while (re-search-forward $pattern nil t)
         (if (swoop-async-old-session?) (cl-return-from stop1))
         (let* (($beg (match-beginning 0))

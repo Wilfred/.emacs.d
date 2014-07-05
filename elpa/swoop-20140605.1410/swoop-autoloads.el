@@ -5,7 +5,7 @@
 
 ;;;### (autoloads (swoop-from-evil-search swoop-function swoop-from-isearch
 ;;;;;;  swoop-line-length-over80 swoop-migemo swoop-pcre-regexp swoop-multi
-;;;;;;  swoop) "swoop" "swoop.el" (21284 32992 317169 142000))
+;;;;;;  swoop) "swoop" "swoop.el" (21423 59406 217176 416000))
 ;;; Generated autoloads from swoop.el
 
 (autoload 'swoop "swoop" "\
@@ -53,7 +53,7 @@ During evil-search, switch over to swoop.
 ;;;***
 
 ;;;### (autoloads nil nil ("swoop-edit.el" "swoop-lib.el" "swoop-pkg.el")
-;;;;;;  (21284 32992 374116 421000))
+;;;;;;  (21423 59406 273142 783000))
 
 ;;;***
 

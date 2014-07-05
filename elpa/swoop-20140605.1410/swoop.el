@@ -176,6 +176,7 @@ and execute functions listed in swoop-abort-hook"
              (not $kill))
         (cl-return-from swoop-overlay-clear))
     (with-current-buffer $buf
+      (overlay-recenter (point-max))
       (swoop-mapc $ov (overlays-in (point-min) (point-max))
         (if (and (swoop-async-old-session?)
                  (not $to-empty)
@@ -257,7 +258,11 @@ and execute functions listed in swoop-abort-hook"
       (ht-clear! swoop-parameters))))
 
 (defcustom swoop-pre-input-point-at-function:
-  (lambda () (thing-at-point 'symbol))
+  (lambda ()
+    (let ((query (thing-at-point 'symbol)))
+      (if query
+          (format "%s" (read query))
+        "")))
   "Change pre input action. Default is get symbol where cursor at."
   :group 'swoop :type 'symbol)
 (defun swoop-pre-input (&optional $resume)
@@ -270,7 +275,10 @@ and execute functions listed in swoop-abort-hook"
                              (region-beginning) (region-end)))
                            ((funcall swoop-pre-input-point-at-function:))
                            (t nil)))
-      (deactivate-mark))
+      (deactivate-mark)
+      (when $results
+        (setq $results (replace-regexp-in-string "\*" "\\\\*" $results))
+        (setq $results (replace-regexp-in-string "\+" "\\\\+" $results))))
     $results))
 
 ;;;###autoload
@@ -380,7 +388,7 @@ Currently c-mode only."
                              :$multi $multi
                              :$pre-select $pre-select)))))
 
-(defun swoop-async-checker ($result $tots $pattern $multi $reserve)
+(defun swoop-async-checker ($result $tots $pattern $multi)
   (let* (($id (car $result))
          ($check-key (car $id)))
     (if (equal swoop-async-id-latest $check-key)
@@ -508,7 +516,7 @@ Currently c-mode only."
              (lambda ($result)
                (when (get-buffer swoop-buffer)
                  (with-current-buffer swoop-buffer
-                   (swoop-async-checker $result $tot $pattern $multi $reserve)))
+                   (swoop-async-checker $result $tot $pattern $multi)))
                )))))
 
       (when $multi
@@ -539,7 +547,7 @@ Currently c-mode only."
                 (lambda ($result)
                   (when (get-buffer swoop-buffer)
                     (with-current-buffer swoop-buffer
-                      (swoop-async-checker $result $tots $pattern $multi $reserve)))
+                      (swoop-async-checker $result $tots $pattern $multi)))
                   )))))
          swoop-buffer-info)))))
 
