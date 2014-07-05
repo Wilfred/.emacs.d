@@ -3,20 +3,21 @@
 ;;; Code:
 
 
-;;;### (autoloads (wgrep-ag-setup) "wgrep-ag" "wgrep-ag.el" (20983
-;;;;;;  48024 75348 676000))
+;;;### (autoloads (wgrep-ag-setup) "wgrep-ag" "wgrep-ag.el" (21423
+;;;;;;  59401 693905 857000))
 ;;; Generated autoloads from wgrep-ag.el
 
 (autoload 'wgrep-ag-setup "wgrep-ag" "\
 
 
 \(fn)" nil nil)
+
 (add-hook 'ag-mode-hook 'wgrep-ag-setup)
 
 ;;;***
 
-;;;### (autoloads nil nil ("wgrep-ag-pkg.el") (20983 48024 165907
-;;;;;;  618000))
+;;;### (autoloads nil nil ("wgrep-ag-pkg.el") (21423 59401 751116
+;;;;;;  400000))
 
 ;;;***
 
