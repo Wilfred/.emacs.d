@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (markdown-toc/generate-toc markdown-toc/version)
-;;;;;;  "markdown-toc" "markdown-toc.el" (21422 45007 927241 950000))
+;;;;;;  "markdown-toc" "markdown-toc.el" (21425 56191 237057 527000))
 ;;; Generated autoloads from markdown-toc.el
 
 (autoload 'markdown-toc/version "markdown-toc" "\
@@ -20,8 +20,8 @@ Afterward, if a TOC is already present in the buffer, it will update it.
 
 ;;;***
 
-;;;### (autoloads nil nil ("markdown-toc-pkg.el") (21422 45008 15041
-;;;;;;  891000))
+;;;### (autoloads nil nil ("markdown-toc-pkg.el") (21425 56191 325839
+;;;;;;  751000))
 
 ;;;***
 
