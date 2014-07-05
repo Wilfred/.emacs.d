@@ -5,7 +5,7 @@
 ;; Author: Bozhidar Batsov <bozhidar@batsov.com>
 ;; URL: https://github.com/bbatsov/projectile
 ;; Keywords: project, convenience
-;; Version: 20140624.443
+;; Version: 20140630.416
 ;; X-Original-Version: 0.11.0
 ;; Package-Requires: ((s "1.6.0") (dash "1.5.0") (pkg-info "0.4"))
 
@@ -173,6 +173,7 @@ and `projectile-buffers-with-file-or-process'."
     "Gruntfile.js"       ; Grunt project file
     "bower.json"         ; Bower project file
     "composer.json"      ; Composer project file
+    "Cargo.toml"         ; Cargo project file
     )
   "A list of files considered to mark the root of a project."
   :group 'projectile
