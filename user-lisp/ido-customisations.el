@@ -3,7 +3,7 @@
 ;; ido-mode -- fuzzy completion
 (setq ido-enable-flex-matching t)
 (setq ido-everywhere t)
-(ido-mode)
+(ido-mode t)
 
 ;; use ido-mode for more things, such as C-h f
 (ido-ubiquitous-mode)
