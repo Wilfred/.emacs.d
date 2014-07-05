@@ -26,7 +26,7 @@
 ;; Author: Jason R. Blevins <jrblevin@sdf.org>
 ;; Maintainer: Jason R. Blevins <jrblevin@sdf.org>
 ;; Created: May 24, 2007
-;; Version: 20130726.2142
+;; Version: 20131210.700
 ;; X-Original-Version: 2.0
 ;; Keywords: Markdown, GitHub Flavored Markdown, itex
 ;; URL: http://jblevins.org/projects/markdown-mode/
@@ -536,6 +536,15 @@
 ;;     (default: `end`).  The set of location options is the same as
 ;;     for `markdown-reference-location'.
 ;;
+;;   * `comment-auto-fill-only-comments' - variable is made
+;;     buffer-local and set to `nil' by default.  In programming
+;;     language modes, when this variable is non-nil, only comments
+;;     will be filled by auto-fill-mode.  However, comments in
+;;     Markdown documents are rare and the most users probably intend
+;;     for the actual content of the document to be filled.  Making
+;;     this variable buffer-local allows `markdown-mode' to override
+;;     the default behavior induced when the global variable is non-nil.
+;;
 ;; Additionally, the faces used for syntax highlighting can be modified to
 ;; your liking by issuing `M-x customize-group RET markdown-faces`
 ;; or by using the "Markdown Faces" link at the bottom of the mode
@@ -679,11 +688,14 @@
 ;;   * Vegard Vesterheim <vegard.vesterheim@uninett.no> for a bug fix
 ;;     related to `orgtbl-mode'.
 ;;   * Makoto Motohashi <mkt.motohashi@gmail.com> for before- and after-
-;;     export hooks and unit test improvements.
+;;     export hooks, unit test improvements, and updates to support
+;;     wide characters.
 ;;   * Michael Dwyer <mdwyer@ehtech.in> for `gfm-mode' underscore regexp.
 ;;   * Chris Lott <chris@chrislott.org> for suggesting reference label
 ;;     completion.
 ;;   * Gunnar Franke <Gunnar.Franke@gmx.de> for a completion bug report.
+;;   * David Glasser <glasser@meteor.com> for a `paragraph-separate' fix.
+;;   * Daniel Brotsky <dev@brotsky.com> for better auto-fill defaults.
 
 ;;; Bugs:
 
@@ -2303,7 +2315,7 @@ header will be inserted."
   (markdown-ensure-blank-line-before)
   (let (hdr)
     (cond (setext
-           (setq hdr (make-string (length text) (if (= level 2) ?- ?=)))
+           (setq hdr (make-string (string-width text) (if (= level 2) ?- ?=)))
            (insert text "\n" hdr))
           (t
            (setq hdr (make-string level ?#))
@@ -2311,7 +2323,7 @@ header will be inserted."
   (markdown-ensure-blank-line-after)
   ;; Leave point at end of text
   (if setext
-      (backward-char (1+ (length text)))
+      (backward-char (1+ (string-width text)))
     (backward-char (1+ level))))
 
 (defun markdown-insert-header-dwim (&optional arg setext)
@@ -4582,6 +4594,7 @@ if ARG is omitted or nil."
   (setq comment-start-skip "<!--[ \t]*")
   (make-local-variable 'comment-column)
   (setq comment-column 0)
+  (set (make-local-variable 'comment-auto-fill-only-comments) nil)
   ;; Font lock.
   (set (make-local-variable 'markdown-mode-font-lock-keywords) nil)
   (set (make-local-variable 'font-lock-defaults) nil)
@@ -4603,7 +4616,7 @@ if ARG is omitted or nil."
   (set (make-local-variable 'paragraph-start)
        "\f\\|[ \t]*$\\|[ \t]*[*+-] \\|[ \t]*[0-9]+\\.[ \t]\\|[ \t]*: ")
   (set (make-local-variable 'paragraph-separate)
-       "\\(?:[ \t\f]\\|.*  \\)*$")
+       "\\(?:[ \t\f]*\\|.*  \\)$")
   (set (make-local-variable 'adaptive-fill-first-line-regexp)
        "\\`[ \t]*>[ \t]*?\\'")
   (set (make-local-variable 'adaptive-fill-function)
