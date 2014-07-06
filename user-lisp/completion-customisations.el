@@ -72,4 +72,7 @@
 (require 'diminish)
 (diminish 'auto-complete-mode)
 
+;; Always use 'y or n' for questions, since 'yes' is tedious to type over and over.
+(fset 'yes-or-no-p 'y-or-n-p)
+
 (provide 'completion-customisations)
