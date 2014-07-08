@@ -97,4 +97,8 @@ it to open related buffers easily and discard other buffers (commonly magit)."
 
 (global-set-key (kbd "C-c C-x 2") 'split-this-frame)
 
+(require 'time)
+(display-time-mode 1)
+(setq display-time-format "%l:%M%p")
+
 (provide 'ui-customisations)
