@@ -109,4 +109,7 @@ it to open related buffers easily and discard other buffers (commonly magit)."
 (diminish 'mode-line-stats-mode)
 (setq mls-modules '(cpu memory disk))
 
+(diminish 'paredit-mode "PE")
+(diminish 'projectile-mode "Proj")
+
 (provide 'ui-customisations)
