@@ -101,4 +101,12 @@ it to open related buffers easily and discard other buffers (commonly magit)."
 (display-time-mode 1)
 (setq display-time-format "%l:%M%p")
 
+(add-to-list 'load-path "~/.emacs.d/third-party-lisp/mode-line-stats")
+(require 'mode-line-stats)
+(mode-line-stats-mode)
+
+(require 'diminish)
+(diminish 'mode-line-stats-mode)
+(setq mls-modules '(cpu memory disk))
+
 (provide 'ui-customisations)
