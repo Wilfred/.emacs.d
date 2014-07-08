@@ -247,4 +247,16 @@ copy to the clipboard."
 
 (global-set-key (kbd "C-S-k") 'kill-entire-line)
 
+(defun indent-four-spaces (beg end)
+  "Indent the text in the active region by four spaces.
+Handy when editing markdown."
+  (interactive "r")
+  (indent-rigidly beg end 4))
+
+(defun unindent-four-spaces (beg end)
+  "Decrease the indent of the text in the active region by four spaces.
+Handy when editing markdown."
+  (interactive "r")
+  (indent-rigidly beg end -4))
+
 (provide 'editing-customisations)
