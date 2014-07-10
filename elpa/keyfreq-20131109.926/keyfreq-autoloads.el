@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (keyfreq-autosave-mode keyfreq-mode) "keyfreq"
-;;;;;;  "keyfreq.el" (20857 11461 449803 273000))
+;;;;;;  "keyfreq.el" (21423 59471 49548 315000))
 ;;; Generated autoloads from keyfreq.el
 
 (defvar keyfreq-mode nil "\
@@ -41,8 +41,8 @@ and when emacs is killed.
 
 ;;;***
 
-;;;### (autoloads nil nil ("keyfreq-pkg.el") (20857 11461 566039
-;;;;;;  14000))
+;;;### (autoloads nil nil ("keyfreq-pkg.el") (21423 59471 103091
+;;;;;;  905000))
 
 ;;;***
 
