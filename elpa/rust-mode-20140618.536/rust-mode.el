@@ -1,9 +1,9 @@
 ;;; rust-mode.el --- A major emacs mode for editing Rust source code
 
-;; Version: 20140503.1056
+;; Version: 20140618.536
 ;; X-Original-Version: 0.2.0
 ;; Author: Mozilla
-;; Url: https://github.com/mozilla/rust
+;; Url: https://github.com/rust-lang/rust
 ;; Keywords: languages
 
 ;;; Commentary:
@@ -213,12 +213,12 @@
      ;; Special types
      (,(regexp-opt rust-special-types 'words) . font-lock-type-face)
 
-     ;; Attributes like `#[bar(baz)]` or `#![bar(baz)]`
-     (,(rust-re-grab (concat "#\\!?[" rust-re-ident "[^]]*\\]"))
-      1 font-lock-preprocessor-face)
+     ;; Attributes like `#[bar(baz)]` or `#![bar(baz)]` or `#[bar = "baz"]`
+     (,(rust-re-grab (concat "#\\!?\\[" rust-re-ident "[^]]*\\]"))
+      1 font-lock-preprocessor-face keep)
 
      ;; Syntax extension invocations like `foo!`, highlight including the !
-     (,(concat (rust-re-grab (concat rust-re-ident "!")) "[({[:space:]]")
+     (,(concat (rust-re-grab (concat rust-re-ident "!")) "[({[:space:][]")
       1 font-lock-preprocessor-face)
 
      ;; Field names like `foo:`, highlight excluding the :
@@ -381,11 +381,11 @@ idomenu (imenu with `ido-mode') for best mileage.")
 ;;; Defun Motions
 
 ;;; Start of a Rust item
-(setq rust-top-item-beg-re
-      (concat "^\\s-*\\(?:priv\\|pub\\)?\\s-*"
-              (regexp-opt
-               '("enum" "struct" "type" "mod" "use" "fn" "static" "impl"
-                 "extern" "impl" "static" "trait"))))
+(defvar rust-top-item-beg-re
+  (concat "^\\s-*\\(?:priv\\|pub\\)?\\s-*"
+          (regexp-opt
+           '("enum" "struct" "type" "mod" "use" "fn" "static" "impl"
+             "extern" "impl" "static" "trait"))))
 
 (defun rust-beginning-of-defun (&optional arg)
   "Move backward to the beginning of the current defun.
