@@ -5,7 +5,7 @@
 
 ;;;### (autoloads (exec-path-from-shell-initialize exec-path-from-shell-copy-env
 ;;;;;;  exec-path-from-shell-copy-envs) "exec-path-from-shell" "exec-path-from-shell.el"
-;;;;;;  (20993 4263 596629 65000))
+;;;;;;  (21423 59516 502212 769000))
 ;;; Generated autoloads from exec-path-from-shell.el
 
 (autoload 'exec-path-from-shell-copy-envs "exec-path-from-shell" "\
@@ -37,8 +37,8 @@ values used in the user's shell.
 
 ;;;***
 
-;;;### (autoloads nil nil ("exec-path-from-shell-pkg.el") (20993
-;;;;;;  4263 699781 817000))
+;;;### (autoloads nil nil ("exec-path-from-shell-pkg.el") (21423
+;;;;;;  59516 553252 154000))
 
 ;;;***
 
