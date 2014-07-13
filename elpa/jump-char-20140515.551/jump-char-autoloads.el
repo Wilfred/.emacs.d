@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (jump-char-backward jump-char-forward) "jump-char"
-;;;;;;  "jump-char.el" (20927 7004 519984 75000))
+;;;;;;  "jump-char.el" (21423 59471 832870 74000))
 ;;; Generated autoloads from jump-char.el
 
 (autoload 'jump-char-forward "jump-char" "\
@@ -29,8 +29,8 @@ backward movement version of `jump-char-forward'
 
 ;;;***
 
-;;;### (autoloads nil nil ("jump-char-pkg.el") (20927 7004 623332
-;;;;;;  624000))
+;;;### (autoloads nil nil ("jump-char-pkg.el") (21423 59471 890817
+;;;;;;  643000))
 
 ;;;***
 
