@@ -3,7 +3,7 @@
 ;; Author: Steve Purcell <steve@sanityinc.com>
 ;; Keywords: navigation slime elisp emacs-lisp
 ;; URL: https://github.com/purcell/elisp-slime-nav
-;; Version: 20140116.405
+;; Version: 20140619.254
 ;; X-Original-Version: DEV
 ;; Package-Requires: ((cl-lib "0.2"))
 ;;
@@ -63,12 +63,12 @@
   "Return the symbol at point as a string.
 If `current-prefix-arg' is not nil, the user is prompted for the symbol."
   (let* ((sym-at-point (symbol-at-point))
-           (at-point (and sym-at-point (symbol-name sym-at-point))))
-      (if (or current-prefix-arg (null at-point))
-          (completing-read "Symbol: "
-                           (elisp-slime-nav--all-navigable-symbol-names)
-                           nil t at-point)
-        at-point)))
+         (at-point (and sym-at-point (symbol-name sym-at-point))))
+    (if (or current-prefix-arg (null at-point))
+        (completing-read "Symbol: "
+                         (elisp-slime-nav--all-navigable-symbol-names)
+                         nil t at-point)
+      at-point)))
 
 ;;;###autoload
 (defun elisp-slime-nav-find-elisp-thing-at-point (sym-name)
