@@ -4,8 +4,8 @@
 
 ;; Author: Ryan C. Thompson
 ;; URL: https://github.com/DarwinAwardWinner/ido-ubiquitous
-;; Version: 20140327.1625
-;; X-Original-Version: 2.12
+;; Version: 20140526.1306
+;; X-Original-Version: 2.13
 ;; Created: 2011-09-01
 ;; Keywords: convenience
 ;; EmacsWiki: InteractivelyDoThings
@@ -41,7 +41,7 @@
 
 ;;; Code:
 
-(defconst ido-ubiquitous-version "2.12"
+(defconst ido-ubiquitous-version "2.13"
   "Currently running version of ido-ubiquitous.
 
 Note that when you update ido-ubiquitous, this variable may not
@@ -313,7 +313,9 @@ You can restore these using the command `ido-ubiquitous-restore-default-override
     ;; https://github.com/DarwinAwardWinner/ido-ubiquitous/issues/38
     (enable exact "read-char-by-name")
     ;; https://github.com/DarwinAwardWinner/ido-ubiquitous/issues/39
-    (disable exact "Info-read-node-name"))
+    (disable exact "Info-read-node-name")
+    ;; https://github.com/purcell/emacs.d/issues/182#issuecomment-44212927
+    (disable exact "tmm-menubar"))
   "Default value of `ido-ubiquitous-function-overrides'.
 
 You can restore these using the command `ido-ubiquitous-restore-default-overrides'.")
