@@ -213,7 +213,7 @@ So far, F can only be a symbol, not a lambda expression.")
 ;;; Start of automatically extracted autoloads.
 
 
-;;;### (autoloads nil "helm" "helm.el" (21349 49973 304297 833000))
+;;;### (autoloads nil "helm" "helm.el" (21411 54073 811471 756000))
 ;;; Generated autoloads from helm.el
 
 (autoload 'helm-define-multi-key "helm" "\
@@ -244,7 +244,7 @@ See `helm-define-multi-key'.
 
 \(fn NAME DOCSTRING FUNS &optional DELAY)" nil t)
 
-(function-put 'helm-multi-key-defun 'lisp-indent-function '2)
+(put 'helm-multi-key-defun 'lisp-indent-function '2)
 
 (autoload 'helm-define-key-with-subkeys "helm" "\
 Allow defining a KEY without having to type its prefix again on next calls.
@@ -274,23 +274,103 @@ If `helm-last-log-file' is nil, switch to `helm-debug-buffer' .
 
 \(fn)" t nil)
 
-(autoload 'helm-resume "helm" "\
-Resurrect previously invoked `helm'.
-Called with a prefix arg, allow choosing among all existing
-helm buffers.  i.e choose among various helm sessions.
-Called from lisp, you can specify a buffer-name as a string with ARG.
+(autoload 'helm "helm" "\
+Main function to execute helm sources.
 
-\(fn ARG)" t nil)
+Keywords supported:
+:sources :input :prompt :resume :preselect
+:buffer :keymap :default :history :allow-nest
 
-(autoload 'helm-resume-previous-session-after-quit "helm" "\
-Resume previous helm session within running helm.
+Extra keywords are supported and can be added, see below.
 
-\(fn ARG)" t nil)
+PLIST is a list like (:key1 val1 :key2 val2 ...) or
+\(&optional sources input prompt resume
+            preselect buffer keymap default history).
 
-(autoload 'helm-resume-list-buffers-after-quit "helm" "\
-List resumable helm buffers within running helm.
+Basic keywords are the following:
 
-\(fn)" t nil)
+:sources
+
+A list of sources used for this session.  It also accepts a
+symbol, interpreted as a variable of a helm source
+i.e (a symbol can be passed instead of a list of sources).
+It also accepts an alist representing a helm source, which is
+detected by (assq 'name ANY-SOURCES).
+NOTE: In this case the source is embedded in the helm command and
+have no symbol name, so it is not reachable from outside.
+It will be referenced in `helm-sources' as a whole alist.
+
+:input
+
+Temporary value of `helm-pattern', ie. initial input of minibuffer.
+
+:prompt
+
+Prompt other than \"pattern: \".
+
+:resume
+
+If t, Resurrect previously instance of `helm'.  Skip the initialization.
+If 'noresume, this instance of `helm' cannot be resumed.
+
+:preselect
+
+Initially selected candidate.  Specified by exact candidate or a regexp.
+
+:buffer
+
+`helm-buffer' instead of *helm*.
+
+:keymap
+
+`helm-map' for current `helm' session.
+
+:default
+
+A default argument that will be inserted in minibuffer with \\<minibuffer-local-map>\\[next-history-element].
+When nil or not present `thing-at-point' will be used instead.
+If `helm-maybe-use-default-as-input' is non--nil display will be
+updated using :default arg as input unless :input is specified,
+which in this case will take precedence on :default
+This is a string or a list, in this case the car of the list will
+be used as initial default input, but you will be able to cycle in this
+list with \\<minibuffer-local-map>\\[next-history-element].
+
+:history
+
+By default all minibuffer input is pushed to `minibuffer-history',
+if an argument HISTORY is provided, input will be pushed to HISTORY.
+History element should be a symbol.
+
+:allow-nest
+
+Allow running this helm command within a running helm session.
+
+Of course, conventional arguments are supported, the two are same.
+
+\(helm :sources sources :input input :prompt prompt :resume resume
+       :preselect preselect :buffer buffer :keymap keymap :default default
+       :history history)
+
+and
+
+\(helm sources input prompt resume preselect buffer keymap default history)
+
+are the same.
+
+However the use of non keyword args is deprecated and should not be used.
+
+Other keywords are interpreted as local variables of this helm session.
+The `helm-' prefix can be omitted.  For example,
+
+\(helm :sources 'helm-source-buffers-list
+       :buffer \"*buffers*\" :candidate-number-limit 10)
+
+means starting helm session with `helm-source-buffers'
+source in *buffers* buffer and set variable `helm-candidate-number-limit'
+to 10 as session local variable.
+
+\(fn &rest PLIST)" nil nil)
 
 (autoload 'helm-other-buffer "helm" "\
 Simplified interface of `helm' with other `helm-buffer'.
@@ -298,263 +378,13 @@ Call `helm' with only ANY-SOURCES and ANY-BUFFER as args.
 
 \(fn ANY-SOURCES ANY-BUFFER)" nil nil)
 
-(autoload 'helm-toggle-suspend-update "helm" "\
-Enable or disable update of display in helm.
-This can be useful for e.g writing quietly a complex regexp.
-
-\(fn)" t nil)
-
-(autoload 'helm-force-update "helm" "\
-Force recalculation and update of candidates.
-The difference with `helm-update' is this function is reevaling
-the `init' and `update' attributes functions when present
-before updating candidates according to pattern i.e calling `helm-update'.
-Selection is preserved to current candidate or moved to PRESELECT
-if specified.
-
-\(fn &optional PRESELECT)" t nil)
-
-(autoload 'helm-select-action "helm" "\
-Select an action for the currently selected candidate.
-If action buffer is selected, back to the helm buffer.
-
-\(fn)" t nil)
-
-(autoload 'helm-previous-line "helm" "\
-Move selection to the previous line.
-
-\(fn &optional ARG)" t nil)
-
-(autoload 'helm-next-line "helm" "\
-Move selection to the next line.
-
-\(fn &optional ARG)" t nil)
-
-(autoload 'helm-previous-page "helm" "\
-Move selection back with a pageful.
-
-\(fn)" t nil)
-
-(autoload 'helm-next-page "helm" "\
-Move selection forward with a pageful.
-
-\(fn)" t nil)
-
-(autoload 'helm-beginning-of-buffer "helm" "\
-Move selection at the top.
-
-\(fn)" t nil)
-
-(autoload 'helm-end-of-buffer "helm" "\
-Move selection at the bottom.
-
-\(fn)" t nil)
-
-(autoload 'helm-previous-source "helm" "\
-Move selection to the previous source.
-
-\(fn)" t nil)
-
-(autoload 'helm-next-source "helm" "\
-Move selection to the next source.
-
-\(fn)" t nil)
-
-(autoload 'helm-confirm-and-exit-minibuffer "helm" "\
-Maybe ask for confirmation when exiting helm.
-It is similar to `minibuffer-complete-and-exit' adapted to helm.
-If `minibuffer-completion-confirm' value is 'confirm,
-send in minibuffer confirm message and exit on next hit.
-If `minibuffer-completion-confirm' value is t,
-don't exit and send message 'no match'.
-
-\(fn)" t nil)
-
-(autoload 'helm-exit-minibuffer "helm" "\
-Select the current candidate by exiting the minibuffer.
-
-\(fn)" t nil)
-
-(autoload 'helm-keyboard-quit "helm" "\
-Quit minibuffer in helm.
-If action buffer is displayed, kill it.
-
-\(fn)" t nil)
-
-(autoload 'helm-debug-output "helm" "\
-Show all helm-related variables at this time.
-
-\(fn)" t nil)
-
-(autoload 'helm-delete-current-selection "helm" "\
-Delete the currently selected item.
-
-\(fn)" t nil)
-
-(autoload 'helm-delete-minibuffer-contents "helm" "\
-Delete minibuffer contents.
-When called with a prefix arg or when
-`helm-delete-minibuffer-contents-from-point' is non--nil,
-delete minibuffer contents from point instead of deleting all.
-
-\(fn &optional ARG)" t nil)
-
-(autoload 'helm-toggle-resplit-window "helm" "\
-Toggle resplit helm window, vertically or horizontally.
-
-\(fn)" t nil)
-
-(autoload 'helm-narrow-window "helm" "\
-Narrow helm window.
-
-\(fn)" t nil)
-
-(autoload 'helm-enlarge-window "helm" "\
-Enlarge helm window.
-
-\(fn)" t nil)
-
-(autoload 'helm-swap-windows "helm" "\
-Swap window holding `helm-buffer' with other window.
-
-\(fn)" t nil)
-
-(autoload 'helm-select-2nd-action "helm" "\
-Select the 2nd action for the currently selected candidate.
-
-\(fn)" t nil)
-
-(autoload 'helm-select-3rd-action "helm" "\
-Select the 3rd action for the currently selected candidate.
-
-\(fn)" t nil)
-
-(autoload 'helm-select-4th-action "helm" "\
-Select the 4th action for the currently selected candidate.
-
-\(fn)" t nil)
-
-(autoload 'helm-select-2nd-action-or-end-of-line "helm" "\
-Select the 2nd action for the currently selected candidate.
-This happen when point is at the end of minibuffer.
-Otherwise goto the end of minibuffer.
-
-\(fn)" t nil)
-
-(autoload 'helm-execute-persistent-action "helm" "\
-Perform the associated action ATTR without quitting helm.
-ATTR default is 'persistent-action', but it can be anything else.
-In this case you have to add this new attribute to your source.
-
-When `helm-full-frame' or SPLIT-ONEWINDOW are non--nil,
-and `helm-buffer' is displayed in only one window,
-the helm window is splitted to display
-`helm-select-persistent-action-window' in other window 
-and keep its visibility.
-
-\(fn &optional (attr (quote persistent-action)) SPLIT-ONEWINDOW)" t nil)
-
-(autoload 'helm-scroll-other-window "helm" "\
-Scroll other window (not *Helm* window) upward.
-
-\(fn)" t nil)
-
-(autoload 'helm-scroll-other-window-down "helm" "\
-Scroll other window (not *Helm* window) downward.
-
-\(fn)" t nil)
-
-(autoload 'helm-recenter-top-bottom-other-window "helm" "\
-`recenter-top-bottom' in other window (not *Helm* window).
-
-\(fn)" t nil)
-
-(autoload 'helm-reposition-window-other-window "helm" "\
-`helm-reposition-window' in other window (not *Helm* window).
-
-\(fn)" t nil)
-
-(autoload 'helm-toggle-visible-mark "helm" "\
-Toggle helm visible mark at point.
-
-\(fn)" t nil)
-
-(autoload 'helm-mark-all "helm" "\
-Mark all visible unmarked candidates in current source.
-
-\(fn)" t nil)
-
-(autoload 'helm-unmark-all "helm" "\
-Unmark all candidates in all sources of current helm session.
-
-\(fn)" t nil)
-
-(autoload 'helm-toggle-all-marks "helm" "\
-Toggle all marks.
-Mark all visible candidates of current source or unmark all candidates
-visible or invisible in all sources of current helm session
-
-\(fn)" t nil)
-
-(autoload 'helm-display-all-visible-marks "helm" "\
-Show all `helm' visible marks strings.
-Only useful for debugging.
-
-\(fn)" t nil)
-
-(autoload 'helm-next-visible-mark "helm" "\
-Move next helm visible mark.
-If PREV is non-nil move to precedent.
-
-\(fn &optional PREV)" t nil)
-
-(autoload 'helm-prev-visible-mark "helm" "\
-Move previous helm visible mark.
-
-\(fn)" t nil)
-
-(autoload 'helm-yank-selection "helm" "\
-Set minibuffer contents to current display selection.
-With a prefix arg set to real value of current selection.
-
-\(fn ARG)" t nil)
-
-(autoload 'helm-kill-selection-and-quit "helm" "\
-Store current selection to kill ring.
-With a prefix arg set to real value of current selection.
-
-\(fn ARG)" t nil)
-
-(autoload 'helm-follow-mode "helm" "\
-Execute persistent action everytime the cursor is moved when enabled.
-The mode is enabled for the current source only, you will have to turn it
-on again when you go to next source if you want it there also.
-This mode can be enabled or disabled interactively at anytime during
-helm session or enabled specifically by source by adding the `follow'
-attribute to this source.
-Even when the attribute `follow' exists in source, it is still possible
-to disable/enable this mode interactively.
-Note that when you disable it interactively and `follow' attribute exists,
-`helm-follow-mode' will be disabled on next helm session even if `follow'
-attribute is specified in source. To avoid this set your `follow' attribute
-in source in `helm-before-initialize-hook'.
-
-e.g:
-
-\(add-hook 'helm-before-initialize-hook
-          #'(lambda () (helm-attrset 'follow 1 helm-source-buffers-list)))
-
-This will enable `helm-follow-mode' automatically in `helm-source-buffers-list'.
-
-\(fn &optional ARG)" t nil)
-
 ;;;***
 
-;;;### (autoloads nil "helm-adaptative" "helm-adaptative.el" (21341
-;;;;;;  6020 970577 405000))
-;;; Generated autoloads from helm-adaptative.el
+;;;### (autoloads nil "helm-adaptive" "helm-adaptive.el" (21392 48544
+;;;;;;  636771 232000))
+;;; Generated autoloads from helm-adaptive.el
 
-(autoload 'helm-reset-adaptative-history "helm-adaptative" "\
+(autoload 'helm-reset-adaptive-history "helm-adaptive" "\
 Delete all `helm-adaptive-history' and his file.
 Useful when you have a old or corrupted `helm-adaptive-history-file'.
 
@@ -562,8 +392,8 @@ Useful when you have a old or corrupted `helm-adaptive-history-file'.
 
 ;;;***
 
-;;;### (autoloads nil "helm-apt" "helm-apt.el" (21341 6020 970577
-;;;;;;  405000))
+;;;### (autoloads nil "helm-apt" "helm-apt.el" (21406 64798 644023
+;;;;;;  263000))
 ;;; Generated autoloads from helm-apt.el
 
 (autoload 'helm-apt "helm-apt" "\
@@ -589,8 +419,8 @@ http://bbdb.sourceforge.net/
 
 ;;;***
 
-;;;### (autoloads nil "helm-bookmark" "helm-bookmark.el" (21347 37401
-;;;;;;  174575 489000))
+;;;### (autoloads nil "helm-bookmark" "helm-bookmark.el" (21392 48544
+;;;;;;  636771 232000))
 ;;; Generated autoloads from helm-bookmark.el
 
 (autoload 'helm-bookmarks "helm-bookmark" "\
@@ -612,8 +442,8 @@ only if external library addressbook-bookmark.el is available.
 
 ;;;***
 
-;;;### (autoloads nil "helm-buffers" "helm-buffers.el" (21344 1497
-;;;;;;  507745 546000))
+;;;### (autoloads nil "helm-buffers" "helm-buffers.el" (21393 64143
+;;;;;;  597197 957000))
 ;;; Generated autoloads from helm-buffers.el
 
 (autoload 'helm-buffers-list "helm-buffers" "\
@@ -676,8 +506,8 @@ You can get help on each command by persistent action.
 
 ;;;***
 
-;;;### (autoloads nil "helm-elisp" "helm-elisp.el" (21347 14175 13507
-;;;;;;  58000))
+;;;### (autoloads nil "helm-elisp" "helm-elisp.el" (21369 45261 989164
+;;;;;;  563000))
 ;;; Generated autoloads from helm-elisp.el
 
 (autoload 'helm-lisp-completion-at-point "helm-elisp" "\
@@ -812,8 +642,8 @@ You can set your own list of commands with
 
 ;;;***
 
-;;;### (autoloads nil "helm-files" "helm-files.el" (21348 36614 434364
-;;;;;;  136000))
+;;;### (autoloads nil "helm-files" "helm-files.el" (21409 34883 685857
+;;;;;;  532000))
 ;;; Generated autoloads from helm-files.el
 
 (autoload 'helm-browse-project "helm-files" "\
@@ -854,8 +684,8 @@ Preconfigured `helm' for `recentf'.
 
 ;;;***
 
-;;;### (autoloads nil "helm-firefox" "helm-firefox.el" (21341 6020
-;;;;;;  974577 405000))
+;;;### (autoloads nil "helm-firefox" "helm-firefox.el" (21392 48544
+;;;;;;  636771 232000))
 ;;; Generated autoloads from helm-firefox.el
 
 (autoload 'helm-firefox-bookmarks "helm-firefox" "\
@@ -902,8 +732,8 @@ Preconfigured `helm' for gentoo linux.
 
 ;;;***
 
-;;;### (autoloads nil "helm-grep" "helm-grep.el" (21341 6020 974577
-;;;;;;  405000))
+;;;### (autoloads nil "helm-grep" "helm-grep.el" (21409 34883 685857
+;;;;;;  532000))
 ;;; Generated autoloads from helm-grep.el
 
 (autoload 'helm-goto-precedent-file "helm-grep" "\
@@ -935,11 +765,6 @@ Special commands:
 \(fn)" t nil)
 
 (autoload 'helm-gm-precedent-file "helm-grep" "\
-
-
-\(fn)" t nil)
-
-(autoload 'helm-grep-mode-quit "helm-grep" "\
 
 
 \(fn)" t nil)
@@ -990,8 +815,8 @@ Preconfigured helm for pdfgrep.
 
 ;;;***
 
-;;;### (autoloads nil "helm-help" "helm-help.el" (21348 31379 558320
-;;;;;;  219000))
+;;;### (autoloads nil "helm-help" "helm-help.el" (21395 64382 500328
+;;;;;;  929000))
 ;;; Generated autoloads from helm-help.el
 
 (defvar helm-mode-line-string "\\<helm-map>\\[helm-help]:Help \\[helm-select-action]:Act \\[helm-exit-minibuffer]/\\[helm-select-2nd-action-or-end-of-line]/\\[helm-select-3rd-action]:NthAct" "\
@@ -1168,8 +993,8 @@ Preconfigured `helm' for `imenu'.
 
 ;;;***
 
-;;;### (autoloads nil "helm-info" "helm-info.el" (21341 6020 978577
-;;;;;;  405000))
+;;;### (autoloads nil "helm-info" "helm-info.el" (21377 35219 629085
+;;;;;;  808000))
 ;;; Generated autoloads from helm-info.el
 
 (autoload 'helm-info-at-point "helm-info" "\
@@ -1180,8 +1005,8 @@ With a prefix-arg insert symbol at point.
 
 ;;;***
 
-;;;### (autoloads nil "helm-locate" "helm-locate.el" (21341 6020
-;;;;;;  978577 405000))
+;;;### (autoloads nil "helm-locate" "helm-locate.el" (21409 34883
+;;;;;;  685857 532000))
 ;;; Generated autoloads from helm-locate.el
 
 (autoload 'helm-locate-read-file-name "helm-locate" "\
@@ -1455,8 +1280,8 @@ Preconfigured helm to show org headlines.
 
 ;;;***
 
-;;;### (autoloads nil "helm-regexp" "helm-regexp.el" (21344 43164
-;;;;;;  331972 969000))
+;;;### (autoloads nil "helm-regexp" "helm-regexp.el" (21381 59483
+;;;;;;  908433 446000))
 ;;; Generated autoloads from helm-regexp.el
 
 (defvar helm-occur-match-plugin-mode t "\
@@ -1472,6 +1297,19 @@ or call the function `helm-occur-match-plugin-mode'.")
 Turn On/Off `helm-match-plugin-mode' only for `helm-m/occur'.
 
 \(fn &optional ARG)" t nil)
+
+(autoload 'helm-moccur-run-save-buffer "helm-regexp" "\
+Run grep save results action from `helm-do-grep-1'.
+
+\(fn)" t nil)
+
+(autoload 'helm-moccur-mode "helm-regexp" "\
+Major mode to provide actions in helm moccur saved buffer.
+
+Special commands:
+\\{helm-moccur-mode-map}
+
+\(fn)" t nil)
 
 (autoload 'helm-regexp "helm-regexp" "\
 Preconfigured helm to build regexps.
@@ -1626,8 +1464,8 @@ This function aggregates three sources of tag files:
 
 ;;;***
 
-;;;### (autoloads nil "helm-utils" "helm-utils.el" (21343 26918 260021
-;;;;;;  68000))
+;;;### (autoloads nil "helm-utils" "helm-utils.el" (21406 62451 252851
+;;;;;;  457000))
 ;;; Generated autoloads from helm-utils.el
 
 (autoload 'helm-show-all-in-this-source-only "helm-utils" "\
@@ -1662,8 +1500,8 @@ grabs the entire symbol.
 
 ;;;***
 
-;;;### (autoloads nil "helm-w3m" "helm-w3m.el" (21341 6020 982577
-;;;;;;  405000))
+;;;### (autoloads nil "helm-w3m" "helm-w3m.el" (21392 48544 640771
+;;;;;;  232000))
 ;;; Generated autoloads from helm-w3m.el
 
 (autoload 'helm-w3m-bookmarks "helm-w3m" "\
@@ -1709,7 +1547,7 @@ http://www.emacswiki.org/emacs/download/yaoddmuse.el
 ;;;***
 
 ;;;### (autoloads nil nil ("helm-aliases.el" "helm-pkg.el" "helm-plugin.el")
-;;;;;;  (21349 49981 380618 324000))
+;;;;;;  (21411 54137 426145 168000))
 
 ;;;***
 

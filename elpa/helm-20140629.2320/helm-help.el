@@ -171,6 +171,14 @@ If you enter a space and a pattern prefixed by \"@\" helm will search for text m
 this pattern INSIDE the buffer (i.e not in the name of buffer).
 NOTE that if you enter your pattern prefixed with \"@\" but escaped, helm will search a buffer
 matching \"@pattern\" but will not search inside.
+If you prefix the beginning of pattern with \"/\" the match will occur on directory name
+of buffer, it is interesting to narrow down to one directory for example, subsequent string
+entered after a space will match on buffer-name only.
+Note that negation is not supported for matching on buffer-file-name.
+
+Note that if `helm-buffers-fuzzy-matching' is non--nil you will have
+fuzzy matching on buffer names (not on buffer-file-name matching and major-mode though).
+
 
 e.g
 
@@ -187,6 +195,11 @@ helm will look for lisp mode buffers starting by \"helm\" and have \"moc\" in th
 if I enter in pattern prompt:
 \"*!lisp !helm\"
 helm will narrow down to buffers that are not in \"lisp\" mode and that do not match \"helm\"
+
+if I enter in pattern prompt:
+/helm/ w3
+helm will narrow down to buffers that are in any \"helm\" subdirectory and matching w3.
+
 
 Creating buffers
 
@@ -316,7 +329,7 @@ Italic     => A non--file buffer.
 \\[helm-ff-run-open-file-with-default-tool]\t\t->Open file externally with default tool.
 \\[helm-ff-rotate-left-persistent]\t\t->Rotate Image Left.
 \\[helm-ff-rotate-right-persistent]\t\t->Rotate Image Right.
-\\[helm-find-files-down-one-level]\t\t->Go down precedent directory.
+\\[helm-find-files-up-one-level]\t\t->Go down precedent directory.
 \\[helm-ff-run-switch-to-history]\t\t->Switch to last visited directories history.
 \\[helm-ff-file-name-history]\t\t->Switch to file name history.
 \\[helm-ff-properties-persistent]\t\t->Show file properties in a tooltip.
@@ -393,7 +406,7 @@ By default `helm-read-file-name' use the persistent actions of `helm-find-files'
 
 \nSpecific commands for helm-read-file-name:
 \\<helm-read-file-map>
-\\[helm-find-files-down-one-level]\t\t->Go down precedent directory.
+\\[helm-find-files-up-one-level]\t\t->Go down precedent directory.
 \\[helm-ff-run-toggle-auto-update]\t->Toggle auto expansion of directories.
 \\[helm-ff-run-toggle-basename]\t\t->Toggle basename.
 \\[helm-ff-file-name-history]\t\t->File name history.
@@ -586,7 +599,7 @@ But you can also pass an argument or more after 'candidate_file' like this:
 
 <command> %s [extra_args]\n
 
-'candidate_file' will be inserted at '%s' and your command will look at this:
+'candidate_file' will be added at '%s' and your command will look at this:
 
 <command> 'candidate_file' [extra_args]
 
@@ -596,12 +609,13 @@ e.g <command> file1 file2 ...
 
 Call `helm-find-files-eshell-command-on-file' with one prefix-arg
 Otherwise you can pass one prefix-arg from the command selection buffer.
+NOTE: This is not working on remote files.
 
 With two prefix-arg before starting or from the command selection buffer
 the output is printed to your `current-buffer'.
 
-With no prefix-arg or a prefix-arg value of '(16) (C-u C-u) the command
-is called once for each file like this:
+Note that with no prefix-arg or a prefix-arg value of '(16) (C-u C-u)
+the command is called once for each file like this:
 
 <command> file1 <command> file2 etc...
 
@@ -656,7 +670,6 @@ is called once for each file like this:
 \\[helm-yank-text-at-point]\t\t->Yank Text at point in minibuffer.
 \\[helm-moccur-run-goto-line-ow]\t\t->Goto line in other window.
 \\[helm-moccur-run-goto-line-of]\t\t->Goto line in new frame.
-\\[helm-grep-run-save-buffer]\t\t->Save to a `grep-mode' enabled buffer.
 \\[helm-moccur-help]\t\t->Show this help.
 \n== Helm Map ==
 \\{helm-map}")

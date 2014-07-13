@@ -165,28 +165,6 @@ Return nil if DIR is not an existing directory."
                 concat (if p (concat "/" i) (concat i "/")) into root
                 finally return (file-equal-p (file-truename root) f2)))))))
 
-;;; Add compatibility for `funcall-interactively' that will be shipped with emacs-24.5.
-;;  Function from S.Monnier, see emacs bug#17446.
-;;
-(unless (fboundp 'funcall-interactively)
-  (defun funcall-interactively (fun &rest args)
-    (setq fun (indirect-function fun))
-    (call-interactively
-     (cond
-       ((consp fun)
-        (mapcar (lambda (x)
-                  (if (eq (car-safe x) 'interactive)
-                      `(interactive ',args) x))
-                fun))
-       ((byte-code-function-p fun)
-        (apply #'make-byte-code
-               (aref fun 0)
-               (aref fun 1)
-               (aref fun 2)
-               (aref fun 3)
-               (aref fun 4)
-               (aref fun 5)
-               args))))))
 
 ;; CUA workaround
 (defadvice cua-delete-region (around helm-avoid-cua activate)
@@ -319,9 +297,8 @@ With a numeric prefix arg show only the ARG number of candidates."
   (with-helm-window
     (with-helm-default-directory helm-default-directory
         (let ((helm-candidate-number-limit (and (> arg 1) arg)))
-          (save-window-excursion
-            (helm-set-source-filter
-             (list (assoc-default 'name (helm-get-current-source)))))))))
+          (helm-set-source-filter
+           (list (assoc-default 'name (helm-get-current-source))))))))
 
 ;;;###autoload
 (defun helm-display-all-sources ()
@@ -372,7 +349,7 @@ e.g helm.el$
                    (cond ((string= c ".")
                           (concat "[^" c "]*" (concat "[" c "]")))
                          ((string= c "$") c)
-                         (t (concat "[^" c "]*" c))))
+                         (t (concat "[^" c "]*" (regexp-quote c)))))
                  ls ""))))
 
 (defun helm-skip-entries (seq regexp-list)
@@ -579,14 +556,14 @@ Return nil on valid file name remote or not."
     (when (and meth (<= (length split) 2))
       (cadr split))))
 
-(defun helm-file-human-size (size)
+(cl-defun helm-file-human-size (size &optional (kbsize helm-default-kbsize))
   "Return a string showing SIZE of a file in human readable form.
 SIZE can be an integer or a float depending it's value.
 `file-attributes' will take care of that to avoid overflow error.
-KBSIZE if a floating point number, default value is 1024.0."
-  (let ((M (cons "M" (/ size (expt helm-default-kbsize 2))))
-        (G (cons "G" (/ size (expt helm-default-kbsize 3))))
-        (K (cons "K" (/ size helm-default-kbsize)))
+KBSIZE if a floating point number, defaulting to `helm-default-kbsize'."
+  (let ((M (cons "M" (/ size (expt kbsize 2))))
+        (G (cons "G" (/ size (expt kbsize 3))))
+        (K (cons "K" (/ size kbsize)))
         (B (cons "B" size)))
     (cl-loop with result = B
           for (a . b) in

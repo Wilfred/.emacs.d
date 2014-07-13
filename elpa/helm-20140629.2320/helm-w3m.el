@@ -20,7 +20,7 @@
 (require 'cl-lib)
 (require 'helm)
 (require 'helm-utils)
-(require 'helm-adaptative)
+(require 'helm-adaptive)
 ;; Some users have the emacs-w3m library in load-path
 ;; without having the w3m executable :-;
 ;; So check if w3m program is present before trying to load
@@ -114,7 +114,7 @@ http://emacs-w3m.namazu.org/")
 (defun helm-w3m-rename-bookmark (elm)
   "Rename w3m bookmark in `w3m-bookmark-file'."
   (let* ((old-title (replace-regexp-in-string ">" "" elm))
-         (new-title (read-string "NewTitle: " old-title)))
+         (new-title (helm-read-string "NewTitle: " old-title)))
     (with-current-buffer
         (find-file-literally w3m-bookmark-file)
       (goto-char (point-min))
