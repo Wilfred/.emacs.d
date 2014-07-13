@@ -3,11 +3,16 @@
 ;;; Code:
 
 
-;;;### (autoloads (php-mode php) "php-mode" "php-mode.el" (20993
-;;;;;;  4223 106630 746000))
+;;;### (autoloads (php-mode php-extra-constants php) "php-mode" "php-mode.el"
+;;;;;;  (21425 56158 994166 240000))
 ;;; Generated autoloads from php-mode.el
 
 (let ((loads (get 'php 'custom-loads))) (if (member '"php-mode" loads) nil (put 'php 'custom-loads (cons '"php-mode" loads))))
+
+(defvar php-extra-constants 'nil "\
+A list of additional strings to treat as PHP constants.")
+
+(custom-autoload 'php-extra-constants "php-mode" t)
 
 (add-to-list 'interpreter-mode-alist (cons "php" 'php-mode))
 
@@ -18,12 +23,12 @@ Major mode for editing PHP code.
 
 \(fn)" t nil)
 
-(dolist (pattern '("\\.php[s345t]?\\'" "\\.phtml\\'" "Amkfile" "\\.amk$")) (add-to-list 'auto-mode-alist `(,pattern . php-mode)))
+(dolist (pattern '("\\.php[s345t]?\\'" "\\.phtml\\'" "Amkfile" "\\.amk$")) (add-to-list 'auto-mode-alist `(,pattern . php-mode) t))
 
 ;;;***
 
-;;;### (autoloads nil nil ("php-mode-pkg.el") (20993 4223 211988
-;;;;;;  525000))
+;;;### (autoloads nil nil ("php-mode-pkg.el") (21425 56159 47703
+;;;;;;  442000))
 
 ;;;***
 
