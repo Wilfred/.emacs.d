@@ -5,7 +5,7 @@
 
 ;;;### (autoloads (flycheck-define-error-level flycheck-info flycheck-def-option-var
 ;;;;;;  flycheck-def-config-file-var global-flycheck-mode flycheck-mode)
-;;;;;;  "flycheck" "flycheck.el" (21311 13885 715475 100000))
+;;;;;;  "flycheck" "flycheck.el" (21430 63912 40465 689000))
 ;;; Generated autoloads from flycheck.el
 
 (defconst flycheck-mode-line-lighter " FlyC" "\
@@ -55,16 +55,15 @@ See `flycheck-mode' for more information on Flycheck mode.
 (autoload 'flycheck-def-config-file-var "flycheck" "\
 Define SYMBOL as config file variable for CHECKER, with default FILE-NAME.
 
-SYMBOL is declared as customizable variable (see `defcustom`)
-providing a configuration file for CHECKER.  The CHECKER argument
-is used for documentation purposes only.  If given use FILE-NAME
-as initial value.
+SYMBOL is declared as customizable, buffer-local variable using
+`defcustom', to provide a configuration file for the given syntax
+CHECKER.  CUSTOM-ARGS are forwarded to `defcustom'.
 
-The variable is declared with `defcustom', and declared
-buffer-local.  CUSTOM-ARGS are forwarded to `defcustom'
+FILE-NAME is the initial value of the new variable.  If omitted,
+the default value is nil.
 
-Use this together with the `config-file' cell in syntax checker
-commands.
+Use this together with the `config-file' form in the `:command'
+argument to `flycheck-define-checker'.
 
 \(fn SYMBOL CHECKER &optional FILE-NAME &rest CUSTOM-ARGS)" nil t)
 
@@ -73,14 +72,15 @@ commands.
 (autoload 'flycheck-def-option-var "flycheck" "\
 Define SYMBOL as option variable with INIT-VALUE for CHECKER.
 
-INIT-VALUE is the initial value for the new variable.  DOCSTRING
-is its docstring.
+SYMBOL is declared as customizable variable, buffer-local
+variable using `defcustom', to provide an option for the given
+syntax CHECKER.  INIT-VALUE is the initial value of the variable,
+and DOCSTRING is its docstring.  CUSTOM-ARGS are forwarded to
+`defcustom'.
 
-The variable is declared with `defcustom', and declared
-buffer-local.  CUSTOM-ARGS are forwarded to `defcustom'.
-
-Use this together with the `option' cell in syntax checker
-commands.
+Use this together with the `option', `option-list' and
+`option-flag' forms in the `:command' argument to
+`flycheck-define-checker'.
 
 \(fn SYMBOL INIT-VALUE CHECKER DOCSTRING &rest CUSTOM-ARGS)" nil t)
 
@@ -101,13 +101,21 @@ The following PROPERTIES constitute an error level:
 `:overlay-category CATEGORY'
      A symbol denoting the overlay category to use for error
      highlight overlays for this level.  See Info
-     node `(elisp)Overlay properties' for more information about
+     node `(elisp)Overlay Properties' for more information about
      overlay categories.
+
+     A category for an error level overlay should at least define
+     the `face' property, for error highlighting.  Other useful
+     properties for error level categories are `priority' to
+     influence the stacking of multiple error level overlays, and
+     `help-echo' to define a default error messages for errors
+     without messages.
 
 `:fringe-bitmap BITMAP'
      A fringe bitmap symbol denoting the bitmap to use for fringe
      indicators for this level.  See Info node `(elisp)Fringe
-     Bitmaps' for more information about fringe bitmaps.
+     Bitmaps' for more information about fringe bitmaps,
+     including a list of built-in fringe bitmaps.
 
 `:fringe-face FACE'
      A face symbol denoting the face to use for fringe indicators
@@ -123,8 +131,8 @@ The following PROPERTIES constitute an error level:
 
 ;;;***
 
-;;;### (autoloads nil nil ("flycheck-pkg.el") (21311 13885 911768
-;;;;;;  838000))
+;;;### (autoloads nil nil ("flycheck-pkg.el") (21430 63912 371798
+;;;;;;  78000))
 
 ;;;***
 
