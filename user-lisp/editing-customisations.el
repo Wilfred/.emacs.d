@@ -259,4 +259,10 @@ Handy when editing markdown."
   (interactive "r")
   (indent-rigidly beg end -4))
 
+(defun insert-shebang ()
+  "Insert a bash shebang in the current buffer."
+  (interactive)
+  (goto-char (point-min))
+  (insert "#!/bin/bash\n\n"))
+
 (provide 'editing-customisations)
