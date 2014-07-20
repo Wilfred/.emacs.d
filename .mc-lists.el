@@ -6,6 +6,7 @@
         backward-sexp
         beginning-of-line-dwim
         c-electric-delete-forward
+        c-electric-semi&comma
         c-electric-slash
         forward-sexp
         kill-or-delete-region
