@@ -847,6 +847,29 @@ Vagrant files are Ruby, so use Ruby syntax highlighting for them.
   (add-to-list 'auto-mode-alist '("Vagrantfile" . ruby-mode))
 #+END_SRC
 
+** C
+
+Flycheck supports C, so we switch it on.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-hook 'c-mode-hook 'flycheck-mode)
+#+END_SRC
+
+Always indent with 4 spaces, in the Linux kernel style.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq-default c-default-style "linux"
+                c-basic-offset 4)
+#+END_SRC
+
+I use recompile a lot when coding C, so bind it to a convenient key.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-hook 'c-mode-hook
+            '(lambda ()
+               (define-key c-mode-map (kbd "<f12>") 'recompile)))
+#+END_SRC
+
 ** HTML
 
 I like to indent my HTML with tabs (company policy at the first web
@@ -1105,7 +1128,6 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
   (require 'javascript-customisations)
   (require 'xml-customisations)
   (require 'lisp-customisations)
-  (require 'c-customisations)
   (require 'sh-customisations)
   (require 'coffee-customisations)
   (require 'rust-customisations)
