@@ -2,8 +2,8 @@
 
 ;; Copyright (C) 2010 Chris Wanstrath
 
-;; Version: 20140421.1903
-;; X-Original-Version: 0.5.0
+;; Version: 20140626.802
+;; X-Original-Version: 0.5.3
 ;; Keywords: CoffeeScript major mode
 ;; Author: Chris Wanstrath <chris@ozmm.org>
 ;; URL: http://github.com/defunkt/coffee-mode
@@ -142,7 +142,7 @@
 ;; Customizable Variables
 ;;
 
-(defconst coffee-mode-version "0.5.0"
+(defconst coffee-mode-version "0.5.2"
   "The version of `coffee-mode'.")
 
 (defgroup coffee nil
@@ -684,19 +684,23 @@ output in a compilation buffer."
   ;; insert a newline, and indent the newline to the same
   ;; level as the previous line.
   (let ((prev-indent (current-indentation)))
+    (when (< (current-column) (current-indentation))
+      (move-to-column (current-indentation)))
     (delete-horizontal-space t)
     (newline)
-    (coffee-insert-spaces prev-indent)
 
-    ;; We need to insert an additional tab because the last line was special.
-    (when (coffee-line-wants-indent)
-      (coffee-insert-spaces coffee-tab-width))
+    (if (coffee-line-wants-indent)
+        ;; We need to insert an additional tab because the last line was special.
+        (coffee-insert-spaces (+ (coffee-previous-indent) coffee-tab-width))
+      ;; otherwise keep at the same indentation level
+      (coffee-insert-spaces prev-indent))
 
     ;; Last line was a comment so this one should probably be,
     ;; too. Makes it easy to write multi-line comments (like the one I'm
     ;; writing right now).
-    (when (coffee-previous-line-is-single-line-comment)
-      (insert "# "))))
+    (unless (and auto-fill-function comment-auto-fill-only-comments)
+      (when (coffee-previous-line-is-single-line-comment)
+        (insert "# ")))))
 
 (defun coffee-dedent-line-backspace (arg)
   "Unindent to increment of `coffee-tab-width' with ARG==1 when
@@ -1157,6 +1161,8 @@ it on by default."
 (add-to-list 'auto-mode-alist '("\\.iced\\'" . coffee-mode))
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("Cakefile\\'" . coffee-mode))
+;;;###autoload
+(add-to-list 'auto-mode-alist '("\\.cson\\'" . coffee-mode))
 ;;;###autoload
 (add-to-list 'interpreter-mode-alist '("coffee" . coffee-mode))
 
