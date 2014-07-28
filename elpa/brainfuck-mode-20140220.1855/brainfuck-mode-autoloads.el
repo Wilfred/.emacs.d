@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (brainfuck-mode) "brainfuck-mode" "brainfuck-mode.el"
-;;;;;;  (21209 48539 326302 713000))
+;;;;;;  (21423 59532 638643 195000))
 ;;; Generated autoloads from brainfuck-mode.el
 
 (autoload 'brainfuck-mode "brainfuck-mode" "\
@@ -12,12 +12,14 @@ Major mode for brainfuck
 
 \(fn)" t nil)
 
+(add-to-list 'auto-mode-alist '("\\.bf\\'" . brainfuck-mode))
+
 (langdoc-define-help-mode bf-help "Major mode for brainfuck help" "*Brainfuck Help*" 'bf-help-sym-called-at-point '(">" "<" "+" "-" "." "," "[" "]") 'bf-help-lookup-doc "`\\([^']+\\)'" (lambda (a b) b) (lambda (a b) b) "`" "'")
 
 ;;;***
 
-;;;### (autoloads nil nil ("brainfuck-mode-pkg.el") (21209 48539
-;;;;;;  427068 412000))
+;;;### (autoloads nil nil ("brainfuck-mode-pkg.el") (21423 59532
+;;;;;;  693007 718000))
 
 ;;;***
 

@@ -332,6 +332,15 @@ If a prefix argument is given, don't change the kill-ring."
 
 (add-to-list 'auto-mode-alist '("Vagrantfile" . ruby-mode))
 
+(add-hook 'c-mode-hook 'flycheck-mode)
+
+(setq-default c-default-style "linux"
+              c-basic-offset 4)
+
+(add-hook 'c-mode-hook
+          '(lambda ()
+             (define-key c-mode-map (kbd "<f12>") 'recompile)))
+
 (require 'sgml-mode)
 
 ; indent html with tabs only
@@ -514,7 +523,6 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'javascript-customisations)
 (require 'xml-customisations)
 (require 'lisp-customisations)
-(require 'c-customisations)
 (require 'sh-customisations)
 (require 'coffee-customisations)
 (require 'rust-customisations)

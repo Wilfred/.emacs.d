@@ -6,7 +6,7 @@
 ;; Maintainer:  Joe Schafer <joe@jschaf.com>
 ;; Created: 19 May 2013
 ;; URL: http://github.com/jschaf/esup
-;; Version: 20130604.1751
+;; Version: 20130607.1350
 ;; X-Original-Version:  0.3
 ;; Keywords:  emacs-lisp, elisp, profile, startup
 
@@ -359,7 +359,8 @@ Returns a list of class `esup-result'."
       (find-file esup-results-file)
       (erase-buffer)
       (prin1 results (current-buffer))
-      (basic-save-buffer))
+      (basic-save-buffer)
+      (setq desktop-save-mode nil))
     (kill-emacs)))
 
 (defun esup-process-sentinel (process status)

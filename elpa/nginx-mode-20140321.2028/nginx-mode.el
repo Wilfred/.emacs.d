@@ -5,8 +5,8 @@
 ;; Author: Andrew J Cosgriff <andrew@cosgriff.name>
 ;; Maintainer: Andrew J Cosgriff <andrew@cosgriff.name>
 ;; Created: 15 Oct 2010
-;; Version: 20130531.2048
-;; X-Original-Version: 1.1.1
+;; Version: 20140321.2028
+;; X-Original-Version: 1.1.3
 ;; Keywords: nginx
 
 ;; available from http://github.com/ajc/nginx-mode
@@ -37,8 +37,6 @@
 
 ;;; Code:
 
-(provide 'nginx-mode)
-
 
 ;;;;##########################################################################
 ;;;;  User Options, Variables
@@ -56,7 +54,6 @@
 (defvar nginx-font-lock-keywords
   (list '("#.*" . font-lock-comment-face)
 	'("^\\([ \t]+\\)?\\([A-Za-z09_]+\\)" 2 font-lock-keyword-face t)
-	'(";$" . font-lock-pseudo-keyword-face)
 	;; uncomment the next one if you want your eyes to bleed
 	;; (it'll highlight parentheses and curly braces)
 	;;'("\\(\{\\|\}\\|\(\\|\)\\)" . font-lock-pseudo-keyword-face)
@@ -187,6 +184,11 @@ The variable nginx-indent-level controls the amount of indentation.
   (set (make-local-variable 'font-lock-defaults)
        '(nginx-font-lock-keywords nil))
   (run-hooks 'nginx-mode-hook))
+
+;;;###autoload
+(add-to-list 'auto-mode-alist
+             '("nginx\.conf$"  . nginx-mode)
+             '("/etc/nginx/.*" . nginx-mode))
 
 (provide 'nginx-mode)
 
