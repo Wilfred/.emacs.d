@@ -3,8 +3,8 @@
 ;;; Code:
 
 
-;;;### (autoloads (rhtml-mode) "rhtml-mode" "rhtml-mode.el" (20891
-;;;;;;  29764 293769 344000))
+;;;### (autoloads (rhtml-mode) "rhtml-mode" "rhtml-mode.el" (21423
+;;;;;;  59424 33579 698000))
 ;;; Generated autoloads from rhtml-mode.el
 
 (autoload 'rhtml-mode "rhtml-mode" "\
@@ -18,7 +18,7 @@ Embedded Ruby Mode (RHTML)
 
 ;;;### (autoloads nil nil ("rhtml-erb.el" "rhtml-fonts.el" "rhtml-mode-pkg.el"
 ;;;;;;  "rhtml-navigation.el" "rhtml-ruby-hook.el" "rhtml-sgml-hacks.el")
-;;;;;;  (20891 29764 441607 612000))
+;;;;;;  (21423 59424 281346 940000))
 
 ;;;***
 
