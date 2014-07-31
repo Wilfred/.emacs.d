@@ -1079,6 +1079,32 @@ by specifying its :prefix property."
                 string))
   :group 'smartparens)
 
+(defcustom sp-sexp-suffix nil
+  "Alist of major-mode specific suffix specification.
+
+Each item is a list with three properties:
+- major mode
+- a constant symbol 'regexp or 'syntax
+- a regexp or a string containing syntax class codes.
+
+If the second argument is 'regexp, the third argument is
+interpreted as a regexp to search forward from the end of an
+expression.
+
+If the second argument is 'syntax, the third argument is
+interpreted as string containing syntax codes that will be
+skipped.
+
+You can also override this property locally for a specific pair
+by specifying its :suffix property."
+  :type '(repeat
+          (list symbol
+                (choice
+                 (const :tag "Regexp" regexp)
+                 (const :tag "Syntax class codes" syntax))
+                string))
+  :group 'smartparens)
+
 ;; hybrid lines
 (defcustom sp-hybrid-kill-excessive-whitespace nil
   "If non-nil, `sp-kill-hybrid-sexp' will kill all whitespace up
@@ -1442,6 +1468,15 @@ replacement of all the keywords with actual calls to sp-get."
       (:prefix-l    `(length (plist-get ,struct :prefix)))
       (:suffix      `(plist-get ,struct :suffix))
       (:suffix-l    `(length (plist-get ,struct :suffix)))
+      ;; combined op/cl and suffix/prefix
+      (:opp         `(concat (plist-get ,struct :prefix)
+                             (plist-get ,struct :op)))
+      (:opp-l       `(+ (length (plist-get ,struct :prefix))
+                        (length (plist-get ,struct :op))))
+      (:cls         `(concat (plist-get ,struct :cl)
+                             (plist-get ,struct :suffix)))
+      (:cls-l       `(+ (length (plist-get ,struct :cl))
+                        (length (plist-get ,struct :suffix))))
       (t keyword))))
 
 ;; The structure returned by sp-get-sexp is a plist with following properties:
@@ -4285,7 +4320,8 @@ following point after `sp-backward-up-sexp' is called)."
 
 Prefix is any continuous sequence of characters in \"expression
 prefix\" syntax class.  You can also specify a set of syntax code
-characters or a regexp for a specific major mode.  See `sp'
+characters or a regexp for a specific major mode.  See
+`sp-sexp-prefix'.
 
 If the prefix property is defined for OP, the associated regexp
 is used to retrieve the prefix instead of the global setting."
@@ -4307,20 +4343,29 @@ is used to retrieve the prefix instead of the global setting."
           (buffer-substring-no-properties (point) p))))))
 
 (cl-defun sp--get-suffix (&optional (p (point)) op)
-  "Get the suffix of EXPR.  Suffix is any continuous sequence of
-  whitespace followed by characters in \"punctuation\" syntax class.
+  "Get the suffix of EXPR.
 
-If the suffix property is defined for OP, the associated regexp
-is used to retrieve the suffix instead."
+Prefix is any continuous sequence of characters in \"punctuation
+prefix\" syntax class.  You can also specify a set of syntax code
+characters or a regexp for a specific major mode.  See
+`sp-sexp-suffix'.
+
+If the prefix property is defined for OP, the associated regexp
+is used to retrieve the prefix instead of the global setting."
   (let ((suff (sp-get-pair op :suffix)))
     (save-excursion
       (goto-char p)
       (if suff
           (when (sp--looking-at suff)
-            (substring-no-properties (match-string 0)))
-        (skip-syntax-forward " ")
-        (if (not (looking-at "\\s."))
-            ""
+            (match-string-no-properties 0))
+        (-if-let (mmode-suffix (cdr (assoc major-mode sp-sexp-suffix)))
+            (cond
+             ((eq (car mmode-suffix) 'regexp)
+              (sp--looking-at (cadr mmode-suffix))
+              (match-string-no-properties 0))
+             ((eq (car mmode-suffix) 'syntax)
+              (skip-syntax-forward (cadr mmode-suffix))
+              (buffer-substring-no-properties p (point))))
           (skip-syntax-forward ".")
           (buffer-substring-no-properties p (point)))))))
 
@@ -5802,23 +5847,23 @@ Examples:
           (save-excursion
             (if (sp--raw-argument-p arg)
                 (progn
-                  (goto-char (sp-get enc :end))
+                  (goto-char (sp-get enc :end-suf))
                   (setq next-thing (sp-get-enclosing-sexp))
                   (when next-thing
                     (goto-char (sp-get next-thing :end-in))
                     (sp--run-hook-with-args (sp-get enc :op) :pre-handlers 'slurp-forward)
-                    (insert (sp-get enc :cl))
-                    (goto-char (sp-get enc :end))
-                    (delete-char (sp-get enc (- :cl-l)))
+                    (sp-get enc (insert :cl :suffix))
+                    (goto-char (sp-get enc :end-suf))
+                    (delete-char (sp-get enc (- (+ :cl-l :suffix-l))))
                     (indent-region (sp-get enc :beg-prf) (sp-get next-thing :end))
                     (sp--run-hook-with-args (sp-get enc :op) :post-handlers 'slurp-forward)))
               (while (> n 0)
-                (goto-char (sp-get enc :end))
+                (goto-char (sp-get enc :end-suf))
                 (setq ok enc)
                 (setq next-thing (sp-get-thing nil))
                 (setq ins-space 0)
                 (while (sp-compare-sexps next-thing ok <)
-                  (goto-char (sp-get next-thing :end))
+                  (goto-char (sp-get next-thing :end-suf))
                   (setq ok next-thing)
                   (setq next-thing (sp-get-thing nil)))
                 (if ok
@@ -5829,14 +5874,15 @@ Examples:
                             (sp--join-sexp ok next-thing)
                             (goto-char (- (sp-get next-thing :end) 2))
                             (plist-put enc :end (- (sp-get next-thing :end) 2)))
-                        (delete-char (sp-get ok (- :cl-l)))
+                        (delete-char (sp-get ok (- (+ :cl-l :suffix-l))))
                         (when (and (sp-get ok (/= :len-in 0))
-                                   (= (sp-get ok :end) (sp-get next-thing :beg-prf)))
+                                   (= (sp-get ok :end-suf) (sp-get next-thing :beg-prf)))
                           (insert " ")
                           (setq ins-space -1))
-                        (goto-char (- (sp-get next-thing :end) (sp-get ok :cl-l) ins-space))
+                        ;; this calculation corrects the absence of already deleted cls
+                        (goto-char (- (sp-get next-thing :end-suf) (sp-get ok (+ :cl-l :suffix-l)) ins-space))
                         (sp--run-hook-with-args (sp-get enc :op) :pre-handlers 'slurp-forward)
-                        (insert (sp-get ok :cl))
+                        (sp-get ok (insert :cl :suffix))
                         (indent-region (sp-get ok :beg-prf) (point))
                         ;; HACK: update the "enc" data structure if ok==enc
                         (when (= (sp-get enc :beg) (sp-get ok :beg)) (plist-put enc :end (point)))
@@ -5889,7 +5935,7 @@ Examples:
                     (delete-char (sp-get enc (+ :op-l :prefix-l)))
                     (goto-char (sp-get next-thing :beg-in))
                     (sp--run-hook-with-args (sp-get enc :op) :pre-handlers 'slurp-backward)
-                    (insert (sp-get enc :prefix) (sp-get enc :op))
+                    (sp-get enc (insert :prefix :op))
                     (indent-region (sp-get next-thing :beg-in) (sp-get enc :end))
                     (sp--run-hook-with-args (sp-get enc :op) :post-handlers 'slurp-backward)))
               (while (> n 0)
@@ -5910,11 +5956,11 @@ Examples:
                             (plist-put enc :beg (sp-get next-thing :beg)))
                         (delete-char (sp-get ok (+ :op-l :prefix-l)))
                         (when (and (sp-get ok (/= :len-in 0))
-                                   (= (sp-get ok :beg-prf) (sp-get next-thing :end)))
+                                   (= (sp-get ok :beg-prf) (sp-get next-thing :end-suf)))
                           (insert " "))
                         (goto-char (sp-get next-thing :beg-prf))
                         (sp--run-hook-with-args (sp-get enc :op) :pre-handlers 'slurp-backward)
-                        (insert (sp-get ok :prefix) (sp-get ok :op))
+                        (sp-get ok (insert :prefix :op))
                         (indent-region (point) (sp-get ok :end))
                         ;; HACK: update the "enc" data structure if ok==enc
                         (when (sp-compare-sexps enc ok) (plist-put enc :beg (- (point) (sp-get ok :op-l))))
