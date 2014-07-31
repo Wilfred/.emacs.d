@@ -8,6 +8,7 @@
         c-electric-delete-forward
         c-electric-semi&comma
         c-electric-slash
+        c-electric-star
         forward-sexp
         kill-or-delete-region
         sp--self-insert-command
