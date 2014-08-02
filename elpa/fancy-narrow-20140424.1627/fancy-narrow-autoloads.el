@@ -6,7 +6,7 @@
 ;;;### (autoloads (org-fancy-narrow-to-subtree fancy-narrow-to-page
 ;;;;;;  org-fancy-narrow-to-element fancy-narrow-to-defun org-fancy-narrow-to-block
 ;;;;;;  fancy-narrow-mode fancy-widen fancy-narrow-to-region fancy-narrow-active-p)
-;;;;;;  "fancy-narrow" "fancy-narrow.el" (21311 13213 474861 607000))
+;;;;;;  "fancy-narrow" "fancy-narrow.el" (21469 29679 87100 347000))
 ;;; Generated autoloads from fancy-narrow.el
 
 (autoload 'fancy-narrow-active-p "fancy-narrow" "\
@@ -95,8 +95,8 @@ Like `org-narrow-to-subtree', except using `fancy-narrow-to-region'.
 
 ;;;***
 
-;;;### (autoloads nil nil ("fancy-narrow-pkg.el") (21311 13213 578723
-;;;;;;  760000))
+;;;### (autoloads nil nil ("fancy-narrow-pkg.el") (21469 29679 228109
+;;;;;;  959000))
 
 ;;;***
 
