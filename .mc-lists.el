@@ -11,6 +11,7 @@
         c-electric-star
         forward-sexp
         kill-or-delete-region
+        python-indent-electric-colon
         sp--self-insert-command
         yas-expand
         zap-up-to-char
