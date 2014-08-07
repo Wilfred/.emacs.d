@@ -259,10 +259,20 @@ Handy when editing markdown."
   (interactive "r")
   (indent-rigidly beg end -4))
 
-(defun insert-shebang ()
-  "Insert a bash shebang in the current buffer."
+(defun shebang ()
+  "Insert a shebang in the current buffer, and mark the file as executable."
   (interactive)
   (goto-char (point-min))
-  (insert "#!/bin/bash\n\n"))
+
+  ;; We need a file on the file system, or we won't be able to chmod it.
+  (unless (file-exists-p (buffer-file-name))
+    (basic-save-buffer))
+  
+  (set-file-modes (buffer-file-name)
+                  (file-modes-symbolic-to-number "u+rwx" (file-modes (buffer-file-name))))
+  (insert (ido-completing-read "Interpreter: " (list "#!/bin/bash" "#!/bin/env python")))
+  (insert "\n\n"))
+
+
 
 (provide 'editing-customisations)
