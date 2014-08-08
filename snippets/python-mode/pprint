@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 # name: pprint
-# key: pprint
+# key: ppt
 # --
 from pprint import pprint; pprint($0)
