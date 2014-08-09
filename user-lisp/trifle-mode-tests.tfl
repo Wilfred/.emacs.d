@@ -24,4 +24,5 @@
 (function bar-123-bar!? (x) (let (a 1) a))
 
 ; Characters
-(setq baz 'x')
+(set! baz 'x')
+(set-symbol! baz 'x')

@@ -68,8 +68,13 @@
    (list trifle-macro-regex 1 'font-lock-function-name-face))
   "Highlighting for Trifle mode.")
 
-(defvar trifle-mode-syntax-table
-  (make-syntax-table lisp-mode-syntax-table))
+(defconst trifle-mode-syntax-table
+  (let ((table (make-syntax-table)))
+    (modify-syntax-entry ?\; "<" table)
+    (modify-syntax-entry ?\n ">" table)
+    (modify-syntax-entry ?' "\"" table)
+    table)
+  "Syntax table for `trifle-mode'.")
 
 ;;;###autoload
 (define-derived-mode trifle-mode lisp-mode "Trifle"
