@@ -32,6 +32,7 @@
 
 (eval-when-compile (require 'cl))
 (require 'etags)
+(require 's)
 
 ;;** Basics
 
@@ -104,12 +105,6 @@ in the current workspace."
   :type '(choice (const :tag "Off" nil)
                  (const :tag "On" t)))
 
-(defvar eclim--snippet-directory
-  (concat (file-name-directory load-file-name) "snippets"))
-
-;; (defvar eclim--project-dir nil)
-;; (make-variable-buffer-local 'eclim--project-dir)
-
 (defvar eclim--project-name nil)
 (make-variable-buffer-local 'eclim--project-name)
 
@@ -143,14 +138,6 @@ buffer instead."
   (interactive "P")
   (quit-window kill-buffer (selected-window)))
 
-(defun string-startswith-p (string prefix)
-  (eq t (compare-strings string nil (string-width prefix) prefix nil nil)))
-
-(defun string-endswith-p (string prefix)
-  (let* ((w (string-width string))
-         (s (- w (string-width prefix))))
-    (when (wholenump s) (eq t (compare-strings string (- w (string-width prefix)) w prefix nil nil)))))
-
 (defun eclim--make-command (args)
   "Creates a command string that can be executed from the
 shell. The first element in ARGS is the name of the eclim
@@ -158,13 +145,12 @@ operation, and the rest are flags/values to be passed on to
 eclimd."
   (when (not eclim-executable)
     (error "Eclim installation not found. Please set eclim-executable."))
-  (let ((cmd (apply 'concat eclim-executable " -command "
-                    (first args) " "
-                    (loop for a = (rest args) then (rest (rest a))
-                          for arg = (first a)
-                          for val = (second a)
-                          while arg when val collect (concat arg " " (shell-quote-argument (if (numberp val) (number-to-string val) val)) " ")))))
-    cmd))
+  (reduce (lambda (a b) (format "%s %s" a b))
+          (append (list eclim-executable "-command" (first args))
+                  (loop for a = (rest args) then (rest (rest a))
+                        for arg = (first a)
+                        for val = (second a)
+                        while arg append (if val (list arg (shell-quote-argument val)) (list arg))))))
 
 (defun eclim--parse-result (result)
   "Parses the result of an eclim operation, raising an error if
@@ -183,6 +169,7 @@ where <encoding> is the corresponding java name for this encoding." e e)))
               (let ((c (assoc-default (match-string 1 result)
                                       '(("xml_complete" "XML" "Eclipse Web Developer Tools")
                                         ("ruby_complete" "Ruby" "Eclipse Ruby Development Tools")
+                                        ("c_complete" "C/C++" "Eclipse C/C++ Development Tools")
                                         ("php_complete" "PHP" "Eclipse PHP Development Tools")))))
                 (if c (error "Eclim was not installed with %s support. Please make sure that %s are installed, then reinstall eclim." (first c) (second c))
                   (error result))))
@@ -253,8 +240,8 @@ lists are then appended together."
 
 (defun eclim--command-should-sync-p (cmd args)
   (and (eclim--args-contains args '("-f" "-o"))
-                            (not (or (string= cmd "project_by_resource")
-                                     (string= cmd "project_link_resource")))))
+       (not (or (string= cmd "project_by_resource")
+                (string= cmd "project_link_resource")))))
 
 (defun eclim--execute-command-internal (executor cmd args)
   (lexical-let* ((expargs (eclim--expand-args args))
@@ -362,12 +349,12 @@ FILENAME is given, return that file's  project name instead."
                              (eclim/execute-command "project_by_resource" ("-f" file))))
     (if filename
         (get-project-name filename)
-        (or eclim--project-name
-            (and buffer-file-name (setq eclim--project-name (get-project-name buffer-file-name)))))))
+      (or eclim--project-name
+          (and buffer-file-name (setq eclim--project-name (get-project-name buffer-file-name)))))))
 
 (defun eclim--find-file (path-to-file)
   (if (not (string-match-p "!" path-to-file))
-      (unless (string= path-to-file (buffer-file-name))
+      (unless (and (buffer-file-name) (file-equal-p path-to-file (buffer-file-name)))
         (find-file-other-window path-to-file))
     (let* ((parts (split-string path-to-file "!"))
            (archive-name (replace-regexp-in-string eclim--compressed-urls-regexp "" (first parts)))
@@ -385,24 +372,23 @@ FILENAME is given, return that file's  project name instead."
         (kill-buffer old-buffer)))))
 
 (defun eclim--find-display-results (pattern results &optional open-single-file)
-  (if (and (= 1 (length results)) open-single-file) (eclim--visit-declaration (elt results 0))
-    (pop-to-buffer (get-buffer-create "*eclim: find"))
-    (let ((buffer-read-only nil))
-      (erase-buffer)
-      (insert (concat "-*- mode: eclim-find; default-directory: " default-directory " -*-"))
-      (newline 2)
-      (insert (concat "eclim java_search -p " pattern))
-      (newline)
-      (loop for result across results
-            do (progn
-                 (insert (eclim--convert-find-result-to-string result default-directory))
-                 (newline)))
-      (goto-char 0)
-      (grep-mode))))
+  (let ((results (remove-if (lambda (result) (string-match (rx bol (or "jar" "zip") ":") (assoc-default 'filename result))) results)))
+    (if (and (= 1 (length results)) open-single-file) (eclim--visit-declaration (elt results 0))
+      (pop-to-buffer (get-buffer-create "*eclim: find"))
+      (let ((buffer-read-only nil))
+        (erase-buffer)
+        (insert (concat "-*- mode: eclim-find; default-directory: " default-directory " -*-"))
+        (newline 2)
+        (insert (concat "eclim java_search -p " pattern))
+        (newline)
+        (loop for result across results
+              do (insert (eclim--format-find-result result default-directory)))
+        (goto-char 0)
+        (grep-mode)))))
 
-(defun eclim--convert-find-result-to-string (line &optional directory)
+(defun eclim--format-find-result (line &optional directory)
   (let ((converted-directory (replace-regexp-in-string "\\\\" "/" (assoc-default 'filename line))))
-    (format "%s:%d:%d:%s"
+    (format "%s:%d:%d:%s\n"
             (if converted-directory
                 (replace-regexp-in-string (concat (regexp-quote directory) "/?") "" converted-directory)
               converted-directory)
@@ -414,7 +400,7 @@ FILENAME is given, return that file's  project name instead."
   (ring-insert find-tag-marker-ring (point-marker))
   (eclim--find-file (assoc-default 'filename line))
   (goto-line (assoc-default 'line line))
-  (move-to-column (- (assoc-default 'column line) 1)))
+  (move-to-column (1- (assoc-default 'column line))))
 
 (defun eclim--string-strip (content)
   (replace-regexp-in-string "\s*$" "" content))
@@ -439,6 +425,21 @@ FILENAME is given, return that file's  project name instead."
                                      eclim--file-coding-system-mapping))))
     (if mapped-coding-system mapped-coding-system coding-system)))
 
+;; Commands
+
+(defun eclim-file-locate (pattern &optional case-insensitive)
+  (interactive (list (read-string "Pattern: ") "P"))
+  (eclim/with-results hits ("locate_file" ("-p" (concat "^.*" pattern ".*$")) ("-s" "workspace") (if case-insensitive '("-i" "")))
+    (eclim--find-display-results pattern 
+                                 (apply #'vector 
+                                        (mapcar (lambda (hit) (list (cons 'filename (assoc-default 'path hit))
+                                                                    (cons 'line 1)
+                                                                    (cons 'column 1)
+                                                                    (cons 'message "")))
+                                                hits))
+                                 t)))
+
+;;;###autoload
 (defun eclim/workspace-dir ()
   (eclim--call-process "workspace_dir"))
 
@@ -447,6 +448,7 @@ FILENAME is given, return that file's  project name instead."
 
 ;;** The minor mode and its keymap
 
+;;;###autoload
 (defvar eclim-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "M-TAB") 'eclim-complete)
@@ -455,6 +457,7 @@ FILENAME is given, return that file's  project name instead."
 
 (defvar eclim-mode-hook nil)
 
+;;;###autoload
 (define-minor-mode eclim-mode
   "An interface to the Eclipse IDE."
   nil
@@ -462,8 +465,6 @@ FILENAME is given, return that file's  project name instead."
   eclim-mode-map
   (if eclim-mode
       (progn
-        (when (and (featurep 'yasnippet) eclim-use-yasnippet)
-          (yas/load-directory eclim--snippet-directory))
         (kill-local-variable 'eclim--project-dir)
         (kill-local-variable 'eclim--project-name)
         (kill-local-variable 'eclim--project-current-file)
@@ -473,7 +474,7 @@ FILENAME is given, return that file's  project name instead."
     (remove-hook 'after-save-hook 'eclim--after-save-hook 't)))
 
 (defcustom eclim-accepted-file-regexps
-  '("\\.java" "\\.js" "\\.xml" "\\.rb" "\\.php")
+  '("\\.java" "\\.js" "\\.xml" "\\.rb" "\\.php" "\\.c" "\\.cc" "\\.h")
   "List of regular expressions that are matched against filenames
 to decide if eclim should be automatically started on a
 particular file. By default all files part of a project managed
@@ -509,7 +510,8 @@ the use of eclim to java and ant files."
                (java-mode "java_src_update")
                (ruby-mode "ruby_src_update")
                (php-mode "php_src_update")
-               ((javascript-mode js-mode "javascript_src_update")))
+               ((c-mode c++-mode) "c_src_update")
+               ((javascript-mode js-mode) "javascript_src_update"))
              (eclim--expand-args (list "-p" "-f")))))
   t)
 

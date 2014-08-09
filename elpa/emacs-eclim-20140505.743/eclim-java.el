@@ -142,7 +142,7 @@ in eclim when appropriate."
       (ignore-errors (apply 'eclim--call-process (list "java_src_update" "-p" pr "-f" fn))))))
 
 (defun eclim--java-parser-read (str)
-  (first 
+  (first
    (read-from-string
     (format "(%s)"
             (replace-regexp-in-string
@@ -235,6 +235,14 @@ has been found."
   (interactive)
   (eclim/execute-command "java_constructor" "-p" "-f" "-o"))
 
+(defun eclim/java-call-hierarchy (project file offset length encoding)
+  (eclim--call-process "java_callhierarchy"
+                       "-p" project
+                       "-f" file
+                       "-o" (number-to-string offset)
+                       "-l" (number-to-string length)
+                       "-e" encoding))
+
 (defun eclim/java-hierarchy (project file offset encoding)
   (eclim--call-process "java_hierarchy"
                        "-p" project
@@ -262,6 +270,39 @@ has been found."
                        (switch-to-buffer buf)
                        (revert-buffer t t t))))))
       (message "Done"))))
+
+(defun eclim-java-call-hierarchy (project file encoding)
+  (interactive (list (eclim--project-name)
+                     (eclim--project-current-file)
+                     (eclim--current-encoding)))
+  (let ((boundary "\\([<>()\\[\\.\s\t\n!=,;]\\|]\\)"))
+    (save-excursion
+      (if (re-search-backward boundary nil t)
+        (forward-char))
+      (let ((top-node (eclim/java-call-hierarchy project file (eclim--byte-offset)
+                                                 (length (cdr (eclim--java-identifier-at-point t))) encoding)))
+        (pop-to-buffer "*eclim: call hierarchy*" t)
+        (special-mode)
+        (let ((buffer-read-only nil))
+          (erase-buffer)
+          (eclim--java-insert-call-hierarchy-node
+           project
+           top-node
+           0))))))
+(defun eclim--java-insert-call-hierarchy-node (project node level)
+  (let ((declaration (cdr (assoc 'name node))))
+    (insert (format (concat "%-"(number-to-string (* level 2)) "s=> ") ""))
+    (lexical-let ((position (cdr (assoc 'position node))))
+      (if position
+        (insert-text-button declaration
+                            'follow-link t
+                            'help-echo declaration
+                            'action #'(lambda (&rest ignore)
+                                        (eclim--visit-declaration position)))
+        (insert declaration)))
+    (newline)
+    (loop for caller across (cdr (assoc 'callers node))
+          do (eclim--java-insert-call-hierarchy-node project caller (1+ level)))))
 
 (defun eclim-java-hierarchy (project file offset encoding)
   (interactive (list (eclim--project-name)
@@ -321,21 +362,31 @@ has been found."
     (eclim/with-results hits ("java_search" "-n" "-f" ("-o" (car i)) ("-l" (length (cdr i))) ("-x" "references"))
       (eclim--find-display-results (cdr i) hits))))
 
-(defun eclim-java-find-type (type-name)
-  "Searches the project for a given class. The TYPE-NAME is the pattern, which will be used for the search."
+(defun eclim-java-find-type (type-name &optional case-insensitive)
+  "Searches the project for a given class. The TYPE-NAME is the
+pattern, which will be used for the search. If invoked with the
+universal argument the search will be made CASE-INSENSITIVE."
   (interactive (list (read-string "Name: " (let ((case-fold-search nil)
                                                  (current-symbol (symbol-name (symbol-at-point))))
                                              (if (string-match-p "^[A-Z]" current-symbol)
                                                  current-symbol
-                                               (eclim--java-current-type-name))))))
-  (eclim-java-find-generic "workspace" "declarations" "type" type-name t))
+                                               (eclim--java-current-type-name))))
+                     "P"))
+  (eclim-java-find-generic "workspace" "declarations" "type" type-name case-insensitive t))
 
-(defun eclim-java-find-generic (scope context type pattern &optional open-single-file)
+(defun eclim-java-find-generic (scope context type pattern &optional case-insensitive open-single-file)
+  "Searches within SCOPE (all/project/type) for a
+TYPE (all/annotation/class/classOrEnum/classOrInterface/constructor/enum/field/interface/method/package/type)
+matching the given
+CONTEXT (all/declarations/implementors/references) and
+PATTERN. If invoked with the universal argument the search will
+be made CASE-INSENSITIVE."
   (interactive (list (eclim--completing-read "Scope: " eclim--java-search-scopes)
                      (eclim--completing-read "Context: " eclim--java-search-contexts)
                      (eclim--completing-read "Type: " eclim--java-search-types)
-                     (read-string "Pattern: ")))
-  (eclim/with-results hits ("java_search" ("-p" pattern) ("-t" type) ("-x" context) ("-s" scope))
+                     (read-string "Pattern: ")
+                     "P"))
+  (eclim/with-results hits ("java_search" ("-p" pattern) ("-t" type) ("-x" context) ("-s" scope) (if case-insensitive '("-i" "")))
     (eclim--find-display-results pattern hits open-single-file)))
 
 (defun eclim--java-identifier-at-point (&optional full position)
@@ -387,10 +438,10 @@ undo history."
                                 (delete-region beg (point))
                                 imports)))
                         (progn
-                          (forward-line)
+                          (forward-line 1)
                           (delete-blank-lines)
                           (insert "\n\n\n")
-                          (previous-line 2)))))
+                          (forward-line -2)))))
     (save-excursion
       (clear-visited-file-modtime)
       (cut-imports)
@@ -420,8 +471,7 @@ sorts import statements. "
   (interactive)
   (let ((revert-buffer-function 'eclim-soft-revert-imports))
     (eclim/with-results res ("java_import_organize" "-p" "-f" "-o" "-e"
-                             ("-t" (when types
-                                     (reduce (lambda (a b) (concat a "," b)) types))))
+                             (when types (list "-t" (reduce (lambda (a b) (concat a "," b)) types))))
       (eclim--problems-update-maybe)
       (when (vectorp res)
         (save-excursion
@@ -471,7 +521,7 @@ method."
              (sig (eclim--java-parse-method-signature method))
              (ret (assoc-default :return sig)))
         (yas/expand-snippet (format "@Override\n%s %s(%s) {$0}"
-                                    (apply #'concat 
+                                    (apply #'concat
                                            (join " " (remove-if-not (lambda (m) (find m '(public protected private void))) (subseq ret 0 (1- (length ret)))))
                                            " "
                                            (format-type (remove-if (lambda (m) (find m '(abstract public protected private ))) ret)))
@@ -570,6 +620,7 @@ method."
 
 
 (defun eclim-java-show-documentation-for-current-element ()
+  "Displays the doc comments for the element at the pointers position."
   (interactive)
   (let ((symbol (symbol-at-point)))
     (if symbol

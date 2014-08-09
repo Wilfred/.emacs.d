@@ -65,7 +65,9 @@
               (php-mode
                (eclim/execute-command "php_complete" "-p" "-f" "-e" "-o"))
               ((javascript-mode js-mode)
-               (eclim/execute-command "javascript_complete" "-p" "-f" "-e" "-o"))))
+               (eclim/execute-command "javascript_complete" "-p" "-f" "-e" "-o"))
+              ((c++-mode c-mode)
+               (eclim/execute-command "c_complete" "-p" "-f" "-e" ("-l" "standard") "-o"))))
     (setq eclim--is-completing nil)))
 
 (defun eclim--completion-candidates-filter (c)
@@ -90,7 +92,7 @@ in a completion menu."
 (defun eclim--basic-complete-internal (completion-list)
   "Displays a buffer of basic completions."
   (let* ((window (get-buffer-window "*Completions*" 0))
-         (c (eclim--java-identifier-at-point))
+         (c (eclim--java-identifier-at-point nil t))
          (beg (car c))
          (word (cdr c))
          (compl (try-completion word
@@ -118,7 +120,7 @@ in a completion menu."
               (with-output-to-temp-buffer "*Completions*"
                 (display-completion-list list word)))
           ;; Complete
-          (delete-region (1+ beg) (point))
+          (delete-region beg (point))
           (insert compl)
           ;; close completion buffer if there's one
           (let ((win (get-buffer-window "*Completions*" 0)))
@@ -153,9 +155,12 @@ buffer."
   (setq eclim--completion-start
         (save-excursion
           (case major-mode
-            ((java-mode javascript-mode js-mode ruby-mode php-mode)
+            ((java-mode javascript-mode js-mode ruby-mode php-mode c-mode c++-mode)
              (progn
                (ignore-errors (beginning-of-thing 'symbol))
+               ;; Completion candidates for annotations don't include '@'.
+               (when (eq ?@ (char-after))
+                 (forward-char 1))
                (point)))
             ((xml-mode nxml-mode)
              (while (not (string-match "[<\n[:blank:]]" (char-to-string (char-before))))
@@ -175,7 +180,7 @@ buffer."
                   (package (if (and rest (string-match "\\w+\\(\\.\\w+\\)*" rest)) rest nil))
                   (template (eclim--completion-yasnippet-convert insertion)))
              (delete-region eclim--completion-start end)
-             (if (and eclim-use-yasnippet template (featurep 'yasnippet))
+             (if (and eclim-use-yasnippet template (featurep 'yasnippet) yas-minor-mode)
                  (yas/expand-snippet template)
                (insert insertion))
              (when package
@@ -188,17 +193,17 @@ buffer."
     ;; we are completing an attribute; let's use yasnippet to get som nice completion going
     (let* ((end (point))
            (c (buffer-substring-no-properties eclim--completion-start end))
-           (completion (if (string-endswith-p c "\"") c (concat c "=\"\""))))
+           (completion (if (s-ends-with? "\"" c) c (concat c "=\"\""))))
       (when (string-match "\\(.*\\)=\"\\(.*\\)\"" completion)
         (delete-region eclim--completion-start end)
-        (if (and eclim-use-yasnippet (featurep 'yasnippet))
+        (if (and eclim-use-yasnippet (featurep 'yasnippet)  yas-minor-mode)
             (yas/expand-snippet (format "%s=\"${1:%s}\" $0" (match-string 1 completion) (match-string 2 completion)))
           (insert completion))))))
 
 (defun eclim--completion-action-default ()
   (when (and (= 40 (char-before)) (not (looking-at ")")))
     ;; we've inserted an open paren, so let's close it
-    (if (and eclim-use-yasnippet (featurep 'yasnippet))
+    (if (and eclim-use-yasnippet (featurep 'yasnippet) yas-minor-mode)
         (yas/expand-snippet "$1)$0")
       (progn
         (insert ")")
@@ -207,6 +212,7 @@ buffer."
 (defun eclim--completion-action ()
   (case major-mode
     ('java-mode (eclim--completion-action-java))
+    ((c-mode c++-mode) (eclim--completion-action-java))
     ('nxml-mode (eclim--completion-action-xml))
     (t (eclim--completion-action-default))))
 
@@ -223,7 +229,6 @@ documentation strings."
                finally return (append ret (list (substring str p))))))
 
 (defun eclim--completion-documentation (symbol)
-  (message "DOC %s" symbol)
   "Looks up the documentation string for the given SYMBOL in the
 completion candidates list."
   (let ((doc (assoc-default 'info (find symbol eclim--completion-candidates :test #'string= :key #'eclim--completion-candidate-menu-item))))
