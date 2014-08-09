@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (flymake-jshint-load) "flymake-jshint" "flymake-jshint.el"
-;;;;;;  (20993 4252 406629 529000))
+;;;;;;  (21423 59503 589068 929000))
 ;;; Generated autoloads from flymake-jshint.el
 
 (autoload 'flymake-jshint-load "flymake-jshint" "\
@@ -14,8 +14,8 @@ Configure flymake mode to check the current buffer's JavaScript syntax.
 
 ;;;***
 
-;;;### (autoloads nil nil ("flymake-jshint-pkg.el") (20993 4252 507916
-;;;;;;  659000))
+;;;### (autoloads nil nil ("flymake-jshint-pkg.el") (21423 59503
+;;;;;;  647842 360000))
 
 ;;;***
 
