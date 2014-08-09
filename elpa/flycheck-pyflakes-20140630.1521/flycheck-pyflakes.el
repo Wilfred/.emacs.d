@@ -4,8 +4,9 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 29 April 2014
-;; Version: 20140429.25
+;; Version: 20140630.1521
 ;; X-Original-Version: 0.1
+;; Package-Requires: ((flycheck "0.18"))
 
 ;;; Commentary:
 
@@ -13,6 +14,7 @@
 ;; to your init.el:
 
 ;; (require 'flycheck-pyflakes)
+;; (add-hook 'python-mode-hook 'flycheck-mode)
 
 ;; If you want to use pyflakes you probably don't want pylint or
 ;; flake8. To disable those checkers, add the following to your
