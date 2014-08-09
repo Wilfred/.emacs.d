@@ -282,18 +282,27 @@ tramp to connect to servers with ancient Git versions."
 
 (defun magit-locate-emacsclient ()
   "Search for a suitable Emacsclient executable."
-  (let ((path (cons (directory-file-name invocation-directory)
-                    (cl-copy-list exec-path)))
-        fixup client)
-    (when (eq system-type 'darwin)
-      (setq fixup (expand-file-name "bin" invocation-directory))
-      (when (file-directory-p fixup)
-        (push fixup path))
-      (when (string-match-p "Cellar" invocation-directory)
-        (setq fixup (expand-file-name "../../../bin" invocation-directory))
+  (let ((path (cl-copy-list exec-path)) fixup client)
+    (when invocation-directory
+      (setq path (cons (directory-file-name invocation-directory) path))
+      (when (eq system-type 'darwin)
+        (setq fixup (expand-file-name "bin" invocation-directory))
         (when (file-directory-p fixup)
-          (push fixup path))))
-    (setq path (delete-dups path))
+          (push fixup path))
+        (when (string-match "^Emacs-\\(powerpc\\|i386\\|x86_64\\)-\\(.+\\)"
+                            invocation-name)
+          (setq fixup (expand-file-name
+                       (format "bin-%s-%s"
+                               (match-string 1 invocation-name)
+                               (match-string 2 invocation-name))
+                       invocation-directory))
+          (when (file-directory-p fixup)
+            (push fixup path)))
+        (when (string-match-p "Cellar" invocation-directory)
+          (setq fixup (expand-file-name "../../../bin" invocation-directory))
+          (when (file-directory-p fixup)
+            (push fixup path))))
+      (setq path (delete-dups path)))
     (setq client (magit-locate-emacsclient-1 path 3))
     (if client
         (shell-quote-argument client)
@@ -679,6 +688,7 @@ which generates a tracking name of the form \"REMOTE-BRANCHNAME\"."
 
 (defcustom magit-mode-hook nil
   "Hook run when entering a Magit mode derived mode."
+  :options '(magit-load-config-extensions)
   :group 'magit-modes
   :type 'hook)
 
@@ -755,6 +765,11 @@ manager but it will be used in more places in the future."
                         (function :tag "format using function")))))
 
 ;;;;;; Status
+
+(defcustom magit-status-mode-hook nil
+  "Hook run when the `magit-status' buffer is created."
+  :group 'magit-status
+  :type 'hook)
 
 (defcustom magit-status-sections-hook
   '(magit-insert-status-local-line
@@ -1616,7 +1631,6 @@ set before loading libary `magit'.")
     (define-key map (kbd "0") 'magit-diff-default-hunks)
     (define-key map (kbd "h") 'magit-key-mode-popup-diff-options)
     (define-key map (kbd "H") 'magit-diff-toggle-refine-hunk)
-    (define-key map (kbd "M-g") 'magit-jump-to-diffstats)
     (define-key map (kbd "S") 'magit-stage-all)
     (define-key map (kbd "U") 'magit-unstage-all)
     (define-key map (kbd "X") 'magit-reset-working-tree)
@@ -1632,6 +1646,7 @@ set before loading libary `magit'.")
     (define-key map (kbd "C-c C-f") 'magit-go-forward)
     (define-key map (kbd "SPC") 'scroll-up)
     (define-key map (kbd "DEL") 'scroll-down)
+    (define-key map (kbd "j") 'magit-jump-to-diffstats)
     map)
   "Keymap for `magit-commit-mode'.")
 
@@ -1682,6 +1697,7 @@ set before loading libary `magit'.")
     (define-key map (kbd "C-c C-f") 'magit-go-forward)
     (define-key map (kbd "SPC") 'scroll-up)
     (define-key map (kbd "DEL") 'scroll-down)
+    (define-key map (kbd "j") 'magit-jump-to-diffstats)
     map)
   "Keymap for `magit-diff-mode'.")
 
@@ -2262,9 +2278,10 @@ Otherwise, return nil."
 (defun magit-ref-exists-p (ref)
   (magit-git-success "show-ref" "--verify" ref))
 
-(defun magit-rev-parse (ref)
-  "Return the SHA hash for REF."
-  (magit-git-string "rev-parse" ref))
+(defun magit-rev-parse (&rest args)
+  "Execute `git rev-parse ARGS', returning first line of output.
+If there is no output return nil."
+  (apply #'magit-git-string "rev-parse" args))
 
 (defun magit-ref-ambiguous-p (ref)
   "Return whether or not REF is ambiguous."
@@ -3883,8 +3900,6 @@ Magit mode."
     (when magit-refresh-function
       (let* ((old-line (line-number-at-pos))
              (old-point (point))
-             (old-window (selected-window))
-             (old-window-start (window-start))
              (old-section (magit-current-section))
              (old-path (and old-section
                             (magit-section-path (magit-current-section)))))
@@ -3908,11 +3923,6 @@ Magit mode."
                      (widen)
                      (goto-char (point-min))
                      (forward-line (1- old-line)))))))
-        (when (fboundp 'unrecord-window-buffer)
-          (unrecord-window-buffer old-window buffer))
-        (dolist (w (get-buffer-window-list buffer nil t))
-          (set-window-point w (point))
-          (set-window-start w old-window-start t))
         (magit-highlight-section)
         (magit-refresh-marked-commits-in-buffer)))))
 
@@ -4393,7 +4403,8 @@ can be used to override this."
 ;;;; Real Sections
 
 (defun magit-insert-stashes ()
-  (let ((stashes (magit-git-lines "stash" "list")))
+   ;; #1427 Set log.date to work around an issue in Git <1.7.10.3.
+  (let ((stashes (magit-git-lines "-c" "log.date=default" "stash" "list")))
     (when stashes
       (magit-with-section (section stashes 'stashes "Stashes:" t)
         (dolist (stash stashes)
@@ -5734,7 +5745,7 @@ ask the user what remote to use."
                            (car remotes)))))
     (when (or current-prefix-arg (not remote))
       (setq remote (magit-read-remote "Push to remote")))
-    (magit-run-git-async "push" remote "--tags")))
+    (magit-run-git-async "push" remote "--tags" magit-custom-options)))
 
 ;;;###autoload
 (defun magit-push ()
@@ -6019,6 +6030,8 @@ depending on the value of option `magit-commit-squash-commit'.
                                    (buffer-list)))))
          (buffer (funcall locate-buffer)))
     (unless buffer
+      (unless (magit-commit-assert nil)
+        (user-error "Abort"))
       (magit-commit)
       (while (not (setq buffer (funcall locate-buffer)))
         (sit-for 0.01)))
@@ -6044,7 +6057,7 @@ depending on the value of option `magit-commit-squash-commit'.
                                      (forward-comment -1000)
                                      (point))))))
              (cond ((re-search-forward
-                     (format "(.*\\<%s\\>.*):" (regexp-quote fun))
+                     (format "(.*\\_<%s\\_>.*):" (regexp-quote fun))
                      limit t)
                     ;; found it, goto end of current entry
                     (if (re-search-forward "^(" limit t)
@@ -6884,9 +6897,11 @@ More information can be found in Info node `(magit)Diffing'
 
 ;;;###autoload
 (defun magit-diff (range &optional working args)
-  "Show differences between in a range.
-You can also show the changes in a single commit by omitting the
-range end, but for that `magit-show-commit' is a better option."
+  "Show differences between two commits.
+RANGE should be a range (A..B or A...B) but can also be a single
+commit.  If one side of the range is omitted, then it defaults
+to HEAD.  If just a commit is given, then changes in the working
+tree relative to that commit are shown."
   (interactive (list (magit-read-rev-range "Diff")))
   (magit-mode-setup magit-diff-buffer-name
                     #'pop-to-buffer
@@ -7833,6 +7848,7 @@ init file:
   (require 'magit-log-edit nil t))
 
 ;; Local Variables:
+;; coding: utf-8
 ;; indent-tabs-mode: nil
 ;; End:
 ;;; magit.el ends here
