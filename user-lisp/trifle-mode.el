@@ -41,10 +41,31 @@
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.tfl$" . trifle-mode))
 
+(defvar trifle-keyword-regex
+  (regexp-opt
+   '("if" "let" "function" "macro" "quote" "unquote" "unquote*"
+     "while" "set!" "set-symbol!" "throw")
+   'symbols))
+
+(defconst trifle-constant-regex
+  (regexp-opt '("#false" "#true" "#null")))
+
+(defconst trifle-keyword-symbol-regex
+  ":[a-z]+")
+
+(defconst trifle-function-regex
+  (rx symbol-start "function" (1+ space) (group (1+ (or word ?! ?- ??)))))
+
+(defconst trifle-macro-regex
+  (rx symbol-start "macro" (1+ space) (group (1+ (or word ?! ?- ??)))))
+
 (defconst trifle-font-lock-keywords
   (list
-   `(,(regexp-opt '("if" "let" "function" "macro" "quote" "unquote" "unquote*" "while" "set!" "set-symbol!" "throw") 'symbols) . font-lock-builtin-face)
-   `(,(rx (or (group (regexp ":[a-z]+")) (group "#false") (group "#true") (group "#null"))) . font-lock-constant-face))
+   (cons trifle-keyword-regex font-lock-builtin-face)
+   (cons trifle-constant-regex font-lock-constant-face)
+   (cons trifle-keyword-symbol-regex font-lock-constant-face)
+   (list trifle-function-regex 1 'font-lock-function-name-face)
+   (list trifle-macro-regex 1 'font-lock-function-name-face))
   "Highlighting for Trifle mode.")
 
 (defvar trifle-mode-syntax-table

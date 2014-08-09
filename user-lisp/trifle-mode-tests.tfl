@@ -20,8 +20,8 @@
 ; this is a comment despite #true
 
 ; Built-in symbols that are important.
-(macro foo (x) x)
-(function bar (x) (let (a 1) a))
+(macro foo-123-bar!? (x) :baz)
+(function bar-123-bar!? (x) (let (a 1) a))
 
 ; Characters
 (setq baz 'x')
