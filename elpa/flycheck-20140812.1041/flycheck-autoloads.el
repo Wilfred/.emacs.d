@@ -5,11 +5,8 @@
 
 ;;;### (autoloads (flycheck-define-error-level flycheck-info flycheck-def-option-var
 ;;;;;;  flycheck-def-config-file-var global-flycheck-mode flycheck-mode)
-;;;;;;  "flycheck" "flycheck.el" (21430 63912 40465 689000))
+;;;;;;  "flycheck" "flycheck.el" (21482 40420 968721 869000))
 ;;; Generated autoloads from flycheck.el
-
-(defconst flycheck-mode-line-lighter " FlyC" "\
-The standard lighter for flycheck mode.")
 
 (autoload 'flycheck-mode "flycheck" "\
 Minor mode for on-the-fly syntax checking.
@@ -98,6 +95,14 @@ Define a new error LEVEL with PROPERTIES.
 
 The following PROPERTIES constitute an error level:
 
+`:severity SEVERITY'
+     A number denoting the severity of this level.  The higher
+     the number, the more severe is this level compared to other
+     levels.  Defaults to 0.
+
+     The severity is used by `flycheck-error-level-<' to
+     determine the ordering of errors according to their levels.
+
 `:overlay-category CATEGORY'
      A symbol denoting the overlay category to use for error
      highlight overlays for this level.  See Info
@@ -131,8 +136,8 @@ The following PROPERTIES constitute an error level:
 
 ;;;***
 
-;;;### (autoloads nil nil ("flycheck-pkg.el") (21430 63912 371798
-;;;;;;  78000))
+;;;### (autoloads nil nil ("flycheck-pkg.el") (21482 40421 286722
+;;;;;;  609000))
 
 ;;;***
 
