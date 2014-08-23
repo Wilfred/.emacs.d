@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (flycheck-haskell-setup) "flycheck-haskell" "flycheck-haskell.el"
-;;;;;;  (21274 65149 970845 7000))
+;;;;;;  (21423 59505 819036 175000))
 ;;; Generated autoloads from flycheck-haskell.el
 
 (autoload 'flycheck-haskell-setup "flycheck-haskell" "\
@@ -21,8 +21,8 @@ path as well.
 
 ;;;***
 
-;;;### (autoloads nil nil ("flycheck-haskell-pkg.el") (21274 65150
-;;;;;;  79821 468000))
+;;;### (autoloads nil nil ("flycheck-haskell-pkg.el") (21423 59505
+;;;;;;  873793 73000))
 
 ;;;***
 
