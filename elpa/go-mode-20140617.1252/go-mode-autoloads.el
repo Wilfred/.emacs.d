@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (go-download-play godoc gofmt-before-save go-mode)
-;;;;;;  "go-mode" "go-mode.el" (21014 12871 944840 404000))
+;;;;;;  "go-mode" "go-mode.el" (21423 59500 962440 857000))
 ;;; Generated autoloads from go-mode.el
 
 (autoload 'go-mode "go-mode" "\
@@ -38,14 +38,14 @@ The following extra functions are defined:
 If you want to automatically run `gofmt' before saving a file,
 add the following hook to your emacs configuration:
 
-\(add-hook 'before-save-hook 'gofmt-before-save)
+\(add-hook 'before-save-hook #'gofmt-before-save)
 
 If you want to use `godef-jump' instead of etags (or similar),
 consider binding godef-jump to `M-.', which is the default key
 for `find-tag':
 
 \(add-hook 'go-mode-hook (lambda ()
-                          (local-set-key (kbd \"M-.\") 'godef-jump)))
+                          (local-set-key (kbd \"M-.\") #'godef-jump)))
 
 Please note that godef is an external dependency. You can install
 it with
@@ -57,7 +57,8 @@ If you're looking for even more integration with Go, namely
 on-the-fly syntax checking, auto-completion and snippets, it is
 recommended that you look at goflymake
 \(https://github.com/dougm/goflymake), gocode
-\(https://github.com/nsf/gocode) and yasnippet-go
+\(https://github.com/nsf/gocode), go-eldoc
+\(github.com/syohex/emacs-go-eldoc) and yasnippet-go
 \(https://github.com/dominikh/yasnippet-go)
 
 \(fn)" t nil)
@@ -74,7 +75,7 @@ you save any file, kind of defeating the point of autoloading.
 \(fn)" t nil)
 
 (autoload 'godoc "go-mode" "\
-Show go documentation for a query, much like M-x man.
+Show Go documentation for a query, much like M-x man.
 
 \(fn QUERY)" t nil)
 
@@ -86,8 +87,8 @@ buffer. Tries to look for a URL at point.
 
 ;;;***
 
-;;;### (autoloads nil nil ("go-mode-load.el" "go-mode-pkg.el") (21014
-;;;;;;  12872 71096 345000))
+;;;### (autoloads nil nil ("go-mode-load.el" "go-mode-pkg.el") (21423
+;;;;;;  59501 45513 750000))
 
 ;;;***
 
