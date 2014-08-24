@@ -3,9 +3,9 @@
 ;;; Code:
 
 
-;;;### (autoloads (projectile-global-mode projectile-mode projectile-mode-line-lighter
-;;;;;;  projectile-commander) "projectile" "projectile.el" (21425
-;;;;;;  56157 867515 85000))
+;;;### (autoloads (projectile-global-mode projectile-mode projectile-mode-line
+;;;;;;  projectile-commander) "projectile" "projectile.el" (21498
+;;;;;;  22447 989295 834000))
 ;;; Generated autoloads from projectile.el
 
 (autoload 'projectile-commander "projectile" "\
@@ -18,10 +18,19 @@ See `def-projectile-commander-method' for defining new methods.
 
 \(fn)" t nil)
 
-(defvar projectile-mode-line-lighter "Projectile" "\
-The default lighter for `projectile-mode'.")
+(defvar projectile-mode-line '(:eval (format " Projectile[%s]" (projectile-project-name))) "\
+Mode line ligher for Projectile.
 
-(custom-autoload 'projectile-mode-line-lighter "projectile" t)
+The value of this variable is a mode line template as in
+`mode-line-format'.  See Info Node `(elisp)Mode Line Format' for
+details about mode line templates.
+
+Customize this variable to change how Projectile displays its
+status in the mode line.  The default value displays the project
+name.  Set this variable to nil to disable the mode line
+entirely.")
+
+(custom-autoload 'projectile-mode-line "projectile" t)
 
 (autoload 'projectile-mode "projectile" "\
 Minor mode to assist project management and navigation.
@@ -54,15 +63,15 @@ otherwise, disable it.  If called from Lisp, enable the mode if
 ARG is omitted or nil.
 
 Projectile mode is enabled in all buffers where
-`projectile-on' would do it.
+`projectile-mode' would do it.
 See `projectile-mode' for more information on Projectile mode.
 
 \(fn &optional ARG)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil nil ("projectile-pkg.el") (21425 56157 946162
-;;;;;;  581000))
+;;;### (autoloads nil nil ("projectile-pkg.el") (21498 22448 121054
+;;;;;;  419000))
 
 ;;;***
 
