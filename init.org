@@ -862,6 +862,13 @@ Always indent with 4 spaces, in the Linux kernel style.
                 c-basic-offset 4)
 #+END_SRC
 
+Hungry delete is useful in C (i.e. remove up to the next
+non-whitespace character on C-d) when removing indentation.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq-default c-hungry-delete-key t)
+#+END_SRC
+
 I use recompile a lot when coding C, so bind it to a convenient key.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
