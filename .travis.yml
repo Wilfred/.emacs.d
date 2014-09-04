@@ -1,4 +1,7 @@
 language: emacs-lisp
+branches:
+  only:
+    - gh-pages
 script:
   - emacs --version
   - emacs --batch --load init.el
