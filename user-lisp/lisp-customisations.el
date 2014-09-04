@@ -4,6 +4,7 @@
 (add-hook 'emacs-lisp-mode-hook 'turn-on-paredit)
 (add-hook 'scheme-mode-hook 'turn-on-paredit)
 
+(require 'highlight-quoted)
 ;; Highlight the ' character itself in the same colour
 ;; as the quoted symbol.
 (set-face-attribute 'highlight-quoted-quote nil
