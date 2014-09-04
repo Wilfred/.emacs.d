@@ -1,0 +1,4 @@
+language: emacs-lisp
+script:
+  - emacs --version
+  - emacs --batch --load init.el

@@ -644,3 +644,5 @@ The FILE-NAME defaults to the one used in the URL."
 
 (require 'diminish)
 (diminish 'anzu-mode)
+
+(error "travis should complain!")
