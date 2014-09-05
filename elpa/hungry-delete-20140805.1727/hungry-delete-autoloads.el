@@ -5,18 +5,18 @@
 
 ;;;### (autoloads (global-hungry-delete-mode turn-on-hungry-delete-mode
 ;;;;;;  hungry-delete-mode hungry-delete-backward hungry-delete-forward)
-;;;;;;  "hungry-delete" "hungry-delete.el" (21464 9811 982990 675000))
+;;;;;;  "hungry-delete" "hungry-delete.el" (21478 8377 519081 905000))
 ;;; Generated autoloads from hungry-delete.el
 
 (autoload 'hungry-delete-forward "hungry-delete" "\
-Delete the following character or all following whitespace up
-to the next non-whitespace character.  See
-\\[c-hungry-delete-backward].
+Delete the following character, or all of the following
+whitespace, up to the next non-whitespace character.  See
+\\[c-hungry-delete-forward].
 
 hungry-delete-backward tries to mimic delete-backward-char's
 behavior in several ways: if the region is activate, it deletes
-the text in the region. If a prefix argument is given, delete the
-following N characters (previous if N is negative).
+the text in the region.  If a prefix argument is given, delete
+the following N characters (previous if N is negative).
 
 Optional second arg KILLFLAG non-nil means to kill (save in kill
 ring) instead of delete.  Interactively, N is the prefix arg, and
@@ -27,12 +27,12 @@ KILLFLAG is set if N was explicitly specified.
 (autoload 'hungry-delete-backward "hungry-delete" "\
 Delete the preceding character or all preceding whitespace
 back to the previous non-whitespace character.  See also
-\\[c-hungry-delete-forward].
+\\[c-hungry-delete-backward].
 
 hungry-delete-backward tries to mimic delete-backward-char's
 behavior in several ways: if the region is activate, it deletes
-the text in the region. If a prefix argument is given, delete the
-previous N characters (following if N is negative).
+the text in the region.  If a prefix argument is given, delete
+the previous N characters (following if N is negative).
 
 In Overwrite mode, single character backward deletion may replace
 tabs with spaces so as to back over columns, unless point is at
@@ -52,7 +52,7 @@ executed.
 \(fn &optional ARG)" t nil)
 
 (autoload 'turn-on-hungry-delete-mode "hungry-delete" "\
-Turns on hungry delete mode if the buffer is appropriate.
+Turn on hungry delete mode if the buffer is appropriate.
 
 \(fn)" nil nil)
 
@@ -79,8 +79,8 @@ See `hungry-delete-mode' for more information on Hungry-Delete mode.
 
 ;;;***
 
-;;;### (autoloads nil nil ("hungry-delete-pkg.el") (21464 9812 111521
-;;;;;;  156000))
+;;;### (autoloads nil nil ("hungry-delete-pkg.el") (21478 8377 652956
+;;;;;;  378000))
 
 ;;;***
 
