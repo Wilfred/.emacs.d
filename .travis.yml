@@ -10,4 +10,8 @@ script:
   - export PATH="/home/travis/.evm/bin:$PATH"
   - evm install $EVM_EMACS --use
   - emacs --version
+  - cd ..
+  - ls
+  - pwd
+  - cp -r .emacs.d ~/.emacs.d
   - emacs --batch --load init.el
