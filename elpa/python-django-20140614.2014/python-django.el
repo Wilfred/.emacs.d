@@ -4,7 +4,7 @@
 
 ;; Author: Fabián E. Gallina <fabian@anue.biz>
 ;; URL: https://github.com/fgallina/python-django.el
-;; Version: 20131214.1841
+;; Version: 20140614.2014
 ;; X-Original-Version: 0.1
 ;; Maintainer: FSF
 ;; Created: Jul 2011
@@ -294,6 +294,37 @@ Many Django faces inherit from this one by default."
     (2 'font-lock-function-name-face))))
 
 
+;;; Error logging
+
+(defvar python-django-error-log-formatter
+  #'python-django-error-default-formatter)
+
+(defun python-django-error-default-formatter (error-string)
+  "Formats ERROR-STRING to be placed in the error log."
+  (format
+   (concat
+    "An error occurred retrieving project information.\n"
+    "Check your project settings and try again:\n\n"
+    "Current values:\n"
+    "  + python-django-project-root: %s\n"
+    "  + python-django-project-settings: %s\n"
+    "  + python-shell-interpreter: %s\n"
+    "    - found in %s\n\n"
+    "Details: \n\n%s\n")
+   python-django-project-root
+   python-django-project-settings
+   python-shell-interpreter
+   (let* ((process-environment
+           (python-django-info-calculate-process-environment))
+          (exec-path (python-shell-calculate-exec-path)))
+     (executable-find python-shell-interpreter))
+   error-string))
+
+(defun python-django-error-log (error-string)
+  "Log ERROR-STRING by calling `user-error'."
+  (user-error "%s" (funcall python-django-error-log-formatter error-string)))
+
+
 ;;; Utility functions
 
 (defun python-django-util-clone-local-variables ()
@@ -368,6 +399,37 @@ the same variables of python files."
   (and (bufferp key) (setq key (buffer-name key)))
   (cdr (assoc key alist)))
 
+;; Based on `file-name-extension'
+(defun python-django-util-file-name-extension (filename)
+  "Return FILENAME's final \"extension\" sans dot."
+  (save-match-data
+    (let ((file (file-name-nondirectory filename)))
+      (if (and (string-match "\\.[^.]*\\'" file)
+               (not (eq 0 (match-beginning 0))))
+          (substring file (+ (match-beginning 0) 1))))))
+
+(defun python-django-util-shell-command-to-string (command)
+  "Execute shell COMMAND and return its output as a string.
+Returns a cons cell where the car is the exit status and the cdr
+is the captured output."
+  (with-temp-buffer
+    (cons
+     (apply 'call-process shell-file-name
+            nil t nil (list shell-command-switch command))
+     (buffer-string))))
+
+(defun python-django-util-shell-command-or-error (command)
+  "Execute shell COMMAND and return its output as a string.
+If the exit status is an error `python-django-error-log' is used
+to display command output."
+  (let* ((result (python-django-util-shell-command-to-string command))
+         (status (car result))
+         (output (cdr result)))
+    (if (zerop status)
+        output
+      (python-django-error-log
+       (concat "Error executing: " command "\n\n" output)))))
+
 (defun python-django-util-shorten-settings (&optional settings)
   "Return a shorter SETTINGS module string.
 Optional Argument SETTINGS defaults to the value of
@@ -388,7 +450,7 @@ Optional Argument SETTINGS defaults to the value of
   (let* ((process-environment
           (python-django-info-calculate-process-environment))
          (exec-path (python-shell-calculate-exec-path)))
-    (shell-command-to-string
+    (python-django-util-shell-command-or-error
      (format "%s %s help%s"
              (executable-find python-shell-interpreter)
              python-django-project-manage.py
@@ -470,25 +532,32 @@ non-nil the cached value is invalidated."
    (let* ((process-environment
            (python-django-info-calculate-process-environment))
           (exec-path (python-shell-calculate-exec-path)))
-     (shell-command-to-string
+     (python-django-util-shell-command-or-error
       (format
        "%s -c \"%s\""
        (executable-find python-shell-interpreter)
        (concat
-        "from __future__ import print_function;"
-        "import django; print(django.get_version(), end='')"))))))
+        "from __future__ import print_function\n"
+        "import django\n"
+        "print(django.get_version(), end='')"))))))
 
 (defvar python-django-info-imports-code
-  (concat "from __future__ import print_function;"
-          "import sys; import os.path;"
-          "from os.path import dirname, abspath;"
-          "stdout = sys.stdout; stderr = sys.stderr;"
-          "sys.stdout = sys.stderr = open(os.devnull, 'w');"
-          "from django.conf import settings;"
-          "from django.utils import simplejson;"
-          ;; Force settings loading so all output is sent to devnull.
-          "settings.DEBUG;"
-          "sys.stdout = stdout; sys.stderr = stderr;")
+  (concat "\n"
+          "from __future__ import print_function\n"
+          "import os\n"
+          "import sys\n"
+          "from os.path import dirname, abspath\n"
+          "stdout = sys.stdout; stderr = sys.stderr\n"
+          "sys.stdout = sys.stderr = open(os.devnull, 'w')\n"
+          "from django.conf import settings\n"
+          "# Try to import json really hard\n"
+          "try:\n"
+          "    import json\n"
+          "except ImportError:\n"
+          "    from django.utils import simplejson as json\n"
+          "# Force settings loading so all output is sent to devnull.\n"
+          "settings.DEBUG\n"
+          "sys.stdout = stdout; sys.stderr = stderr\n\n")
   "All imports code used to get info.
 It contains output redirecting features so settings import
 doesn't break the JSON output.")
@@ -513,21 +582,24 @@ non-nil the cached value is invalidated."
       (let* ((process-environment
               (python-django-info-calculate-process-environment))
              (exec-path (python-shell-calculate-exec-path))
+             (settings-list-string
+              (concat "["
+                      (mapconcat
+                       #'(lambda (str) (concat "'" str "'"))
+                       python-django-info-prefetched-settings
+                       ", ")
+                      "]"))
              (value
               (json-read-from-string
-               (shell-command-to-string
-                (format "%s -c \"%s %s\""
+               (python-django-util-shell-command-or-error
+                (format "%s -c \"%s%s\""
                         (executable-find python-shell-interpreter)
                         python-django-info-imports-code
                         (concat
-                         "print(simplejson.dumps("
-                         "dict([(name, getattr(settings, name, None)) "
-                         "for name in ("
-                         (mapconcat
-                          #'(lambda (str) (concat "'" str "'"))
-                          python-django-info-prefetched-settings
-                          ", ")
-                         ")])), end='')"))))))
+                         "acc = {}\n"
+                         "for name in " settings-list-string ":\n"
+                         "    acc[name] = getattr(settings, name, None)\n"
+                         "print(json.dumps(acc), end='')"))))))
         (mapc
          (lambda (elt)
            (let ((cached-val
@@ -555,14 +627,14 @@ non-nil the cached value is invalidated."
              (exec-path (python-shell-calculate-exec-path))
              (value
               (json-read-from-string
-               (shell-command-to-string
+               (python-django-util-shell-command-or-error
                 (format
-                 "%s -c \"%s %s\""
+                 "%s -c \"%s%s\""
                  (executable-find python-shell-interpreter)
                  python-django-info-imports-code
                  (format
                   (concat
-                   "print(simplejson.dumps("
+                   "print(json.dumps("
                    "getattr(settings, '%s', None)), end='')")
                   setting)))))
              (already-cached (assq (intern setting)
@@ -588,8 +660,8 @@ non-nil the cached value is invalidated."
                (python-django-info-calculate-process-environment))
               (exec-path (python-shell-calculate-exec-path)))
          (json-read-from-string
-          (shell-command-to-string
-           (format "%s -c \"%s %s\""
+          (python-django-util-shell-command-or-error
+           (format "%s -c \"%s%s\""
                    (executable-find python-shell-interpreter)
                    python-django-info-imports-code
                    (concat
@@ -600,7 +672,7 @@ non-nil the cached value is invalidated."
                     "        for sub in app.split('.')[1:]:\n"
                     "            mod = getattr(mod, sub)\n"
                     "    app_paths[app] = dirname(abspath(mod.__file__))\n"
-                    "print(simplejson.dumps(app_paths), end='')"))))))
+                    "print(json.dumps(app_paths), end='')"))))))
     python-django-info--get-app-paths-cache))
 
 (defun python-django-info-get-app-path (app &optional force)
@@ -625,13 +697,13 @@ non-nil the cached value is invalidated."
   (let* ((process-environment
           (python-django-info-calculate-process-environment))
          (exec-path (python-shell-calculate-exec-path)))
-    (shell-command-to-string
-     (format
-      "%s -c \"%s %s %s\""
-      (executable-find python-shell-interpreter)
-      "from __future__ import print_function;"
-      (format "import os.path; import %s;" module)
-      (format "print(%s.__file__.replace('.pyc', '.py'), end='')" module)))))
+    (python-django-util-shell-command-or-error
+     (format "%s -c \"%s%s%s\""
+             (executable-find python-shell-interpreter)
+             python-django-info-imports-code
+             (format "import %s\n" module)
+             (format
+              "print(%s.__file__.replace('.pyc', '.py'), end='')" module)))))
 
 (defun python-django-info-directory-basename (&optional dir)
   "Get innermost directory name for given DIR."
@@ -2146,7 +2218,7 @@ Optional argument IGNORE is there for compatibility."
               (if (file-directory-p file)
                   (when (not (member basename python-django-ui-ignored-dirs))
                     (setq dir-list (cons basename dir-list)))
-                (when (member (file-name-extension file)
+                (when (member (python-django-util-file-name-extension file)
                               python-django-ui-allowed-extensions)
                   (setq file-list (cons basename file-list))))))
           (setq dir-list (sort dir-list 'string<))
@@ -2411,37 +2483,21 @@ settings module (the same happens when called with two or more
                  (file-name-directory
                   python-django-project-manage.py))
             (python-django-util-clone-local-variables)
-            (python-django-ui-insert-header)
             (set (make-local-variable 'tree-widget-image-enable)
                  python-django-ui-image-enable)
             (tree-widget-set-theme python-django-ui-theme)
             (condition-case err
-                (mapc (lambda (section)
-                        (python-django-ui-tree-section-insert
-                         (car section) (cdr section))
-                        (insert "\n"))
-                      (python-django-ui-build-section-alist))
-              (error
+                (progn
+                  (python-django-ui-insert-header)
+                  (mapc (lambda (section)
+                          (python-django-ui-tree-section-insert
+                           (car section) (cdr section))
+                          (insert "\n"))
+                        (python-django-ui-build-section-alist)))
+              (user-error
                (setq success nil)
-               (insert
-                (format
-                 (concat
-                  "An error occurred retrieving project information.\n"
-                  "Check your project settings and try again:\n\n"
-                  "Current values:\n"
-                  "  + python-django-project-root: %s\n"
-                  "  + python-django-project-settings: %s\n"
-                  "  + python-shell-interpreter: %s\n"
-                  "    - found in %s\n\n\n"
-                  "Error: %s \n")
-                 python-django-project-root
-                 python-django-project-settings
-                 python-shell-interpreter
-                 (let* ((process-environment
-                         (python-django-info-calculate-process-environment))
-                        (exec-path (python-shell-calculate-exec-path)))
-                   (executable-find python-shell-interpreter))
-                 (error-message-string err))))))
+               (insert (error-message-string err))
+               (goto-char (point-min)))))
           (when success
             (add-hook 'kill-buffer-hook
                       #'python-django-mode-on-kill-buffer nil t)
