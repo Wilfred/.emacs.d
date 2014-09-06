@@ -13,3 +13,5 @@ script:
   - rm -rf ~/.emacs.d
   - cp -r ../.emacs.d ~/.emacs.d
   - emacs --batch --load /home/travis/.emacs.d/init.el
+notifications:
+  email: false
