@@ -1,8 +1,8 @@
-;; paredit for both clojure and elisp
-(defun turn-on-paredit () (paredit-mode 1))
-(add-hook 'clojure-mode-hook 'turn-on-paredit)
-(add-hook 'emacs-lisp-mode-hook 'turn-on-paredit)
-(add-hook 'scheme-mode-hook 'turn-on-paredit)
+;; Use paredit for all the lisp modes I use.
+(dolist (hook
+         '(clojure-mode-hook emacs-lisp-mode-hook
+           scheme-mode-hook lisp-mode-hook))
+  (add-hook hook (lambda () (paredit-mode 1))))
 
 (require 'highlight-quoted)
 ;; Highlight the ' character itself in the same colour
