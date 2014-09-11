@@ -215,6 +215,8 @@ are interchanged."
 ;; multiple cursors
 ;; a good replacement for simple macros since you see the results instantly
 (require 'multiple-cursors)
+(require 'mc-mark-more)
+
 (global-set-key (kbd "C->") 'mc/mark-next-like-this)
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
