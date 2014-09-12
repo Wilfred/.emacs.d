@@ -247,6 +247,7 @@ If a prefix argument is given, don't change the kill-ring."
 (custom-set-faces
  '(flymake-errline ((((class color)) (:underline "Red"))))
  '(flymake-warnline ((((class color)) (:underline "Orange")))))
+ '(org-level-1 ((t (:foreground "dodger blue" :weight bold :height 1.2))))
 
 (setq flycheck-highlighting-mode 'lines)
 
