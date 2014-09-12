@@ -97,13 +97,12 @@
 the start of the line."
   (interactive)
   (let ((start-position (point)))
-    ;; see if going to the beginning of the line changes our position
-    (move-beginning-of-line nil)
-
+    ;; Move to the first non-whitespace character.
+    (back-to-indentation)
+    
+    ;; If we haven't moved position, go to start of the line.
     (when (= (point) start-position)
-        ;; we're already at the beginning of the line, so go to the
-        ;; first non-whitespace character
-        (back-to-indentation))))
+      (move-beginning-of-line nil))))
 
 (global-set-key (kbd "C-a") 'beginning-of-line-dwim)
 
