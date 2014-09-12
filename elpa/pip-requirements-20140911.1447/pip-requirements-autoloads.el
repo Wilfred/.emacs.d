@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (pip-requirements-mode) "pip-requirements" "pip-requirements.el"
-;;;;;;  (21522 4731 225917 465000))
+;;;;;;  (21523 16166 354989 653000))
 ;;; Generated autoloads from pip-requirements.el
 
 (add-to-list 'auto-mode-alist '("\\.pip\\'" . pip-requirements-mode))
@@ -16,8 +16,8 @@ Major mode for editing pip requirements files.
 
 ;;;***
 
-;;;### (autoloads nil nil ("pip-requirements-pkg.el") (21522 4731
-;;;;;;  292620 289000))
+;;;### (autoloads nil nil ("pip-requirements-pkg.el") (21523 16166
+;;;;;;  419838 363000))
 
 ;;;***
 
