@@ -4,7 +4,7 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 September 2014
-;; Version: 20140911.1447
+;; Version: 20140913.718
 ;; X-Original-Version: 0.2
 
 ;;; License:
@@ -37,7 +37,11 @@
 ;;; Code:
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.pip\\'" . pip-requirements-mode))
+(add-to-list 'auto-mode-alist
+             `(,(rx ".pip" string-end) . pip-requirements-mode))
+;;;###autoload
+(add-to-list 'auto-mode-alist
+             `(,(rx "requirements" (zero-or-more anything) ".txt" string-end) . pip-requirements-mode))
 
 (defconst pip-requirements-name-regex
   (rx
@@ -46,7 +50,7 @@
 
 (defconst pip-requirements-version-regex
   (rx
-   (group (or "==" ">" ">=" "<" "<="))
+   (group (or "==" ">" ">=" "<" "<=" "!="))
    (group (1+ (or digit "b" ".")))))
 
 (defconst pip-requirements-operators
