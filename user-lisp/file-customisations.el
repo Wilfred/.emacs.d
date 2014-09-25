@@ -36,4 +36,19 @@
   (interactive)
   (find-file (concat "/sudo::" (ido-read-file-name "Sudo find file:"))))
 
+(defun duplicate-buffer (new-name)
+  "Create a copy of the current buffer with the filename NEW-NAME.
+The original buffer and file are untouched."
+  (interactive (list (read-from-minibuffer "New name: " (buffer-file-name))))
+
+  (let ((filename (buffer-file-name))
+        (new-directory (file-name-directory new-name))
+        (contents (buffer-substring (point-min) (point-max))))
+    (unless filename (error "Buffer '%s' is not visiting a file!" (buffer-name)))
+    
+    (make-directory new-directory t)
+    (find-file new-name)
+    (insert contents)
+    (basic-save-buffer)))
+
 (provide 'file-customisations)
