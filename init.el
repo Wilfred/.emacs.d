@@ -494,6 +494,8 @@ If a prefix argument is given, don't change the kill-ring."
 
 (setq gc-cons-threshold (* 10 1024 1024))
 
+(setq confirm-kill-emacs #'y-or-n-p)
+
 ; always close the minibuffer on C-x o:
 ; <jlf> wilfredh: you could before-advise other-window to quit first
 ; if the minibuffer is active.. but it would be better to break that

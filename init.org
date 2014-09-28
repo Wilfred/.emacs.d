@@ -1099,6 +1099,14 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
   (setq gc-cons-threshold (* 10 1024 1024))
 #+END_SRC
 
+** Shut Down
+
+I rarely close Emacs, but using Zile means I use `C-x C-c' a lot. It's
+annoying to accidentally close Emacs, so warn first.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq confirm-kill-emacs #'y-or-n-p)
+#+END_SRC
 
 ** Undocumented
 
