@@ -203,14 +203,21 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'backup-each-save)
 (add-hook 'after-save-hook 'backup-each-save)
 
+(defun start--file (path)
+  "Create a file at PATH, creating any containing directories as necessary.
+Visit the file after creation."
+  (make-directory (file-name-directory path) t)
+  (find-file path))
+
 (defun start-scratch-file (file-name)
   "Create a file in ~/scratch for the given file name."
   (interactive "sName of scratch file: ")
-  (let ((path (expand-file-name (format "~/scratch/%s" file-name))))
-    ;; create directories as necessary
-    (when (s-contains-p "/" file-name)
-      (make-directory (file-name-directory path) t))
-    (find-file path)))
+  (start--file (expand-file-name (format "~/scratch/%s" file-name))))
+
+(defun start-tmp-file (file-name)
+  "Create a file in /tmp for the given file name."
+  (interactive "sName of temporary file: ")
+  (start--file (expand-file-name (format "/tmp/%s" file-name))))
 
 (defun start-scratch-html-file (file-name)
   "Create a test HTML file in ~/scratch to play around with."
@@ -247,7 +254,6 @@ If a prefix argument is given, don't change the kill-ring."
 (custom-set-faces
  '(flymake-errline ((((class color)) (:underline "Red"))))
  '(flymake-warnline ((((class color)) (:underline "Orange")))))
- '(org-level-1 ((t (:foreground "dodger blue" :weight bold :height 1.2))))
 
 (setq flycheck-highlighting-mode 'lines)
 
@@ -646,3 +652,4 @@ The FILE-NAME defaults to the one used in the URL."
 
 (require 'diminish)
 (diminish 'anzu-mode)
+(put 'dired-find-alternate-file 'disabled nil)
