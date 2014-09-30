@@ -1,3 +1,5 @@
+#+STARTUP: showeverything
+
 * Introduction
 
 This is the Emacs environment I (Wilfred Hughes) use for development.
