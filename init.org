@@ -1268,4 +1268,5 @@ annoying to accidentally close Emacs, so warn first.
   
   (require 'diminish)
   (diminish 'anzu-mode)
+  (put 'dired-find-alternate-file 'disabled nil)
 #+END_SRC
