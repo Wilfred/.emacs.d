@@ -55,4 +55,6 @@
 (require 'slime)
 (define-key slime-mode-map (kbd "C-c e") 'slime-eval-defun)
 
+(require 'help-fns+)
+
 (provide 'lisp-customisations)
