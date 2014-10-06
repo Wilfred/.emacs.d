@@ -671,18 +671,6 @@ deep."
   :group 'magit
   :type 'integer)
 
-(defcustom magit-default-tracking-name-function
-  'magit-default-tracking-name-remote-plus-branch
-  "Function used to generate default tracking branch names
-when doing a \\[magit-checkout].
-
-The default is `magit-default-tracking-name-remote-plus-branch',
-which generates a tracking name of the form \"REMOTE-BRANCHNAME\"."
-  :group 'magit
-  :type '(radio (function-item magit-default-tracking-name-remote-plus-branch)
-                (function-item magit-default-tracking-name-branch-only)
-                (function :tag "Other")))
-
 ;;;;; Modes
 ;;;;;; Common
 
@@ -3732,8 +3720,9 @@ tracked in the current repository are reverted if
                 (save-excursion
                   (goto-char (magit-section-end section))
                   (when (re-search-backward
-                         magit-process-error-message-re nil
-                         (magit-section-content-beginning section))
+                         magit-process-error-message-re
+                         (magit-section-content-beginning section)
+                         t)
                     (match-string 1)))))
          "Git failed")
      (let ((key (and (buffer-live-p command-buf)
@@ -4712,8 +4701,12 @@ to consider it or not when called with that buffer current."
   "Only prompt to save buffers which are within the current git project.
 As determined by the directory passed to `magit-status'."
   (and buffer-file-name
-       (string= (magit-get-top-dir magit-default-directory)
-                (magit-get-top-dir (file-name-directory buffer-file-name)))))
+       (let ((topdir (magit-get-top-dir magit-default-directory)))
+         (and topdir
+              (string-prefix-p topdir buffer-file-name)
+              ;; ^ Avoid needlessly connecting to unrelated tramp remotes.
+              (string= topdir (magit-get-top-dir
+                               (file-name-directory buffer-file-name)))))))
 
 ;;; Porcelain
 ;;;; Apply
@@ -5206,48 +5199,11 @@ With a prefix argument, skip editing the log message and commit.
 
 ;;;;; Branching
 
-(defun magit-escape-branch-name (branch)
-  "Escape branch name BRANCH to remove problematic characters."
-  (replace-regexp-in-string "[/]" "-" branch))
-
-(defun magit-default-tracking-name-remote-plus-branch (remote branch)
-  "Use the remote name plus a hyphen plus the escaped branch name for tracking branches."
-  (concat remote "-" (magit-escape-branch-name branch)))
-
-(defun magit-default-tracking-name-branch-only (remote branch)
-  "Use just the escaped branch name for tracking branches."
-  (magit-escape-branch-name branch))
-
-(defun magit-get-tracking-name (remote branch)
-  "Given a REMOTE and a BRANCH name, ask the user for a local
-tracking brach name suggesting a sensible default."
-  (when (yes-or-no-p
-         (format "Create local tracking branch for %s? " branch))
-    (let* ((default-name
-            (funcall magit-default-tracking-name-function remote branch))
-           (chosen-name
-            (read-string (format "Call local branch (%s): " default-name)
-                         nil nil default-name)))
-      (when (magit-ref-exists-p (concat "refs/heads/" chosen-name))
-        (user-error "'%s' already exists" chosen-name))
-      chosen-name)))
-
-(defun magit-maybe-create-local-tracking-branch (rev)
-  "Depending on the users wishes, create a tracking branch for
-REV... maybe."
-  (when (string-match "^\\(?:refs/\\)?remotes/\\([^/]+\\)/\\(.+\\)" rev)
-    (let* ((remote (match-string 1 rev))
-           (branch (match-string 2 rev))
-           (tracker-name (magit-get-tracking-name remote branch)))
-      (when tracker-name
-        (magit-run-git "checkout" "-b" tracker-name rev)
-        t))))
-
 ;;;###autoload
 (defun magit-checkout (revision)
   "Switch 'HEAD' to REVISION and update working tree.
 Fails if working tree or staging area contain uncommitted changes.
-If REVISION is a remote branch, offer to create a local tracking branch.
+If REVISION is a remote branch, offer to create a local branch.
 \('git checkout [-b] REVISION')."
   (interactive
    (list (let ((current-branch (magit-get-current-branch))
@@ -5257,10 +5213,19 @@ If REVISION is a remote branch, offer to create a local tracking branch.
                            (unless (string= current-branch default)
                              default)
                            current-branch))))
-  (or (magit-maybe-create-local-tracking-branch revision)
-      (progn
-        (magit-save-some-buffers)
-        (magit-run-git "checkout" revision))))
+  (magit-save-some-buffers)
+  (or (and (string-match "^\\(?:refs/\\)?remotes/\\([^/]+\\)/\\(.+\\)" revision)
+           (let ((remote (match-string 1 revision))
+                 (branch (match-string 2 revision)))
+             (and (yes-or-no-p (format "Create local branch for %s? " branch))
+                  (let ((local (read-string
+                                (format "Call local branch (%s): " branch)
+                                nil nil branch)))
+                    (if (magit-ref-exists-p (concat "refs/heads/" local))
+                        (user-error "'%s' already exists" local)
+                      (magit-run-git "checkout" "-b" local revision)
+                      t)))))
+      (magit-run-git "checkout" revision)))
 
 ;;;###autoload
 (defun magit-create-branch (branch parent)
@@ -5303,7 +5268,8 @@ Works with local or remote branches.
        ((and is-current is-master)
         (message "Cannot delete master branch while it's checked out."))
        (is-current
-        (if (y-or-n-p "Cannot delete current branch.  Switch to master first? ")
+        (if (and (magit-ref-exists-p "refs/heads/master")
+                 (y-or-n-p "Cannot delete current branch.  Switch to master first? "))
             (progn
               (magit-checkout "master")
               (magit-run-git args))
@@ -7647,10 +7613,10 @@ non-nil, then autocompletion will offer directory names."
 
 (defun magit-list-repos* (dir depth)
   "Return a list of repos found in DIR, recursing up to DEPTH levels deep."
-  (if (magit-git-repo-p dir)
+  (if (file-readable-p (expand-file-name ".git" dir))
       (list (expand-file-name dir))
     (and (> depth 0)
-         (file-directory-p dir)
+         (file-accessible-directory-p dir)
          (not (member (file-name-nondirectory dir)
                       '(".." ".")))
          (cl-loop for entry in (directory-files dir t nil t)
@@ -7705,8 +7671,7 @@ blame to center around the line point is on."
      (list revision filename
            (and (equal filename
                        (ignore-errors
-                         (magit-file-relative-name
-                          (file-name-directory (buffer-file-name)))))
+                         (magit-file-relative-name (buffer-file-name))))
                 (line-number-at-pos)))))
   (let ((default-directory (magit-get-top-dir)))
     (apply #'call-process magit-git-executable nil 0 nil "gui" "blame"
