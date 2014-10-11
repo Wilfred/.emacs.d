@@ -1,3 +1,34 @@
+;;; Commentary
+;; Completion is hard to get right. Currently, this is configured to
+;; give several different types of completion. I want to port to
+;; company-mode eventually, as it's more widely used (cf flycheck and
+;; flymake).
+;;
+;; DUMB COMPLETION: This is often sufficient. Just complete the
+;; current substring based on other strings in the buffer. If no
+;; matches are present, try other buffers with the same mode. It must
+;; be case sensitive.
+;;
+;; FULL LINE COMPLETION: It's often handy for imports if we can expand
+;; the whole current line to match lines from other buffers (of the
+;; same mode).
+;;
+;; FILENAME COMPLETION: If the current substring matches a filename of
+;; a file at point, expand it to the full path. Occasionally useful.
+;;
+;; SYMBOL COMPLETION: In elisp or other languages with an inferior
+;; process attached, complete symbols based on what is currently
+;; defined. This should not affect buffers in other modes (a current
+;; bug).
+;;
+;; LANGUAGE COMPLETION: Complete substrings that are known to exist in
+;; a language. In the current configuration, I'm only doing this with
+;; CSS.
+;;
+;; STATIC ANALYSIS COMPLETION: Complete methods and attributes on
+;; classes. The current configuration only does this for Java with
+;; eclim.
+
 ;; yasnippet, clever abbreviation expansion
 (require 'yasnippet)
 
