@@ -276,5 +276,7 @@ Handy when editing markdown."
   (insert "\n\n"))
 
 
+(require 'change-inner)
+(global-set-key (kbd "M-i") 'change-inner)
 
 (provide 'editing-customisations)
