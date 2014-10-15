@@ -55,4 +55,29 @@
 (require 'slime)
 (define-key slime-mode-map (kbd "C-c e") 'slime-eval-defun)
 
+;; Elisp configuration
+
+;; From http://emacs.stackexchange.com/a/385/304
+(require 'cl-lib)
+(defun endless/indent-defun ()
+  "Indent current defun.
+Do nothing if mark is active (to avoid deactivating it), or if
+buffer is not modified (to avoid creating accidental
+modifications)."
+  (interactive)
+  (ignore-errors
+    (unless (or (region-active-p)
+                buffer-read-only
+                (null (buffer-modified-p)))
+      (let ((l (save-excursion (beginning-of-defun 1) (point)))
+            (r (save-excursion (end-of-defun 1) (point))))
+        (cl-letf (((symbol-function 'message) #'ignore))
+          (indent-region l r))))))
+
+(add-hook
+ 'emacs-lisp-mode-hook
+ (lambda ()
+   (add-hook 'post-command-hook
+             #'endless/indent-defun nil 'local)))
+
 (provide 'lisp-customisations)
