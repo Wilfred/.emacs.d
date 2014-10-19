@@ -14,3 +14,8 @@
 ;; normally they do not override existing values).
 ;;
 ;; 4. Always open a debugger if the evaluation throws an error.
+;;
+;; Note that eval-last-sexp sets debug-on-error regardless of what it
+;; was set to before. Customise eval-expression-debug-on-error to
+;; change it. We need to think about what's best for smart-eval
+;; (always debug I think).
