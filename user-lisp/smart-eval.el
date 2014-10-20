@@ -19,3 +19,15 @@
 ;; was set to before. Customise eval-expression-debug-on-error to
 ;; change it. We need to think about what's best for smart-eval
 ;; (always debug I think).
+
+(defun smart-eval-sexp ()
+  (interactive))
+
+(defun smart-eval-outer-sexp ()
+  (interactive))
+
+(defun smart-eval-region ()
+  (interactive))
+
+(defun smart-eval-buffer ()
+  (interactive))
