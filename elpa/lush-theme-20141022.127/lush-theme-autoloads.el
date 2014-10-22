@@ -1,10 +1,10 @@
 ;;; lush-theme-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (lush-theme) "lush-theme" "lush-theme.el" (21570
-;;;;;;  33370 426087 401000))
+;;;### (autoloads nil "lush-theme" "lush-theme.el" (21576 8660 449829
+;;;;;;  585000))
 ;;; Generated autoloads from lush-theme.el
 
 (when load-file-name (add-to-list 'custom-theme-load-path (file-name-as-directory (file-name-directory load-file-name))))
@@ -16,16 +16,9 @@ Load lush-theme.
 
 ;;;***
 
-;;;### (autoloads nil nil ("lush-theme-pkg.el") (21570 33370 501866
-;;;;;;  530000))
-
-;;;***
-
-(provide 'lush-theme-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; lush-theme-autoloads.el ends here

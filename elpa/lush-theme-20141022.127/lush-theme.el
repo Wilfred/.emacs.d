@@ -2,7 +2,7 @@
 ;;
 ;; Filename: lush-theme.el
 ;; Author: Andre Richter <andre.o.richter@gmail.com>
-;; Version: 20140922.1117
+;; Version: 20141022.127
 ;; X-Original-Version: 0.1
 ;; URL: https://github.com/andre-richter/emacs-lush-theme
 ;; Package-Requires: ((emacs "24"))
@@ -51,7 +51,8 @@ See https://github.com/andre-richter/emacs-lush-theme")
        (lush/green      "#61CE3C")
        (lush/light-blue "#82A6DF")
        (lush/dark-blue  "#253B76")
-       (lush/light-red  "#FA583F"))
+       (lush/light-red  "#FA583F")
+       (lush/hl-line    "#333333"))
 
   (custom-theme-set-faces
    `lush
@@ -77,6 +78,7 @@ See https://github.com/andre-richter/emacs-lush-theme")
    `(gui-element                         ((t (:foreground "black"    :background "#D4D0C8"))))  
    `(mode-line                           ((t (:foreground "#F0F0F0"  :background "#444444" :box nil))))
    `(mode-line-highlight                 ((t (:foreground ,lush/pink :box nil))))
+   `(hl-line                             ((t (:background ,lush/hl-line))))
    `(text-cursor                         ((t (:foreground "black"    :background "yellow"))))
    `(zmacs-region                        ((t (:foreground "ble"      :background "snow"))))
    `(region                              ((t (:background ,lush/dark-blue))))
