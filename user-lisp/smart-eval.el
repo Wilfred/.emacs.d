@@ -19,15 +19,30 @@
 ;; was set to before. Customise eval-expression-debug-on-error to
 ;; change it. We need to think about what's best for smart-eval
 ;; (always debug I think).
+(require 'shut-up)
 
 (defun smart-eval-sexp ()
-  (interactive))
+  (interactive)
+  )
 
-(defun smart-eval-outer-sexp ()
-  (interactive))
+(defun smart-eval-outer-sexp (prefix)
+  (interactive "P")
+  (eval-defun prefix))
 
-(defun smart-eval-region ()
-  (interactive))
+(defun smart-eval-region (beg end)
+  (interactive "r")
+  (save-excursion
+    (goto-char beg)
+    (while (< (point) end)
+      (forward-sexp)
+      (shut-up
+        (smart-eval-outer-sexp nil)))))
 
 (defun smart-eval-buffer ()
-  (interactive))
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (not (eobp))
+      (forward-sexp)
+      (shut-up
+        (smart-eval-outer-sexp nil)))))
