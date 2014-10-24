@@ -62,4 +62,9 @@
 ;; Ensure elisp code is continuously indented.
 (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode)
 
+;; Use hungry-delete in elisp too.  There is also
+;; `turn-on-hungry-delete-mode', but it seems that paredit's mode map
+;; is coming first.
+(define-key paredit-mode-map (kbd "C-d") 'hungry-delete-forward)
+
 (provide 'lisp-customisations)
