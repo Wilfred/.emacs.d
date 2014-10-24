@@ -1,3 +1,14 @@
+;;; python-customisations
+
+;;; Commentary:
+;; Configuring Python editing to make me happy.
+;;
+;; Outstanding issues:
+;;
+;; * It would be nice to have jump-to-definition for projects that use
+;;   Python's stdlib. This will need thought to handle RPython projects.
+;; * Add a command that automatically adds missing imports.
+
 (require 'python)
 (require 'python-utils)
 (eval-when-compile (require 'cl)) ;; first, second, loop
