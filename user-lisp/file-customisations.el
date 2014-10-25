@@ -51,4 +51,8 @@ The original buffer and file are untouched."
     (insert contents)
     (basic-save-buffer)))
 
+(defun emacs-d-magit ()
+  (interactive)
+  (magit-status "~/.emacs.d"))
+
 (provide 'file-customisations)
