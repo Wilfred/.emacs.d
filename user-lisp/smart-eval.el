@@ -50,6 +50,7 @@
 ;; Boston, MA 02110-1301, USA.
 
 (require 'shut-up)
+(require 'edebug)
 
 ;;; Code:
 
@@ -60,7 +61,7 @@
 
 (defun smart-eval-outer-sexp (prefix)
   (interactive "P")
-  (eval-defun prefix))
+  (edebug-eval-defun prefix))
 
 ;;;###autoload
 (defun smart-eval-region (beg end)
