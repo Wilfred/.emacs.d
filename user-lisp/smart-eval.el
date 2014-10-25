@@ -62,6 +62,7 @@
   (interactive "P")
   (eval-defun prefix))
 
+;;;###autoload
 (defun smart-eval-region (beg end)
   (interactive "r")
   (save-excursion
@@ -71,6 +72,7 @@
       (shut-up
         (smart-eval-outer-sexp nil)))))
 
+;;;###autoload
 (defun smart-eval-buffer ()
   (interactive)
   (save-excursion
