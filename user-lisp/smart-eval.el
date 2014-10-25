@@ -75,12 +75,7 @@
 ;;;###autoload
 (defun smart-eval-buffer ()
   (interactive)
-  (save-excursion
-    (goto-char (point-min))
-    (while (not (eobp))
-      (forward-sexp)
-      (shut-up
-        (smart-eval-outer-sexp nil)))))
+  (smart-eval-region (point-min) (point-max)))
 
 (provide 'smart-eval)
 ;;; smart-eval.el ends here
