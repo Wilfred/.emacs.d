@@ -4,7 +4,7 @@
 
 
 ;;;### (autoloads (aggressive-indent-) "aggressive-indent" "aggressive-indent.el"
-;;;;;;  (21569 43842 898589 291000))
+;;;;;;  (21580 9031 309624 685000))
 ;;; Generated autoloads from aggressive-indent.el
 
 (let ((loads (get 'aggressive-indent 'custom-loads))) (if (member '"aggressive-indent" loads) nil (put 'aggressive-indent 'custom-loads (cons '"aggressive-indent" loads))))
@@ -14,6 +14,13 @@ Indent current defun.
 Throw an error if parentheses are unbalanced.
 
 \(fn)" t nil)
+
+(autoload 'aggressive-indent-indent-region-and-on "aggressive-indent" "\
+Indent region between L and R, and then some.
+Call `indent-region' between L and R, and then keep indenting
+until nothing more happens.
+
+\(fn L R)" t nil)
 
 (autoload 'aggressive-indent-mode "aggressive-indent" "\
 Toggle Aggressive-Indent mode on or off.
@@ -49,8 +56,8 @@ See `aggressive-indent-mode' for more information on Aggressive-Indent mode.
 
 ;;;***
 
-;;;### (autoloads nil nil ("aggressive-indent-pkg.el") (21569 43842
-;;;;;;  960372 742000))
+;;;### (autoloads nil nil ("aggressive-indent-pkg.el") (21580 9031
+;;;;;;  468169 280000))
 
 ;;;***
 
