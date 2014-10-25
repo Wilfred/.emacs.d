@@ -5,6 +5,7 @@
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 18 October 2014
 ;; Version: 0.1
+;; Package-Requires: ((shut-up "0.3"))
 
 ;;; Commentary:
 ;; When evaluating an elisp buffer, we want the following features:
