@@ -12,22 +12,8 @@
 (define-key global-map (kbd "RET") 'newline-and-indent)
 
 ;; zap-to-char but don't delete the character itself
-(defun zap-up-to-char (arg char)
-  "Kill up to, but not including ARGth occurrence of CHAR.
-Case is ignored if `case-fold-search' is non-nil in the current buffer.
-Goes backward if ARG is negative; error if CHAR not found.
-Ignores CHAR at point."
-  (interactive "p\ncZap up to char: ")
-  (let ((direction (if (>= arg 0) 1 -1)))
-    (kill-region (point)
-                 (progn
-                   (forward-char direction)
-                   (unwind-protect
-                       (search-forward (char-to-string char) nil nil arg)
-                     (backward-char direction))
-                   (point)))))
 ;; bind it to the usual zap-to-char shortcut
-(global-set-key (kbd "M-z") 'zap-up-to-char)
+(global-set-key (kbd "M-z") 'ace-jump-zap-up-to-char)
 
 (defun zap-up-to-non-whitespace ()
   "Zap up to, but not including, the first non-whitespace character."
