@@ -12,7 +12,7 @@ Defaults to `t'.")
 
 (defun activate-hl-line ()
   "Enable `hl-line-mode' unless `use-hl-line` says otherwise."
-  (when use-hl-line
+  (when (and use-hl-line (not (active-minibuffer-window)))
     (hl-line-mode)))
 
 (add-hook 'after-change-major-mode-hook 'activate-hl-line)
