@@ -91,7 +91,7 @@ Argument EDEBUG-IT is the same as `eval-defun'."
                               (names--looking-at-namespace))
                      (error nil)))
              (cdr (read (current-buffer))))))
-        form b keylist spec)
+        form b keylist spec name)
     
     ;; If we're not in a namespace, call the regular `eval-defun'.
     (if (null body)
@@ -117,7 +117,8 @@ Argument EDEBUG-IT is the same as `eval-defun'."
            (lambda (it) (pp it (current-buffer)))
            (cdr (macroexpand
                  `(define-namespace ,name :global :clean-output ,@keylist ,form)))))
-        (font-lock-ensure)
+        (when (fboundp 'font-lock-ensure)
+          (font-lock-ensure))
         (eval-defun edebug-it))
       ;; Kill the buffer if we won't need it.
       (unless edebug-it

@@ -1,4 +1,4 @@
-(define-package "names" "20141016.329" "Namespaces for emacs-lisp. Works like C++ namespaces to avoid name clobbering."
+(define-package "names" "20141026.1135" "Namespaces for emacs-lisp. Works like C++ namespaces to avoid name clobbering."
   '((emacs "24.1")
     (cl-lib "0.5"))
   :url "http://github.com/Bruce-Connor/names")

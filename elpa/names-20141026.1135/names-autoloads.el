@@ -1,10 +1,9 @@
 ;;; names-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (define-namespace) "names" "names.el" (21569 43842
-;;;;;;  75266 275000))
+;;;### (autoloads nil "names" "names.el" (21581 24019 783425 0))
 ;;; Generated autoloads from names.el
 
 (autoload 'define-namespace "names" "\
@@ -66,16 +65,14 @@ Use a letbind to indicate to `define-namespace' that we're generating autoloads.
 
 ;;;***
 
-;;;### (autoloads nil nil ("names-dev.el" "names-pkg.el") (21569
-;;;;;;  43842 171769 892000))
+;;;### (autoloads nil nil ("names-dev.el" "names-pkg.el") (21581
+;;;;;;  24019 902541 957000))
 
 ;;;***
 
-(provide 'names-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; names-autoloads.el ends here

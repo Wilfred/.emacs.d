@@ -39,6 +39,7 @@
 
 (require 'cl-lib)
 (require 'edebug)
+(require 'bytecomp)
 
 ;;; Support
 (declare-function names--autoload-do-load "names" 2)
@@ -163,7 +164,7 @@ passed to `define-namespace'.")
   "The name of the parent to be given to `defgroup'.
 Is only non-nil if the :group keyword is passed to `define-namespace'.")
 
-(defvar names--version nil 
+(defvar names--version nil
   "The version number given by :version.
 Used to define a constant and a command.")
 
@@ -182,7 +183,7 @@ group as an unquoted symbol.
 If this keyword is provided, besides including a defgroup, Names
 will also include a :group keyword in every `defcustom' (and
 similar forms) that don't already contain one.")
-    
+
     (:version
      1
      (lambda (x)
@@ -290,6 +291,9 @@ Returns a list (KEYWORD . ARGUMENTLIST)."
             (push (pop ,body) out))
           (nreverse out))))
 
+(defvar names--has-reloaded nil
+  "Whether `names--reload-if-upgraded' has already been called in this run.")
+
 
 ;;; ---------------------------------------------------------------
 ;;; The Main Macro and Main Function.
@@ -346,9 +350,12 @@ http://github.com/Bruce-Connor/names
 \(fn NAME [KEYWORDS] BODY)"
   (declare (indent (lambda (&rest x) 0))
            (debug (&define name [&rest keywordp &optional [&or symbolp (symbolp . symbolp)]] body)))
-  (names--reload-if-upgraded)
-  (names--error-if-using-vars)
-  (names--define-namespace-implementation name body))
+  (let ((names--has-reloaded names--has-reloaded))
+    (unless names--has-reloaded
+      (setq names--has-reloaded t)
+      (names--reload-if-upgraded))
+    (names--error-if-using-vars)
+    (names--define-namespace-implementation name body)))
 
 (defun names--define-namespace-implementation (name body)
   "Namespace BODY using NAME.
@@ -425,6 +432,7 @@ See `define-namespace' for more information."
   "Verify if there's a more recent version of Names in the `load-path'.
 If so, evaluate it."
   (ignore-errors
+    (require 'find-func)
     (let ((lp (expand-file-name (find-library-name "names")))
           new-version)
       (when (and lp
@@ -502,7 +510,7 @@ Decide package name based on several factors. In order:
       (let ((package (symbol-name names--name)))
         (prog1 (setq names--package
                      (intern (substring package 0 -1)))
-          (names--warn "No :package given. Guessing `%s'" 
+          (names--warn "No :package given. Guessing `%s'"
                        names--package)))))
 
 (defun names--generate-defgroup ()
@@ -710,11 +718,18 @@ phenomenally. So we hack into edebug instead."
               (edebug-all-defs t)
               (names--is-inside-macro form))
           (cl-letf
+              ;; Prevent excessive messaging.
               (((symbol-function 'message) #'names--edebug-message)
+               ;; Older edebugs have poor `get-edebug-spec'.
+               ((symbol-function 'get-edebug-spec) #'names--get-edebug-spec)
+               ;; Give symbols our own name.
                ((symbol-function 'cl-gensym) #'names--gensym)
+               ;; Stop at one level deep.
                ((symbol-function 'edebug-form) #'names--edebug-form)
+               ;; Don't actually wrap anything.
                ((symbol-function 'edebug-make-enter-wrapper)
                 #'names--edebug-make-enter-wrapper))
+            ;; Do the magic!
             (edebug-read-top-level-form))))
     (invalid-read-syntax
      (names--warn
