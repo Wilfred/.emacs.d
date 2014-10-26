@@ -37,7 +37,7 @@
 ;; set exec-path according to the system's PATH
 (exec-path-from-shell-initialize)
 
-(load-theme 'lush t)
+(load-theme 'tangotango t)
 
 ;; hide toolbar and scrollbar
 (tool-bar-mode 0)

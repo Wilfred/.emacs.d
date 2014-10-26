@@ -183,27 +183,19 @@ Note this function comes from the package `exec-path-from-shell.el'.
 
 *** Theme
 
-I like the tangotango theme, which depends on color-theme. In Emacs
-24, this isn't necessary (todo: update this).
+I like the tangotango theme. It has very contrasting colours and uses
+bold faces for definitions. It also has good support for a range of
+popular packages.
+
+TODO: I don't like the large font sizes in org-mode. I would also
+prefer zig-zag underlines for flycheck. There's also an issue with
+hl-line or hl-sexp in the minibuffer with ido.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (add-to-list 'load-path "~/.emacs.d/third-party-lisp/color-theme")
-  (require 'color-theme)
-  
-  (require 'color-theme-tangotango)
-  ;; load theme when we are started with $ emacsclient -c
-  (add-hook 'after-make-frame-functions
-            '(lambda (f)
-               (with-selected-frame f
-                 (when (window-system f)
-                   (color-theme-tangotango)))))
-  ;; load theme when we are started with $ emacs
-  (when window-system
-    (color-theme-tangotango))
-  
+  (load-theme 'tangotango t)
 #+END_SRC
 
-*** Hiding and Showing
+*** Visibility of UI Elements
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   ;; hide toolbar and scrollbar
