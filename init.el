@@ -294,7 +294,7 @@ Visit the file after creation."
 
 (add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
 
-(setq-default flycheck-emacs-lisp-initialize-packages t)
+(setq-default flycheck-emacs-lisp-initialize-packages 'auto)
 
 (require 'flycheck)
 (setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers))
@@ -565,10 +565,6 @@ Visit the file after creation."
 ;; crontab mode for files named
 (require 'crontab-mode)
 (add-to-list 'auto-mode-alist '("crontab.*?\\'" . crontab-mode))
-
-(require 'wiki)
-(setq major-mode 'text-mode)
-(setq wiki-directories (list (expand-file-name "~/Dropbox/Wiki/")))
 
 (setq ring-bell-function 'ignore)
 

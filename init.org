@@ -1196,10 +1196,6 @@ annoying to accidentally close Emacs, so warn first.
   (require 'crontab-mode)
   (add-to-list 'auto-mode-alist '("crontab.*?\\'" . crontab-mode))
   
-  (require 'wiki)
-  (setq major-mode 'text-mode)
-  (setq wiki-directories (list (expand-file-name "~/Dropbox/Wiki/")))
-  
   (setq ring-bell-function 'ignore)
   
   ; suspend seems to crash on Gnome 3, and I don't use it anyway, so just disable it
