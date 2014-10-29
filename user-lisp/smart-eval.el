@@ -1,4 +1,4 @@
-;;; smart-eval.el --- helpful eval, re-eval and uneval for elisp
+;;; smart-eval.el --- helpful eval and re-eval for elisp
 
 ;; Copyright (C) 2014 Wilfred Hughes <me@wilfred.me.uk>
 ;;
@@ -29,6 +29,9 @@
 ;; was set to before.  Customise eval-expression-debug-on-error to
 ;; change it.  We need to think about what's best for smart-eval
 ;; (always debug, I think).
+;;
+;; TODO: uneval / forget the bindings created in the current buffer or
+;; with a given prefix.
 
 ;;; License:
 
