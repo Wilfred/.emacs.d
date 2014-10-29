@@ -517,13 +517,14 @@ Visit the file after creation."
 (require 'completion-customisations)
 (require 'structured-text-customisations)
 (require 'isearch-customisations)
-(require 'python-customisations)
-(require 'javascript-customisations)
-(require 'xml-customisations)
-(require 'lisp-customisations)
-(require 'sh-customisations)
+
 (require 'coffee-customisations)
+(require 'javascript-customisations)
+(require 'lisp-customisations)
+(require 'python-customisations)
 (require 'rust-customisations)
+(require 'sh-customisations)
+(require 'xml-customisations)
 
 (require 'startup-customisations)
 

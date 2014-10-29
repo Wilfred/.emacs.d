@@ -1116,92 +1116,93 @@ annoying to accidentally close Emacs, so warn first.
   ; <jlf> wilfredh: you could before-advise other-window to quit first
   ; if the minibuffer is active.. but it would be better to break that
   ; habit :)
-  
+
   (require 'ui-customisations)
-  
+
   (require 'file-customisations)
   (require 'editing-customisations)
   (require 'kill-ring-customisations)
-  
+
   (if (eq system-type 'darwin)
       (require 'os-x-fixes))
-  
+
   ; TODO: increase kill ring size
-  
+
   (require 'ido-customisations)
-  
+
   ;; make re-builder use the same regexp format as regexp-replace (no double escaping)
   (setq reb-re-syntax 'string)
-  
+
   ;; treat space charcters as matching space characters, not like PCRE's '\s+'
   (setq search-whitespace-regexp nil)
-  
+
   (require 'completion-customisations)
   (require 'structured-text-customisations)
   (require 'isearch-customisations)
-  (require 'python-customisations)
-  (require 'javascript-customisations)
-  (require 'xml-customisations)
-  (require 'lisp-customisations)
-  (require 'sh-customisations)
+
   (require 'coffee-customisations)
+  (require 'javascript-customisations)
+  (require 'lisp-customisations)
+  (require 'python-customisations)
   (require 'rust-customisations)
-  
+  (require 'sh-customisations)
+  (require 'xml-customisations)
+
   (require 'startup-customisations)
-  
+
   (require 'git-customisations)
   (require 'git-flow-release)
   (require 'eshell-customisations)
   (require 'swoop-customisations)
-  
+
   (require 'compilation-customisations)
-  
+
   (ignore-errors (require 'site-customisations))
-  
+
   (setq ag-highlight-search 't)
   (global-set-key (kbd "<f5>") 'ag-project-at-point)
-  
+
   ;; stolen from http://whattheemacsd.com/setup-dired.el-02.html
   (defun dired-back-to-top ()
     (interactive)
     (beginning-of-buffer)
     (dired-next-line (if dired-omit-mode 2 4)))
-  
+
   (define-key dired-mode-map
     (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
-  
+
   (defun dired-jump-to-bottom ()
     (interactive)
     (end-of-buffer)
     (dired-next-line -1))
-  
+
   (define-key dired-mode-map
     (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
-  
+
   (require 'conflicts)
-  
+
   (require 'tags-utils)
-  
+
   (require 'blog-utils)
-  
+
   ;; crontab mode for files named
   (require 'crontab-mode)
   (add-to-list 'auto-mode-alist '("crontab.*?\\'" . crontab-mode))
-  
+
   (setq ring-bell-function 'ignore)
-  
+
   ; suspend seems to crash on Gnome 3, and I don't use it anyway, so just disable it
   (setq cannot-suspend t)
   (defun suspend-emacs (&rest)
     (interactive))
   (defun suspend-frame (&rest)
     (interactive))
-  
+
   ;; windmove allows S-<right> and S-<right> to switch between windows
   ;; instead of `C-x o'
   (when (fboundp 'windmove-default-keybindings)
     (windmove-default-keybindings))
-  
+
   (custom-set-variables
     ;; custom-set-variables was added by Custom.
     ;; If you edit it by hand, you could mess it up, so be careful.
