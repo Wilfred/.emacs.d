@@ -518,6 +518,7 @@ Visit the file after creation."
 (require 'structured-text-customisations)
 (require 'isearch-customisations)
 
+(require 'c-customisations)
 (require 'coffee-customisations)
 (require 'javascript-customisations)
 (require 'lisp-customisations)

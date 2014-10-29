@@ -1140,6 +1140,7 @@ annoying to accidentally close Emacs, so warn first.
   (require 'structured-text-customisations)
   (require 'isearch-customisations)
 
+  (require 'c-customisations)
   (require 'coffee-customisations)
   (require 'javascript-customisations)
   (require 'lisp-customisations)
