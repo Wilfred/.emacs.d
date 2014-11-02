@@ -1,10 +1,10 @@
-;;; ez-query-replace.el --- A helpful query-replace.
+;;; ez-query-replace.el --- a smarter context-sensitive query-replace that can be reapplied
 
 ;; Copyright (C) 2013 Wilfred Hughes <me@wilfred.me.uk>
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 21 August 2013
-;; Version: 20140809.628
+;; Version: 20140810.517
 ;; X-Original-Version: 0.4
 ;; Package-Requires: ((dash "1.2.0"))
 
