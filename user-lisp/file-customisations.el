@@ -55,4 +55,8 @@ The original buffer and file are untouched."
   (interactive)
   (magit-status "~/.emacs.d"))
 
+;; When switching to a project (bound to `C-c p p'), open magit.
+(require 'projectile)
+(setq projectile-switch-project-action #'(lambda () (magit-status default-directory)))
+
 (provide 'file-customisations)
