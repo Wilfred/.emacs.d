@@ -65,4 +65,7 @@
 (define-key python-mode-map (kbd "C-M-n") 'python-nav-forward-statement)
 (define-key python-mode-map (kbd "C-M-p") 'python-nav-backward-statement)
 
+(add-hook 'python-mode-hook 'anaconda-mode)
+(add-hook 'python-mode-hook 'eldoc-mode)
+
 (provide 'python-customisations)
