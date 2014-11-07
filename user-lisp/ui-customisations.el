@@ -97,19 +97,6 @@ it to open related buffers easily and discard other buffers (commonly magit)."
 
 (global-set-key (kbd "C-c C-x 2") 'split-this-frame)
 
-(require 'time)
-(display-time-mode 1)
-(setq display-time-format "%l:%M%p")
-
-(ignore-errors
-  (add-to-list 'load-path "~/.emacs.d/third-party-lisp/mode-line-stats")
-  (require 'mode-line-stats)
-  (mode-line-stats-mode)
-
-  (require 'diminish)
-  (diminish 'mode-line-stats-mode)
-  (setq mls-modules '(cpu memory disk)))
-
 (require 'paredit)
 (diminish 'paredit-mode "PE")
 (require 'projectile)
