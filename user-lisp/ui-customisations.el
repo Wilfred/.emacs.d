@@ -102,4 +102,23 @@ it to open related buffers easily and discard other buffers (commonly magit)."
 (require 'projectile)
 (diminish 'projectile-mode)
 
+;;; Mode-line.
+
+;; I want a minimalistic mode line. It should only have:
+;;
+;; * Modified state
+;; * Buffer name
+;; * Top/Bot/%ge
+;; * Line and column number (clearly labelled which)
+;; * Major mode
+;; * Minor modes that mutate the buffer (i.e. those where it would be
+;;   surprising if they were on and you didn't know)
+;;
+;; It should also use colour rather than punctuation characters
+;; wherever possible. E.g. distinguishing major from minor mode (as
+;; the major mode name can, but should not, include spaces).
+;;
+;; I don't think smart-mode-line will meet this need, but it's at
+;; least worth stealing ideas from.
+
 (provide 'ui-customisations)
