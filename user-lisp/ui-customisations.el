@@ -100,6 +100,6 @@ it to open related buffers easily and discard other buffers (commonly magit)."
 (require 'paredit)
 (diminish 'paredit-mode "PE")
 (require 'projectile)
-(diminish 'projectile-mode "Proj")
+(diminish 'projectile-mode)
 
 (provide 'ui-customisations)
