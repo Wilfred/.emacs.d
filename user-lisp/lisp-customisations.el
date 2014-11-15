@@ -33,6 +33,9 @@
 (require 'diminish)
 (diminish 'elisp-slime-nav-mode)
 
+;; When evaluating elisp in the minibuffer, show eldoc in the mode line.
+(eldoc-in-minibuffer-mode 1)
+
 (add-hook 'clojure-mode-hook 'rainbow-delimiters-mode)
 (add-hook 'scheme-mode-hook 'rainbow-delimiters-mode)
 (add-hook 'lisp-mode-hook 'rainbow-delimiters-mode)
