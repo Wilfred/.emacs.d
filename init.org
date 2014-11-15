@@ -674,7 +674,7 @@ especially since giving a prefix argument switches on edebug for that
 function.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (define-key emacs-lisp-mode-map (kbd "C-c e") 'eval-defun)
+  (define-key emacs-lisp-mode-map (kbd "C-c e") #'edebug-eval-defun)
 #+END_SRC
 
 Similarly, toggle-debug-on-error is something I call a lot when

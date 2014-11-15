@@ -263,7 +263,7 @@ Visit the file after creation."
 (require 'magit)
 (diminish 'magit-auto-revert-mode)
 
-(define-key emacs-lisp-mode-map (kbd "C-c e") 'eval-defun)
+(define-key emacs-lisp-mode-map (kbd "C-c e") #'edebug-eval-defun)
 
 (define-key emacs-lisp-mode-map (kbd "C-c d") 'toggle-debug-on-error)
 
