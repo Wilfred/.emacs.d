@@ -1,37 +1,44 @@
 ;;; pcre2el-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (rxt-global-mode turn-on-rxt-mode rxt-mode rxt-convert-to-strings
-;;;;;;  rxt-convert-to-rx rxt-convert-syntax rxt-explain rxt-explain-pcre
-;;;;;;  rxt-explain-elisp rxt-pcre-to-strings rxt-pcre-to-sre rxt-pcre-to-rx
-;;;;;;  rxt-pcre-to-elisp rxt-toggle-elisp-rx rxt-elisp-to-strings
-;;;;;;  rxt-elisp-to-sre rxt-elisp-to-rx rxt-elisp-to-pcre pcre-replace-regexp
-;;;;;;  pcre-query-replace-regexp pcre-mode) "pcre2el" "pcre2el.el"
-;;;;;;  (21284 32991 57184 478000))
+;;;### (autoloads nil "pcre2el" "pcre2el.el" (21598 37777 809763
+;;;;;;  596000))
 ;;; Generated autoloads from pcre2el.el
 
 (defvar pcre-mode nil "\
 Non-nil if PCRE mode is enabled.
-See the command `pcre-mode' for a description of this minor mode.")
+See the command `pcre-mode' for a description of this minor mode.
+Setting this variable directly does not take effect;
+either customize it (see the info node `Easy Customization')
+or call the function `pcre-mode'.")
 
 (custom-autoload 'pcre-mode "pcre2el" nil)
 
 (autoload 'pcre-mode "pcre2el" "\
-Use emulated PCRE syntax wherever possible
+Use emulated PCRE syntax for regexps wherever possible.
+
+Advises the `interactive' specs of `read-regexp' and the
+following other functions so that they read PCRE syntax and
+translate to its Emacs equivalent:
+
+- `align-regexp'
+- `find-tag-regexp'
+- `sort-regexp-fields'
+- `isearch-message-prefix'
+- `ibuffer-do-replace-regexp'
+
+Also alters the behavior of `isearch-mode' when searching by regexp.
 
 \(fn &optional ARG)" t nil)
 
 (autoload 'pcre-query-replace-regexp "pcre2el" "\
-Perform `query-replace-regexp' using emulated PCRE regexp syntax.
+Perform `query-replace-regexp' using PCRE syntax.
 
-\(fn REGEXP TO-STRING &optional DELIMITED START END)" t nil)
+Consider using `pcre-mode' instead of this function.
 
-(autoload 'pcre-replace-regexp "pcre2el" "\
-Perform `replace-regexp' using emulated PCRE regexp syntax.
-
-\(fn REGEXP TO-STRING &optional DELIMITED START END)" t nil)
+\(fn)" t nil)
 
 (autoload 'rxt-elisp-to-pcre "pcre2el" "\
 Translate REGEXP, a regexp in Emacs Lisp syntax, to Perl-compatible syntax.
@@ -216,16 +223,9 @@ See `rxt-mode' for more information on Rxt mode.
 
 ;;;***
 
-;;;### (autoloads nil nil ("pcre2el-pkg.el") (21284 32991 113681
-;;;;;;  699000))
-
-;;;***
-
-(provide 'pcre2el-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; pcre2el-autoloads.el ends here
