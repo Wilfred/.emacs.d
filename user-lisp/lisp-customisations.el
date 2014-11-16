@@ -19,6 +19,10 @@
             (setq use-hl-line nil)
             (hl-sexp-mode)
             (highlight-quoted-mode)))
+
+(eval-after-load 'flycheck
+  '(add-hook 'flycheck-mode-hook #'flycheck-cask-setup))
+
 (add-hook 'clojure-mode-hook
           (lambda ()
             (setq use-hl-line nil)
