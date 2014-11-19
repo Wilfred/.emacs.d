@@ -1,12 +1,9 @@
 ;;; ag-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (ag-kill-other-buffers ag-kill-buffers ag-project-dired-regexp
-;;;;;;  ag-project-dired ag-dired-regexp ag-dired ag-project-regexp
-;;;;;;  ag-project-files ag-project ag-regexp ag-files ag) "ag" "ag.el"
-;;;;;;  (21423 59537 111911 142000))
+;;;### (autoloads nil "ag" "ag.el" (21613 8229 757233 937000))
 ;;; Generated autoloads from ag.el
 
 (autoload 'ag "ag" "\
@@ -18,12 +15,13 @@ If called with a prefix, prompts for flags to pass to ag.
 \(fn STRING DIRECTORY)" t nil)
 
 (autoload 'ag-files "ag" "\
-Search using ag in a given DIRECTORY and file type regex FILE-REGEX
-for a given search STRING, with STRING defaulting to the symbol under point.
+Search using ag in a given DIRECTORY for a given search STRING,
+limited to files that match FILE-TYPE. STRING defaults to
+the symbol under point.
 
 If called with a prefix, prompts for flags to pass to ag.
 
-\(fn STRING FILE-REGEX DIRECTORY)" t nil)
+\(fn STRING FILE-TYPE DIRECTORY)" t nil)
 
 (autoload 'ag-regexp "ag" "\
 Search using ag in a given directory for a given regexp.
@@ -42,12 +40,13 @@ If called with a prefix, prompts for flags to pass to ag.
 \(fn STRING)" t nil)
 
 (autoload 'ag-project-files "ag" "\
-Search using ag in a given DIRECTORY and file type regex FILE-REGEX
-for a given search STRING, with STRING defaulting to the symbol under point.
+Search using ag for a given search STRING,
+limited to files that match FILE-TYPE. STRING defaults to the
+symbol under point.
 
 If called with a prefix, prompts for flags to pass to ag.
 
-\(fn STRING FILE-REGEX)" t nil)
+\(fn STRING FILE-TYPE)" t nil)
 
 (autoload 'ag-project-regexp "ag" "\
 Guess the root of the current project and search it with ag
@@ -115,15 +114,9 @@ Kill all `ag-mode' buffers other than the current buffer.
 
 ;;;***
 
-;;;### (autoloads nil nil ("ag-pkg.el") (21423 59537 163453 368000))
-
-;;;***
-
-(provide 'ag-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; ag-autoloads.el ends here
