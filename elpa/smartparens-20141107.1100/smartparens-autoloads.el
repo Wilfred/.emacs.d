@@ -1,14 +1,10 @@
 ;;; smartparens-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (turn-off-show-smartparens-mode turn-on-show-smartparens-mode
-;;;;;;  show-smartparens-global-mode show-smartparens-mode turn-off-smartparens-mode
-;;;;;;  turn-on-smartparens-mode smartparens-global-mode turn-on-smartparens-strict-mode
-;;;;;;  smartparens-global-strict-mode smartparens-strict-mode smartparens-mode
-;;;;;;  sp-use-smartparens-bindings sp-use-paredit-bindings sp-cheat-sheet)
-;;;;;;  "smartparens" "smartparens.el" (21525 35219 756998 274000))
+;;;### (autoloads nil "smartparens" "smartparens.el" (21613 8086
+;;;;;;  589068 495000))
 ;;; Generated autoloads from smartparens.el
 
 (autoload 'sp-cheat-sheet "smartparens" "\
@@ -173,15 +169,13 @@ Turn off `show-smartparens-mode'.
 
 ;;;### (autoloads nil nil ("smartparens-config.el" "smartparens-html.el"
 ;;;;;;  "smartparens-latex.el" "smartparens-lua.el" "smartparens-pkg.el"
-;;;;;;  "smartparens-ruby.el") (21525 35220 9739 268000))
+;;;;;;  "smartparens-ruby.el") (21613 8086 775560 970000))
 
 ;;;***
 
-(provide 'smartparens-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; smartparens-autoloads.el ends here
