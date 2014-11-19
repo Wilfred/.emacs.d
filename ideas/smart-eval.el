@@ -22,7 +22,11 @@
 ;;
 ;; 4. Always open a debugger if the evaluation throws an error.
 ;;
-;; 5. The ability to completely uneval (i.e. unload or forget)
+;; 5. Evaluating a top-level definition, with any smart-eval command,
+;; should preserve location information, so `describe-function' and
+;; friends can still jump to the definition.
+;;
+;; 6. The ability to completely uneval (i.e. unload or forget)
 ;; our bindings.
 ;;
 ;; Note that eval-last-sexp sets debug-on-error regardless of what it
