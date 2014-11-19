@@ -1,10 +1,10 @@
 ;;; macrostep-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (macrostep-expand macrostep-mode) "macrostep" "macrostep.el"
-;;;;;;  (21385 52553 890939 926000))
+;;;### (autoloads nil "macrostep" "macrostep.el" (21613 8143 328343
+;;;;;;  511000))
 ;;; Generated autoloads from macrostep.el
 
 (autoload 'macrostep-mode "macrostep" "\
@@ -31,16 +31,9 @@ buffer and expand the next macro form found, if any.
 
 ;;;***
 
-;;;### (autoloads nil nil ("macrostep-pkg.el") (21385 52553 989321
-;;;;;;  599000))
-
-;;;***
-
-(provide 'macrostep-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; macrostep-autoloads.el ends here
