@@ -1,5 +1,5 @@
 ;;; magit-svn.el --- git-svn plug-in for Magit
-;; Version: 20140619.212
+;; Version: 20140807.909
 
 ;; Copyright (C) 2010-2014  The Magit Project Developers
 ;;
@@ -301,6 +301,9 @@ If USE-CACHE is non nil, use the cached information."
 (defun turn-on-magit-svn ()
   "Unconditionally turn on `magit-svn-mode'."
   (magit-svn-mode 1))
+
+;;;###autoload
+(custom-add-option 'magit-mode-hook #'magit-svn-mode)
 
 (provide 'magit-svn)
 ;; Local Variables:

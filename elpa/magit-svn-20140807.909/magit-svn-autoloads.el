@@ -1,12 +1,10 @@
 ;;; magit-svn-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (turn-on-magit-svn magit-svn-mode magit-svn-fetch-externals
-;;;;;;  magit-svn-remote-update magit-svn-dcommit magit-svn-rebase
-;;;;;;  magit-svn-create-tag magit-svn-create-branch magit-svn-find-rev)
-;;;;;;  "magit-svn" "magit-svn.el" (21423 59468 339588 368000))
+;;;### (autoloads nil "magit-svn" "magit-svn.el" (21613 8139 358394
+;;;;;;  328000))
 ;;; Generated autoloads from magit-svn.el
 
 (autoload 'magit-svn-find-rev "magit-svn" "\
@@ -55,18 +53,13 @@ Unconditionally turn on `magit-svn-mode'.
 
 \(fn)" nil nil)
 
-;;;***
-
-;;;### (autoloads nil nil ("magit-svn-pkg.el") (21423 59468 399609
-;;;;;;  982000))
+(custom-add-option 'magit-mode-hook #'magit-svn-mode)
 
 ;;;***
 
-(provide 'magit-svn-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; magit-svn-autoloads.el ends here

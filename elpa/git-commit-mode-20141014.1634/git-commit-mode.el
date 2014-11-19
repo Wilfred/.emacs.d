@@ -1,5 +1,5 @@
 ;;; git-commit-mode.el --- Major mode for editing git commit messages -*- lexical-binding: t; -*-
-;; Version: 20140605.520
+;; Version: 20141014.1634
 
 ;; Copyright (c) 2010-2012  Florian Ragwitz
 ;; Copyright (c) 2012-2013  Sebastian Wiesner
@@ -85,7 +85,7 @@ confirmation before committing."
   :type '(choice (const :tag "On style errors" t)
                  (const :tag "Never" nil)))
 
-(defcustom git-commit-mode-hook '(turn-on-auto-fill flyspell-mode)
+(defcustom git-commit-mode-hook '(turn-on-auto-fill)
   "Hook run when entering Git Commit mode."
   :options '(turn-on-auto-fill flyspell-mode git-commit-save-message)
   :type 'hook
@@ -343,7 +343,10 @@ The commit message is saved to the kill ring."
   "Cycle backward through message history, after saving current message.
 With a numeric prefix ARG, go back ARG comments."
   (interactive "*p")
-  (git-commit-save-message)
+  (when (and (git-commit-save-message) (> arg 0))
+    (setq log-edit-comment-ring-index
+          (log-edit-new-comment-index
+           arg (ring-length log-edit-comment-ring))))
   (save-restriction
     (narrow-to-region (point-min) (git-commit-find-pseudo-header-position))
     (log-edit-previous-comment arg)))
@@ -536,7 +539,7 @@ Known comment headings are provided by `git-commit-comment-headings'."
   (append
    `(("^\\s<.*$" . 'font-lock-comment-face)
      ("^\\s<\\s-On branch \\(.*\\)$" (1 'git-commit-branch-face t))
-     ("^\\s<\t\\(?:\\([^:]+\\):\\s-+\\)?\\(.*\\)$"
+     ("^\\s<\t\\(?:\\([^:\n]+\\):\\s-+\\)?\\(.*\\)$"
       (1 'git-commit-comment-action-face t t)
       (2 'git-commit-comment-file-face t))
      (,(concat "^\\("
@@ -617,6 +620,8 @@ basic structure of and errors in git commit messages."
                      (line-beginning-position)
                      (line-end-position)))
     (open-line 1))
+  ;; That's what happens when every little detail is commented
+  (make-local-variable 'log-edit-comment-ring-index)
   ;; Make sure `git-commit-abort' cannot be by-passed
   (add-hook 'kill-buffer-query-functions
             'git-commit-kill-buffer-noop nil t)
@@ -646,10 +651,11 @@ basic structure of and errors in git commit messages."
         'git-commit-mode-flyspell-verify))
 
 ;;;###autoload
-(dolist (pattern '("/COMMIT_EDITMSG\\'" "/NOTES_EDITMSG\\'"
-                   "/MERGE_MSG\\'" "/TAG_EDITMSG\\'"
-                   "/PULLREQ_EDITMSG\\'"))
-  (add-to-list 'auto-mode-alist (cons pattern 'git-commit-mode)))
+(add-to-list 'auto-mode-alist '("/MERGE_MSG\\'" . git-commit-mode))
+;;;###autoload
+(add-to-list 'auto-mode-alist
+             '("/\\(?:COMMIT\\|NOTES\\|TAG\\|PULLREQ\\)_EDITMSG\\'"
+               . git-commit-mode))
 
 (defun git-commit-auto-mode-enable ()
   (message "git-commit-auto-mode-enable is obsolete and doesn't do anything"))

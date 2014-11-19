@@ -661,7 +661,7 @@ completion.
 Magit will look into these directories for Git repositories and
 offer them as choices for `magit-status'."
   :group 'magit
-  :type '(repeat string))
+  :type '(repeat directory))
 
 (defcustom magit-repo-dirs-depth 3
   "The maximum depth to look for Git repos.
@@ -4373,14 +4373,17 @@ can be used to override this."
               (and (yes-or-no-p
                     (format "There is no Git repository in %s.  Create one? "
                             dir))
-                   (magit-init dir)
-                   (setq topdir (magit-get-top-dir dir))))
+                   (progn
+                     (magit-init dir)
+                     (setq topdir (magit-get-top-dir dir)))))
       (let ((default-directory topdir))
         (magit-mode-setup magit-status-buffer-name
                           (or switch-function
                               magit-status-buffer-switch-function)
                           #'magit-status-mode
                           #'magit-refresh-status)))))
+
+(defalias 'magit-status-internal 'magit-status) ; forward compatibility
 
 (defun magit-refresh-status ()
   (magit-git-exit-code "update-index" "--refresh")
@@ -6342,7 +6345,7 @@ Other key binding:
 
 (defconst magit-log-oneline-re
   (concat "^"
-          "\\(?4:\\(?:[-_/|\\*o.] *\\)+ *\\)?"     ; graph
+          "\\(?4:\\(?: *[-_/|\\*o.] *\\)+ *\\)?"   ; graph
           "\\(?:"
           "\\(?1:[0-9a-fA-F]+\\) "                 ; sha1
           "\\(?:\\(?3:([^()]+)\\) \\)?"            ; refs

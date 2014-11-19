@@ -1,10 +1,10 @@
 ;;; git-rebase-mode-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (git-rebase-mode) "git-rebase-mode" "git-rebase-mode.el"
-;;;;;;  (21423 59501 779095 522000))
+;;;### (autoloads nil "git-rebase-mode" "git-rebase-mode.el" (21613
+;;;;;;  8180 457867 593000))
 ;;; Generated autoloads from git-rebase-mode.el
 
 (autoload 'git-rebase-mode "git-rebase-mode" "\
@@ -21,16 +21,9 @@ running 'man git-rebase' at the command line) for details.
 
 ;;;***
 
-;;;### (autoloads nil nil ("git-rebase-mode-pkg.el") (21423 59501
-;;;;;;  831749 486000))
-
-;;;***
-
-(provide 'git-rebase-mode-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; git-rebase-mode-autoloads.el ends here

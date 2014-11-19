@@ -1,10 +1,10 @@
 ;;; git-commit-mode-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (git-commit-mode) "git-commit-mode" "git-commit-mode.el"
-;;;;;;  (21423 59502 475751 953000))
+;;;### (autoloads nil "git-commit-mode" "git-commit-mode.el" (21613
+;;;;;;  8181 287856 942000))
 ;;; Generated autoloads from git-commit-mode.el
 
 (autoload 'git-commit-mode "git-commit-mode" "\
@@ -16,20 +16,15 @@ basic structure of and errors in git commit messages.
 
 \(fn)" t nil)
 
-(dolist (pattern '("/COMMIT_EDITMSG\\'" "/NOTES_EDITMSG\\'" "/MERGE_MSG\\'" "/TAG_EDITMSG\\'" "/PULLREQ_EDITMSG\\'")) (add-to-list 'auto-mode-alist (cons pattern 'git-commit-mode)))
+(add-to-list 'auto-mode-alist '("/MERGE_MSG\\'" . git-commit-mode))
+
+(add-to-list 'auto-mode-alist '("/\\(?:COMMIT\\|NOTES\\|TAG\\|PULLREQ\\)_EDITMSG\\'" . git-commit-mode))
 
 ;;;***
 
-;;;### (autoloads nil nil ("git-commit-mode-pkg.el") (21423 59502
-;;;;;;  537875 275000))
-
-;;;***
-
-(provide 'git-commit-mode-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; git-commit-mode-autoloads.el ends here
