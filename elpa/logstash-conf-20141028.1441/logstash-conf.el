@@ -4,7 +4,7 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 21 October 2014
-;; Version: 20141024.1018
+;; Version: 20141028.1441
 ;; X-Original-Version: 0.2
 
 ;;; Commentary:
@@ -34,6 +34,8 @@
 
 ;;; Code:
 (require 'conf-mode)
+(eval-when-compile
+  (require 'cl-lib)) ;; cl-incf, cl-decf
 
 (defgroup logstash nil
   "Major mode for editing Logstash configuration files."
@@ -86,8 +88,8 @@
     (save-excursion
       (while (search-backward-regexp paren-pattern nil t)
         (cond
-         ((logstash--open-paren-p) (incf open-paren-count))
-         ((logstash--close-paren-p) (decf open-paren-count)))))
+         ((logstash--open-paren-p) (cl-incf open-paren-count))
+         ((logstash--close-paren-p) (cl-decf open-paren-count)))))
     open-paren-count))
 
 (defun logstash-indent-line ()

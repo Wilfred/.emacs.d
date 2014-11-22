@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "logstash-conf" "logstash-conf.el" (21581 18745
-;;;;;;  233097 115000))
+;;;### (autoloads nil "logstash-conf" "logstash-conf.el" (21613 8144
+;;;;;;  868323 796000))
 ;;; Generated autoloads from logstash-conf.el
 
 (autoload 'logstash-conf-mode "logstash-conf" "\
