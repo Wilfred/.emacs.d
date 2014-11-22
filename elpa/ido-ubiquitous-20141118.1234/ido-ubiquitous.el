@@ -4,10 +4,10 @@
 
 ;; Author: Ryan C. Thompson
 ;; URL: https://github.com/DarwinAwardWinner/ido-ubiquitous
-;; Version: 20140526.1306
-;; X-Original-Version: 2.13
+;; Version: 20141118.1234
+;; X-Original-Version: 2.16
 ;; Created: 2011-09-01
-;; Keywords: convenience
+;; Keywords: convenience, completion, ido
 ;; EmacsWiki: InteractivelyDoThings
 ;; Package-Requires: ((emacs "24.1"))
 
@@ -21,6 +21,26 @@
 ;; does! ido-ubiquitous is here to enable ido-style completion for
 ;; (almost) every function that uses the standard completion function
 ;; `completing-read'.
+
+;; To use this package, call `ido-ubiquitous-mode' to enable the mode,
+;; or use `M-x customize-variable ido-ubiquitous-mode' it to enable it
+;; permanently. Note that `ido-ubiquotous-mode' has no effect unless
+;; `ido-mode' is also enabled. Once the mode is enabled, most
+;; functions that use `completing-read' will now have ido completion.
+;; If you decide in the middle of a command that you would rather not
+;; use ido, just C-f or C-b at the end/beginning of the input to fall
+;; back to non-ido completion (this is the same shortcut as when using
+;; ido for buffers or files).
+
+;; Note that `completing-read' has some quirks and complex behavior
+;; that ido cannot emulate. Ido-ubiquitous attempts to detect some of
+;; these quirks and avoid using ido when it sees them. So some
+;; functions will not have ido completion even when this mode is
+;; enabled. Some other functions have ido disabled in them because
+;; their packages already provide support for ido via other means (for
+;; example, org-mode and magit). See `M-x customize-group
+;; ido-ubiquitous' and read about the override variables for more
+;; information.
 
 ;;; License:
 
@@ -41,7 +61,7 @@
 
 ;;; Code:
 
-(defconst ido-ubiquitous-version "2.13"
+(defconst ido-ubiquitous-version "2.16"
   "Currently running version of ido-ubiquitous.
 
 Note that when you update ido-ubiquitous, this variable may not
@@ -54,7 +74,7 @@ be updated until you restart Emacs.")
 
 (require 'ido)
 (require 'advice)
-(require 'cl)
+(require 'cl-lib)
 ;; Only exists in emacs 24.4 and up; we use a workaround for earlier
 ;; versions.
 (require 'nadvice nil 'noerror)
@@ -90,7 +110,7 @@ be updated until you restart Emacs.")
   "List of widget names for match specs.")
 (defvar ido-ubiquitous-spec-matchers nil
   "Alist of functions for matching function specs against function names.")
-(loop for (widget-name widget-tag key field-type matcher) in
+(cl-loop for (widget-name widget-tag key field-type matcher) in
          '((exact-match "Exact match" exact string string=)
            (prefix-match "Prefix match" prefix string string-prefix-p)
            (regexp-match "Regexp match" regexp regexp string-match-p))
@@ -267,9 +287,9 @@ specific commands or functions, set appropriate overrides in
 (defconst ido-ubiquitous-default-command-overrides
   '(;; If you want ido for M-x, install smex
     (disable exact "execute-extended-command")
-    ;; https://github.com/technomancy/ido-ubiquitous/issues/13#issuecomment-8033522
+    ;; Wanderlust uses new-style default
     (enable prefix "wl-")
-    ;; https://github.com/technomancy/ido-ubiquitous/issues/7
+    ;; Info functions use old-style default selection
     (enable-old prefix "Info-")
     ;; https://github.com/DarwinAwardWinner/ido-ubiquitous/issues/4
     (enable exact "webjump")
@@ -285,8 +305,8 @@ specific commands or functions, set appropriate overrides in
     (disable prefix "tmm-")
     ;; https://github.com/DarwinAwardWinner/ido-ubiquitous/issues/47
     ;; theme functions don't need old-style compatibility
-    (enable regexp "\\`\\(load\\|enable\\|disable\\|describe\\|custom-theme-visit-theme\\)-theme\\'")
-)
+    (enable regexp "\\`\\(load\\|enable\\|disable\\|describe\\|custom-theme-visit\\)-theme\\'")
+    )
   "Default value of `ido-ubiquitous-command-overrides'.
 
 You can restore these using the command `ido-ubiquitous-restore-default-overrides'.")
@@ -315,7 +335,10 @@ You can restore these using the command `ido-ubiquitous-restore-default-override
     ;; https://github.com/DarwinAwardWinner/ido-ubiquitous/issues/39
     (disable exact "Info-read-node-name")
     ;; https://github.com/purcell/emacs.d/issues/182#issuecomment-44212927
-    (disable exact "tmm-menubar"))
+    (disable exact "tmm-menubar")
+    ;; https://github.com/DarwinAwardWinner/ido-ubiquitous/issues/58
+    ;; https://github.com/mooz/js2-mode/issues/181
+    (enable exact "imenu--completion-buffer"))
   "Default value of `ido-ubiquitous-function-overrides'.
 
 You can restore these using the command `ido-ubiquitous-restore-default-overrides'.")
@@ -399,16 +422,16 @@ each function to apply the appropriate override."
   ;; Unset all previous overrides
   (when (boundp sym)
     (let ((oldval (eval sym)))
-      (loop for (_action _match-type func) in oldval
+      (cl-loop for (_action _match-type func) in oldval
                do (ido-ubiquitous-apply-function-override func nil))))
   ;; Ensure that function names are strings, not symbols
   (setq newval
-        (loop for (action match-type func) in newval
+        (cl-loop for (action match-type func) in newval
                  collect (list action match-type
                                (ido-ubiquitous--as-string func))))
   (set-default sym newval)
   ;; set new overrides
-  (loop for (action _match-type func) in (eval sym)
+  (cl-loop for (action _match-type func) in (eval sym)
            do (ido-ubiquitous-apply-function-override func action)))
 
 (defcustom ido-ubiquitous-function-overrides ido-ubiquitous-default-function-overrides
@@ -458,7 +481,12 @@ this to non-nil, but this is not recommended."
   "This holds the override being applied to the current call to `completing-read'.")
 
 (defun ido-ubiquitous-completing-read (&rest args)
-  "Wrapper for `ido-completing-read' that enables ido-ubiquitous features."
+  "Wrapper for `ido-completing-read' that enables ido-ubiquitous features.
+
+Unlike `ido-completing-read', this function can return with
+`ido-exit' set to `fallback', and any function that calls this
+should check the value of `ido-exit' and handle this case
+appropriately. For example, see `completing-read-ido'."
   (let ((ido-ubiquitous-next-call-replaces-completing-read t))
     (apply 'ido-completing-read args)))
 
@@ -471,7 +499,9 @@ This advice implements the logic required for
 `ido-completing-read' is called through
 `ido-ubiquitous-completing-read', so other packages that use
 `ido-completing-read', such as `smex', will not be affected."
-  (let* ((ido-ubiquitous-this-call-replaces-completing-read ido-ubiquitous-next-call-replaces-completing-read)
+  (let* ((orig-args (ad-get-args 0))
+         (ido-ubiquitous-this-call-replaces-completing-read
+          ido-ubiquitous-next-call-replaces-completing-read)
          (ido-ubiquitous-next-call-replaces-completing-read nil)
          (error-during-setup nil))
     (when ido-ubiquitous-this-call-replaces-completing-read
@@ -510,10 +540,8 @@ This advice implements the logic required for
     (if (not error-during-setup)
         ad-do-it
       (setq ad-return-value
-            (funcall
-             ido-ubiquitous-fallback-completing-read-function
-             prompt choices predicate require-match initial-input
-             hist def inherit-input-method)))))
+            (apply ido-ubiquitous-fallback-completing-read-function
+                   orig-args)))))
 
 (defun completing-read-ido (prompt collection &optional predicate
                                    require-match initial-input
@@ -526,7 +554,12 @@ This function is a wrapper for `ido-completing-read' designed to
 be used as the value of `completing-read-function'. Importantly,
 it detects edge cases that ido cannot handle and uses normal
 completion for them."
-  (let* (;; Set the active override and clear the "next" one so it
+  (let* (;; Save the original arguments in case we need to do the
+         ;; fallback
+         (orig-args
+          (list prompt collection predicate require-match
+          initial-input hist def inherit-input-method))
+         ;; Set the active override and clear the "next" one so it
          ;; doesn't apply to nested calls.
          (ido-ubiquitous-active-override ido-ubiquitous-next-override)
          (ido-ubiquitous-next-override nil)
@@ -566,14 +599,36 @@ completion for them."
                    (<= (length collection) ido-ubiquitous-max-items))))
          ;; Final check for everything
          (ido-allowed (and ido-allowed collection-ok))
-         (comp-read-fun
+         (result
           (if ido-allowed
-              'ido-ubiquitous-completing-read
-            ido-ubiquitous-fallback-completing-read-function)))
-    (funcall comp-read-fun
-	     prompt collection predicate
-	     require-match initial-input
-	     hist def inherit-input-method)))
+              (ido-ubiquitous-completing-read prompt collection
+               predicate require-match initial-input hist def
+               inherit-input-method)
+            (setq ido-exit 'fallback))))
+    ;; (message "Result: %S" result)
+    ;; (message "ido-exit: %S" ido-exit)
+    ;; Do the fallback if necessary. This could either be because ido
+    ;; can't handle the arguments, or the user indicated during
+    ;; completion that they wanted to fall back to non-ido completion.
+    (if (memq 'fallback (list ido-exit result))
+        (apply ido-ubiquitous-fallback-completing-read-function
+               orig-args)
+      result)))
+
+;; Fallback on magic C-f and C-b
+(defadvice ido-magic-forward-char (before ido-ubiquitous-fallback activate)
+  "Allow falling back in ido-ubiquitous."
+  (when ido-ubiquitous-this-call-replaces-completing-read
+    ;; `ido-context-switch-command' is already let-bound at this
+    ;; point.
+    (setq ido-context-switch-command #'ido-fallback-command)))
+
+(defadvice ido-magic-backward-char (before ido-ubiquitous-fallback activate)
+  "Allow falling back in ido-ubiquitous."
+  (when ido-ubiquitous-this-call-replaces-completing-read
+    ;; `ido-context-switch-command' is already let-bound at this
+    ;; point.
+    (setq ido-context-switch-command #'ido-fallback-command)))
 
 ;;; Old-style default support
 
@@ -655,7 +710,7 @@ future sessions."
   (let ((setter (if save
                     'customize-save-variable
                   'customize-set-variable)))
-    (loop for (var def) in '((ido-ubiquitous-command-overrides
+    (cl-loop for (var def) in '((ido-ubiquitous-command-overrides
                                  ido-ubiquitous-default-command-overrides)
                                 (ido-ubiquitous-function-overrides
                                  ido-ubiquitous-default-function-overrides))
@@ -665,14 +720,14 @@ future sessions."
                   (funcall setter var newval)))
     (message (if save
                  "ido-ubiquitous: Restored default command and function overrides and saved for future sessions."
-               "ido-ubiquitous: Restored default command and function overrides for current session only."))))
+               "ido-ubiquitous: Restored default command and function overrides for current session only. Call again with prefix to save for future sessions."))))
 
 (defun ido-ubiquitous-spec-match (spec symbol)
   "Returns t if SPEC matches SYMBOL (which should be a function name).
 
 See `ido-ubiquitous-command-overrides'."
   (when (and symbol (symbolp symbol))
-    (destructuring-bind (type text) spec
+    (cl-destructuring-bind (type text) spec
       (let ((matcher (cdr (assoc type ido-ubiquitous-spec-matchers)))
             (text (ido-ubiquitous--as-string text))
             (symname (ido-ubiquitous--as-string symbol)))
@@ -686,11 +741,11 @@ See `ido-ubiquitous-command-overrides'."
 If there is no override set for CMD in
 `ido-ubiquitous-command-overrides', return nil."
   (when (and cmd (symbolp cmd))
-    (loop for (action . spec) in ido-ubiquitous-command-overrides
-          when (memq action '(disable enable enable-old nil))
-          when (ido-ubiquitous-spec-match spec cmd)
-          return action
-          finally return nil)))
+    (cl-loop for (action . spec) in ido-ubiquitous-command-overrides
+             when (memq action '(disable enable enable-old nil))
+             when (ido-ubiquitous-spec-match spec cmd)
+             return action
+             finally return nil)))
 
 ;;; Workaround for https://github.com/DarwinAwardWinner/ido-ubiquitous/issues/24
 
@@ -729,15 +784,15 @@ interactively."
 FUN may be a list of functions, in which case the first one found
 on the stack will be used."
   (let ((stack
-         (loop for i upfrom 0
-               for frame = (backtrace-frame i)
-               while frame
-               collect frame))
+         (cl-loop for i upfrom 0
+                  for frame = (backtrace-frame i)
+                  while frame
+                  collect frame))
         (funcs (if (functionp fun)
                    (list fun)
                  fun)))
     (while (and stack
-                (not (memq (cadar stack) funcs)))
+                (not (memq (cl-cadar stack) funcs)))
       (setq stack (cdr stack)))
     stack))
 
@@ -749,7 +804,7 @@ Specifically, for each call to a function starting with
 including the advised function's original name are deleted from
 the stack."
   (let ((skipping-until nil))
-    (loop for frame in stack
+    (cl-loop for frame in stack
              for func = (cadr frame)
              ;; Check if we found the frame we we're skipping to
              if (and skipping-until
@@ -792,13 +847,13 @@ See the C source for the logic behind this function."
             '(called-interactively-p interactive-p))))))
     ;; See comments in the C function for the logic here.
     (while (and stack
-                (or (eq (cadar stack) 'bytecode)
+                (or (eq (cl-cadar stack) 'bytecode)
                     (null (caar stack))))
       (setq stack (cdr stack)))
     ;; Top of stack is now the function that we want to know
     ;; about. Pop it, then check if the next function is
     ;; `call-interactively', using a more permissive test than the default.
-    (ido-ubiquitous--looks-like-call-interactively (cadadr stack))))
+    (ido-ubiquitous--looks-like-call-interactively (cl-cadadr stack))))
 
 (defadvice call-interactively (around ido-ubiquitous activate)
   "Implements the behavior specified in `ido-ubiquitous-command-overrides'."
