@@ -1,6 +1,6 @@
 ;;; rust-mode.el --- A major emacs mode for editing Rust source code
 
-;; Version: 20140618.536
+;; Version: 20141111.1026
 ;; X-Original-Version: 0.2.0
 ;; Author: Mozilla
 ;; Url: https://github.com/rust-lang/rust
@@ -171,19 +171,20 @@
 (defconst rust-mode-keywords
   '("as"
     "box" "break"
-    "continue" "crate"
+    "const" "continue" "crate"
     "do"
     "else" "enum" "extern"
     "false" "fn" "for"
     "if" "impl" "in"
     "let" "loop"
-    "match" "mod" "mut"
+    "match" "mod" "move" "mut"
     "priv" "proc" "pub"
     "ref" "return"
     "self" "static" "struct" "super"
     "true" "trait" "type"
     "unsafe" "use"
-    "while"))
+    "virtual"
+    "where" "while"))
 
 (defconst rust-special-types
   '("u8" "i8"
