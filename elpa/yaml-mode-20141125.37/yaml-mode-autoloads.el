@@ -1,10 +1,10 @@
 ;;; yaml-mode-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (yaml-mode yaml) "yaml-mode" "yaml-mode.el" (20797
-;;;;;;  49770))
+;;;### (autoloads nil "yaml-mode" "yaml-mode.el" (21620 58501 758101
+;;;;;;  160000))
 ;;; Generated autoloads from yaml-mode.el
 
 (let ((loads (get 'yaml 'custom-loads))) (if (member '"yaml-mode" loads) nil (put 'yaml 'custom-loads (cons '"yaml-mode" loads))))
@@ -20,15 +20,9 @@ Simple mode to edit YAML.
 
 ;;;***
 
-;;;### (autoloads nil nil ("yaml-mode-pkg.el") (20797 49770 445524))
-
-;;;***
-
-(provide 'yaml-mode-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; yaml-mode-autoloads.el ends here
