@@ -1,14 +1,10 @@
 ;;; highlight-symbol-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (highlight-symbol-occur highlight-symbol-query-replace
-;;;;;;  highlight-symbol-nav-mode highlight-symbol-prev-in-defun
-;;;;;;  highlight-symbol-next-in-defun highlight-symbol-prev highlight-symbol-next
-;;;;;;  highlight-symbol-list-all highlight-symbol-remove-all highlight-symbol-at-point
-;;;;;;  highlight-symbol-mode) "highlight-symbol" "highlight-symbol.el"
-;;;;;;  (21311 14366 237135 941000))
+;;;### (autoloads nil "highlight-symbol" "highlight-symbol.el" (21613
+;;;;;;  8156 178178 937000))
 ;;; Generated autoloads from highlight-symbol.el
 
 (autoload 'highlight-symbol-mode "highlight-symbol" "\
@@ -88,16 +84,9 @@ before if NLINES is negative.
 
 ;;;***
 
-;;;### (autoloads nil nil ("highlight-symbol-pkg.el") (21311 14366
-;;;;;;  329735 512000))
-
-;;;***
-
-(provide 'highlight-symbol-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; highlight-symbol-autoloads.el ends here

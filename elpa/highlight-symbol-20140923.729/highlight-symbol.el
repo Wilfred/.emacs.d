@@ -3,7 +3,7 @@
 ;; Copyright (C) 2007-2009, 2013 Nikolaj Schumacher
 ;;
 ;; Author: Nikolaj Schumacher <bugs * nschum de>
-;; Version: 20131103.1336
+;; Version: 20140923.729
 ;; X-Original-Version: 1.2
 ;; Keywords: faces, matching
 ;; URL: http://nschum.de/src/emacs/highlight-symbol/
@@ -361,7 +361,8 @@ create the new one."
         (highlight-symbol-temp-highlight))
     (if (eql highlight-symbol-idle-delay 0)
         (highlight-symbol-temp-highlight)
-      (highlight-symbol-mode-remove-temp))))
+      (unless (equal highlight-symbol (highlight-symbol-get-symbol))
+        (highlight-symbol-mode-remove-temp)))))
 
 (defun highlight-symbol-jump (dir)
   "Jump to the next or previous occurence of the symbol at point.
