@@ -805,9 +805,14 @@ Default for SITEMAP-FILENAME is 'sitemap.org'."
 	  (visiting (find-buffer-visiting file))
 	  (buffer (or visiting (find-file-noselect file))))
      (with-current-buffer buffer
-       (org-mode)
        (let ((title
-	      (let ((property (plist-get (org-export-get-environment) :title)))
+	      (let ((property
+		     (plist-get
+		      ;; protect local variables in open buffers
+		      (if visiting
+			  (org-export-with-buffer-copy (org-export-get-environment))
+			(org-export-get-environment))
+		      :title)))
 		(if property
 		    (org-no-properties (org-element-interpret-data property))
 		  (file-name-nondirectory (file-name-sans-extension file))))))
@@ -822,12 +827,14 @@ If FILE is an Org file and provides a DATE keyword use it.  In
 any other case use the file system's modification time.  Return
 time in `current-time' format."
   (if (file-directory-p file) (nth 5 (file-attributes file))
-    (let* ((visiting (find-buffer-visiting file))
+    (let* ((org-inhibit-startup t)
+	   (visiting (find-buffer-visiting file))
 	   (file-buf (or visiting (find-file-noselect file nil)))
 	   (date (plist-get
 		  (with-current-buffer file-buf
-		    (let ((org-inhibit-startup t)) (org-mode))
-		    (org-export-get-environment))
+		    (if visiting
+			(org-export-with-buffer-copy (org-export-get-environment))
+		      (org-export-get-environment)))
 		  :date)))
       (unless visiting (kill-buffer file-buf))
       ;; DATE is either a timestamp object or a secondary string.  If it
@@ -863,25 +870,28 @@ When optional argument FORCE is non-nil, force publishing all
 files in PROJECT.  With a non-nil optional argument ASYNC,
 publishing will be done asynchronously, in another process."
   (interactive
-   (list
-    (assoc (org-icompleting-read
-	    "Publish project: "
-	    org-publish-project-alist nil t)
-	   org-publish-project-alist)
-    current-prefix-arg))
-  (let ((project-alist  (if (not (stringp project)) (list project)
-			  ;; If this function is called in batch mode,
-			  ;; project is still a string here.
-			  (list (assoc project org-publish-project-alist)))))
-    (if async
-	(org-export-async-start 'ignore
-	  `(let ((org-publish-use-timestamps-flag
-		  (if ',force nil ,org-publish-use-timestamps-flag)))
-	     (org-publish-projects ',project-alist)))
-      (save-window-excursion
-	(let* ((org-publish-use-timestamps-flag
-		(if force nil org-publish-use-timestamps-flag)))
-	  (org-publish-projects project-alist))))))
+   (list (assoc (org-icompleting-read "Publish project: "
+				      org-publish-project-alist nil t)
+		org-publish-project-alist)
+	 current-prefix-arg))
+  (let ((project (if (not (stringp project)) project
+		   ;; If this function is called in batch mode,
+		   ;; PROJECT is still a string here.
+		   (assoc project org-publish-project-alist))))
+    (cond
+     ((not project))
+     (async
+      (org-export-async-start (lambda (results) nil)
+	`(let ((org-publish-use-timestamps-flag
+		,(and (not force) org-publish-use-timestamps-flag)))
+	   ;; Expand components right now as external process may not
+	   ;; be aware of complete `org-publish-project-alist'.
+	   (org-publish-projects
+	    ',(org-publish-expand-projects (list project))))))
+     (t (save-window-excursion
+	  (let ((org-publish-use-timestamps-flag
+		 (and (not force) org-publish-use-timestamps-flag)))
+	    (org-publish-projects (list project))))))))
 
 ;;;###autoload
 (defun org-publish-all (&optional force async)
@@ -892,7 +902,7 @@ optional argument ASYNC, publishing will be done asynchronously,
 in another process."
   (interactive "P")
   (if async
-      (org-export-async-start 'ignore
+      (org-export-async-start (lambda (results) nil)
 	`(progn
 	   (when ',force (org-publish-remove-all-timestamps))
 	   (let ((org-publish-use-timestamps-flag
@@ -914,7 +924,7 @@ asynchronously, in another process."
   (interactive "P")
   (let ((file (buffer-file-name (buffer-base-buffer))))
     (if async
-	(org-export-async-start 'ignore
+	(org-export-async-start (lambda (results) nil)
 	  `(let ((org-publish-use-timestamps-flag
 		  (if ',force nil ,org-publish-use-timestamps-flag)))
 	     (org-publish-file ,file)))

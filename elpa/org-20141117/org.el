@@ -1235,7 +1235,7 @@ The following issues are influenced by this variable:
   body starts with text at column 0, indentation is not changed at all.
 
 - Property drawers and planning information is inserted indented when
-  this variable s set.  When nil, they will not be indented.
+  this variable is set.  When nil, they will not be indented.
 
 - TAB indents a line relative to context.  The lines below a headline
   will be indented when this variable is set.
@@ -6152,13 +6152,21 @@ Use `org-reduced-level' to remove the effect of `org-odd-levels'."
 (defvar org-font-lock-keywords nil)
 
 (defsubst org-re-property (property &optional literal allow-null)
-   "Return a regexp matching a PROPERTY line.
- Match group 3 will be set to the value if it exists."
-   (concat "^\\(?4:[ \t]*\\)\\(?1::\\(?2:"
- 	  (if literal property (regexp-quote property))
-	  "\\):\\)[ \t]+\\(?3:[^ \t\r\n]"
-	  (if allow-null "*")
-	  ".*?\\)\\(?5:[ \t]*\\)$"))
+  "Return a regexp matching a PROPERTY line.
+
+When optional argument LITERAL is non-nil, do not quote PROPERTY.
+This is useful when PROPERTY is a regexp.  When ALLOW-NULL is
+non-nil, match properties even without a value.
+
+Match group 3 is set to the value when it exists.  If there is no
+value and ALLOW-NULL is non-nil, it is set to the empty string."
+  (concat
+   "^\\(?4:[ \t]*\\)"
+   (format "\\(?1::\\(?2:%s\\):\\)"
+	   (if literal property (regexp-quote property)))
+   (if allow-null
+       "\\(?:\\(?3:$\\)\\|[ \t]+\\(?3:.*?\\)\\)\\(?5:[ \t]*\\)$"
+     "[ \t]+\\(?3:[^ \r\t\n]+.*?\\)\\(?5:[ \t]*\\)$")))
 
 (defconst org-property-re
   (org-re-property ".*?" 'literal t)
@@ -6720,7 +6728,8 @@ in special contexts.
       (setq org-cycle-global-status 'overview)
       (run-hook-with-args 'org-cycle-hook 'overview)))))
 
-(defvar org-called-with-limited-levels);Dyn-bound in ̀org-with-limited-levels'.
+(defvar org-called-with-limited-levels nil
+  "Non-nil when `org-with-limited-levels' is currently active.")
 
 (defun org-cycle-internal-local ()
   "Do the local cycling action."
@@ -7390,8 +7399,14 @@ or nil."
 
 (defvar org-goto-local-auto-isearch-map (make-sparse-keymap))
 (set-keymap-parent org-goto-local-auto-isearch-map isearch-mode-map)
-(define-key org-goto-local-auto-isearch-map "\C-i" 'isearch-other-control-char)
-(define-key org-goto-local-auto-isearch-map "\C-m" 'isearch-other-control-char)
+;; `isearch-other-control-char' was removed in Emacs 24.4.
+(if (fboundp 'isearch-other-control-char)
+    (progn
+      (define-key org-goto-local-auto-isearch-map "\C-i" 'isearch-other-control-char)
+      (define-key org-goto-local-auto-isearch-map "\C-m" 'isearch-other-control-char))
+  (define-key org-goto-local-auto-isearch-map "\C-i" nil)
+  (define-key org-goto-local-auto-isearch-map "\C-m" nil)
+  (define-key org-goto-local-auto-isearch-map [return] nil))
 
 (defun org-goto-local-search-headings (string bound noerror)
   "Search and make sure that any matches are in headlines."
@@ -7606,9 +7621,7 @@ command."
 	       (insert "\n* ")))
       (run-hooks 'org-insert-heading-hook))
 
-     ((and itemp (not (member arg '((4) (16)))))
-      ;; Insert an item
-      (org-insert-item))
+     ((and itemp (not (member arg '((4) (16)))) (org-insert-item)))
 
      (t
       ;; Maybe move at the end of the subtree
@@ -7724,13 +7737,12 @@ command."
   "Make the number of empty lines before current exactly N.
 So this will delete or add empty lines."
   (save-excursion
-    (goto-char (point-at-bol))
-    (if (looking-back "\\s-+" nil 'greedy)
-	(replace-match ""))
-    (or (bobp) (insert "\n"))
-    (while (> N 0)
-      (insert "\n")
-      (setq N (1- N)))))
+    (beginning-of-line)
+    (let ((p (point)))
+      (skip-chars-backward " \r\t\n")
+      (unless (bolp) (forward-line))
+      (delete-region (point) p))
+    (when (> N 0) (insert (make-string N ?\n)))))
 
 (defun org-get-heading (&optional no-tags no-todo)
   "Return the heading of the current entry, without the stars.
@@ -8318,7 +8330,7 @@ the inserted text when done."
 				   (string-match
 				    "^\\*+$" (buffer-substring
 					      (point-at-bol) (point))))
-			      (- (match-end 1) (match-beginning 1)))
+			      (- (match-end 0) (match-beginning 0)))
 			     ((and (bolp)
 				   (looking-at org-outline-regexp))
 			      (- (match-end 0) (point) 1))))
@@ -9091,14 +9103,16 @@ if `orgstruct-heading-prefix-regexp' is not empty."
 	    (if fallback
 		(let* ((orgstruct-mode)
 		       (binding
-			(loop with key = ,key
-			      for rep in
-			      '(nil
-				("<\\([^>]*\\)tab>" . "\\1TAB")
-				("<\\([^>]*\\)return>" . "\\1RET")
-				("<\\([^>]*\\)escape>" . "\\1ESC")
-				("<\\([^>]*\\)delete>" . "\\1DEL"))
-			      do
+			(let ((key ,key))
+			  (catch 'exit
+			    (dolist
+				(rep
+				 '(nil
+				   ("<\\([^>]*\\)tab>" . "\\1TAB")
+				   ("<\\([^>]*\\)return>" . "\\1RET")
+				   ("<\\([^>]*\\)escape>" . "\\1ESC")
+				   ("<\\([^>]*\\)delete>" . "\\1DEL"))
+				 nil)
 			      (when rep
 				(setq key (read-kbd-macro
 					   (let ((case-fold-search))
@@ -9106,7 +9120,8 @@ if `orgstruct-heading-prefix-regexp' is not empty."
 					      (car rep)
 					      (cdr rep)
 					      (key-description key))))))
-			      thereis (key-binding key))))
+			      (when (key-binding key)
+				(throw 'exit (key-binding key))))))))
 		  (if (keymapp binding)
 		      (org-set-transient-map binding)
 		    (let ((func (or binding
@@ -16274,10 +16289,10 @@ So these are more for recording a certain time/date."
                   (message "")))
     (org-defkey map ">"
                 (lambda () (interactive)
-                  (org-eval-in-calendar '(scroll-calendar-left 1))))
+                  (org-eval-in-calendar '(calendar-scroll-left 1))))
     (org-defkey map "<"
                 (lambda () (interactive)
-                  (org-eval-in-calendar '(scroll-calendar-right 1))))
+                  (org-eval-in-calendar '(calendar-scroll-right 1))))
     (org-defkey map "\C-v"
                 (lambda () (interactive)
                   (org-eval-in-calendar
@@ -17764,9 +17779,9 @@ This requires Emacs >= 24.1, build with imagemagick support."
 
 (defcustom org-agenda-inhibit-startup nil
   "Inhibit startup when preparing agenda buffers.
-When this variable is `t' (the default), the initialization of
-the Org agenda buffers is inhibited: e.g. the visibility state
-is not set, the tables are not re-aligned, etc."
+When this variable is `t', the initialization of the Org agenda
+buffers is inhibited: e.g. the visibility state is not set, the
+tables are not re-aligned, etc."
   :type 'boolean
   :version "24.3"
   :group 'org-agenda)

@@ -1,15 +1,9 @@
 ;;; org-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (org-customize org-reload org-submit-bug-report
-;;;;;;  org-cycle-agenda-files org-switchb org-open-link-from-string
-;;;;;;  org-open-at-point-global org-insert-link-global org-store-link
-;;;;;;  org-run-like-in-org-mode turn-on-orgstruct++ turn-on-orgstruct
-;;;;;;  orgstruct-mode org-global-cycle org-cycle org-mode org-clock-persistence-insinuate
-;;;;;;  turn-on-orgtbl org-version org-babel-load-file org-babel-do-load-languages)
-;;;;;;  "org" "org.el" (21425 56175 953933 292000))
+;;;### (autoloads nil "org" "org.el" (21613 8121 308625 203000))
 ;;; Generated autoloads from org.el
 
 (autoload 'org-babel-do-load-languages "org" "\
@@ -230,13 +224,8 @@ Call the customize function with org as argument.
 
 ;;;***
 
-;;;### (autoloads (org-agenda-to-appt org-calendar-goto-agenda org-agenda-set-restriction-lock
-;;;;;;  org-agenda-check-for-timestamp-as-reason-to-ignore-todo-item
-;;;;;;  org-diary org-agenda-list-stuck-projects org-tags-view org-todo-list
-;;;;;;  org-search-view org-agenda-list org-batch-store-agenda-views
-;;;;;;  org-store-agenda-views org-batch-agenda-csv org-batch-agenda
-;;;;;;  org-agenda org-toggle-sticky-agenda) "org-agenda" "org-agenda.el"
-;;;;;;  (21425 56173 557299 486000))
+;;;### (autoloads nil "org-agenda" "org-agenda.el" (21613 8118 848656
+;;;;;;  645000))
 ;;; Generated autoloads from org-agenda.el
 
 (autoload 'org-toggle-sticky-agenda "org-agenda" "\
@@ -509,9 +498,8 @@ to override `appt-message-warning-time'.
 
 ;;;***
 
-;;;### (autoloads (org-capture-import-remember-templates org-capture
-;;;;;;  org-capture-string) "org-capture" "org-capture.el" (21425
-;;;;;;  56175 250609 601000))
+;;;### (autoloads nil "org-capture" "org-capture.el" (21613 8120
+;;;;;;  8641 819000))
 ;;; Generated autoloads from org-capture.el
 
 (autoload 'org-capture-string "org-capture" "\
@@ -553,10 +541,8 @@ Set `org-capture-templates' to be similar to `org-remember-templates'.
 
 ;;;***
 
-;;;### (autoloads (org-agenda-columns org-insert-columns-dblock org-dblock-write:columnview
-;;;;;;  org-columns-number-to-string org-columns-compute org-columns
-;;;;;;  org-columns-get-format-and-top-level org-columns-remove-overlays)
-;;;;;;  "org-colview" "org-colview.el" (21425 56172 617312 379000))
+;;;### (autoloads nil "org-colview" "org-colview.el" (21613 8117
+;;;;;;  838669 554000))
 ;;; Generated autoloads from org-colview.el
 
 (autoload 'org-columns-remove-overlays "org-colview" "\
@@ -619,8 +605,8 @@ Turn on or update column view in the agenda.
 
 ;;;***
 
-;;;### (autoloads (org-check-version) "org-compat" "org-compat.el"
-;;;;;;  (21425 56171 210665 12000))
+;;;### (autoloads nil "org-compat" "org-compat.el" (21613 8116 808682
+;;;;;;  718000))
 ;;; Generated autoloads from org-compat.el
 
 (autoload 'org-check-version "org-compat" "\
@@ -630,8 +616,8 @@ Try very hard to provide sensible version strings.
 
 ;;;***
 
-;;;### (autoloads (org-load-noerror-mustsuffix) "org-macs" "org-macs.el"
-;;;;;;  (21425 56173 873961 810000))
+;;;### (autoloads nil "org-macs" "org-macs.el" (21613 8119 108653
+;;;;;;  324000))
 ;;; Generated autoloads from org-macs.el
 
 (autoload 'org-load-noerror-mustsuffix "org-macs" "\
@@ -641,8 +627,8 @@ Load FILE with optional arguments NOERROR and MUSTSUFFIX.  Drop the MUSTSUFFIX a
 
 ;;;***
 
-;;;### (autoloads (org-git-version org-release) "org-version" "org-version.el"
-;;;;;;  (21425 56175 427273 846000))
+;;;### (autoloads nil "org-version" "org-version.el" (21613 8120
+;;;;;;  748632 359000))
 ;;; Generated autoloads from org-version.el
 
 (autoload 'org-release "org-version" "\
@@ -685,15 +671,13 @@ The location of ODT styles.")
 ;;;;;;  "org-table.el" "org-timer.el" "org-w3m.el" "ox-ascii.el"
 ;;;;;;  "ox-beamer.el" "ox-html.el" "ox-icalendar.el" "ox-latex.el"
 ;;;;;;  "ox-man.el" "ox-md.el" "ox-odt.el" "ox-org.el" "ox-publish.el"
-;;;;;;  "ox-texinfo.el" "ox.el") (21425 56177 203291 697000))
+;;;;;;  "ox-texinfo.el" "ox.el") (21613 8122 612878 500000))
 
 ;;;***
 
-(provide 'org-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; org-autoloads.el ends here

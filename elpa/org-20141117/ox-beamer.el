@@ -687,7 +687,7 @@ used as a communication channel."
     (cond
      ((equal type "radio")
       (let ((destination (org-export-resolve-radio-link link info)))
-	(when destination
+	(if (not destination) contents
 	  (format "\\hyperlink%s{%s}{%s}"
 		  (or (org-beamer--element-has-overlay-p link) "")
 		  (org-export-solidify-link-text
@@ -777,7 +777,7 @@ contextual information."
   "Transcode a TARGET object into Beamer code.
 CONTENTS is nil.  INFO is a plist holding contextual
 information."
-  (format "\\hypertarget{%s}{}"
+  (format "\\label{%s}"
 	  (org-export-solidify-link-text (org-element-property :value target))))
 
 
