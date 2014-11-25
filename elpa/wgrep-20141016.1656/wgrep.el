@@ -4,8 +4,8 @@
 ;; Keywords: grep edit extensions
 ;; URL: http://github.com/mhayashi1120/Emacs-wgrep/raw/master/wgrep.el
 ;; Emacs: GNU Emacs 22 or later
-;; Version: 20140420.446
-;; X-Original-Version: 2.1.7
+;; Version: 20141016.1656
+;; X-Original-Version: 2.1.10
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -193,7 +193,13 @@ a file."
 (defvar wgrep-acceptable-modes nil)
 (make-obsolete 'wgrep-acceptable-modes nil "2.1.1")
 
-(defvar wgrep-line-file-regexp (caar grep-regexp-alist)
+(defconst wgrep-default-line-header-regexp
+  ;; This regexp come from Emacs-25 grep.el
+  ;; Capture subexp 2 is still exists for the backward compatibility.
+  ;; But will be removed in future release.
+  "^\\(.*?[^/\n]\\)\\(:[ \t]*\\)\\([1-9][0-9]*\\)[ \t]*:")
+
+(defvar wgrep-line-file-regexp wgrep-default-line-header-regexp
   "Regexp that match to line header of grep result.
 
 That capture 1: filename 3: line-number
@@ -1006,7 +1012,7 @@ NEW may be nil this means deleting whole line."
 ;;; activate/deactivate marmalade install or github install.
 ;;;
 
-;;;###autoload(add-hook 'grep-setup-hook 'wgrep-setup)
+;;;###autoload
 (add-hook 'grep-setup-hook 'wgrep-setup)
 
 ;; For `unload-feature'

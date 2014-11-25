@@ -1,10 +1,10 @@
 ;;; wgrep-ag-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (wgrep-ag-setup) "wgrep-ag" "wgrep-ag.el" (21423
-;;;;;;  59401 693905 857000))
+;;;### (autoloads nil "wgrep-ag" "wgrep-ag.el" (21613 8079 889153
+;;;;;;  916000))
 ;;; Generated autoloads from wgrep-ag.el
 
 (autoload 'wgrep-ag-setup "wgrep-ag" "\
@@ -16,16 +16,9 @@
 
 ;;;***
 
-;;;### (autoloads nil nil ("wgrep-ag-pkg.el") (21423 59401 751116
-;;;;;;  400000))
-
-;;;***
-
-(provide 'wgrep-ag-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; wgrep-ag-autoloads.el ends here
