@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "tangotango-theme" "tangotango-theme.el" (21581
-;;;;;;  28252 803407 369000))
+;;;### (autoloads nil "tangotango-theme" "tangotango-theme.el" (21622
+;;;;;;  22519 818078 864000))
 ;;; Generated autoloads from tangotango-theme.el
 
 (and load-file-name (boundp 'custom-theme-load-path) (add-to-list 'custom-theme-load-path (file-name-as-directory (file-name-directory load-file-name))))
