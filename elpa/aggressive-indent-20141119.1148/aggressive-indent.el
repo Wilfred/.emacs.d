@@ -4,8 +4,8 @@
 
 ;; Author: Artur Malabarba <bruce.connor.am@gmail.com>
 ;; URL: http://github.com/Bruce-Connor/aggressive-indent-mode
-;; Version: 20141031.143
-;; X-Original-Version: 0.3.1
+;; Version: 20141119.1148
+;; X-Original-Version: 0.3.3
 ;; Package-Requires: ((emacs "24.1") (names "0.5") (cl-lib "0.5"))
 ;; Keywords: indent lisp maint tools
 ;; Prefix: aggressive-indent
@@ -105,14 +105,13 @@ Meant for use in functions which go in hooks."
                 'aggressive-indent--internal-dont-indent-if
                 #'eval)
                (aggressive-indent--run-user-hooks))
-     (ignore-errors
-       (cl-letf (((symbol-function 'message) #'ignore))
-         ,@body))))
+     (cl-letf (((symbol-function 'message) #'ignore))
+       (ignore-errors ,@body))))
 
 ;;;###autoload
 (define-namespace aggressive-indent- :group indent
 
-(defconst version "0.3.1" "Version of the aggressive-indent.el package.")
+(defconst version "0.3.2" "Version of the aggressive-indent.el package.")
 (defun bug-report ()
   "Opens github issues page in a web browser. Please send any bugs you find.
 Please include your emacs and aggressive-indent versions."
@@ -135,13 +134,21 @@ Please include this in your report!"
   '(
     bibtex-mode
     coffee-mode
+    Custom-mode
+    diff-mode
     erc-mode
     jabber-chat-mode
     haml-mode
+    haskell-mode
+    makefile-mode
     minibuffer-inactive-mode
     python-mode
     special-mode
+    shell-mode
+    snippet-mode
+    eshell-mode
     tabulated-list-mode
+    term-mode
     text-mode
     yaml-mode
     )
@@ -170,9 +177,11 @@ commands will NOT be followed by a re-indent."
     (region-active-p)
     buffer-read-only
     (null (buffer-modified-p))
-    (string-match "\\`[[:blank:]]*\n?\\'" (thing-at-point 'line))
+    (and (boundp 'smerge-mode) smerge-mode)
+    (string-match "\\`[[:blank:]]*\n?\\'" (or (thing-at-point 'line) ""))
     (and (not aggressive-indent-comments-too)
-         (aggressive-indent--in-comment-p)))
+         (aggressive-indent--in-comment-p))
+    (aggressive-indent--in-string-p))
   "List of forms which prevent indentation when they evaluate to non-nil.
 This is for internal use only. For user customization, use
 `aggressive-indent-dont-indent-if' instead.")
@@ -259,9 +268,8 @@ Like `aggressive-indent-indent-defun', but wrapped in a
                'aggressive-indent--internal-dont-indent-if
                #'eval)
               (aggressive-indent--run-user-hooks))
-    (ignore-errors
-      (cl-letf (((symbol-function 'message) #'ignore))
-        (indent-defun)))))
+    (cl-letf (((symbol-function 'message) #'ignore))
+      (ignore-errors (indent-defun)))))
 
 :autoload
 (defun indent-region-and-on (l r)
@@ -305,9 +313,8 @@ Like `aggressive-indent-indent-region-and-on', but wrapped in a
                'aggressive-indent--internal-dont-indent-if
                #'eval)
               (aggressive-indent--run-user-hooks))
-    (ignore-errors
-      (cl-letf (((symbol-function 'message) #'ignore))
-        (indent-region-and-on l r)))))
+    (cl-letf (((symbol-function 'message) #'ignore))
+      (ignore-errors (indent-region-and-on l r)))))
 
 (defvar -changed-list-right nil
   "List of right limit of regions changed in the last command loop.")
@@ -335,6 +342,12 @@ Like `aggressive-indent-indent-region-and-on', but wrapped in a
 Assumes that the syntax table is sufficient to find comments."
   (nth 4 (syntax-ppss)))
 
+(defun -in-string-p ()
+  "Return non-nil if point is inside a string.
+Assumes that the syntax table is sufficient for recognizing
+strings."
+  (nth 3 (syntax-ppss)))
+
 
 ;;; Minor modes
 :autoload
@@ -342,7 +355,13 @@ Assumes that the syntax table is sufficient to find comments."
   '(("" . aggressive-indent-indent-defun)
     ([backspace] menu-item "maybe-delete-indentation" ignore
      :filter (lambda (&optional _)
-               (when (looking-back "^[[:blank:]]+")
+               (when (and (looking-back "^[[:blank:]]+")
+                          ;; Wherever we don't want to indent, we probably also
+                          ;; want the default backspace behavior.
+                          (not (run-hook-wrapped
+                                'aggressive-indent--internal-dont-indent-if
+                                #'eval))
+                          (not (aggressive-indent--run-user-hooks)))
                  #'delete-indentation))))
   (if mode
       (if (and global-aggressive-indent-mode
