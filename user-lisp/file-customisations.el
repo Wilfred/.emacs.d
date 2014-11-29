@@ -59,4 +59,8 @@ The original buffer and file are untouched."
 (require 'projectile)
 (setq projectile-switch-project-action #'(lambda () (magit-status default-directory)))
 
+;; When opening a file, restore point to the previous location.
+(require 'saveplace)
+(setq-default save-place t)
+
 (provide 'file-customisations)
