@@ -1,12 +1,9 @@
 ;;; anzu-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (anzu-replace-at-cursor-thing anzu-query-replace-regexp
-;;;;;;  anzu-query-replace anzu-query-replace-at-cursor-thing anzu-query-replace-at-cursor
-;;;;;;  global-anzu-mode anzu-mode) "anzu" "anzu.el" (21362 36087
-;;;;;;  17635 662000))
+;;;### (autoloads nil "anzu" "anzu.el" (21613 8222 127332 134000))
 ;;; Generated autoloads from anzu.el
 
 (autoload 'anzu-mode "anzu" "\
@@ -62,15 +59,9 @@ See `anzu-mode' for more information on Anzu mode.
 
 ;;;***
 
-;;;### (autoloads nil nil ("anzu-pkg.el") (21362 36087 75387 375000))
-
-;;;***
-
-(provide 'anzu-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; anzu-autoloads.el ends here
