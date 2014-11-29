@@ -639,3 +639,7 @@ The FILE-NAME defaults to the one used in the URL."
 (require 'diminish)
 (diminish 'anzu-mode)
 (put 'dired-find-alternate-file 'disabled nil)
+
+;; There are a few applications, such as crontab, that require a
+;; trailing new line. To be safe, always leave a trailing newline.
+(setq-default require-final-newline t)
