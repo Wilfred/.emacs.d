@@ -1,12 +1,16 @@
 ;;; projectile-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (projectile-global-mode projectile-mode projectile-mode-line
-;;;;;;  projectile-commander) "projectile" "projectile.el" (21498
-;;;;;;  22447 989295 834000))
+;;;### (autoloads nil "projectile" "projectile.el" (21613 8108 698786
+;;;;;;  326000))
 ;;; Generated autoloads from projectile.el
+
+(autoload 'projectile-kill-buffers "projectile" "\
+Kill all project buffers.
+
+\(fn)" t nil)
 
 (autoload 'projectile-commander "projectile" "\
 Execute a Projectile command with a single letter.
@@ -70,16 +74,9 @@ See `projectile-mode' for more information on Projectile mode.
 
 ;;;***
 
-;;;### (autoloads nil nil ("projectile-pkg.el") (21498 22448 121054
-;;;;;;  419000))
-
-;;;***
-
-(provide 'projectile-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; projectile-autoloads.el ends here
