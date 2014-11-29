@@ -2,7 +2,7 @@
 
 ;; Author: Fanael Linithien <fanael4@gmail.com>
 ;; URL: https://github.com/Fanael/highlight-quoted
-;; Version: 20140820.1649
+;; Version: 20140916.1122
 ;; X-Original-Version: 0.1
 ;; Package-Requires: ((emacs "24"))
 
@@ -20,9 +20,6 @@
 ;;   * Redistributions in binary form must reproduce the above copyright
 ;;     notice, this list of conditions and the following disclaimer in the
 ;;     documentation and/or other materials provided with the distribution.
-;;   * Neither the name of the copyright holder(s) nor the names of any
-;;     contributors may be used to endorse or promote products derived from
-;;     this software without specific prior written permission.
 ;;
 ;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
 ;; IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -110,7 +107,7 @@ nil, and toggle it if ARG is `toggle'.
   (when font-lock-mode
     (if (fboundp 'font-lock-flush)
         (font-lock-flush)
-      (font-lock-mode 1))))
+      (with-no-warnings (font-lock-fontify-buffer)))))
 
 (provide 'highlight-quoted)
 ;;; highlight-quoted.el ends here
