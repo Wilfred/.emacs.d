@@ -1,10 +1,10 @@
 ;;; httprepl-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (httprepl) "httprepl" "httprepl.el" (21255 32635
-;;;;;;  340105 778000))
+;;;### (autoloads nil "httprepl" "httprepl.el" (21613 8154 898195
+;;;;;;  336000))
 ;;; Generated autoloads from httprepl.el
 
 (autoload 'httprepl "httprepl" "\
@@ -17,16 +17,9 @@ interface. Switches to the buffer specified by
 
 ;;;***
 
-;;;### (autoloads nil nil ("httprepl-pkg.el") (21255 32635 620062
-;;;;;;  23000))
-
-;;;***
-
-(provide 'httprepl-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; httprepl-autoloads.el ends here
