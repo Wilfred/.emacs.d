@@ -1,16 +1,16 @@
 ;;; visual-regexp-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (vr/query-replace vr/replace vr/mc-mark) "visual-regexp"
-;;;;;;  "visual-regexp.el" (21398 5526 90162 40000))
+;;;### (autoloads nil "visual-regexp" "visual-regexp.el" (21613 8081
+;;;;;;  679131 97000))
 ;;; Generated autoloads from visual-regexp.el
 
 (autoload 'vr/mc-mark "visual-regexp" "\
 Convert regexp selection to multiple cursors.
 
-\(fn REGEXP START END)" t nil)
+\(fn REGEXP START END)" nil nil)
 
 (autoload 'vr/replace "visual-regexp" "\
 Regexp-replace with live visual feedback.
@@ -24,16 +24,9 @@ Use vr/query-replace like you would use query-replace-regexp.
 
 ;;;***
 
-;;;### (autoloads nil nil ("visual-regexp-pkg.el") (21398 5526 269121
-;;;;;;  690000))
-
-;;;***
-
-(provide 'visual-regexp-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; visual-regexp-autoloads.el ends here
