@@ -21,6 +21,7 @@ eshell/lastdir
 # ELPA metadata
 elpa/*.txt
 elpa/archives
+elpa/*.signed
 
 # Projectile metadata
 projectile.cache
