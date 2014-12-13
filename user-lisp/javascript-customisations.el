@@ -33,4 +33,6 @@
 (add-hook 'js-mode-hook 'flymake-jshint-load)
 (add-hook 'js2-mode-hook 'flymake-jshint-load)
 
+(js2r-add-keybindings-with-prefix "C-c C-r")
+
 (provide 'javascript-customisations)
