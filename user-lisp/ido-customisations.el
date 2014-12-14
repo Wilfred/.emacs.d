@@ -11,6 +11,9 @@
 ; reduce how often we get 'directory too big' problems:
 (setq ido-max-directory-size 100000)
 
+;; Show killed buffers at end when using ido for switching buffers.
+(setq ido-use-virtual-buffers 'auto)
+
 ;; when using ido for opening files, show last modified first:
 ;; this version from http://jqian.googlecode.com/svn-history/r145/trunk/emacsconf/config/30-elisp.el
 (add-hook 'ido-make-file-list-hook 'ido-sort-mtime)
