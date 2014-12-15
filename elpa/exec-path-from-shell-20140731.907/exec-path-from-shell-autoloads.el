@@ -1,11 +1,10 @@
 ;;; exec-path-from-shell-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (exec-path-from-shell-initialize exec-path-from-shell-copy-env
-;;;;;;  exec-path-from-shell-copy-envs) "exec-path-from-shell" "exec-path-from-shell.el"
-;;;;;;  (21423 59516 502212 769000))
+;;;### (autoloads nil "exec-path-from-shell" "exec-path-from-shell.el"
+;;;;;;  (21613 8197 207652 524000))
 ;;; Generated autoloads from exec-path-from-shell.el
 
 (autoload 'exec-path-from-shell-copy-envs "exec-path-from-shell" "\
@@ -37,16 +36,9 @@ values used in the user's shell.
 
 ;;;***
 
-;;;### (autoloads nil nil ("exec-path-from-shell-pkg.el") (21423
-;;;;;;  59516 553252 154000))
-
-;;;***
-
-(provide 'exec-path-from-shell-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; exec-path-from-shell-autoloads.el ends here
