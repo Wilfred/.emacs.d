@@ -217,23 +217,8 @@ copy to the clipboard."
       (indent-rigidly (point-min) (point-max) 4)
       (clipboard-kill-region (point-min) (point-max)))))
 
-(defun kill-entire-line ()
-  "Delete the whole line at point, even if point is not at the start of the line."
-  (interactive)
-  (let ((initial-column (current-column)))
-    (beginning-of-line)
-    (kill-line)
-    
-    ;; Go to the same column on the next line, or as close as we can
-    ;; if the following line isn't long enough.
-    (let ((current-line-length (progn (end-of-line) (current-column))))
-      (beginning-of-line)
-      (forward-char
-       (if (> initial-column current-line-length)
-           current-line-length
-         initial-column)))))
-
-(global-set-key (kbd "C-S-k") 'kill-entire-line)
+;; Delete the whole line, without adding to the kill ring.
+(global-set-key (kbd "C-S-k") #'whole-line-or-region-delete)
 
 (defun indent-four-spaces (beg end)
   "Indent the text in the active region by four spaces.
