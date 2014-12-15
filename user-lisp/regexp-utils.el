@@ -50,7 +50,7 @@
                        (match-end 0))
             matches)
       (setq offset (match-end 0)))
-    matches))
+    (nreverse matches)))
 
 
 (defun re-split (regexp string)
