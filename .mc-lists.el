@@ -14,6 +14,7 @@
         org-delete-char
         org-self-insert-command
         python-indent-electric-colon
+        sgml-slash
         sp--self-insert-command
         yas-expand
         zap-up-to-char
