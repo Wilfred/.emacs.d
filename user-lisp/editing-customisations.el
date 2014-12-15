@@ -251,4 +251,7 @@ Handy when editing markdown."
 (require 'change-inner)
 (global-set-key (kbd "M-i") 'change-inner)
 
+(global-set-key (kbd "C-.") #'goto-last-change)
+(global-set-key (kbd "C-,") #'goto-last-change-reverse)
+
 (provide 'editing-customisations)
