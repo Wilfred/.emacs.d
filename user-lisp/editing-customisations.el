@@ -13,6 +13,7 @@
 
 ;; zap-to-char but don't delete the character itself
 ;; bind it to the usual zap-to-char shortcut
+(setq ajz/forward-only t)
 (global-set-key (kbd "M-z") 'ace-jump-zap-up-to-char)
 
 (defun zap-up-to-non-whitespace ()

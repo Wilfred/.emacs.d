@@ -1253,12 +1253,16 @@ annoying to accidentally close Emacs, so warn first.
     (let ((destination (f-join directory file-name)))
       (url-copy-file url destination 't)
       (find-file destination)))
-  
+
   (setq-default dired-listing-switches "-alhv")
-  
+
   (global-anzu-mode +1)
-  
+
   (require 'diminish)
   (diminish 'anzu-mode)
   (put 'dired-find-alternate-file 'disabled nil)
+
+  ;; There are a few applications, such as crontab, that require a
+  ;; trailing new line. To be safe, always leave a trailing newline.
+  (setq-default require-final-newline t)
 #+END_SRC
