@@ -14,7 +14,7 @@
 ;; zap-to-char but don't delete the character itself
 ;; bind it to the usual zap-to-char shortcut
 (setq ajz/forward-only t)
-(global-set-key (kbd "M-z") 'ace-jump-zap-up-to-char)
+(global-set-key (kbd "M-z") #'ace-jump-zap-up-to-char-dwim)
 
 (defun zap-up-to-non-whitespace ()
   "Zap up to, but not including, the first non-whitespace character."
