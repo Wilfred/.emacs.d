@@ -9,6 +9,9 @@
 	  '(lambda ()
 	     (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
 
+;; `C-c ?' will show documentation for the current ansible module.
+(add-hook 'yaml-mode-hook #'ansible-doc-mode)
+
 ; markdown mode
 (autoload 'markdown-mode "markdown-mode"
    "Major mode for editing Markdown files" t)
