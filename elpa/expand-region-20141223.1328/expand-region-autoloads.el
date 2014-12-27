@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "expand-region" "expand-region.el" (21613 8192
-;;;;;;  787709 301000))
+;;;### (autoloads nil "expand-region" "expand-region.el" (21663 16551
+;;;;;;  799744 739000))
 ;;; Generated autoloads from expand-region.el
 
 (autoload 'er/expand-region "expand-region" "\
@@ -20,7 +20,7 @@ before calling `er/expand-region' for the first time.
 ;;;***
 
 ;;;### (autoloads nil "expand-region-custom" "expand-region-custom.el"
-;;;;;;  (21613 8193 717697 354000))
+;;;;;;  (21663 16552 489719 873000))
 ;;; Generated autoloads from expand-region-custom.el
 
 (let ((loads (get 'expand-region 'custom-loads))) (if (member '"expand-region-custom" loads) nil (put 'expand-region 'custom-loads (cons '"expand-region-custom" loads))))
@@ -77,8 +77,8 @@ List of modes which derive from `text-mode' for which text mode expansions are n
 ;;;;;;  "latex-mode-expansions.el" "nxml-mode-expansions.el" "octave-expansions.el"
 ;;;;;;  "python-el-expansions.el" "python-el-fgallina-expansions.el"
 ;;;;;;  "python-mode-expansions.el" "ruby-mode-expansions.el" "sml-mode-expansions.el"
-;;;;;;  "text-mode-expansions.el" "the-org-mode-expansions.el" "web-mode-expansions.el")
-;;;;;;  (21613 8194 440300 493000))
+;;;;;;  "subword-mode-expansions.el" "text-mode-expansions.el" "the-org-mode-expansions.el"
+;;;;;;  "web-mode-expansions.el") (21663 16552 860875 17000))
 
 ;;;***
 
