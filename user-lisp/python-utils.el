@@ -4,33 +4,6 @@
 (require 'f)
 (require 'python)
 
-(defcustom virtualenvs-root (expand-file-name "~/.py_envs")
-  "Absolute path to the directory that contains all the virtualenvs."
-  :type 'file
-  :group 'python)
-
-(defun virtualenv-workon ()
-  "Convenience for setting `python-shell-virtualenv-path'."
-  (interactive)
-  (unless (file-exists-p virtualenvs-root)
-    (setq virtualenvs-root
-          (ido-read-directory-name "Virtualenvs location: "
-                                   (expand-file-name "~"))))
-  (let* ((virtualenv-names
-          (-map 'f-filename
-                (f-entries virtualenvs-root)))
-         (virtualenv-name
-          (ido-completing-read
-           (format
-            "Virtualenv (currently %s): "
-            (if python-shell-virtualenv-path
-              (file-name-nondirectory python-shell-virtualenv-path)
-              "not set"))
-           virtualenv-names))
-         (virtualenv-path (f-join virtualenvs-root virtualenv-name)))
-    (setq python-shell-virtualenv-path virtualenv-path)
-    (setq python-shell-interpreter (f-join virtualenv-path "bin" "python"))))
-
 (defun virtualenv-search--dwim-at-point ()
   "If there's an active selection, return that.
 Otherwise, get the symbol at point and return a search term for its definition."
