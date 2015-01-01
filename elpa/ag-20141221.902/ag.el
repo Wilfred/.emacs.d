@@ -4,7 +4,7 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 January 2013
-;; Version: 20141219.1536
+;; Version: 20141221.902
 ;; X-Original-Version: 0.46
 ;; Package-Requires: ((dash "2.8.0") (s "1.9.0") (cl-lib "0.5"))
 ;;; Commentary:
@@ -589,6 +589,7 @@ This function is called from `compilation-filter-hook'."
 ;; See https://github.com/Wilfred/ag.el/issues/72
 (eval-after-load 'evil
   `(progn
+     (eval-when-compile (require 'evil-core))
      (add-to-list 'evil-motion-state-modes 'ag-mode)
      (evil-add-hjkl-bindings ag-mode-map 'motion)))
 
