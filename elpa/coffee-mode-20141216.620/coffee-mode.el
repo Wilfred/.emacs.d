@@ -2,8 +2,8 @@
 
 ;; Copyright (C) 2010 Chris Wanstrath
 
-;; Version: 20141110.608
-;; X-Original-Version: 0.5.6
+;; Version: 20141216.620
+;; X-Original-Version: 0.5.7
 ;; Keywords: CoffeeScript major mode
 ;; Author: Chris Wanstrath <chris@ozmm.org>
 ;; URL: http://github.com/defunkt/coffee-mode
@@ -138,7 +138,7 @@
 ;; Customizable Variables
 ;;
 
-(defconst coffee-mode-version "0.5.6"
+(defconst coffee-mode-version "0.5.7"
   "The version of `coffee-mode'.")
 
 (defgroup coffee nil
@@ -498,10 +498,10 @@ called `coffee-compiled-buffer-name'."
 (defvar coffee-this-regexp "\\(?:@\\w+\\|\\<this\\)\\>")
 
 ;; Prototype::access
-(defvar coffee-prototype-regexp "[[:word:].$]+?::")
+(defvar coffee-prototype-regexp "[_[:word:].$]+?::")
 
 ;; Assignment
-(defvar coffee-assign-regexp "\\(@?[[:word:].$]+?\\)\\s-*:")
+(defvar coffee-assign-regexp "\\(@?[_[:word:].$]+?\\)\\s-*:")
 
 ;; Local Assignment
 (defvar coffee-local-assign-regexp "\\s-*\\([_[:word:].$]+\\)\\s-*=\\(?:[^>=]\\|$\\)")
@@ -582,7 +582,8 @@ For details, see `comment-dwim'."
   (interactive "*P")
   (require 'newcomment)
   (let ((deactivate-mark nil) (comment-start "#") (comment-end ""))
-    (comment-dwim arg)))
+    (comment-dwim arg)
+    (deactivate-mark t)))
 
 (defsubst coffee-command-compile-arg-as-string (output)
   (mapconcat 'identity
@@ -780,11 +781,9 @@ output in a compilation buffer."
   "Return the indentation level of the previous non-blank line."
   (save-excursion
     (forward-line -1)
-    (if (bobp)
-        0
-      (while (and (looking-at "^[ \t]*$") (not (bobp)))
-        (forward-line -1))
-      (current-indentation))))
+    (while (and (looking-at "^[ \t]*$") (not (bobp)))
+      (forward-line -1))
+    (current-indentation)))
 
 (defun coffee-newline-and-indent ()
   "Insert a newline and indent it to the same level as the previous line."
@@ -964,7 +963,7 @@ comments such as the following:
           "\\|"
           coffee-namespace-regexp
           "\\|"
-          "@?[[:word:]:.$]+\\s-*=\\(?:[^>]\\|$\\)"
+          "@?[_[:word:]:.$]+\\s-*=\\(?:[^>]\\|$\\)"
           "\\s-*"
           coffee-lambda-regexp
           "\\)"))
@@ -990,7 +989,7 @@ comments such as the following:
 (defun coffee-current-line-is-assignment ()
   (save-excursion
     (goto-char (line-end-position))
-    (re-search-backward "^[[:word:].$]+\\s-*=\\(?:[^>]\\|$\\)"
+    (re-search-backward "^[_[:word:].$]+\\s-*=\\(?:[^>]\\|$\\)"
                         (line-beginning-position) t)))
 
 (defun coffee-curline-defun-type (parent-indent start-is-defun)
