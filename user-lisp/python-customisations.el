@@ -8,6 +8,17 @@
 ;; * It would be nice to have jump-to-definition for projects that use
 ;;   Python's stdlib. This will need thought to handle RPython projects.
 ;; * Add a command that automatically adds missing imports.
+;;
+;; Bugs:
+;;
+;; * We should report a bug where a buffer whose first line is a
+;;   function header, e.g.:
+;;
+;;   def foo(x, y);
+;;       return x + y
+;;
+;;   does not work with python-shell-send-defun because it tries to
+;;   inspect the previous line for decorators.
 
 (require 'python)
 (require 'python-utils)
