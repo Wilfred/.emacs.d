@@ -161,6 +161,7 @@ If a prefix argument is given, don't change the kill-ring."
 ;; remember this many files
 (setq recentf-max-saved-items 200)
 
+;; from http://www.masteringemacs.org/article/find-files-faster-recent-files-package
 (defun ido-recentf-open ()
   "Use `ido-completing-read' to \\[find-file] a recent file"
   (interactive)
