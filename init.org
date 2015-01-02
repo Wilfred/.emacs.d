@@ -414,7 +414,8 @@ I like to use smartparens in all programming modes.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (require 'smartparens-config)
   (require 'smartparens-html)
-  (add-hook 'prog-mode-hook 'smartparens-mode)
+  (add-hook 'prog-mode-hook #'smartparens-mode)
+  (add-hook 'yaml-mode-hook #'smart-parens-mode)
 #+END_SRC
 
 Smartparens allows you to automatically escape string quotation marks
