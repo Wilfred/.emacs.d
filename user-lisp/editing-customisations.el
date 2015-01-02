@@ -219,6 +219,7 @@ copy to the clipboard."
       (clipboard-kill-region (point-min) (point-max)))))
 
 ;; Delete the whole line, without adding to the kill ring.
+;; If the region is active, delete that instead.
 (global-set-key (kbd "C-S-k") #'whole-line-or-region-delete)
 
 (defun indent-four-spaces (beg end)
