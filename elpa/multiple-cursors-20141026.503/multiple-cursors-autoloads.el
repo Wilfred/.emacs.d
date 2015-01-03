@@ -1,11 +1,10 @@
 ;;; multiple-cursors-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (mc/edit-beginnings-of-lines mc/edit-ends-of-lines
-;;;;;;  mc/edit-lines) "mc-edit-lines" "mc-edit-lines.el" (21521
-;;;;;;  65389 276864 814000))
+;;;### (autoloads nil "mc-edit-lines" "mc-edit-lines.el" (21613 8137
+;;;;;;  898413 15000))
 ;;; Generated autoloads from mc-edit-lines.el
 
 (autoload 'mc/edit-lines "mc-edit-lines" "\
@@ -34,17 +33,23 @@ Add one cursor to the beginning of each line in the active region.
 
 ;;;***
 
-;;;### (autoloads (mc/mark-sgml-tag-pair mc/add-cursor-on-click mc/mark-all-symbols-like-this-in-defun
-;;;;;;  mc/mark-all-words-like-this-in-defun mc/mark-all-like-this-in-defun
-;;;;;;  mc/mark-all-dwim mc/mark-all-like-this-dwim mc/mark-more-like-this-extended
-;;;;;;  mc/mark-all-in-region-regexp mc/mark-all-in-region mc/mark-all-symbols-like-this
-;;;;;;  mc/mark-all-words-like-this mc/mark-all-like-this mc/skip-to-previous-like-this
-;;;;;;  mc/skip-to-next-like-this mc/unmark-previous-like-this mc/unmark-next-like-this
-;;;;;;  mc/mark-previous-lines mc/mark-next-lines mc/mark-previous-symbol-like-this
-;;;;;;  mc/mark-previous-word-like-this mc/mark-previous-like-this
-;;;;;;  mc/mark-next-symbol-like-this mc/mark-next-word-like-this
-;;;;;;  mc/mark-next-like-this) "mc-mark-more" "mc-mark-more.el"
-;;;;;;  (21521 65389 346863 883000))
+;;;### (autoloads nil "mc-hide-unmatched-lines-mode" "mc-hide-unmatched-lines-mode.el"
+;;;;;;  (21613 8138 8411 606000))
+;;; Generated autoloads from mc-hide-unmatched-lines-mode.el
+
+(autoload 'mc-hide-unmatched-lines-mode "mc-hide-unmatched-lines-mode" "\
+Minor mode when enabled hides all lines where no cursos (and
+also hum/lines-to-expand below and above) To make use of this
+mode press \"C-'\" while multiple-cursor-mode is active. You can
+still edit lines while you are in mc-hide-unmatched-lines
+mode. To leave this mode press <return> or \"C-g\"
+
+\(fn &optional ARG)" t nil)
+
+;;;***
+
+;;;### (autoloads nil "mc-mark-more" "mc-mark-more.el" (21613 8138
+;;;;;;  128410 71000))
 ;;; Generated autoloads from mc-mark-more.el
 
 (autoload 'mc/mark-next-like-this "mc-mark-more" "\
@@ -204,8 +209,8 @@ Mark the tag we're in and its pair for renaming.
 
 ;;;***
 
-;;;### (autoloads (mc/mark-pop) "mc-mark-pop" "mc-mark-pop.el" (21521
-;;;;;;  65389 496861 886000))
+;;;### (autoloads nil "mc-mark-pop" "mc-mark-pop.el" (21613 8137
+;;;;;;  968412 118000))
 ;;; Generated autoloads from mc-mark-pop.el
 
 (autoload 'mc/mark-pop "mc-mark-pop" "\
@@ -216,9 +221,8 @@ to the popped mark.
 
 ;;;***
 
-;;;### (autoloads (mc/sort-regions mc/reverse-regions mc/insert-numbers)
-;;;;;;  "mc-separate-operations" "mc-separate-operations.el" (21521
-;;;;;;  65389 466862 286000))
+;;;### (autoloads nil "mc-separate-operations" "mc-separate-operations.el"
+;;;;;;  (21613 8138 58410 965000))
 ;;; Generated autoloads from mc-separate-operations.el
 
 (autoload 'mc/insert-numbers "mc-separate-operations" "\
@@ -238,8 +242,19 @@ Insert increasing numbers for each cursor, starting at 0 or ARG.
 
 ;;;***
 
-;;;### (autoloads (set-rectangular-region-anchor) "rectangular-region-mode"
-;;;;;;  "rectangular-region-mode.el" (21521 65389 196865 875000))
+;;;### (autoloads nil "multiple-cursors-core" "multiple-cursors-core.el"
+;;;;;;  (21613 8137 868413 397000))
+;;; Generated autoloads from multiple-cursors-core.el
+
+(autoload 'multiple-cursors-mode "multiple-cursors-core" "\
+Mode while multiple cursors are active.
+
+\(fn &optional ARG)" t nil)
+
+;;;***
+
+;;;### (autoloads nil "rectangular-region-mode" "rectangular-region-mode.el"
+;;;;;;  (21613 8137 948412 374000))
 ;;; Generated autoloads from rectangular-region-mode.el
 
 (autoload 'set-rectangular-region-anchor "rectangular-region-mode" "\
@@ -250,19 +265,21 @@ an exceedingly quick way of adding multiple cursors to multiple lines.
 
 \(fn)" t nil)
 
-;;;***
-
-;;;### (autoloads nil nil ("mc-cycle-cursors.el" "mc-hide-unmatched-lines-mode.el"
-;;;;;;  "multiple-cursors-core.el" "multiple-cursors-pkg.el" "multiple-cursors.el")
-;;;;;;  (21521 65389 565521 169000))
+(autoload 'rectangular-region-mode "rectangular-region-mode" "\
+A mode for creating a rectangular region to edit
+
+\(fn &optional ARG)" t nil)
 
 ;;;***
 
-(provide 'multiple-cursors-autoloads)
+;;;### (autoloads nil nil ("mc-cycle-cursors.el" "multiple-cursors-pkg.el"
+;;;;;;  "multiple-cursors.el") (21613 8138 212113 725000))
+
+;;;***
+
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; multiple-cursors-autoloads.el ends here
