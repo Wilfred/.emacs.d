@@ -1,11 +1,11 @@
 ;;; less-css-mode.el --- Major mode for editing LESS CSS files (lesscss.org)
 ;;
-;; Copyright 2011 Steve Purcell
+;; Copyright (C) 2011-2014 Steve Purcell
 ;;
 ;; Author: Steve Purcell <steve@sanityinc.com>
 ;; URL: https://github.com/purcell/less-css-mode
 ;; Keywords: less css mode
-;; Version: 20140205.250
+;; Version: 20140919.524
 ;; X-Original-Version: DEV
 ;;
 ;; This program is free software; you can redistribute it and/or
@@ -90,11 +90,13 @@
   \"~/.gem/ruby/1.8/bin/lessc\""
   :type 'file
   :group 'less-css)
+(put 'less-css-lessc-command 'safe-local-variable t)
 
 (defcustom less-css-compile-at-save nil
   "If non-nil, the LESS buffers will be compiled to CSS after each save"
   :type 'boolean
   :group 'less-css)
+(put 'less-css-compile-at-save 'safe-local-variable t)
 
 (defcustom less-css-lessc-options '("--no-color")
   "Command line options for less executable.
@@ -102,6 +104,7 @@
 Use \"-x\" to minify output."
   :type '(repeat string)
   :group 'less-css)
+(put 'less-css-compile-at-save 'safe-local-variable t)
 
 (defvar less-css-output-directory nil
   "Directory in which to save CSS, or nil to use the LESS file's directory.
