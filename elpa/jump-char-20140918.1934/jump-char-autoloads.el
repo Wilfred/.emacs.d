@@ -1,10 +1,10 @@
 ;;; jump-char-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (jump-char-backward jump-char-forward) "jump-char"
-;;;;;;  "jump-char.el" (21423 59471 832870 74000))
+;;;### (autoloads nil "jump-char" "jump-char.el" (21613 8147 318292
+;;;;;;  425000))
 ;;; Generated autoloads from jump-char.el
 
 (autoload 'jump-char-forward "jump-char" "\
@@ -29,16 +29,9 @@ backward movement version of `jump-char-forward'
 
 ;;;***
 
-;;;### (autoloads nil nil ("jump-char-pkg.el") (21423 59471 890817
-;;;;;;  643000))
-
-;;;***
-
-(provide 'jump-char-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; jump-char-autoloads.el ends here

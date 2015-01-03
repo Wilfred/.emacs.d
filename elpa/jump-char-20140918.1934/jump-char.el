@@ -10,7 +10,7 @@
 ;; Maintainer: Le Wang
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
-;; Version: 20140515.551
+;; Version: 20140918.1934
 ;; X-Original-Version: 0.1
 ;;           By: Le Wang
 ;; URL: https://github.com/lewang/jump-char
@@ -58,7 +58,7 @@
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
 ;; published by the Free Software Foundation; either version 3, or
-:;; (at your option) any later version.
+;; (at your option) any later version.
 ;;
 ;; This program is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -76,8 +76,6 @@
 
 (eval-when-compile (require 'cl))
 
-
-(provide 'jump-char)
 
 (defgroup jump-char nil
   "navigation by char")
@@ -342,6 +340,8 @@ e.g.
   (interactive)
   (isearch-exit))
 
+
+(provide 'jump-char)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; jump-char.el ends here
