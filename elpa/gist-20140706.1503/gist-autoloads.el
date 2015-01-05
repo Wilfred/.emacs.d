@@ -1,11 +1,9 @@
 ;;; gist-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (gist-fetch gist-list gist-region-or-buffer-private
-;;;;;;  gist-region-or-buffer gist-buffer-private gist-buffer gist-region-private
-;;;;;;  gist-region) "gist" "gist.el" (21242 46878 678665 436000))
+;;;### (autoloads nil "gist" "gist.el" (21613 8182 107846 418000))
 ;;; Generated autoloads from gist.el
 
 (autoload 'gist-region "gist" "\
@@ -66,15 +64,9 @@ Displays a list of all of the current user's gists in a new buffer.
 
 ;;;***
 
-;;;### (autoloads nil nil ("gist-pkg.el") (21242 46878 792291 263000))
-
-;;;***
-
-(provide 'gist-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; gist-autoloads.el ends here
