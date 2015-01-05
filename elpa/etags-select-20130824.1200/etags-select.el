@@ -5,7 +5,8 @@
 ;; Author: Scott Frazer <frazer.scott@gmail.com>
 ;; Maintainer: Scott Frazer <frazer.scott@gmail.com>
 ;; Created: 07 Jun 2007
-;; Version: 1.13
+;; Version: 20130824.1200
+;; X-Original-Version: 1.13
 ;; Keywords: etags tags tag select
 
 ;; This file is free software; you can redistribute it and/or modify
