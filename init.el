@@ -96,8 +96,8 @@ the start of the line."
 
 (require 'jump-char)
 
-(global-set-key [(meta m)] 'jump-char-forward)
-(global-set-key [(shift meta m)] 'jump-char-backward)
+(global-set-key (kbd "M-m") #'jump-char-forward)
+(global-set-key (kbd "M-M") #'jump-char-backward)
 
 (keyfreq-mode 1)
 (keyfreq-autosave-mode 1)
