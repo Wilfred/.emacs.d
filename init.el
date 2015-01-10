@@ -296,7 +296,7 @@ Visit the file after creation."
 
 (add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
 
-(setq-default flycheck-emacs-lisp-initialize-packages 'auto)
+(setq-default flycheck-emacs-lisp-initialize-packages t)
 
 (require 'flycheck)
 (setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers))
@@ -521,6 +521,7 @@ Visit the file after creation."
 (require 'isearch-customisations)
 
 (require 'c-customisations)
+(require 'asm-customisations)
 (require 'coffee-customisations)
 (require 'javascript-customisations)
 (require 'lisp-customisations)

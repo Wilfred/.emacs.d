@@ -1,65 +1,93 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>init</title>
-<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
-<meta name="title" content="init"/>
-<meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2014-03-07T21:36+0000"/>
-<meta name="author" content="Wilfred Hughes"/>
-<meta name="description" content=""/>
-<meta name="keywords" content=""/>
+<!-- 2015-01-10 Sat 20:06 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Wilfred Hughes" />
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
-  html { font-family: Times, serif; font-size: 12pt; }
   .title  { text-align: center; }
-  .todo   { color: red; }
+  .todo   { font-family: monospace; color: red; }
   .done   { color: green; }
-  .tag    { background-color: #add8e6; font-weight:normal }
-  .target { }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
   .timestamp { color: #bebebe; }
   .timestamp-kwd { color: #5f9ea0; }
-  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
-  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
-  .center {margin-left:auto; margin-right:auto; text-align:center;}
-  p.verse { margin-left: 3% }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
   pre {
-	border: 1pt solid #AEBDCC;
-	background-color: #F3F5F7;
-	padding: 5pt;
-	font-family: courier, monospace;
-        font-size: 90%;
-        overflow:auto;
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
   }
-  table { border-collapse: collapse; }
-  td, th { vertical-align: top;  }
-  th.right  { text-align:center;  }
-  th.left   { text-align:center;   }
-  th.center { text-align:center; }
-  td.right  { text-align:right;  }
-  td.left   { text-align:left;   }
-  td.center { text-align:center; }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
   dt { font-weight: bold; }
-  div.figure { padding: 0.5em; }
-  div.figure p { text-align: center; }
-  div.inlinetask {
-    padding:10px;
-    border:2px solid gray;
-    margin:10px;
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
     background: #ffffcc;
   }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
   textarea { overflow-x: auto; }
-  .linenr { font-size:smaller }
-  .code-highlighted {background-color:#ffff00;}
-  .org-info-js_info-navigation { border-style:none; }
-  #org-info-js_console-label { font-size:10px; font-weight:bold;
-                               white-space:nowrap; }
-  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
-                                 font-weight:bold; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
   /*]]>*/-->
-</style><link rel="stylesheet" type="text/css" href="init.css" />
+</style>
 <script type="text/javascript">
 /*
 @licstart  The following is the entire license notice for the
@@ -106,185 +134,168 @@ for the JavaScript code in this tag.
  }
 /*]]>*///-->
 </script>
-
 </head>
 <body>
-
-<div id="preamble">
-
-</div>
-
 <div id="content">
 <h1 class="title">init</h1>
-
-
 <div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#sec-1">1 Introduction</a>
+<li><a href="#sec-1">1. Introduction</a>
 <ul>
-<li><a href="#sec-1-1">1.1 Licensing</a></li>
-<li><a href="#sec-1-2">1.2 Reading This Document</a></li>
-<li><a href="#sec-1-3">1.3 Generating This Document</a></li>
+<li><a href="#sec-1-1">1.1. Licensing</a></li>
+<li><a href="#sec-1-2">1.2. Reading This Document</a></li>
+<li><a href="#sec-1-3">1.3. Generating This Document</a></li>
 </ul>
 </li>
-<li><a href="#sec-2">2 Installing locally</a>
+<li><a href="#sec-2">2. Installing locally</a>
 <ul>
-<li><a href="#sec-2-1">2.1 The Git Repository</a></li>
-<li><a href="#sec-2-2">2.2 Emacs 24</a></li>
-<li><a href="#sec-2-3">2.3 Python</a></li>
-<li><a href="#sec-2-4">2.4 JavaScript</a></li>
-<li><a href="#sec-2-5">2.5 Less</a></li>
+<li><a href="#sec-2-1">2.1. The Git Repository</a></li>
+<li><a href="#sec-2-2">2.2. Emacs 24</a></li>
+<li><a href="#sec-2-3">2.3. Python</a></li>
+<li><a href="#sec-2-4">2.4. JavaScript</a></li>
+<li><a href="#sec-2-5">2.5. Less</a></li>
 </ul>
 </li>
-<li><a href="#sec-3">3 Contents</a>
+<li><a href="#sec-3">3. Contents</a>
 <ul>
-<li><a href="#sec-3-1">3.1 Folder Structure</a></li>
-<li><a href="#sec-3-2">3.2 Packages</a></li>
-<li><a href="#sec-3-3">3.3 Paths</a></li>
-<li><a href="#sec-3-4">3.4 UI</a>
+<li><a href="#sec-3-1">3.1. Folder Structure</a></li>
+<li><a href="#sec-3-2">3.2. Packages</a></li>
+<li><a href="#sec-3-3">3.3. Paths</a></li>
+<li><a href="#sec-3-4">3.4. UI</a>
 <ul>
-<li><a href="#sec-3-4-1">3.4.1 Theme</a></li>
-<li><a href="#sec-3-4-2">3.4.2 Hiding and Showing</a></li>
-<li><a href="#sec-3-4-3">3.4.3 Recursive Editing</a></li>
+<li><a href="#sec-3-4-1">3.4.1. Theme</a></li>
+<li><a href="#sec-3-4-2">3.4.2. Visibility of UI Elements</a></li>
+<li><a href="#sec-3-4-3">3.4.3. Recursive Editing</a></li>
 </ul>
 </li>
-<li><a href="#sec-3-5">3.5 Moving Around</a>
+<li><a href="#sec-3-5">3.5. Moving Around</a>
 <ul>
-<li><a href="#sec-3-5-1">3.5.1 By Symbol</a></li>
-<li><a href="#sec-3-5-2">3.5.2 By indentation</a></li>
-<li><a href="#sec-3-5-3">3.5.3 By Character</a></li>
-<li><a href="#sec-3-5-4">3.5.4 Measuring Movement</a></li>
+<li><a href="#sec-3-5-1">3.5.1. By Symbol</a></li>
+<li><a href="#sec-3-5-2">3.5.2. By indentation</a></li>
+<li><a href="#sec-3-5-3">3.5.3. By Character</a></li>
+<li><a href="#sec-3-5-4">3.5.4. Measuring Movement</a></li>
 </ul>
 </li>
-<li><a href="#sec-3-6">3.6 Inserting</a></li>
-<li><a href="#sec-3-7">3.7 Killing</a></li>
-<li><a href="#sec-3-8">3.8 Modifying and Editing</a>
+<li><a href="#sec-3-6">3.6. Inserting</a></li>
+<li><a href="#sec-3-7">3.7. Killing</a></li>
+<li><a href="#sec-3-8">3.8. Modifying and Editing</a>
 <ul>
-<li><a href="#sec-3-8-1">3.8.1 Matched Pairs</a></li>
+<li><a href="#sec-3-8-1">3.8.1. Matched Pairs</a></li>
 </ul>
 </li>
-<li><a href="#sec-3-9">3.9 Files</a>
+<li><a href="#sec-3-9">3.9. Files</a>
 <ul>
-<li><a href="#sec-3-9-1">3.9.1 Opening</a></li>
-<li><a href="#sec-3-9-2">3.9.2 Dired</a></li>
-<li><a href="#sec-3-9-3">3.9.3 Deleting and Backups</a></li>
-<li><a href="#sec-3-9-4">3.9.4 Scratch Files</a></li>
+<li><a href="#sec-3-9-1">3.9.1. Opening</a></li>
+<li><a href="#sec-3-9-2">3.9.2. Dired</a></li>
+<li><a href="#sec-3-9-3">3.9.3. Deleting and Backups</a></li>
+<li><a href="#sec-3-9-4">3.9.4. Scratch Files</a></li>
 </ul>
 </li>
-<li><a href="#sec-3-10">3.10 As-you-type Checks</a>
+<li><a href="#sec-3-10">3.10. As-you-type Checks</a>
 <ul>
-<li><a href="#sec-3-10-1">3.10.1 Flymake</a></li>
-<li><a href="#sec-3-10-2">3.10.2 Flycheck</a></li>
+<li><a href="#sec-3-10-1">3.10.1. Flymake</a></li>
+<li><a href="#sec-3-10-2">3.10.2. Flycheck</a></li>
 </ul>
 </li>
-<li><a href="#sec-3-11">3.11 Undoing</a></li>
-<li><a href="#sec-3-12">3.12 Emacs Lisp</a>
+<li><a href="#sec-3-11">3.11. Undoing</a></li>
+<li><a href="#sec-3-12">3.12. Emacs Lisp</a>
 <ul>
-<li><a href="#sec-3-12-1">3.12.1 Shortcuts</a></li>
-<li><a href="#sec-3-12-2">3.12.2 Editing Parentheses</a></li>
-<li><a href="#sec-3-12-3">3.12.3 Highlighting Parentheses</a></li>
-<li><a href="#sec-3-12-4">3.12.4 Function Signatures</a></li>
-<li><a href="#sec-3-12-5">3.12.5 On-the-fly Checking</a></li>
-<li><a href="#sec-3-12-6">3.12.6 Highlighting</a></li>
+<li><a href="#sec-3-12-1">3.12.1. Shortcuts</a></li>
+<li><a href="#sec-3-12-2">3.12.2. Editing Parentheses</a></li>
+<li><a href="#sec-3-12-3">3.12.3. Highlighting Parentheses</a></li>
+<li><a href="#sec-3-12-4">3.12.4. Function Signatures</a></li>
+<li><a href="#sec-3-12-5">3.12.5. On-the-fly Checking</a></li>
+<li><a href="#sec-3-12-6">3.12.6. Highlighting</a></li>
 </ul>
 </li>
-<li><a href="#sec-3-13">3.13 Python</a></li>
-<li><a href="#sec-3-14">3.14 Haskell</a></li>
-<li><a href="#sec-3-15">3.15 Ruby</a></li>
-<li><a href="#sec-3-16">3.16 HTML</a></li>
-<li><a href="#sec-3-17">3.17 CSS</a></li>
-<li><a href="#sec-3-18">3.18 Less (CSS)</a></li>
-<li><a href="#sec-3-19">3.19 Org-mode</a></li>
-<li><a href="#sec-3-20">3.20 Markdown</a></li>
-<li><a href="#sec-3-21">3.21 Performance</a></li>
-<li><a href="#sec-3-22">3.22 Undocumented</a></li>
+<li><a href="#sec-3-13">3.13. Python</a></li>
+<li><a href="#sec-3-14">3.14. Haskell</a></li>
+<li><a href="#sec-3-15">3.15. Ruby</a></li>
+<li><a href="#sec-3-16">3.16. C</a></li>
+<li><a href="#sec-3-17">3.17. HTML</a></li>
+<li><a href="#sec-3-18">3.18. CSS</a></li>
+<li><a href="#sec-3-19">3.19. Less (CSS)</a></li>
+<li><a href="#sec-3-20">3.20. Org-mode</a></li>
+<li><a href="#sec-3-21">3.21. Markdown</a></li>
+<li><a href="#sec-3-22">3.22. Performance</a></li>
+<li><a href="#sec-3-23">3.23. Shut Down</a></li>
+<li><a href="#sec-3-24">3.24. Undocumented</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-1" class="outline-2">
+<div id="outline-container-sec-1" class="outline-2">
 <h2 id="sec-1"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
-
-
 <p>
 This is the Emacs environment I (Wilfred Hughes) use for development.
 </p>
-
 </div>
 
-<div id="outline-container-1-1" class="outline-3">
+<div id="outline-container-sec-1-1" class="outline-3">
 <h3 id="sec-1-1"><span class="section-number-3">1.1</span> Licensing</h3>
 <div class="outline-text-3" id="text-1-1">
-
-
 <p>
 Code I've written (init.el and files under `user-lisp/') is BSD
 licensed, see <a href="COPYING">COPYING</a>.
 </p>
 </div>
-
 </div>
 
-<div id="outline-container-1-2" class="outline-3">
+<div id="outline-container-sec-1-2" class="outline-3">
 <h3 id="sec-1-2"><span class="section-number-3">1.2</span> Reading This Document</h3>
 <div class="outline-text-3" id="text-1-2">
-
-
 <p>
 This file is a literate programming document written with org-mode and
 org-mode-babel. You can view init.html in a web browser, or read
 init.org in Emacs.
 </p>
+
 <p>
 By default, all the sections in this document are collapsed. You can
 expand a header by pressing `&lt;TAB&gt;' when point is on that header. You
 can expand all headers by pressing `C-u C-u C-u &lt;TAB&gt;'.
 </p>
+
 <p>
 You can edit any code block by putting point inside the block and
 pressing `C-c '' (press `C-c '' again to escape).
 </p>
 </div>
-
 </div>
 
-<div id="outline-container-1-3" class="outline-3">
+<div id="outline-container-sec-1-3" class="outline-3">
 <h3 id="sec-1-3"><span class="section-number-3">1.3</span> Generating This Document</h3>
 <div class="outline-text-3" id="text-1-3">
-
-
 <p>
 init.org is the source file that I edit, and init.el and init.html are
 generated from it.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">org</span>)
-
-(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">export-init-org</span> ()
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">export-init-org</span> <span style="color: #00ffff;">()</span>
   <span style="color: #888a85;">"Generate init.html and init.html from the current init.org file."</span>
-  (interactive)
-  (call-interactively 'org-babel-tangle)
-  (call-interactively 'org-export-as-html))
+  <span style="color: #00ffff;">(</span>interactive<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>call-interactively <span style="color: #8ae234;">'</span><span style="color: #8ae234;">org-babel-tangle</span><span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>call-interactively <span style="color: #8ae234;">'</span><span style="color: #8ae234;">org-export-as-html</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 We include an extra CSS file in the export HTML, so we can modify the
 styling.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(setq org-export-html-style-extra <span style="color: #ad7fa8; font-style: italic;">"&lt;link rel=\"stylesheet\" type=\"text/css\" href=\"init.css\" /&gt;"</span>)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setq org-export-html-style-extra <span style="color: #ad7fa8; font-style: italic;">"&lt;link rel=\"stylesheet\" type=\"text/css\" href=\"init.css\" /&gt;"</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 TODO: move this to the end of the generated init.el, so as not to slow
@@ -292,190 +303,158 @@ down the loading of styling.
 </p>
 </div>
 </div>
-
 </div>
 
-<div id="outline-container-2" class="outline-2">
+<div id="outline-container-sec-2" class="outline-2">
 <h2 id="sec-2"><span class="section-number-2">2</span> Installing locally</h2>
 <div class="outline-text-2" id="text-2">
-
-
 <p>
 This repository seeks to be as self-contained as possible. Generally,
 you should be able to check out the repository and start using it on
 any of Linux, OS X and Windows. To use this repository, you will
 require:
 </p>
-
 </div>
 
-<div id="outline-container-2-1" class="outline-3">
+<div id="outline-container-sec-2-1" class="outline-3">
 <h3 id="sec-2-1"><span class="section-number-3">2.1</span> The Git Repository</h3>
 <div class="outline-text-3" id="text-2-1">
-
-
 <p>
 Remove any existing .emacs.d configuration (or move elsewhere):
 </p>
 
-
+<div class="org-src-container">
 
 <pre class="src src-sh">rm -r ~/.emacs.d
 </pre>
-
+</div>
 
 <p>
 Clone the repo:
 </p>
 
-
+<div class="org-src-container">
 
 <pre class="src src-sh">git clone git://github.com/Wilfred/.emacs.d.git
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-2-2" class="outline-3">
+<div id="outline-container-sec-2-2" class="outline-3">
 <h3 id="sec-2-2"><span class="section-number-3">2.2</span> Emacs 24</h3>
 <div class="outline-text-3" id="text-2-2">
-
-
 <p>
 I use this repository with Emacs 24. Most code works with Emacs 23 but
 I don't test it often. Bug fixes for other Emacs versions (or other
 Emacsen) are welcomed.
 </p>
 </div>
-
 </div>
 
-<div id="outline-container-2-3" class="outline-3">
+<div id="outline-container-sec-2-3" class="outline-3">
 <h3 id="sec-2-3"><span class="section-number-3">2.3</span> Python</h3>
 <div class="outline-text-3" id="text-2-3">
-
-
 <p>
 I use pyflakes, which is available on PyPI. You can install it with:
 </p>
 
-
+<div class="org-src-container">
 
 <pre class="src src-sh">sudo pip install pyflakes
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-2-4" class="outline-3">
+<div id="outline-container-sec-2-4" class="outline-3">
 <h3 id="sec-2-4"><span class="section-number-3">2.4</span> JavaScript</h3>
 <div class="outline-text-3" id="text-2-4">
-
-
 <p>
 I use JSHint, which requires you to have node.js installed. To
 install JSHint, run:
 </p>
 
-
+<div class="org-src-container">
 
 <pre class="src src-sh">sudo npm install -g jshint
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-2-5" class="outline-3">
+<div id="outline-container-sec-2-5" class="outline-3">
 <h3 id="sec-2-5"><span class="section-number-3">2.5</span> Less</h3>
 <div class="outline-text-3" id="text-2-5">
-
-
 <p>
 I use lessc to check the syntax of `.less' files. You can install it
 with:
 </p>
 
-
+<div class="org-src-container">
 
 <pre class="src src-sh">sudo npm install -g less
 </pre>
-
-
+</div>
+</div>
 </div>
 </div>
 
-</div>
-
-<div id="outline-container-3" class="outline-2">
+<div id="outline-container-sec-3" class="outline-2">
 <h2 id="sec-3"><span class="section-number-2">3</span> Contents</h2>
 <div class="outline-text-2" id="text-3">
-
-
-
-</div>
-
-<div id="outline-container-3-1" class="outline-3">
+</div><div id="outline-container-sec-3-1" class="outline-3">
 <h3 id="sec-3-1"><span class="section-number-3">3.1</span> Folder Structure</h3>
 <div class="outline-text-3" id="text-3-1">
-
-
 <p>
 Code I've written lives in user-lisp. This includes packages that I
 haven't polished enough to release yet, small convenience functions,
 and package customisations.
 </p>
+
 <p>
 Interactive commands, configuration and keybindings are kept in files
 named `FOO-customisations.el'. Elisp convenience functions are kept in
 files named `FOO-utils.el'.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(add-to-list 'load-path <span style="color: #ad7fa8; font-style: italic;">"~/.emacs.d/user-lisp/"</span>)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-to-list <span style="color: #8ae234;">'</span><span style="color: #8ae234;">load-path</span> <span style="color: #ad7fa8; font-style: italic;">"~/.emacs.d/user-lisp/"</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 Code that I haven't written lives in third-party-lisp. This directory
 should ultimately disappear once all these packages live in <a href="http://melpa.milkbox.net/">MELPA</a>.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(add-to-list 'load-path <span style="color: #ad7fa8; font-style: italic;">"~/.emacs.d/third-party-lisp/"</span>)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-to-list <span style="color: #8ae234;">'</span><span style="color: #8ae234;">load-path</span> <span style="color: #ad7fa8; font-style: italic;">"~/.emacs.d/third-party-lisp/"</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-2" class="outline-3">
+<div id="outline-container-sec-3-2" class="outline-3">
 <h3 id="sec-3-2"><span class="section-number-3">3.2</span> Packages</h3>
 <div class="outline-text-3" id="text-3-2">
-
-
 <p>
 I use ELPA packages heavily for functionality, primarily the MELPA
 repository. We initalize all the packages here, so we can use them
 later.
 </p>
 
+<div class="org-src-container">
 
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">package</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>add-to-list <span style="color: #8ae234;">'</span><span style="color: #8ae234;">package-archives</span> <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span><span style="color: #ad7fa8; font-style: italic;">"melpa"</span> . <span style="color: #ad7fa8; font-style: italic;">"http://melpa.milkbox.net/packages/"</span><span style="color: #00ffff;">)</span> t<span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>add-to-list <span style="color: #8ae234;">'</span><span style="color: #8ae234;">package-archives</span> <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span><span style="color: #ad7fa8; font-style: italic;">"user42"</span> . <span style="color: #ad7fa8; font-style: italic;">"http://download.tuxfamily.org/user42/elpa/packages/"</span><span style="color: #00ffff;">)</span> t<span style="color: #ffffff;">)</span>
 
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">package</span>)
-(add-to-list 'package-archives '(<span style="color: #ad7fa8; font-style: italic;">"melpa"</span> . <span style="color: #ad7fa8; font-style: italic;">"http://melpa.milkbox.net/packages/"</span>) t)
-
-(package-initialize)
+<span style="color: #ffffff;">(</span>package-initialize<span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 When a package is installed, it's byte-compiled. However, git is set
@@ -483,6 +462,7 @@ up to ignore .elc files (see the .gitignore file). The system that
 installs the file therefore has .elc files, but other systems need to
 byte-compile those directories.
 </p>
+
 <p>
 To make matters worse, we can't just compile on startup any package
 files that aren't compiled already, since some files fail compilation
@@ -490,232 +470,191 @@ every time. Instead, we compile directories that don't contain any
 .elc files.
 </p>
 
+<div class="org-src-container">
 
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">dash</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">f</span><span style="color: #ffffff;">)</span>
 
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">dash</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">f</span>)
-
-(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">was-compiled-p</span> (path)
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">was-compiled-p</span> <span style="color: #00ffff;">(</span>path<span style="color: #00ffff;">)</span>
   <span style="color: #888a85;">"Does the directory at PATH contain any .elc files?"</span>
-  (<span style="color: #729fcf; font-weight: bold;">--any-p</span> (f-ext? <span style="color: #ff6347;">it</span> <span style="color: #ad7fa8; font-style: italic;">"elc"</span>) (f-files path)))
+  <span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">--any-p</span> <span style="color: #ffff00;">(</span>f-ext? <span style="color: #ff6347;">it</span> <span style="color: #ad7fa8; font-style: italic;">"elc"</span><span style="color: #ffff00;">)</span> <span style="color: #ffff00;">(</span>f-files path<span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">ensure-packages-compiled</span> ()
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">ensure-packages-compiled</span> <span style="color: #00ffff;">()</span>
   <span style="color: #888a85;">"If any packages installed with package.el aren't compiled yet, compile them."</span>
-  (<span style="color: #729fcf; font-weight: bold;">--each</span> (f-directories package-user-dir)
-    (<span style="color: #729fcf; font-weight: bold;">unless</span> (was-compiled-p <span style="color: #ff6347;">it</span>)
-      (byte-recompile-directory <span style="color: #ff6347;">it</span> 0))))
+  <span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">--each</span> <span style="color: #ffff00;">(</span>f-directories package-user-dir<span style="color: #ffff00;">)</span>
+    <span style="color: #ffff00;">(</span><span style="color: #729fcf; font-weight: bold;">unless</span> <span style="color: #00ff00;">(</span>was-compiled-p <span style="color: #ff6347;">it</span><span style="color: #00ff00;">)</span>
+      <span style="color: #00ff00;">(</span>byte-recompile-directory <span style="color: #ff6347;">it</span> 0<span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(ensure-packages-compiled)
+<span style="color: #ffffff;">(</span>ensure-packages-compiled<span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">todo: clean up orphaned .elc files</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-3" class="outline-3">
+<div id="outline-container-sec-3-3" class="outline-3">
 <h3 id="sec-3-3"><span class="section-number-3">3.3</span> Paths</h3>
 <div class="outline-text-3" id="text-3-3">
-
-
 <p>
 We set up Emacs' exec-path based on PATH in a shell. This is primarily
 for OS X, where starting Emacs in GUI mode doesn't inherit the shell's
 environment. This ensures that any command we can call from a shell,
 we can call inside Emacs.
 </p>
+
 <p>
 Note this function comes from the package `exec-path-from-shell.el'.
 </p>
 
-
+<div class="org-src-container">
 
 <pre class="src src-emacs-lisp"><span style="color: #888a85;">;; </span><span style="color: #888a85;">set exec-path according to the system's PATH</span>
-(exec-path-from-shell-initialize)
-
+<span style="color: #ffffff;">(</span>exec-path-from-shell-initialize<span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-4" class="outline-3">
+<div id="outline-container-sec-3-4" class="outline-3">
 <h3 id="sec-3-4"><span class="section-number-3">3.4</span> UI</h3>
 <div class="outline-text-3" id="text-3-4">
-
-
-
-</div>
-
-<div id="outline-container-3-4-1" class="outline-4">
+</div><div id="outline-container-sec-3-4-1" class="outline-4">
 <h4 id="sec-3-4-1"><span class="section-number-4">3.4.1</span> Theme</h4>
 <div class="outline-text-4" id="text-3-4-1">
-
-
 <p>
-I like the tangotango theme, which depends on color-theme. In Emacs
-24, this isn't necessary (todo: update this).
+I like the tangotango theme. It has very contrasting colours and uses
+bold faces for definitions. It also has good support for a range of
+popular packages.
 </p>
 
+<p>
+TODO: I don't like the large font sizes in org-mode. I would also
+prefer zig-zag underlines for flycheck. There's also an issue with
+hl-line or hl-sexp in the minibuffer with ido.
+</p>
 
+<div class="org-src-container">
 
-<pre class="src src-emacs-lisp">(add-to-list 'load-path <span style="color: #ad7fa8; font-style: italic;">"~/.emacs.d/third-party-lisp/color-theme"</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">color-theme</span>)
-
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">color-theme-tangotango</span>)
-<span style="color: #888a85;">;; </span><span style="color: #888a85;">load theme when we are started with $ emacsclient -c</span>
-(add-hook 'after-make-frame-functions
-          '(<span style="color: #729fcf; font-weight: bold;">lambda</span> (f)
-             (<span style="color: #729fcf; font-weight: bold;">with-selected-frame</span> f
-               (<span style="color: #729fcf; font-weight: bold;">when</span> (window-system f)
-                 (color-theme-tangotango)))))
-<span style="color: #888a85;">;; </span><span style="color: #888a85;">load theme when we are started with $ emacs</span>
-(<span style="color: #729fcf; font-weight: bold;">when</span> window-system
-  (color-theme-tangotango))
-
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>load-theme <span style="color: #8ae234;">'</span><span style="color: #8ae234;">tangotango</span> t<span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-4-2" class="outline-4">
-<h4 id="sec-3-4-2"><span class="section-number-4">3.4.2</span> Hiding and Showing</h4>
+<div id="outline-container-sec-3-4-2" class="outline-4">
+<h4 id="sec-3-4-2"><span class="section-number-4">3.4.2</span> Visibility of UI Elements</h4>
 <div class="outline-text-4" id="text-3-4-2">
-
-
-
-
+<div class="org-src-container">
 
 <pre class="src src-emacs-lisp"><span style="color: #888a85;">;; </span><span style="color: #888a85;">hide toolbar and scrollbar</span>
-(tool-bar-mode 0)
-(scroll-bar-mode 0)
+<span style="color: #ffffff;">(</span>tool-bar-mode 0<span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>scroll-bar-mode 0<span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">show x-position (ie column number) for point in buffer</span>
-(column-number-mode 1)
+<span style="color: #ffffff;">(</span>column-number-mode 1<span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-4-3" class="outline-4">
+<div id="outline-container-sec-3-4-3" class="outline-4">
 <h4 id="sec-3-4-3"><span class="section-number-4">3.4.3</span> Recursive Editing</h4>
 <div class="outline-text-4" id="text-3-4-3">
-
-
 <p>
 We can make the minibuffer much more useful by enabling recursive
 usage. This means that when the minibuffer is active we can still call
 commands that require the minibuffer.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(setq enable-recursive-minibuffers t)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setq enable-recursive-minibuffers t<span style="color: #ffffff;">)</span>
 </pre>
+</div>
 
-
-<p>    
+<p>
 It's easy to lose track of whether we're in a recursive minibuffer or
 not. We display the recursion level in the minibuffer to avoid confusion.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(minibuffer-depth-indicate-mode 1)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>minibuffer-depth-indicate-mode 1<span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 </div>
 
-</div>
-
-<div id="outline-container-3-5" class="outline-3">
+<div id="outline-container-sec-3-5" class="outline-3">
 <h3 id="sec-3-5"><span class="section-number-3">3.5</span> Moving Around</h3>
 <div class="outline-text-3" id="text-3-5">
-
-
-
-</div>
-
-<div id="outline-container-3-5-1" class="outline-4">
+</div><div id="outline-container-sec-3-5-1" class="outline-4">
 <h4 id="sec-3-5-1"><span class="section-number-4">3.5.1</span> By Symbol</h4>
 <div class="outline-text-4" id="text-3-5-1">
-
-
 <p>
 It's extremely useful to be able to move between different occurrences
 of the same symbol.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"M-n"</span>) 'highlight-symbol-next)
-(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"M-p"</span>) 'highlight-symbol-prev)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-n"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">highlight-symbol-next</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-p"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">highlight-symbol-prev</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 Jumping to the first occurrence of the symbol is handy for finding
 where a symbol was imported.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">highlight-symbol-first</span> ()
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">highlight-symbol-first</span> <span style="color: #00ffff;">()</span>
   <span style="color: #888a85;">"Jump to the first location of symbol at point."</span>
-  (interactive)
-  (push-mark)
-  (eval
-   `(<span style="color: #729fcf; font-weight: bold;">progn</span>
-      (goto-char (point-min))
-      (search-forward-regexp
-       (rx symbol-start ,(thing-at-point 'symbol) symbol-end)
-       nil t)
-      (beginning-of-thing 'symbol))))
+  <span style="color: #00ffff;">(</span>interactive<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>push-mark<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>eval
+   <span style="color: #8ae234;">`</span><span style="color: #ffff00;">(</span><span style="color: #729fcf; font-weight: bold;">progn</span>
+      <span style="color: #00ff00;">(</span>goto-char <span style="color: #ffa500;">(</span>point-min<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span>
+      <span style="color: #00ff00;">(</span>search-forward-regexp
+       <span style="color: #ffa500;">(</span>rx symbol-start ,<span style="color: #a020f0;">(</span>thing-at-point <span style="color: #8ae234;">'</span><span style="color: #8ae234;">symbol</span><span style="color: #a020f0;">)</span> symbol-end<span style="color: #ffa500;">)</span>
+       nil t<span style="color: #00ff00;">)</span>
+      <span style="color: #00ff00;">(</span>beginning-of-thing <span style="color: #8ae234;">'</span><span style="color: #8ae234;">symbol</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"M-P"</span>) 'highlight-symbol-first)
+<span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-P"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">highlight-symbol-first</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 More rarely, it's useful to be able to jump to the last occurrence of
 a symbol.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">highlight-symbol-last</span> ()
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">highlight-symbol-last</span> <span style="color: #00ffff;">()</span>
   <span style="color: #888a85;">"Jump to the last location of symbol at point."</span>
-  (interactive)
-  (push-mark)
-  (eval
-   `(<span style="color: #729fcf; font-weight: bold;">progn</span>
-      (goto-char (point-max))
-      (search-backward-regexp
-       (rx symbol-start ,(thing-at-point 'symbol) symbol-end)
-       nil t))))
+  <span style="color: #00ffff;">(</span>interactive<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>push-mark<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>eval
+   <span style="color: #8ae234;">`</span><span style="color: #ffff00;">(</span><span style="color: #729fcf; font-weight: bold;">progn</span>
+      <span style="color: #00ff00;">(</span>goto-char <span style="color: #ffa500;">(</span>point-max<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span>
+      <span style="color: #00ff00;">(</span>search-backward-regexp
+       <span style="color: #ffa500;">(</span>rx symbol-start ,<span style="color: #a020f0;">(</span>thing-at-point <span style="color: #8ae234;">'</span><span style="color: #8ae234;">symbol</span><span style="color: #a020f0;">)</span> symbol-end<span style="color: #ffa500;">)</span>
+       nil t<span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"M-N"</span>) 'highlight-symbol-last)
+<span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-N"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">highlight-symbol-last</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-5-2" class="outline-4">
+<div id="outline-container-sec-3-5-2" class="outline-4">
 <h4 id="sec-3-5-2"><span class="section-number-4">3.5.2</span> By indentation</h4>
 <div class="outline-text-4" id="text-3-5-2">
-
-
 <p>
 `C-a' normally moves us to the beginning of the line
 unconditionally. This version is more useful, as it moves to the
@@ -723,38 +662,34 @@ first non-whitespace character if we're already at the beginning of
 the line. Repeated use of `C-a' toggles between these two positions.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">beginning-of-line-dwim</span> ()
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">beginning-of-line-dwim</span> <span style="color: #00ffff;">()</span>
   <span style="color: #888a85;">"Toggles between moving point to the first non-whitespace character, and</span>
 <span style="color: #888a85;">the start of the line."</span>
-  (interactive)
-  (<span style="color: #729fcf; font-weight: bold;">let</span> ((start-position (point)))
-    <span style="color: #888a85;">;; </span><span style="color: #888a85;">see if going to the beginning of the line changes our position</span>
-    (move-beginning-of-line nil)
+  <span style="color: #00ffff;">(</span>interactive<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">let</span> <span style="color: #ffff00;">(</span><span style="color: #00ff00;">(</span>start-position <span style="color: #ffa500;">(</span>point<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span>
+    <span style="color: #888a85;">;; </span><span style="color: #888a85;">Move to the first non-whitespace character.</span>
+    <span style="color: #ffff00;">(</span>back-to-indentation<span style="color: #ffff00;">)</span>
 
-    (<span style="color: #729fcf; font-weight: bold;">when</span> (= (point) start-position)
-        <span style="color: #888a85;">;; </span><span style="color: #888a85;">we're already at the beginning of the line, so go to the</span>
-        <span style="color: #888a85;">;; </span><span style="color: #888a85;">first non-whitespace character</span>
-        (back-to-indentation))))
+    <span style="color: #888a85;">;; </span><span style="color: #888a85;">If we haven't moved position, go to start of the line.</span>
+    <span style="color: #ffff00;">(</span><span style="color: #729fcf; font-weight: bold;">when</span> <span style="color: #00ff00;">(</span>= <span style="color: #ffa500;">(</span>point<span style="color: #ffa500;">)</span> start-position<span style="color: #00ff00;">)</span>
+      <span style="color: #00ff00;">(</span>move-beginning-of-line nil<span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"C-a"</span>) 'beginning-of-line-dwim)
+<span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"C-a"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">beginning-of-line-dwim</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-5-3" class="outline-4">
+<div id="outline-container-sec-3-5-3" class="outline-4">
 <h4 id="sec-3-5-3"><span class="section-number-4">3.5.3</span> By Character</h4>
 <div class="outline-text-4" id="text-3-5-3">
-
-
 <p>
 Vim has a handy command where you can type `f' to jump to the next
 occurrence of a character on a line.
 </p>
+
 <p>
 We can do this with `jump-char' without the constraint that the
 character must be on the current line. This command needs to be
@@ -763,25 +698,20 @@ accessible with a short shortcut, so we use `M-m'. `M-m' is bound to
 redundant.
 </p>
 
+<div class="org-src-container">
 
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">jump-char</span><span style="color: #ffffff;">)</span>
 
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">jump-char</span>)
-
-(global-set-key [(meta m)] 'jump-char-forward)
-(global-set-key [(shift meta m)] 'jump-char-backward)
-
+<span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-m"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">#'</span><span style="color: #8ae234;">jump-char-forward</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-M"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">#'</span><span style="color: #8ae234;">jump-char-backward</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-5-4" class="outline-4">
+<div id="outline-container-sec-3-5-4" class="outline-4">
 <h4 id="sec-3-5-4"><span class="section-number-4">3.5.4</span> Measuring Movement</h4>
 <div class="outline-text-4" id="text-3-5-4">
-
-
 <p>
 Since movement commands tend to be used more than any others, it's
 useful to measure how much we use each command. This enables us to
@@ -789,72 +719,65 @@ look at frequent commands to see if we need to create custom commands
 or different keybindings for common commands.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(keyfreq-mode)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>keyfreq-mode 1<span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>keyfreq-autosave-mode 1<span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 </div>
 
-</div>
-
-<div id="outline-container-3-6" class="outline-3">
+<div id="outline-container-sec-3-6" class="outline-3">
 <h3 id="sec-3-6"><span class="section-number-3">3.6</span> Inserting</h3>
 <div class="outline-text-3" id="text-3-6">
-
-
 <p>
 It's often useful to start a new line of code that's above or below
 the current line. This code is taken from
 <a href="http://emacsredux.com/blog/2013/03/26/smarter-open-line/">http://emacsredux.com/blog/2013/03/26/smarter-open-line/</a> .
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">smart-open-line</span> ()
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">smart-open-line</span> <span style="color: #00ffff;">()</span>
   <span style="color: #888a85;">"Insert an empty line after the current line.</span>
 <span style="color: #888a85;">Position the cursor at its beginning, according to the current mode."</span>
-  (interactive)
-  (move-end-of-line nil)
-  (newline-and-indent))
+  <span style="color: #00ffff;">(</span>interactive<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>move-end-of-line nil<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>newline-and-indent<span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"M-o"</span>) 'smart-open-line)
+<span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-o"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">smart-open-line</span><span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">smart-open-line-above</span> ()
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">smart-open-line-above</span> <span style="color: #00ffff;">()</span>
   <span style="color: #888a85;">"Insert an empty line above the current line.</span>
 <span style="color: #888a85;">Position the cursor at it's beginning, according to the current mode."</span>
-  (interactive)
-  (move-beginning-of-line nil)
-  (newline-and-indent)
-  (forward-line -1)
-  (indent-according-to-mode))
+  <span style="color: #00ffff;">(</span>interactive<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>move-beginning-of-line nil<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>newline-and-indent<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>forward-line -1<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>indent-according-to-mode<span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"M-O"</span>) 'smart-open-line-above)
+<span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-O"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">smart-open-line-above</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-7" class="outline-3">
+<div id="outline-container-sec-3-7" class="outline-3">
 <h3 id="sec-3-7"><span class="section-number-3">3.7</span> Killing</h3>
 <div class="outline-text-3" id="text-3-7">
-
-
 <p>
-It's handy to also delete the trailing newline when using <i>&lt;elisp:(describe-key (kbd "C-k"))&gt;</i>.
+It's handy to also delete the trailing newline when using <a href="(describe-key%20(kbd%20"C-k"))">C-k</a>.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defadvice</span> <span style="color: #edd400; font-weight: bold;">kill-line</span> (around kill-line-remove-newline activate)
-  (<span style="color: #729fcf; font-weight: bold;">let</span> ((kill-whole-line t))
-    ad-do-it))
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defadvice</span> <span style="color: #edd400; font-weight: bold;">kill-line</span> <span style="color: #00ffff;">(</span>around kill-line-remove-newline activate<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">let</span> <span style="color: #ffff00;">(</span><span style="color: #00ff00;">(</span>kill-whole-line t<span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span>
+    ad-do-it<span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 I sometimes want to simply delete a region, rather than
@@ -862,136 +785,123 @@ saving it to the kill-ring. I've added a function that allows me to
 type `C-u C-w' to delete the region, whilst `C-w' works as normal.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">kill-or-delete-region</span> (beg end prefix)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">kill-or-delete-region</span> <span style="color: #00ffff;">(</span>beg end prefix<span style="color: #00ffff;">)</span>
   <span style="color: #888a85;">"Delete the region, storing it in the kill-ring.</span>
 <span style="color: #888a85;">If a prefix argument is given, don't change the kill-ring."</span>
-  (interactive <span style="color: #ad7fa8; font-style: italic;">"r\nP"</span>)
-  (<span style="color: #729fcf; font-weight: bold;">if</span> prefix
-      (delete-region beg end)
-    (kill-region beg end)))
+  <span style="color: #00ffff;">(</span>interactive <span style="color: #ad7fa8; font-style: italic;">"r\nP"</span><span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">if</span> prefix
+      <span style="color: #ffff00;">(</span>delete-region beg end<span style="color: #ffff00;">)</span>
+    <span style="color: #ffff00;">(</span>kill-region beg end<span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"C-w"</span>) 'kill-or-delete-region)
-
+<span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"C-w"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">kill-or-delete-region</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-8" class="outline-3">
+<div id="outline-container-sec-3-8" class="outline-3">
 <h3 id="sec-3-8"><span class="section-number-3">3.8</span> Modifying and Editing</h3>
 <div class="outline-text-3" id="text-3-8">
-
-
 <p>
 Modifying text is fundamental to Emacs, and I use many utilites to
 make life easier. Most of these are still in user-lisp/editing-customisations.el.
 </p>
-
 </div>
 
-<div id="outline-container-3-8-1" class="outline-4">
+<div id="outline-container-sec-3-8-1" class="outline-4">
 <h4 id="sec-3-8-1"><span class="section-number-4">3.8.1</span> Matched Pairs</h4>
 <div class="outline-text-4" id="text-3-8-1">
-
-
 <p>
 Smartparens is an excellent way of editing pairs of brackets, quotes
 etc. It's similar to paredit, but can be used in lisp, other
 programming languages and even HTML.
 </p>
+
 <p>
 Currently, I only use a few smartparens commands, loosely based on how
 I used paredit. You can view a list of all smartparens commands with
 the command `sp-cheat-sheet'.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">smartparens</span>)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">smartparens</span><span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">(foo bar) -&gt; foo bar</span>
-(define-key smartparens-mode-map (kbd <span style="color: #ad7fa8; font-style: italic;">"M-s"</span>) 'sp-splice-sexp)
+<span style="color: #ffffff;">(</span>define-key smartparens-mode-map <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-s"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">sp-splice-sexp</span><span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">(foo bar) -&gt; [foo bar]</span>
-(define-key smartparens-mode-map (kbd <span style="color: #ad7fa8; font-style: italic;">"M-S"</span>) 'sp-rewrap-sexp)
+<span style="color: #ffffff;">(</span>define-key smartparens-mode-map <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-S"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">sp-rewrap-sexp</span><span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">(foo) bar -&gt; (foo bar)</span>
-(define-key smartparens-mode-map (kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;C-right&gt;"</span>) 'sp-slurp-hybrid-sexp)
+<span style="color: #ffffff;">(</span>define-key smartparens-mode-map <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;C-right&gt;"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">sp-slurp-hybrid-sexp</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 I like to use smartparens in all programming modes.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">smartparens-config</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">smartparens-html</span>)
-(add-hook 'prog-mode-hook 'smartparens-mode)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">smartparens-config</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">smartparens-html</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">prog-mode-hook</span> <span style="color: #8ae234;">#'</span><span style="color: #8ae234;">smartparens-mode</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">yaml-mode-hook</span> <span style="color: #8ae234;">#'</span><span style="color: #8ae234;">smart-parens-mode</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 Smartparens allows you to automatically escape string quotation marks
 inside strings. This is handy, but smartparens has a known bug:
 <a href="https://github.com/Fuco1/smartparens/issues/77">https://github.com/Fuco1/smartparens/issues/77</a>
 </p>
+
 <p>
 Instead, we simply switch off this behaviour.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(setq sp-autoescape-string-quote nil)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setq sp-autoescape-string-quote nil<span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 </div>
 
-</div>
-
-<div id="outline-container-3-9" class="outline-3">
+<div id="outline-container-sec-3-9" class="outline-3">
 <h3 id="sec-3-9"><span class="section-number-3">3.9</span> Files</h3>
 <div class="outline-text-3" id="text-3-9">
-
-
-
-</div>
-
-<div id="outline-container-3-9-1" class="outline-4">
+</div><div id="outline-container-sec-3-9-1" class="outline-4">
 <h4 id="sec-3-9-1"><span class="section-number-4">3.9.1</span> Opening</h4>
 <div class="outline-text-4" id="text-3-9-1">
-
-
 <p>
 It's useful to be able to quickly open files that we opened before. We
 define a function for this:
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">recentf</span>)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">recentf</span><span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">offer recently accessed files from the menu</span>
-(recentf-mode t)
+<span style="color: #ffffff;">(</span>recentf-mode t<span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">remember this many files</span>
-(setq recentf-max-saved-items 200)
+<span style="color: #ffffff;">(</span>setq recentf-max-saved-items 200<span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">ido-recentf-open</span> ()
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">from http://www.masteringemacs.org/article/find-files-faster-recent-files-package</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">ido-recentf-open</span> <span style="color: #00ffff;">()</span>
   <span style="color: #888a85;">"Use `</span><span style="color: #8ae234;">ido-completing-read</span><span style="color: #888a85;">' to \\[</span><span style="color: #8ae234;">find-file</span><span style="color: #888a85;">] a recent file"</span>
-  (interactive)
-  (<span style="color: #729fcf; font-weight: bold;">if</span> (find-file (ido-completing-read <span style="color: #ad7fa8; font-style: italic;">"Find recent file: "</span> recentf-list))
-      (message <span style="color: #ad7fa8; font-style: italic;">"Opening file..."</span>)
-    (message <span style="color: #ad7fa8; font-style: italic;">"Aborting"</span>)))
+  <span style="color: #00ffff;">(</span>interactive<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">if</span> <span style="color: #ffff00;">(</span>find-file <span style="color: #00ff00;">(</span>ido-completing-read <span style="color: #ad7fa8; font-style: italic;">"Find recent file: "</span> recentf-list<span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span>
+      <span style="color: #ffff00;">(</span>message <span style="color: #ad7fa8; font-style: italic;">"Opening file..."</span><span style="color: #ffff00;">)</span>
+    <span style="color: #ffff00;">(</span>message <span style="color: #ad7fa8; font-style: italic;">"Aborting"</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 We bind this to `C-x C-r' (mnemonic: recent). By default, `C-x C-r' is bound to
@@ -999,101 +909,75 @@ We bind this to `C-x C-r' (mnemonic: recent). By default, `C-x C-r' is bound to
 as read only with `read-only-mode', mapped to `C-x C-q'.)
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"C-x C-r"</span>) 'ido-recentf-open)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"C-x C-r"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">ido-recentf-open</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 Most of the time though, it's helpful to be able to pick a file in the
 same source code repository as the current buffer. There are several
-tools to do this. The best I've found is `find-file-in-repository'.
+tools to do this. I've played with `find-file-in-repository',
+`projectile' and `find-file-in-project'.
 </p>
+
 <p>
-`find-file-in-repository' uses command line commands to find out the
-contents of your repository. For example, for git, it uses `git
-ls-files` (see <i>&lt;elisp:ffir-repository&gt;</i> types for the full list). This
-makes it very fast, and ensures that files ignored by git are ignored.
-</p>
-<p>
-Alternatives worth mentioning are `projectile' and
-`find-file-in-project'. `projectile' seems to have the most users, but
-I've found it to be a little bit slower, even with external
-commands. `find-file-in-project' seems unmaintained.
+`find-file-in-project' seems unmaintained. `find-file-in-repository'
+is fast and works well, but is only lightly maintained and doesn't
+support some version control systems. `projectile' is fast enough,
+actively maintained and featureful.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">find-file-in-repository</span>)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">projectile</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>projectile-global-mode<span style="color: #ffffff;">)</span>
 </pre>
-
-
-<p>
-Ido can become very slow with large lists. This is largely due to
-flexible matching, used when there isn't an exact substring match. We
-switch off flexible matching with `find-file-in-repository'.
-</p>
-
-
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defadvice</span> <span style="color: #edd400; font-weight: bold;">find-file-in-repository</span> (around disable-ido-flex-matching activate)
-  (<span style="color: #729fcf; font-weight: bold;">let</span> ((ido-enable-flex-matching nil)
-        (ido-case-fold t))
-    ad-do-it))
-</pre>
-
+</div>
 
 <p>
-We bind `find-file-in-repository' to `C-x C-g', as we use it
+We bind `projectile-find-file' to `C-x C-g', as we use it
 a lot and it's right next to `C-x C-f'.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"C-x C-g"</span>) 'find-file-in-repository)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"C-x C-g"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">projectile-find-file</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-9-2" class="outline-4">
+<div id="outline-container-sec-3-9-2" class="outline-4">
 <h4 id="sec-3-9-2"><span class="section-number-4">3.9.2</span> Dired</h4>
 <div class="outline-text-4" id="text-3-9-2">
-
-
 <p>
 Dired isn't very colourful by default, but `dired+' has helpful
 highlighting.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">dired+</span>)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">dired+</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-9-3" class="outline-4">
+<div id="outline-container-sec-3-9-3" class="outline-4">
 <h4 id="sec-3-9-3"><span class="section-number-4">3.9.3</span> Deleting and Backups</h4>
 <div class="outline-text-4" id="text-3-9-3">
-
-
 <p>
 When we delete a file, it should go to the recycle bin rather than
-just acting like <i>&lt;shell:rm&gt;</i>.
+just acting like <a href="rm">rm</a>.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(setq delete-by-moving-to-trash t)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setq delete-by-moving-to-trash t<span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 Emacs' backup behaviour is helpful, so we increase the number of
@@ -1101,18 +985,18 @@ backups. However, rather than writing foo~1~ files everywhere, we
 store all our backups in `~/.saves`.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(setq
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setq
    backup-by-copying t      <span style="color: #888a85;">; </span><span style="color: #888a85;">don't clobber symlinks</span>
    backup-directory-alist
-    '((<span style="color: #ad7fa8; font-style: italic;">"."</span> . <span style="color: #ad7fa8; font-style: italic;">"~/.saves"</span>))    <span style="color: #888a85;">; </span><span style="color: #888a85;">don't litter my fs tree</span>
+    <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span><span style="color: #ffff00;">(</span><span style="color: #ad7fa8; font-style: italic;">"."</span> . <span style="color: #ad7fa8; font-style: italic;">"~/.saves"</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span>    <span style="color: #888a85;">; </span><span style="color: #888a85;">don't litter my fs tree</span>
    delete-old-versions t
    kept-new-versions 6
    kept-old-versions 2
-   version-control t)       <span style="color: #888a85;">; </span><span style="color: #888a85;">use versioned backups</span>
+   version-control t<span style="color: #ffffff;">)</span>       <span style="color: #888a85;">; </span><span style="color: #888a85;">use versioned backups</span>
 </pre>
-
+</div>
 
 <p>
 However, Emacs isn't aggressive enough with backups. We use
@@ -1120,52 +1004,55 @@ backup-each-save to ensure we have a copy of state of every file we've
 modified.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">backup-each-save</span>)
-(add-hook 'after-save-hook 'backup-each-save)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">backup-each-save</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">after-save-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">backup-each-save</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-9-4" class="outline-4">
+<div id="outline-container-sec-3-9-4" class="outline-4">
 <h4 id="sec-3-9-4"><span class="section-number-4">3.9.4</span> Scratch Files</h4>
 <div class="outline-text-4" id="text-3-9-4">
-
-
 <p>
 It's often useful to create a throwaway file to write a minimal
 testcase for some language or library feature.
 </p>
 
+<div class="org-src-container">
 
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">start--file</span> <span style="color: #00ffff;">(</span>path<span style="color: #00ffff;">)</span>
+  <span style="color: #888a85;">"Create a file at PATH, creating any containing directories as necessary.</span>
+<span style="color: #888a85;">Visit the file after creation."</span>
+  <span style="color: #00ffff;">(</span>make-directory <span style="color: #ffff00;">(</span>file-name-directory path<span style="color: #ffff00;">)</span> t<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>find-file path<span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">start-scratch-file</span> (file-name)
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">start-scratch-file</span> <span style="color: #00ffff;">(</span>file-name<span style="color: #00ffff;">)</span>
   <span style="color: #888a85;">"Create a file in ~/scratch for the given file name."</span>
-  (interactive <span style="color: #ad7fa8; font-style: italic;">"sName of scratch file: "</span>)
-  (<span style="color: #729fcf; font-weight: bold;">let</span> ((path (expand-file-name (format <span style="color: #ad7fa8; font-style: italic;">"~/scratch/%s"</span> file-name))))
-    <span style="color: #888a85;">;; </span><span style="color: #888a85;">create directories as necessary</span>
-    (<span style="color: #729fcf; font-weight: bold;">when</span> (s-contains-p <span style="color: #ad7fa8; font-style: italic;">"/"</span> file-name)
-      (make-directory (file-name-directory path) t))
-    (find-file path)))
-</pre>
+  <span style="color: #00ffff;">(</span>interactive <span style="color: #ad7fa8; font-style: italic;">"sName of scratch file: "</span><span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>start--file <span style="color: #ffff00;">(</span>expand-file-name <span style="color: #00ff00;">(</span>format <span style="color: #ad7fa8; font-style: italic;">"~/scratch/%s"</span> file-name<span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">start-tmp-file</span> <span style="color: #00ffff;">(</span>file-name<span style="color: #00ffff;">)</span>
+  <span style="color: #888a85;">"Create a file in /tmp for the given file name."</span>
+  <span style="color: #00ffff;">(</span>interactive <span style="color: #ad7fa8; font-style: italic;">"sName of temporary file: "</span><span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>start--file <span style="color: #ffff00;">(</span>expand-file-name <span style="color: #00ff00;">(</span>format <span style="color: #ad7fa8; font-style: italic;">"/tmp/%s"</span> file-name<span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
+</pre>
+</div>
 
 <p>
 It's also useful to quickly generate a minimal HTML page to play with.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">start-scratch-html-file</span> (file-name)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">start-scratch-html-file</span> <span style="color: #00ffff;">(</span>file-name<span style="color: #00ffff;">)</span>
   <span style="color: #888a85;">"Create a test HTML file in ~/scratch to play around with."</span>
-  (interactive <span style="color: #ad7fa8; font-style: italic;">"sName of scratch HTML file: "</span>)
-  (start-scratch-file file-name)
-  (erase-buffer)
-  (insert <span style="color: #ad7fa8; font-style: italic;">"&lt;!DOCTYPE html&gt;</span>
+  <span style="color: #00ffff;">(</span>interactive <span style="color: #ad7fa8; font-style: italic;">"sName of scratch HTML file: "</span><span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>start-scratch-file file-name<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>erase-buffer<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>insert <span style="color: #ad7fa8; font-style: italic;">"&lt;!DOCTYPE html&gt;</span>
 <span style="color: #ad7fa8; font-style: italic;">&lt;html&gt;</span>
 <span style="color: #ad7fa8; font-style: italic;">    &lt;head&gt;</span>
 <span style="color: #ad7fa8; font-style: italic;">        &lt;title&gt;</span>
@@ -1174,92 +1061,81 @@ It's also useful to quickly generate a minimal HTML page to play with.
 <span style="color: #ad7fa8; font-style: italic;">        &lt;/style&gt;</span>
 <span style="color: #ad7fa8; font-style: italic;">    &lt;/head&gt;</span>
 <span style="color: #ad7fa8; font-style: italic;">    &lt;body&gt;</span>
-<span style="color: #ad7fa8; font-style: italic;">        </span>
+
 <span style="color: #ad7fa8; font-style: italic;">    &lt;/body&gt;</span>
-<span style="color: #ad7fa8; font-style: italic;">&lt;/html&gt;"</span>)
-  (forward-line -2)
-  (move-end-of-line nil))
+<span style="color: #ad7fa8; font-style: italic;">&lt;/html&gt;"</span><span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>forward-line -2<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>move-end-of-line nil<span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 </div>
 
-</div>
-
-<div id="outline-container-3-10" class="outline-3">
+<div id="outline-container-sec-3-10" class="outline-3">
 <h3 id="sec-3-10"><span class="section-number-3">3.10</span> As-you-type Checks</h3>
 <div class="outline-text-3" id="text-3-10">
-
-
-
-</div>
-
-<div id="outline-container-3-10-1" class="outline-4">
+</div><div id="outline-container-sec-3-10-1" class="outline-4">
 <h4 id="sec-3-10-1"><span class="section-number-4">3.10.1</span> Flymake</h4>
 <div class="outline-text-4" id="text-3-10-1">
-
-
 <p>
 (Note that there's language-specific flymake configuration too.)
 </p>
+
 <p>
 It's really useful to be able to move between flymake errors, so we
 bind F8 and F9 for this. Since there's a gap between these two keys,
 they're easy to find.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">flymake</span>)
-(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f8&gt;"</span>) 'flymake-goto-prev-error)
-(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f9&gt;"</span>) 'flymake-goto-next-error)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flymake</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f8&gt;"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flymake-goto-prev-error</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f9&gt;"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flymake-goto-next-error</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 When the cursor (point) is on a line, we want to show the error on
 that line in the minibuffer.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">flymake-error-at-point</span> ()
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">flymake-error-at-point</span> <span style="color: #00ffff;">()</span>
   <span style="color: #888a85;">"Show the flymake error in the minibuffer when point is on an invalid line."</span>
-  (<span style="color: #729fcf; font-weight: bold;">when</span> (get-char-property (point) 'flymake-overlay)
-    (<span style="color: #729fcf; font-weight: bold;">let</span> ((help (get-char-property (point) 'help-echo)))
-      (<span style="color: #729fcf; font-weight: bold;">if</span> help (message <span style="color: #ad7fa8; font-style: italic;">"%s"</span> help)))))
+  <span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">when</span> <span style="color: #ffff00;">(</span>get-char-property <span style="color: #00ff00;">(</span>point<span style="color: #00ff00;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flymake-overlay</span><span style="color: #ffff00;">)</span>
+    <span style="color: #ffff00;">(</span><span style="color: #729fcf; font-weight: bold;">let</span> <span style="color: #00ff00;">(</span><span style="color: #ffa500;">(</span>help <span style="color: #a020f0;">(</span>get-char-property <span style="color: #ffffff;">(</span>point<span style="color: #ffffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">help-echo</span><span style="color: #a020f0;">)</span><span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span>
+      <span style="color: #00ff00;">(</span><span style="color: #729fcf; font-weight: bold;">if</span> help <span style="color: #ffa500;">(</span>message <span style="color: #ad7fa8; font-style: italic;">"%s"</span> help<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(add-hook 'post-command-hook 'flymake-error-at-point)
+<span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">post-command-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flymake-error-at-point</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 I prefer my errors underlined.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(custom-set-faces
- '(flymake-errline ((((class color)) (<span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Red"</span>))))
- '(flymake-warnline ((((class color)) (<span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Orange"</span>)))))
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>custom-set-faces
+ <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span>flymake-errline <span style="color: #ffff00;">(</span><span style="color: #00ff00;">(</span><span style="color: #ffa500;">(</span><span style="color: #a020f0;">(</span>class color<span style="color: #a020f0;">)</span><span style="color: #ffa500;">)</span> <span style="color: #ffa500;">(</span><span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Red"</span><span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span>
+ <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span>flymake-warnline <span style="color: #ffff00;">(</span><span style="color: #00ff00;">(</span><span style="color: #ffa500;">(</span><span style="color: #a020f0;">(</span>class color<span style="color: #a020f0;">)</span><span style="color: #ffa500;">)</span> <span style="color: #ffa500;">(</span><span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Orange"</span><span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-10-2" class="outline-4">
+<div id="outline-container-sec-3-10-2" class="outline-4">
 <h4 id="sec-3-10-2"><span class="section-number-4">3.10.2</span> Flycheck</h4>
 <div class="outline-text-4" id="text-3-10-2">
-
-
 <p>
 Flycheck is an excellent on-the-fly checker that provides many
 additional features and languages. Flymake is part of stock Emacs,
 flychcks is third-party.
 </p>
+
 <p>
 Flycheck can be quite slow with a large number of errors. We reduce
 how often we run it. We also change the highlighting to simply
@@ -1267,74 +1143,86 @@ highlight the whole line, as it's much faster. See
 <a href="https://github.com/lunaryorn/flycheck/issues/153#issuecomment-19450255">https://github.com/lunaryorn/flycheck/issues/153#issuecomment-19450255</a>
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(setq flycheck-highlighting-mode 'lines)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setq flycheck-highlighting-mode <span style="color: #8ae234;">'</span><span style="color: #8ae234;">lines</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 Style flycheck errors consistently with flymake.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(custom-set-faces
- '(flycheck-error ((((class color)) (<span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Red"</span>))))
- '(flycheck-warning ((((class color)) (<span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Orange"</span>)))))
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>custom-set-faces
+ <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span>flycheck-error <span style="color: #ffff00;">(</span><span style="color: #00ff00;">(</span><span style="color: #ffa500;">(</span><span style="color: #a020f0;">(</span>class color<span style="color: #a020f0;">)</span><span style="color: #ffa500;">)</span> <span style="color: #ffa500;">(</span><span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Red"</span><span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span>
+ <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span>flycheck-warning <span style="color: #ffff00;">(</span><span style="color: #00ff00;">(</span><span style="color: #ffa500;">(</span><span style="color: #a020f0;">(</span>class color<span style="color: #a020f0;">)</span><span style="color: #ffa500;">)</span> <span style="color: #ffa500;">(</span><span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Orange"</span><span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 We use the same movement keys for flycheck as we do for flymake.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">flycheck</span>)
-(define-key flycheck-mode-map (kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f8&gt;"</span>) 'flycheck-previous-error)
-(define-key flycheck-mode-map (kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f9&gt;"</span>) 'flycheck-next-error)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flycheck</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>define-key flycheck-mode-map <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f8&gt;"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flycheck-previous-error</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>define-key flycheck-mode-map <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f9&gt;"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flycheck-next-error</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 </div>
 
-</div>
-
-<div id="outline-container-3-11" class="outline-3">
+<div id="outline-container-sec-3-11" class="outline-3">
 <h3 id="sec-3-11"><span class="section-number-3">3.11</span> Undoing</h3>
 <div class="outline-text-3" id="text-3-11">
-
-
 <p>
 Emacs' undo facility is excellent, but undo-tree is even better.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">undo-tree</span>)
-(global-undo-tree-mode)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">undo-tree</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>global-undo-tree-mode<span style="color: #ffffff;">)</span>
 </pre>
-
-
 </div>
 
+<p>
+Since we're using it the whole time, it's not very informative to show
+it on the mode line. Hide it.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">diminish</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>diminish <span style="color: #8ae234;">'</span><span style="color: #8ae234;">undo-tree-mode</span><span style="color: #ffffff;">)</span>
+</pre>
 </div>
 
-<div id="outline-container-3-12" class="outline-3">
+<p>
+Magit-Auto-Revert is also harmless and we always want it enabled, so
+we don't want to see it shown on the mode line either.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">diminish</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">magit</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>diminish <span style="color: #8ae234;">'</span><span style="color: #8ae234;">magit-auto-revert-mode</span><span style="color: #ffffff;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3-12" class="outline-3">
 <h3 id="sec-3-12"><span class="section-number-3">3.12</span> Emacs Lisp</h3>
 <div class="outline-text-3" id="text-3-12">
-
-
-
-</div>
-
-<div id="outline-container-3-12-1" class="outline-4">
+</div><div id="outline-container-sec-3-12-1" class="outline-4">
 <h4 id="sec-3-12-1"><span class="section-number-4">3.12.1</span> Shortcuts</h4>
 <div class="outline-text-4" id="text-3-12-1">
-
-
 <p>
 eval-defun is bound to `C-M-x', but Gnome doesn't allow Emacs to
 receive that key sequence. It's very useful command when developing,
@@ -1342,22 +1230,22 @@ especially since giving a prefix argument switches on edebug for that
 function.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(define-key emacs-lisp-mode-map (kbd <span style="color: #ad7fa8; font-style: italic;">"C-c e"</span>) 'eval-defun)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>define-key emacs-lisp-mode-map <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"C-c e"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">#'</span><span style="color: #8ae234;">edebug-eval-defun</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 Similarly, toggle-debug-on-error is something I call a lot when
 developing, and it doesn't have have any keybinding.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(define-key emacs-lisp-mode-map (kbd <span style="color: #ad7fa8; font-style: italic;">"C-c d"</span>) 'toggle-debug-on-error)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>define-key emacs-lisp-mode-map <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"C-c d"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">toggle-debug-on-error</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 When writing and debugging macros, it's really important to be able
@@ -1365,21 +1253,17 @@ to see what they expand to. Macrostep allows us to incrementally
 expand the macros in our elisp file.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(define-key emacs-lisp-mode-map (kbd <span style="color: #ad7fa8; font-style: italic;">"C-c m"</span>) 'macrostep-expand)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>define-key emacs-lisp-mode-map <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"C-c m"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">macrostep-expand</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-12-2" class="outline-4">
+<div id="outline-container-sec-3-12-2" class="outline-4">
 <h4 id="sec-3-12-2"><span class="section-number-4">3.12.2</span> Editing Parentheses</h4>
 <div class="outline-text-4" id="text-3-12-2">
-
-
 <p>
 Paredit make editing code with parentheses wonderful and has been the
 gold standard for lisp coding for some time. Smartparens has recently
@@ -1387,33 +1271,29 @@ gained popularity as an paredit alternative, but I haven't invested
 the time to set it up for lisp yet.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(add-hook 'emacs-lisp-mode-hook
-          (<span style="color: #729fcf; font-weight: bold;">lambda</span> () (paredit-mode 1)))
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">emacs-lisp-mode-hook</span>
+          <span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">lambda</span> <span style="color: #ffff00;">()</span> <span style="color: #ffff00;">(</span>paredit-mode 1<span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-12-3" class="outline-4">
+<div id="outline-container-sec-3-12-3" class="outline-4">
 <h4 id="sec-3-12-3"><span class="section-number-4">3.12.3</span> Highlighting Parentheses</h4>
 <div class="outline-text-4" id="text-3-12-3">
-
-
 <p>
 We colour each pair of parentheses according to their depth. This is
 useful for seeing similarly nested lines, such as conditions in a
 cond expression.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">emacs-lisp-mode-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">rainbow-delimiters-mode</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 Our theme (tangotango) only provides colours for the first few nesting
@@ -1421,62 +1301,66 @@ levels before repeating. We override the face colours so we have
 unique colours until we're seven levels deep.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">rainbow-delimiters</span>)
-(set-face-foreground 'rainbow-delimiters-depth-1-face <span style="color: #ad7fa8; font-style: italic;">"white"</span>)
-(set-face-foreground 'rainbow-delimiters-depth-2-face <span style="color: #ad7fa8; font-style: italic;">"cyan"</span>)
-(set-face-foreground 'rainbow-delimiters-depth-3-face <span style="color: #ad7fa8; font-style: italic;">"yellow"</span>)
-(set-face-foreground 'rainbow-delimiters-depth-4-face <span style="color: #ad7fa8; font-style: italic;">"green"</span>)
-(set-face-foreground 'rainbow-delimiters-depth-5-face <span style="color: #ad7fa8; font-style: italic;">"orange"</span>)
-(set-face-foreground 'rainbow-delimiters-depth-6-face <span style="color: #ad7fa8; font-style: italic;">"purple"</span>)
-(set-face-foreground 'rainbow-delimiters-depth-7-face <span style="color: #ad7fa8; font-style: italic;">"white"</span>)
-(set-face-foreground 'rainbow-delimiters-depth-8-face <span style="color: #ad7fa8; font-style: italic;">"cyan"</span>)
-(set-face-foreground 'rainbow-delimiters-depth-9-face <span style="color: #ad7fa8; font-style: italic;">"yellow"</span>)
-(set-face-foreground 'rainbow-delimiters-unmatched-face <span style="color: #ad7fa8; font-style: italic;">"red"</span>)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">rainbow-delimiters</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>set-face-foreground <span style="color: #8ae234;">'</span><span style="color: #8ae234;">rainbow-delimiters-depth-1-face</span> <span style="color: #ad7fa8; font-style: italic;">"white"</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>set-face-foreground <span style="color: #8ae234;">'</span><span style="color: #8ae234;">rainbow-delimiters-depth-2-face</span> <span style="color: #ad7fa8; font-style: italic;">"cyan"</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>set-face-foreground <span style="color: #8ae234;">'</span><span style="color: #8ae234;">rainbow-delimiters-depth-3-face</span> <span style="color: #ad7fa8; font-style: italic;">"yellow"</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>set-face-foreground <span style="color: #8ae234;">'</span><span style="color: #8ae234;">rainbow-delimiters-depth-4-face</span> <span style="color: #ad7fa8; font-style: italic;">"green"</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>set-face-foreground <span style="color: #8ae234;">'</span><span style="color: #8ae234;">rainbow-delimiters-depth-5-face</span> <span style="color: #ad7fa8; font-style: italic;">"orange"</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>set-face-foreground <span style="color: #8ae234;">'</span><span style="color: #8ae234;">rainbow-delimiters-depth-6-face</span> <span style="color: #ad7fa8; font-style: italic;">"purple"</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>set-face-foreground <span style="color: #8ae234;">'</span><span style="color: #8ae234;">rainbow-delimiters-depth-7-face</span> <span style="color: #ad7fa8; font-style: italic;">"white"</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>set-face-foreground <span style="color: #8ae234;">'</span><span style="color: #8ae234;">rainbow-delimiters-depth-8-face</span> <span style="color: #ad7fa8; font-style: italic;">"cyan"</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>set-face-foreground <span style="color: #8ae234;">'</span><span style="color: #8ae234;">rainbow-delimiters-depth-9-face</span> <span style="color: #ad7fa8; font-style: italic;">"yellow"</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>set-face-foreground <span style="color: #8ae234;">'</span><span style="color: #8ae234;">rainbow-delimiters-unmatched-face</span> <span style="color: #ad7fa8; font-style: italic;">"red"</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-12-4" class="outline-4">
+<div id="outline-container-sec-3-12-4" class="outline-4">
 <h4 id="sec-3-12-4"><span class="section-number-4">3.12.4</span> Function Signatures</h4>
 <div class="outline-text-4" id="text-3-12-4">
-
-
 <p>
 We use eldoc to show the signature of the function at point in the
 minibuffer.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">emacs-lisp-mode-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">eldoc-mode</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
 </div>
 
+<p>
+We don't want this minor mode to be shown in the minibuffer, however.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">diminish</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">eldoc</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>diminish <span style="color: #8ae234;">'</span><span style="color: #8ae234;">eldoc-mode</span><span style="color: #ffffff;">)</span>
+</pre>
+</div>
+</div>
 </div>
 
-<div id="outline-container-3-12-5" class="outline-4">
+<div id="outline-container-sec-3-12-5" class="outline-4">
 <h4 id="sec-3-12-5"><span class="section-number-4">3.12.5</span> On-the-fly Checking</h4>
 <div class="outline-text-4" id="text-3-12-5">
-
-
 <p>
 It's really useful to use flycheck when coding elisp. It detects
 mistyped variables, deprecated functions (everything that
 byte-compilation checks).
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">emacs-lisp-mode-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flycheck-mode</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 Flycheck is able to initialise installed packages before checking
@@ -1486,637 +1370,660 @@ this by default, to encourage developers to use Cask instead (see
 behaviour back on.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(setq-default flycheck-emacs-lisp-initialize-packages t)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setq-default flycheck-emacs-lisp-initialize-packages t<span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 By default, flycheck also runs checkdoc on elisp code. This gets in
 the way for quick throwaway elisp scripts, so we switch off checkdoc.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">flycheck</span>)
-(setq flycheck-checkers (<span style="color: #729fcf; font-weight: bold;">--remove</span> (eq <span style="color: #ff6347;">it</span> 'emacs-lisp-checkdoc) flycheck-checkers))
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flycheck</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>setq flycheck-checkers <span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">--remove</span> <span style="color: #ffff00;">(</span>eq <span style="color: #ff6347;">it</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">emacs-lisp-checkdoc</span><span style="color: #ffff00;">)</span> flycheck-checkers<span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-12-6" class="outline-4">
+<div id="outline-container-sec-3-12-6" class="outline-4">
 <h4 id="sec-3-12-6"><span class="section-number-4">3.12.6</span> Highlighting</h4>
 <div class="outline-text-4" id="text-3-12-6">
-
-
 <p>
 Emacs lisp highlighting works pretty well out of the box. However,
 dash.el provides addition highlighting for its functions and variables
 used in its anaphoric macros (e.g. `it').
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">eval-after-load</span> <span style="color: #ad7fa8; font-style: italic;">"dash"</span> '(dash-enable-font-lock))
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>eval-after-load <span style="color: #ad7fa8; font-style: italic;">"dash"</span> <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span>dash-enable-font-lock<span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 </div>
 
-</div>
-
-<div id="outline-container-3-13" class="outline-3">
+<div id="outline-container-sec-3-13" class="outline-3">
 <h3 id="sec-3-13"><span class="section-number-3">3.13</span> Python</h3>
 <div class="outline-text-3" id="text-3-13">
-
-
 <p>
-We use pyflakes with flymake to check for coding errors.
+We use pyflakes with flycheck to check for coding errors. Flycheck
+includes other Python checkers so we also disable those.
 </p>
 
+<div class="org-src-container">
 
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flycheck-pyflakes</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">python-mode-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flycheck-mode</span><span style="color: #ffffff;">)</span>
 
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">flymake-python-pyflakes</span>)
-(add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
+<span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">python-mode-hook</span>
+          <span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">lambda</span> <span style="color: #ffff00;">()</span>
+            <span style="color: #ffff00;">(</span>add-to-list <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flycheck-disabled-checkers</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">python-flake8</span><span style="color: #ffff00;">)</span>
+            <span style="color: #ffff00;">(</span>add-to-list <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flycheck-disabled-checkers</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">python-pylint</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 I like to write docstrings with example usage. These examples aren't
 always valid doctests, so we switch off doctest checks.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(setenv <span style="color: #ad7fa8; font-style: italic;">"PYFLAKES_NODOCTEST"</span> <span style="color: #ad7fa8; font-style: italic;">"y"</span>)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setenv <span style="color: #ad7fa8; font-style: italic;">"PYFLAKES_NODOCTEST"</span> <span style="color: #ad7fa8; font-style: italic;">"y"</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 I often write triple-quoted docstrings, so it's convenient to have a
 shortcut for inserting them.
 </p>
 
+<div class="org-src-container">
 
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">python</span><span style="color: #ffffff;">)</span>
 
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">python</span>)
-
-(<span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">python-insert-docstring</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">python-insert-docstring</span>
   <span style="color: #888a85;">"Insert a Python docstring."</span>
   <span style="color: #ad7fa8; font-style: italic;">"This string is ignored!"</span>
-  <span style="color: #ad7fa8; font-style: italic;">"\"\"\""</span> - <span style="color: #ad7fa8; font-style: italic;">"\"\"\""</span>)
+  <span style="color: #ad7fa8; font-style: italic;">"\"\"\""</span> - <span style="color: #ad7fa8; font-style: italic;">"\"\"\""</span><span style="color: #ffffff;">)</span>
 
-(define-key python-mode-map (kbd <span style="color: #ad7fa8; font-style: italic;">"C-c s"</span>) 'python-insert-docstring)
+<span style="color: #ffffff;">(</span>define-key python-mode-map <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"C-c s"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">python-insert-docstring</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-14" class="outline-3">
+<div id="outline-container-sec-3-14" class="outline-3">
 <h3 id="sec-3-14"><span class="section-number-3">3.14</span> Haskell</h3>
 <div class="outline-text-3" id="text-3-14">
-
-
 <p>
 Flycheck supports Haskell well, so we switch it on inside Haskell
 buffers.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(add-hook 'haskell-mode-hook 'flycheck-mode)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">haskell-mode-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flycheck-mode</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 Tab doesn't indent in haskell-mode by default, so we enable
 indentation.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">haskell-mode-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">turn-on-haskell-indentation</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-15" class="outline-3">
+<div id="outline-container-sec-3-15" class="outline-3">
 <h3 id="sec-3-15"><span class="section-number-3">3.15</span> Ruby</h3>
 <div class="outline-text-3" id="text-3-15">
-
-
 <p>
 Vagrant files are Ruby, so use Ruby syntax highlighting for them.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(add-to-list 'auto-mode-alist '(<span style="color: #ad7fa8; font-style: italic;">"Vagrantfile"</span> . ruby-mode))
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-to-list <span style="color: #8ae234;">'</span><span style="color: #8ae234;">auto-mode-alist</span> <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span><span style="color: #ad7fa8; font-style: italic;">"Vagrantfile"</span> . ruby-mode<span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-16" class="outline-3">
-<h3 id="sec-3-16"><span class="section-number-3">3.16</span> HTML</h3>
+<div id="outline-container-sec-3-16" class="outline-3">
+<h3 id="sec-3-16"><span class="section-number-3">3.16</span> C</h3>
 <div class="outline-text-3" id="text-3-16">
+<p>
+Flycheck supports C, so we switch it on.
+</p>
 
+<div class="org-src-container">
 
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">c-mode-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flycheck-mode</span><span style="color: #ffffff;">)</span>
+</pre>
+</div>
+
+<p>
+Always indent with 4 spaces, in the Linux kernel style.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setq-default c-default-style <span style="color: #ad7fa8; font-style: italic;">"linux"</span>
+              c-basic-offset 4<span style="color: #ffffff;">)</span>
+</pre>
+</div>
+
+<p>
+Hungry delete is useful in C (i.e. remove up to the next
+non-whitespace character on C-d) when removing indentation.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setq-default c-hungry-delete-key t<span style="color: #ffffff;">)</span>
+</pre>
+</div>
+
+<p>
+I use recompile a lot when coding C, so bind it to a convenient key.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">c-mode-hook</span>
+          <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">lambda</span> <span style="color: #ffff00;">()</span>
+             <span style="color: #ffff00;">(</span>define-key c-mode-map <span style="color: #00ff00;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f12&gt;"</span><span style="color: #00ff00;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">recompile</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3-17" class="outline-3">
+<h3 id="sec-3-17"><span class="section-number-3">3.17</span> HTML</h3>
+<div class="outline-text-3" id="text-3-17">
 <p>
 I like to indent my HTML with tabs (company policy at the first web
 shop I worked at).
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">sgml-mode</span>)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">sgml-mode</span><span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">; </span><span style="color: #888a85;">indent html with tabs only</span>
-(add-hook 'html-mode-hook
-  (function
-   (<span style="color: #729fcf; font-weight: bold;">lambda</span> ()
-     (<span style="color: #729fcf; font-weight: bold;">progn</span>
-       (setq indent-tabs-mode nil)
-       (setq sgml-basic-offset 4)))))
+<span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">html-mode-hook</span>
+  <span style="color: #00ffff;">(</span>function
+   <span style="color: #ffff00;">(</span><span style="color: #729fcf; font-weight: bold;">lambda</span> <span style="color: #00ff00;">()</span>
+     <span style="color: #00ff00;">(</span><span style="color: #729fcf; font-weight: bold;">progn</span>
+       <span style="color: #ffa500;">(</span>setq indent-tabs-mode nil<span style="color: #ffa500;">)</span>
+       <span style="color: #ffa500;">(</span>setq sgml-basic-offset 4<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 Automatically close &lt; and " character inside HTML using smartparens.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">smartparens-config</span>)
-(add-hook 'html-mode-hook 'smartparens-mode)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">smartparens-config</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">html-mode-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">smartparens-mode</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 Much of my HTML is for Django templates. These sometimes have .dtml
 filenames, so use html-mode for those files.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(add-to-list 'auto-mode-alist '(<span style="color: #ad7fa8; font-style: italic;">"\\.dtml$"</span> . html-mode))
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-to-list <span style="color: #8ae234;">'</span><span style="color: #8ae234;">auto-mode-alist</span> <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span><span style="color: #ad7fa8; font-style: italic;">"\\.dtml$"</span> . html-mode<span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 We want syntax highlighting for Django template syntax, so add extra
 font faces and use them if we see Django syntax.
 </p>
 
-
+<div class="org-src-container">
 
 <pre class="src src-emacs-lisp"><span style="color: #888a85;">;; </span><span style="color: #888a85;">Define coloured faces for Django syntax.</span>
-(<span style="color: #729fcf; font-weight: bold;">defvar</span> <span style="color: #ff6347;">django-tag-face</span> (make-face 'django-tag-face))
-(set-face-foreground 'django-tag-face <span style="color: #ad7fa8; font-style: italic;">"Orange"</span>)
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defvar</span> <span style="color: #ff6347;">django-tag-face</span> <span style="color: #00ffff;">(</span>make-face <span style="color: #8ae234;">'</span><span style="color: #8ae234;">django-tag-face</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>set-face-foreground <span style="color: #8ae234;">'</span><span style="color: #8ae234;">django-tag-face</span> <span style="color: #ad7fa8; font-style: italic;">"Orange"</span><span style="color: #ffffff;">)</span>
 <span style="color: #888a85;">;</span>
-(<span style="color: #729fcf; font-weight: bold;">defvar</span> <span style="color: #ff6347;">django-variable-face</span> (make-face 'django-variable-face))
-(set-face-foreground 'django-variable-face <span style="color: #ad7fa8; font-style: italic;">"Green"</span>)
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defvar</span> <span style="color: #ff6347;">django-variable-face</span> <span style="color: #00ffff;">(</span>make-face <span style="color: #8ae234;">'</span><span style="color: #8ae234;">django-variable-face</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>set-face-foreground <span style="color: #8ae234;">'</span><span style="color: #8ae234;">django-variable-face</span> <span style="color: #ad7fa8; font-style: italic;">"Green"</span><span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">defvar</span> <span style="color: #ff6347;">django-comment-face</span> (make-face 'django-comment-face))
-(set-face-foreground 'django-comment-face <span style="color: #ad7fa8; font-style: italic;">"Gray"</span>)
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defvar</span> <span style="color: #ff6347;">django-comment-face</span> <span style="color: #00ffff;">(</span>make-face <span style="color: #8ae234;">'</span><span style="color: #8ae234;">django-comment-face</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>set-face-foreground <span style="color: #8ae234;">'</span><span style="color: #8ae234;">django-comment-face</span> <span style="color: #ad7fa8; font-style: italic;">"Gray"</span><span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">Use these faces for Django syntax.  </span>
-(font-lock-add-keywords
- 'html-mode
- '(
-   (<span style="color: #ad7fa8; font-style: italic;">"</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">(</span><span style="color: #ad7fa8; font-style: italic;">{%[</span><span style="color: #ad7fa8; font-style: italic;">^</span><span style="color: #ad7fa8; font-style: italic;">%]*%}</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">)</span><span style="color: #ad7fa8; font-style: italic;">"</span> 1 django-tag-face prepend)
-   (<span style="color: #ad7fa8; font-style: italic;">"</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">(</span><span style="color: #ad7fa8; font-style: italic;">{{[</span><span style="color: #ad7fa8; font-style: italic;">^</span><span style="color: #ad7fa8; font-style: italic;">}]*}}</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">)</span><span style="color: #ad7fa8; font-style: italic;">"</span> 1 django-variable-face prepend)
-   (<span style="color: #ad7fa8; font-style: italic;">"</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">(</span><span style="color: #ad7fa8; font-style: italic;">{#[</span><span style="color: #ad7fa8; font-style: italic;">^</span><span style="color: #ad7fa8; font-style: italic;">}]*#}</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">)</span><span style="color: #ad7fa8; font-style: italic;">"</span> 1 django-comment-face prepend)
-   (<span style="color: #ad7fa8; font-style: italic;">"</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">(</span><span style="color: #ad7fa8; font-style: italic;">{% comment %}</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">(</span><span style="color: #ad7fa8; font-style: italic;">.</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">|</span>
-<span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">)</span><span style="color: #ad7fa8; font-style: italic;">*{% endcomment %}</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">)</span><span style="color: #ad7fa8; font-style: italic;">"</span> 1 django-comment-face prepend)
-   ))
+<span style="color: #ffffff;">(</span>font-lock-add-keywords
+ <span style="color: #8ae234;">'</span><span style="color: #8ae234;">html-mode</span>
+ <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span>
+   <span style="color: #ffff00;">(</span><span style="color: #ad7fa8; font-style: italic;">"</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">(</span><span style="color: #ad7fa8; font-style: italic;">{%[</span><span style="color: #ad7fa8; font-style: italic;">^</span><span style="color: #ad7fa8; font-style: italic;">%]*%}</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">)</span><span style="color: #ad7fa8; font-style: italic;">"</span> 1 django-tag-face prepend<span style="color: #ffff00;">)</span>
+   <span style="color: #ffff00;">(</span><span style="color: #ad7fa8; font-style: italic;">"</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">(</span><span style="color: #ad7fa8; font-style: italic;">{{[</span><span style="color: #ad7fa8; font-style: italic;">^</span><span style="color: #ad7fa8; font-style: italic;">}]*}}</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">)</span><span style="color: #ad7fa8; font-style: italic;">"</span> 1 django-variable-face prepend<span style="color: #ffff00;">)</span>
+   <span style="color: #ffff00;">(</span><span style="color: #ad7fa8; font-style: italic;">"</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">(</span><span style="color: #ad7fa8; font-style: italic;">{#[</span><span style="color: #ad7fa8; font-style: italic;">^</span><span style="color: #ad7fa8; font-style: italic;">}]*#}</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">)</span><span style="color: #ad7fa8; font-style: italic;">"</span> 1 django-comment-face prepend<span style="color: #ffff00;">)</span>
+   <span style="color: #ffff00;">(</span><span style="color: #ad7fa8; font-style: italic;">"</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">(</span><span style="color: #ad7fa8; font-style: italic;">{% comment %}</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">(</span><span style="color: #ad7fa8; font-style: italic;">.</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">|</span>
+<span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">)</span><span style="color: #ad7fa8; font-style: italic;">*{% endcomment %}</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">\\</span><span style="color: #ad7fa8; font-weight: bold; font-style: italic;">)</span><span style="color: #ad7fa8; font-style: italic;">"</span> 1 django-comment-face prepend<span style="color: #ffff00;">)</span>
+   <span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 TODO: document the rest of our HTML configuration.
 </p>
 
-
+<div class="org-src-container">
 
 <pre class="src src-emacs-lisp"><span style="color: #888a85;">; </span><span style="color: #888a85;">skeletons for Django template tags</span>
-(<span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-tag-skeleton</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-tag-skeleton</span>
   <span style="color: #888a85;">"Insert a {% foo %} template tag"</span>
   <span style="color: #ad7fa8; font-style: italic;">"Template tag name: "</span>
-  <span style="color: #ad7fa8; font-style: italic;">"{% "</span> str <span style="color: #ad7fa8; font-style: italic;">" %}"</span>)
-(<span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-variable-skeleton</span>
+  <span style="color: #ad7fa8; font-style: italic;">"{% "</span> str <span style="color: #ad7fa8; font-style: italic;">" %}"</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-variable-skeleton</span>
   <span style="color: #888a85;">"Insert a {{ foo }} template variable"</span>
   <span style="color: #ad7fa8; font-style: italic;">"Template variable: "</span>
-  <span style="color: #ad7fa8; font-style: italic;">"{{ "</span> str <span style="color: #ad7fa8; font-style: italic;">" }}"</span>)
-(<span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-comment-skeleton</span>
+  <span style="color: #ad7fa8; font-style: italic;">"{{ "</span> str <span style="color: #ad7fa8; font-style: italic;">" }}"</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-comment-skeleton</span>
   <span style="color: #888a85;">"Insert a {# foo #} template variable"</span>
   <span style="color: #ad7fa8; font-style: italic;">"Comment: "</span>
-  <span style="color: #ad7fa8; font-style: italic;">"{# "</span> str <span style="color: #ad7fa8; font-style: italic;">" #}"</span>)
-(<span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-block-skeleton</span>
+  <span style="color: #ad7fa8; font-style: italic;">"{# "</span> str <span style="color: #ad7fa8; font-style: italic;">" #}"</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-block-skeleton</span>
   <span style="color: #888a85;">"Insert {% block foo %}{% endblock %}"</span>
   <span style="color: #ad7fa8; font-style: italic;">"Block name: "</span>
-  <span style="color: #ad7fa8; font-style: italic;">"{% block "</span> str <span style="color: #ad7fa8; font-style: italic;">" %}\n"</span> - <span style="color: #ad7fa8; font-style: italic;">"\n{% endblock %}"</span>)
-(<span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-if-else-skeleton</span>
+  <span style="color: #ad7fa8; font-style: italic;">"{% block "</span> str <span style="color: #ad7fa8; font-style: italic;">" %}\n"</span> - <span style="color: #ad7fa8; font-style: italic;">"\n{% endblock %}"</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-if-else-skeleton</span>
   <span style="color: #888a85;">"Insert {% if foo %}{% else %}{% endif %}"</span>
   <span style="color: #ad7fa8; font-style: italic;">"If condition: "</span>
-  <span style="color: #ad7fa8; font-style: italic;">"{% if "</span> str <span style="color: #ad7fa8; font-style: italic;">" %}\n"</span> - <span style="color: #ad7fa8; font-style: italic;">"\n{% else %}\n\n{% endif %}"</span>)
-(<span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-if-skeleton</span>
+  <span style="color: #ad7fa8; font-style: italic;">"{% if "</span> str <span style="color: #ad7fa8; font-style: italic;">" %}\n"</span> - <span style="color: #ad7fa8; font-style: italic;">"\n{% else %}\n\n{% endif %}"</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">template-if-skeleton</span>
   <span style="color: #888a85;">"Insert {% if foo %}{% endif %}"</span>
   <span style="color: #ad7fa8; font-style: italic;">"If condition: "</span>
-  <span style="color: #ad7fa8; font-style: italic;">"{% if "</span> str <span style="color: #ad7fa8; font-style: italic;">" %}"</span> - <span style="color: #ad7fa8; font-style: italic;">"{% endif %}"</span>)
-(<span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">underscore-skeleton</span>
+  <span style="color: #ad7fa8; font-style: italic;">"{% if "</span> str <span style="color: #ad7fa8; font-style: italic;">" %}"</span> - <span style="color: #ad7fa8; font-style: italic;">"{% endif %}"</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">define-skeleton</span> <span style="color: #edd400; font-weight: bold;">underscore-skeleton</span>
   <span style="color: #888a85;">"Insert &lt;%= foo %&gt;"</span>
   <span style="color: #ad7fa8; font-style: italic;">"Contents: "</span>
-  <span style="color: #ad7fa8; font-style: italic;">"&lt;%= "</span> str <span style="color: #ad7fa8; font-style: italic;">" %&gt;"</span>)
+  <span style="color: #ad7fa8; font-style: italic;">"&lt;%= "</span> str <span style="color: #ad7fa8; font-style: italic;">" %&gt;"</span><span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">defvar</span> <span style="color: #ff6347;">template-skeletons</span>
-  '(template-tag-skeleton
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defvar</span> <span style="color: #ff6347;">template-skeletons</span>
+  <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span>template-tag-skeleton
     template-variable-skeleton
     template-comment-skeleton
     template-block-skeleton
     template-if-skeleton
     template-if-else-skeleton
-    underscore-skeleton))
+    underscore-skeleton<span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">insert-django-skeleton</span> ()
-  (interactive)
-  (<span style="color: #729fcf; font-weight: bold;">let*</span> ((skeleton-names (mapcar 'symbol-name template-skeletons))
-        (skeleton-chosen (ido-completing-read <span style="color: #ad7fa8; font-style: italic;">"HTML skeleton: "</span> skeleton-names)))
-    (funcall (intern skeleton-chosen))))
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">insert-django-skeleton</span> <span style="color: #00ffff;">()</span>
+  <span style="color: #00ffff;">(</span>interactive<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">let*</span> <span style="color: #ffff00;">(</span><span style="color: #00ff00;">(</span>skeleton-names <span style="color: #ffa500;">(</span>mapcar <span style="color: #8ae234;">'</span><span style="color: #8ae234;">symbol-name</span> template-skeletons<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span>
+        <span style="color: #00ff00;">(</span>skeleton-chosen <span style="color: #ffa500;">(</span>ido-completing-read <span style="color: #ad7fa8; font-style: italic;">"HTML skeleton: "</span> skeleton-names<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span>
+    <span style="color: #ffff00;">(</span>funcall <span style="color: #00ff00;">(</span>intern skeleton-chosen<span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(define-key html-mode-map <span style="color: #ad7fa8; font-style: italic;">"\C-ct"</span> 'insert-django-skeleton)
+<span style="color: #ffffff;">(</span>define-key html-mode-map <span style="color: #ad7fa8; font-style: italic;">"\C-ct"</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">insert-django-skeleton</span><span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">visit-parent-django-template</span> ()
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">visit-parent-django-template</span> <span style="color: #00ffff;">()</span>
   <span style="color: #888a85;">"In a buffer containg {% extends \"foo.html\" %}, visit foo.html."</span>
-  (interactive)
-  (<span style="color: #729fcf; font-weight: bold;">let</span> (start-pos end-pos template-name)
-    (<span style="color: #729fcf; font-weight: bold;">save-excursion</span>
-      (widen)
-      (goto-char (point-min))
+  <span style="color: #00ffff;">(</span>interactive<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">let</span> <span style="color: #ffff00;">(</span>start-pos end-pos template-name<span style="color: #ffff00;">)</span>
+    <span style="color: #ffff00;">(</span><span style="color: #729fcf; font-weight: bold;">save-excursion</span>
+      <span style="color: #00ff00;">(</span>widen<span style="color: #00ff00;">)</span>
+      <span style="color: #00ff00;">(</span>goto-char <span style="color: #ffa500;">(</span>point-min<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span>
       <span style="color: #888a85;">;; </span><span style="color: #888a85;">Find the extends tag</span>
-      (<span style="color: #729fcf; font-weight: bold;">while</span> (not (looking-at <span style="color: #ad7fa8; font-style: italic;">"{% ?extends"</span>))
-        (forward-char 1))
+      <span style="color: #00ff00;">(</span><span style="color: #729fcf; font-weight: bold;">while</span> <span style="color: #ffa500;">(</span>not <span style="color: #a020f0;">(</span>looking-at <span style="color: #ad7fa8; font-style: italic;">"{% ?extends"</span><span style="color: #a020f0;">)</span><span style="color: #ffa500;">)</span>
+        <span style="color: #ffa500;">(</span>forward-char 1<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span>
       <span style="color: #888a85;">;; </span><span style="color: #888a85;">Find the opening " of the file name.</span>
-      (<span style="color: #729fcf; font-weight: bold;">while</span> (not (looking-at <span style="color: #ad7fa8; font-style: italic;">"\""</span>))
-        (forward-char 1))
-      (forward-char)
-      (setq start-pos (point))
+      <span style="color: #00ff00;">(</span><span style="color: #729fcf; font-weight: bold;">while</span> <span style="color: #ffa500;">(</span>not <span style="color: #a020f0;">(</span>looking-at <span style="color: #ad7fa8; font-style: italic;">"\""</span><span style="color: #a020f0;">)</span><span style="color: #ffa500;">)</span>
+        <span style="color: #ffa500;">(</span>forward-char 1<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span>
+      <span style="color: #00ff00;">(</span>forward-char<span style="color: #00ff00;">)</span>
+      <span style="color: #00ff00;">(</span>setq start-pos <span style="color: #ffa500;">(</span>point<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span>
 
       <span style="color: #888a85;">;; </span><span style="color: #888a85;">Find the closing "</span>
-      (<span style="color: #729fcf; font-weight: bold;">while</span> (not (looking-at <span style="color: #ad7fa8; font-style: italic;">"\""</span>))
-        (forward-char 1))
-      (setq end-pos (point))
+      <span style="color: #00ff00;">(</span><span style="color: #729fcf; font-weight: bold;">while</span> <span style="color: #ffa500;">(</span>not <span style="color: #a020f0;">(</span>looking-at <span style="color: #ad7fa8; font-style: italic;">"\""</span><span style="color: #a020f0;">)</span><span style="color: #ffa500;">)</span>
+        <span style="color: #ffa500;">(</span>forward-char 1<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span>
+      <span style="color: #00ff00;">(</span>setq end-pos <span style="color: #ffa500;">(</span>point<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span>
 
-      (setq template-name (buffer-substring-no-properties start-pos end-pos)))
+      <span style="color: #00ff00;">(</span>setq template-name <span style="color: #ffa500;">(</span>buffer-substring-no-properties start-pos end-pos<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span>
 
     <span style="color: #888a85;">;; </span><span style="color: #888a85;">Open this file, assuming it's in the same directory.</span>
     <span style="color: #888a85;">;; </span><span style="color: #888a85;">TODO: Search the current VCS checkout for it.</span>
-    (find-file template-name)))
+    <span style="color: #ffff00;">(</span>find-file template-name<span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">html-linkify-region</span> (url)
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">html-linkify-region</span> <span style="color: #00ffff;">(</span>url<span style="color: #00ffff;">)</span>
   <span style="color: #888a85;">"Wraps the region in an &lt;a&gt; tag with href set to URL."</span>
-  (interactive <span style="color: #ad7fa8; font-style: italic;">"sURL: "</span>)
-  (<span style="color: #729fcf; font-weight: bold;">let*</span> (
-         (initial-cursor-position (point))
-         (beginning (region-beginning))
-         (end (region-end))
-         (first-replacement (concat <span style="color: #ad7fa8; font-style: italic;">"&lt;a href=\""</span> url <span style="color: #ad7fa8; font-style: italic;">"\"&gt;"</span>))
-         (second-replacement <span style="color: #ad7fa8; font-style: italic;">"&lt;/a&gt;"</span>))
-  (goto-char beginning)
-  (insert first-replacement)
-  (goto-char (+ end (length first-replacement)))
-  (insert second-replacement)
-  (goto-char (+ initial-cursor-position (length first-replacement)))
-  ))
+  <span style="color: #00ffff;">(</span>interactive <span style="color: #ad7fa8; font-style: italic;">"sURL: "</span><span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">let*</span> <span style="color: #ffff00;">(</span>
+         <span style="color: #00ff00;">(</span>initial-cursor-position <span style="color: #ffa500;">(</span>point<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span>
+         <span style="color: #00ff00;">(</span>beginning <span style="color: #ffa500;">(</span>region-beginning<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span>
+         <span style="color: #00ff00;">(</span>end <span style="color: #ffa500;">(</span>region-end<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span>
+         <span style="color: #00ff00;">(</span>first-replacement <span style="color: #ffa500;">(</span>concat <span style="color: #ad7fa8; font-style: italic;">"&lt;a href=\""</span> url <span style="color: #ad7fa8; font-style: italic;">"\"&gt;"</span><span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span>
+         <span style="color: #00ff00;">(</span>second-replacement <span style="color: #ad7fa8; font-style: italic;">"&lt;/a&gt;"</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span>
+  <span style="color: #ffff00;">(</span>goto-char beginning<span style="color: #ffff00;">)</span>
+  <span style="color: #ffff00;">(</span>insert first-replacement<span style="color: #ffff00;">)</span>
+  <span style="color: #ffff00;">(</span>goto-char <span style="color: #00ff00;">(</span>+ end <span style="color: #ffa500;">(</span>length first-replacement<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span>
+  <span style="color: #ffff00;">(</span>insert second-replacement<span style="color: #ffff00;">)</span>
+  <span style="color: #ffff00;">(</span>goto-char <span style="color: #00ff00;">(</span>+ initial-cursor-position <span style="color: #ffa500;">(</span>length first-replacement<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span>
+  <span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">; </span><span style="color: #888a85;">zen coding: converts selector-style lines to tags</span>
 <span style="color: #888a85;">; </span><span style="color: #888a85;">e.g. table&gt;tr*2 becomes &lt;table&gt;&lt;tr&gt;&lt;/tr&gt;&lt;tr&gt;&lt;/tr&gt;&lt;/table&gt;</span>
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">zencoding-mode</span>)
-(add-hook 'sgml-mode-hook 'zencoding-mode) <span style="color: #888a85;">;; </span><span style="color: #888a85;">Auto-start on any markup modes</span>
-
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">zencoding-mode</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">sgml-mode-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">zencoding-mode</span><span style="color: #ffffff;">)</span> <span style="color: #888a85;">;; </span><span style="color: #888a85;">Auto-start on any markup modes</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-17" class="outline-3">
-<h3 id="sec-3-17"><span class="section-number-3">3.17</span> CSS</h3>
-<div class="outline-text-3" id="text-3-17">
-
-
+<div id="outline-container-sec-3-18" class="outline-3">
+<h3 id="sec-3-18"><span class="section-number-3">3.18</span> CSS</h3>
+<div class="outline-text-3" id="text-3-18">
 <p>
 Currently I'm working on projects that require tabs for CSS
 indentation.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(add-hook 'css-mode-hook
-          (function
-           (<span style="color: #729fcf; font-weight: bold;">lambda</span> ()
-             (<span style="color: #729fcf; font-weight: bold;">progn</span>
-               (setq css-indent-offset 4)
-               (setq indent-tabs-mode nil)))))
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">css-mode-hook</span>
+          <span style="color: #00ffff;">(</span>function
+           <span style="color: #ffff00;">(</span><span style="color: #729fcf; font-weight: bold;">lambda</span> <span style="color: #00ff00;">()</span>
+             <span style="color: #00ff00;">(</span><span style="color: #729fcf; font-weight: bold;">progn</span>
+               <span style="color: #ffa500;">(</span>setq css-indent-offset 4<span style="color: #ffa500;">)</span>
+               <span style="color: #ffa500;">(</span>setq indent-tabs-mode nil<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 </pre>
+</div>
 
-
-<p>   
+<p>
 It's really handy to highlight CSS colour values to show the colour
 they represent.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(add-hook 'css-mode-hook 'rainbow-mode)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">css-mode-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">rainbow-mode</span><span style="color: #ffffff;">)</span>
 </pre>
-
+</div>
 
 <p>
 Smartparens is well suited to CSS too, to automatically pair up curly
 brackets.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(add-hook 'css-mode-hook 'smartparens-mode)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">css-mode-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">smartparens-mode</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-18" class="outline-3">
-<h3 id="sec-3-18"><span class="section-number-3">3.18</span> Less (CSS)</h3>
-<div class="outline-text-3" id="text-3-18">
-
-
+<div id="outline-container-sec-3-19" class="outline-3">
+<h3 id="sec-3-19"><span class="section-number-3">3.19</span> Less (CSS)</h3>
+<div class="outline-text-3" id="text-3-19">
 <p>
 The less compiler doesn't give much feedback, but it does gives us a
 syntax check.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">less-css-mode</span>)
-(add-hook 'less-css-mode-hook 'flymake-mode)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">less-css-mode</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">less-css-mode-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flymake-mode</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-19" class="outline-3">
-<h3 id="sec-3-19"><span class="section-number-3">3.19</span> Org-mode</h3>
-<div class="outline-text-3" id="text-3-19">
-
-
+<div id="outline-container-sec-3-20" class="outline-3">
+<h3 id="sec-3-20"><span class="section-number-3">3.20</span> Org-mode</h3>
+<div class="outline-text-3" id="text-3-20">
 <p>
 We often use code snippets in org-mode files, so syntax highlight
 them.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(<span style="color: #729fcf; font-weight: bold;">eval-after-load</span> <span style="color: #ad7fa8; font-style: italic;">"org"</span> 
- '(setq org-src-fontify-natively t))
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setq org-src-fontify-natively t<span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-20" class="outline-3">
-<h3 id="sec-3-20"><span class="section-number-3">3.20</span> Markdown</h3>
-<div class="outline-text-3" id="text-3-20">
-
-
+<div id="outline-container-sec-3-21" class="outline-3">
+<h3 id="sec-3-21"><span class="section-number-3">3.21</span> Markdown</h3>
+<div class="outline-text-3" id="text-3-21">
 <p>
 Markdown is essentially prose, so it's nice to automatically line-wrap
 (by inserting newlines) as we type.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(add-hook 'markdown-mode-hook 'auto-fill-mode)
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">markdown-mode-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">auto-fill-mode</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
+</div>
+</div>
 </div>
 
-</div>
-
-<div id="outline-container-3-21" class="outline-3">
-<h3 id="sec-3-21"><span class="section-number-3">3.21</span> Performance</h3>
-<div class="outline-text-3" id="text-3-21">
-
-
+<div id="outline-container-sec-3-22" class="outline-3">
+<h3 id="sec-3-22"><span class="section-number-3">3.22</span> Performance</h3>
+<div class="outline-text-3" id="text-3-22">
 <p>
 Emacs will run garbage collection after `gc-cons-threshold' bytes of
 consing. The default value is 800,000 bytes, or ~ 0.7 MiB. By
 increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </p>
 
+<div class="org-src-container">
 
-
-<pre class="src src-emacs-lisp">(setq gc-cons-threshold (* 10 1024 1024))
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setq gc-cons-threshold <span style="color: #00ffff;">(</span>* 10 1024 1024<span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 </pre>
-
-
-
+</div>
+</div>
 </div>
 
+<div id="outline-container-sec-3-23" class="outline-3">
+<h3 id="sec-3-23"><span class="section-number-3">3.23</span> Shut Down</h3>
+<div class="outline-text-3" id="text-3-23">
+<p>
+I rarely close Emacs, but using Zile means I use `C-x C-c' a lot. It's
+annoying to accidentally close Emacs, so warn first.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setq confirm-kill-emacs <span style="color: #8ae234;">#'</span><span style="color: #8ae234;">y-or-n-p</span><span style="color: #ffffff;">)</span>
+</pre>
+</div>
+</div>
 </div>
 
-<div id="outline-container-3-22" class="outline-3">
-<h3 id="sec-3-22"><span class="section-number-3">3.22</span> Undocumented</h3>
-<div class="outline-text-3" id="text-3-22">
-
-
-
-
+<div id="outline-container-sec-3-24" class="outline-3">
+<h3 id="sec-3-24"><span class="section-number-3">3.24</span> Undocumented</h3>
+<div class="outline-text-3" id="text-3-24">
+<div class="org-src-container">
 
 <pre class="src src-emacs-lisp"><span style="color: #888a85;">; </span><span style="color: #888a85;">always close the minibuffer on C-x o:</span>
 <span style="color: #888a85;">; </span><span style="color: #888a85;">&lt;jlf&gt; wilfredh: you could before-advise other-window to quit first</span>
 <span style="color: #888a85;">; </span><span style="color: #888a85;">if the minibuffer is active.. but it would be better to break that</span>
 <span style="color: #888a85;">; </span><span style="color: #888a85;">habit :)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">ui-customisations</span>)
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">ui-customisations</span><span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">file-customisations</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">editing-customisations</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">kill-ring-customisations</span>)
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">file-customisations</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">editing-customisations</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">kill-ring-customisations</span><span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">if</span> (eq system-type 'darwin)
-    (<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">os-x-fixes</span>))
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">if</span> <span style="color: #00ffff;">(</span>eq system-type <span style="color: #8ae234;">'</span><span style="color: #8ae234;">darwin</span><span style="color: #00ffff;">)</span>
+    <span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">os-x-fixes</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">; </span><span style="color: #888a85;">TODO: increase kill ring size</span>
 
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">ido-customisations</span>)
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">ido-customisations</span><span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">make re-builder use the same regexp format as regexp-replace (no double escaping)</span>
-(setq reb-re-syntax 'string)
+<span style="color: #ffffff;">(</span>setq reb-re-syntax <span style="color: #8ae234;">'</span><span style="color: #8ae234;">string</span><span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">treat space charcters as matching space characters, not like PCRE's '\s+'</span>
-(setq search-whitespace-regexp nil)
+<span style="color: #ffffff;">(</span>setq search-whitespace-regexp nil<span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">completion-customisations</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">structured-text-customisations</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">isearch-customisations</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">python-customisations</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">javascript-customisations</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">xml-customisations</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">lisp-customisations</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">c-customisations</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">sh-customisations</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">coffee-customisations</span>)
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">completion-customisations</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">structured-text-customisations</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">isearch-customisations</span><span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">startup-customisations</span>)
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">c-customisations</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">asm-customisations</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">coffee-customisations</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">javascript-customisations</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">lisp-customisations</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">python-customisations</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">rust-customisations</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">sh-customisations</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">xml-customisations</span><span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">git-customisations</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">git-flow-release</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">eshell-customisations</span>)
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">startup-customisations</span><span style="color: #ffffff;">)</span>
 
-<span style="color: #888a85;">;; </span><span style="color: #888a85;">stolen from http://demonastery.org/2013/04/emacs-narrow-to-region-indirect/</span>
-(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">narrow-to-region-indirect</span> (start end)
-  <span style="color: #888a85;">"Restrict editing in this buffer to the current region, indirectly."</span>
-  (interactive <span style="color: #ad7fa8; font-style: italic;">"r"</span>)
-  (<span style="color: #729fcf; font-weight: bold;">let</span> ((buf (clone-indirect-buffer nil nil)))
-    (<span style="color: #729fcf; font-weight: bold;">with-current-buffer</span> buf
-      (narrow-to-region start end))
-    (switch-to-buffer buf)))
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">git-customisations</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">git-flow-release</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">eshell-customisations</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">swoop-customisations</span><span style="color: #ffffff;">)</span>
 
-(setq ag-highlight-search 't)
-(global-set-key (kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f5&gt;"</span>) 'ag-project-at-point)
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">compilation-customisations</span><span style="color: #ffffff;">)</span>
+
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">ignore-errors</span> <span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">site-customisations</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
+
+<span style="color: #ffffff;">(</span>setq ag-highlight-search <span style="color: #8ae234;">'</span><span style="color: #8ae234;">t</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f5&gt;"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">ag-project-at-point</span><span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">stolen from http://whattheemacsd.com/setup-dired.el-02.html</span>
-(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">dired-back-to-top</span> ()
-  (interactive)
-  (beginning-of-buffer)
-  (dired-next-line (<span style="color: #729fcf; font-weight: bold;">if</span> dired-omit-mode 2 4)))
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">dired-back-to-top</span> <span style="color: #00ffff;">()</span>
+  <span style="color: #00ffff;">(</span>interactive<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>beginning-of-buffer<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>dired-next-line <span style="color: #ffff00;">(</span><span style="color: #729fcf; font-weight: bold;">if</span> dired-omit-mode 2 4<span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(define-key dired-mode-map
-  (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
+<span style="color: #ffffff;">(</span>define-key dired-mode-map
+  <span style="color: #00ffff;">(</span>vector <span style="color: #8ae234;">'</span><span style="color: #8ae234;">remap</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">beginning-of-buffer</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">dired-back-to-top</span><span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">dired-jump-to-bottom</span> ()
-  (interactive)
-  (end-of-buffer)
-  (dired-next-line -1))
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">dired-jump-to-bottom</span> <span style="color: #00ffff;">()</span>
+  <span style="color: #00ffff;">(</span>interactive<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>end-of-buffer<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>dired-next-line -1<span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(define-key dired-mode-map
-  (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
+<span style="color: #ffffff;">(</span>define-key dired-mode-map
+  <span style="color: #00ffff;">(</span>vector <span style="color: #8ae234;">'</span><span style="color: #8ae234;">remap</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">end-of-buffer</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">dired-jump-to-bottom</span><span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">conflicts</span>)
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">conflicts</span><span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">tags-utils</span>)
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">tags-utils</span><span style="color: #ffffff;">)</span>
+
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">blog-utils</span><span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">crontab mode for files named</span>
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">crontab-mode</span>)
-(add-to-list 'auto-mode-alist '(<span style="color: #ad7fa8; font-style: italic;">"crontab.*?\\'"</span> . crontab-mode))
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">crontab-mode</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>add-to-list <span style="color: #8ae234;">'</span><span style="color: #8ae234;">auto-mode-alist</span> <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span><span style="color: #ad7fa8; font-style: italic;">"crontab.*?\\'"</span> . crontab-mode<span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">wiki</span>)
-(setq major-mode 'text-mode)
-(setq wiki-directories (list (expand-file-name <span style="color: #ad7fa8; font-style: italic;">"~/Dropbox/Wiki/"</span>)))
-
-(setq ring-bell-function 'ignore)
+<span style="color: #ffffff;">(</span>setq ring-bell-function <span style="color: #8ae234;">'</span><span style="color: #8ae234;">ignore</span><span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">; </span><span style="color: #888a85;">suspend seems to crash on Gnome 3, and I don't use it anyway, so just disable it</span>
-(setq cannot-suspend t)
-(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">suspend-emacs</span> (<span style="color: #8ae234; font-weight: bold;">&amp;rest</span>)
-  (interactive))
-(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">suspend-frame</span> (<span style="color: #8ae234; font-weight: bold;">&amp;rest</span>)
-  (interactive))
+<span style="color: #ffffff;">(</span>setq cannot-suspend t<span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">suspend-emacs</span> <span style="color: #00ffff;">(</span><span style="color: #8ae234; font-weight: bold;">&amp;rest</span><span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>interactive<span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">suspend-frame</span> <span style="color: #00ffff;">(</span><span style="color: #8ae234; font-weight: bold;">&amp;rest</span><span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>interactive<span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">windmove allows S-&lt;right&gt; and S-&lt;right&gt; to switch between windows</span>
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">instead of `C-x o'</span>
-(<span style="color: #729fcf; font-weight: bold;">when</span> (fboundp 'windmove-default-keybindings)
-  (windmove-default-keybindings))
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">when</span> <span style="color: #00ffff;">(</span>fboundp <span style="color: #8ae234;">'</span><span style="color: #8ae234;">windmove-default-keybindings</span><span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>windmove-default-keybindings<span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(custom-set-variables
+<span style="color: #ffffff;">(</span>custom-set-variables
   <span style="color: #888a85;">;; </span><span style="color: #888a85;">custom-set-variables was added by Custom.</span>
   <span style="color: #888a85;">;; </span><span style="color: #888a85;">If you edit it by hand, you could mess it up, so be careful.</span>
   <span style="color: #888a85;">;; </span><span style="color: #888a85;">Your init file should contain only one such instance.</span>
   <span style="color: #888a85;">;; </span><span style="color: #888a85;">If there is more than one, they won't work right.</span>
- '(frame-background-mode (quote dark)))
-(custom-set-faces
+ <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span>frame-background-mode <span style="color: #ffff00;">(</span>quote dark<span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>custom-set-faces
  <span style="color: #888a85;">;; </span><span style="color: #888a85;">custom-set-faces was added by Custom.</span>
  <span style="color: #888a85;">;; </span><span style="color: #888a85;">If you edit it by hand, you could mess it up, so be careful.</span>
  <span style="color: #888a85;">;; </span><span style="color: #888a85;">Your init file should contain only one such instance.</span>
  <span style="color: #888a85;">;; </span><span style="color: #888a85;">If there is more than one, they won't work right.</span>
- '(ahs-plugin-defalt-face ((t nil)))
- '(ethan-wspace-face ((t (<span style="color: #729fcf;">:background</span> <span style="color: #ad7fa8; font-style: italic;">"#2e3434"</span>))))
- '(flymake-errline ((((class color)) (<span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Red"</span>))))
- '(flymake-warnline ((((class color)) (<span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Orange"</span>))))
- '(hl-line ((t (<span style="color: #729fcf;">:background</span> <span style="color: #ad7fa8; font-style: italic;">"gray14"</span>))))
- '(hl-sexp-face ((t (<span style="color: #729fcf;">:background</span> <span style="color: #ad7fa8; font-style: italic;">"gray14"</span>))))
- '(js2-function-param-face ((((class color)) (<span style="color: #729fcf;">:foreground</span> <span style="color: #ad7fa8; font-style: italic;">"Green"</span>))))
- '(smerge-refined-change ((t (<span style="color: #729fcf;">:background</span> <span style="color: #ad7fa8; font-style: italic;">"black"</span>)))))
+ <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span>ahs-plugin-defalt-face <span style="color: #ffff00;">(</span><span style="color: #00ff00;">(</span>t nil<span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span>
+ <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span>ethan-wspace-face <span style="color: #ffff00;">(</span><span style="color: #00ff00;">(</span>t <span style="color: #ffa500;">(</span><span style="color: #729fcf;">:background</span> <span style="color: #ad7fa8; font-style: italic;">"#2e3434"</span><span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span>
+ <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span>flymake-errline <span style="color: #ffff00;">(</span><span style="color: #00ff00;">(</span><span style="color: #ffa500;">(</span><span style="color: #a020f0;">(</span>class color<span style="color: #a020f0;">)</span><span style="color: #ffa500;">)</span> <span style="color: #ffa500;">(</span><span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Red"</span><span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span>
+ <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span>flymake-warnline <span style="color: #ffff00;">(</span><span style="color: #00ff00;">(</span><span style="color: #ffa500;">(</span><span style="color: #a020f0;">(</span>class color<span style="color: #a020f0;">)</span><span style="color: #ffa500;">)</span> <span style="color: #ffa500;">(</span><span style="color: #729fcf;">:underline</span> <span style="color: #ad7fa8; font-style: italic;">"Orange"</span><span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span>
+ <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span>hl-line <span style="color: #ffff00;">(</span><span style="color: #00ff00;">(</span>t <span style="color: #ffa500;">(</span><span style="color: #729fcf;">:background</span> <span style="color: #ad7fa8; font-style: italic;">"gray14"</span><span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span>
+ <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span>hl-sexp-face <span style="color: #ffff00;">(</span><span style="color: #00ff00;">(</span>t <span style="color: #ffa500;">(</span><span style="color: #729fcf;">:background</span> <span style="color: #ad7fa8; font-style: italic;">"gray14"</span><span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span>
+ <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span>js2-function-param-face <span style="color: #ffff00;">(</span><span style="color: #00ff00;">(</span><span style="color: #ffa500;">(</span><span style="color: #a020f0;">(</span>class color<span style="color: #a020f0;">)</span><span style="color: #ffa500;">)</span> <span style="color: #ffa500;">(</span><span style="color: #729fcf;">:foreground</span> <span style="color: #ad7fa8; font-style: italic;">"Green"</span><span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span>
+ <span style="color: #8ae234;">'</span><span style="color: #00ffff;">(</span>smerge-refined-change <span style="color: #ffff00;">(</span><span style="color: #00ff00;">(</span>t <span style="color: #ffa500;">(</span><span style="color: #729fcf;">:background</span> <span style="color: #ad7fa8; font-style: italic;">"black"</span><span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-<span style="color: #888a85;">;; </span><span style="color: #888a85;">(require 'timing)</span>
-<span style="color: #888a85;">;; </span><span style="color: #888a85;">(message "Spent %.2f seconds executing .emacs.d/init.el."</span>
-<span style="color: #888a85;">;;          </span><span style="color: #888a85;">(time-difference *emacs-load-start* (current-time)))</span>
-(put 'narrow-to-region 'disabled nil)
+<span style="color: #ffffff;">(</span>put <span style="color: #8ae234;">'</span><span style="color: #8ae234;">narrow-to-region</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">disabled</span> nil<span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">indent-buffer</span> ()
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">indent-buffer</span> <span style="color: #00ffff;">()</span>
   <span style="color: #888a85;">"Indent the everything in the current buffer."</span>
-  (interactive)
-  (indent-region (point-min) (point-max)))
+  <span style="color: #00ffff;">(</span>interactive<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>indent-region <span style="color: #ffff00;">(</span>point-min<span style="color: #ffff00;">)</span> <span style="color: #ffff00;">(</span>point-max<span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(add-hook 'magit-log-edit-mode-hook 'auto-fill-mode)
+<span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">magit-log-edit-mode-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">auto-fill-mode</span><span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">f</span>)
-(<span style="color: #729fcf; font-weight: bold;">require</span> '<span style="color: #8ae234;">s</span>)
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">f</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">s</span><span style="color: #ffffff;">)</span>
 
-(<span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">download-file</span> (url directory file-name)
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">download-file</span> <span style="color: #00ffff;">(</span>url directory file-name<span style="color: #00ffff;">)</span>
   <span style="color: #888a85;">"Download the file at URL into DIRECTORY.</span>
 <span style="color: #888a85;">The FILE-NAME defaults to the one used in the URL."</span>
-  (interactive
+  <span style="color: #00ffff;">(</span>interactive
    <span style="color: #888a85;">;; </span><span style="color: #888a85;">We're forced to let-bind url here since we access it before</span>
    <span style="color: #888a85;">;; </span><span style="color: #888a85;">interactive binds the function parameters.</span>
-   (<span style="color: #729fcf; font-weight: bold;">let</span> ((url (read-from-minibuffer <span style="color: #ad7fa8; font-style: italic;">"URL: "</span>)))
-     (list
+   <span style="color: #ffff00;">(</span><span style="color: #729fcf; font-weight: bold;">let</span> <span style="color: #00ff00;">(</span><span style="color: #ffa500;">(</span>url <span style="color: #a020f0;">(</span>read-from-minibuffer <span style="color: #ad7fa8; font-style: italic;">"URL: "</span><span style="color: #a020f0;">)</span><span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span>
+     <span style="color: #00ff00;">(</span>list
       url
-      (read-directory-name <span style="color: #ad7fa8; font-style: italic;">"Destination dir: "</span>)
+      <span style="color: #ffa500;">(</span>read-directory-name <span style="color: #ad7fa8; font-style: italic;">"Destination dir: "</span><span style="color: #ffa500;">)</span>
       <span style="color: #888a85;">;; </span><span style="color: #888a85;">deliberately not using read-file-name since that inludes the directory</span>
-      (read-from-minibuffer
+      <span style="color: #ffa500;">(</span>read-from-minibuffer
        <span style="color: #ad7fa8; font-style: italic;">"File name: "</span>
-       (car (last (s-split <span style="color: #ad7fa8; font-style: italic;">"/"</span> url)))))))
-  (<span style="color: #729fcf; font-weight: bold;">let</span> ((destination (f-join directory file-name)))
-    (url-copy-file url destination 't)
-    (find-file destination)))
+       <span style="color: #a020f0;">(</span>car <span style="color: #ffffff;">(</span>last <span style="color: #00ffff;">(</span>s-split <span style="color: #ad7fa8; font-style: italic;">"/"</span> url<span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span><span style="color: #a020f0;">)</span><span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">let</span> <span style="color: #ffff00;">(</span><span style="color: #00ff00;">(</span>destination <span style="color: #ffa500;">(</span>f-join directory file-name<span style="color: #ffa500;">)</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span>
+    <span style="color: #ffff00;">(</span>url-copy-file url destination <span style="color: #8ae234;">'</span><span style="color: #8ae234;">t</span><span style="color: #ffff00;">)</span>
+    <span style="color: #ffff00;">(</span>find-file destination<span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-(setq-default dired-listing-switches <span style="color: #ad7fa8; font-style: italic;">"-alhv"</span>)
+<span style="color: #ffffff;">(</span>setq-default dired-listing-switches <span style="color: #ad7fa8; font-style: italic;">"-alhv"</span><span style="color: #ffffff;">)</span>
 
-(global-anzu-mode +1)
+<span style="color: #ffffff;">(</span>global-anzu-mode +1<span style="color: #ffffff;">)</span>
+
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">diminish</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>diminish <span style="color: #8ae234;">'</span><span style="color: #8ae234;">anzu-mode</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>put <span style="color: #8ae234;">'</span><span style="color: #8ae234;">dired-find-alternate-file</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">disabled</span> nil<span style="color: #ffffff;">)</span>
+
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">There are a few applications, such as crontab, that require a</span>
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">trailing new line. To be safe, always leave a trailing newline.</span>
+<span style="color: #ffffff;">(</span>setq-default require-final-newline t<span style="color: #ffffff;">)</span>
 </pre>
-
 </div>
 </div>
 </div>
 </div>
-
-<div id="postamble">
-<p class="date">Date: 2014-03-07T21:36+0000</p>
+</div>
+<div id="postamble" class="status">
 <p class="author">Author: Wilfred Hughes</p>
-<p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
-<a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
-
+<p class="date">Created: 2015-01-10 Sat 20:06</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.4.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
 </html>

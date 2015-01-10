@@ -1142,6 +1142,7 @@ annoying to accidentally close Emacs, so warn first.
   (require 'isearch-customisations)
 
   (require 'c-customisations)
+  (require 'asm-customisations)
   (require 'coffee-customisations)
   (require 'javascript-customisations)
   (require 'lisp-customisations)
@@ -1224,19 +1225,19 @@ annoying to accidentally close Emacs, so warn first.
    '(hl-sexp-face ((t (:background "gray14"))))
    '(js2-function-param-face ((((class color)) (:foreground "Green"))))
    '(smerge-refined-change ((t (:background "black")))))
-  
+
   (put 'narrow-to-region 'disabled nil)
-  
+
   (defun indent-buffer ()
     "Indent the everything in the current buffer."
     (interactive)
     (indent-region (point-min) (point-max)))
-  
+
   (add-hook 'magit-log-edit-mode-hook 'auto-fill-mode)
-  
+
   (require 'f)
   (require 's)
-  
+
   (defun download-file (url directory file-name)
     "Download the file at URL into DIRECTORY.
   The FILE-NAME defaults to the one used in the URL."
