@@ -4,7 +4,7 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 January 2013
-;; Version: 20141221.902
+;; Version: 20150105.1314
 ;; X-Original-Version: 0.46
 ;; Package-Requires: ((dash "2.8.0") (s "1.9.0") (cl-lib "0.5"))
 ;;; Commentary:
@@ -584,14 +584,6 @@ This function is called from `compilation-filter-hook'."
       (list :file-regex
             (read-from-minibuffer "Filenames which match PCRE: "
                                   (ag/buffer-extension-regex))))))
-
-;; Use hjkl for motion if the user uses evil-mode.
-;; See https://github.com/Wilfred/ag.el/issues/72
-(eval-after-load 'evil
-  `(progn
-     (eval-when-compile (require 'evil-core))
-     (add-to-list 'evil-motion-state-modes 'ag-mode)
-     (evil-add-hjkl-bindings ag-mode-map 'motion)))
 
 (provide 'ag)
 ;;; ag.el ends here
