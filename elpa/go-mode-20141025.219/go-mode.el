@@ -1,8 +1,17 @@
 ;;; go-mode.el --- Major mode for the Go programming language
 
-;; Copyright 2013 The Go Authors. All rights reserved.
+;; Copyright 2013 The go-mode Authors. All rights reserved.
 ;; Use of this source code is governed by a BSD-style
 ;; license that can be found in the LICENSE file.
+
+;; Author: The go-mode Authors
+;; Version: 10
+;; Keywords: languages go
+;; URL: https://github.com/dominikh/go-mode.el
+;;
+;; This file is not part of GNU Emacs.
+
+;;; Code:
 
 (require 'cl)
 (require 'etags)
@@ -113,6 +122,8 @@
 
 (defconst go-dangling-operators-regexp "[^-]-\\|[^+]\\+\\|[/*&><.=|^]")
 (defconst go-identifier-regexp "[[:word:][:multibyte:]]+")
+(defconst go-type-name-no-prefix-regexp "\\(?:[[:word:][:multibyte:]]+\\.\\)?[[:word:][:multibyte:]]+")
+(defconst go-qualified-identifier-regexp (concat go-identifier-regexp "\\." go-identifier-regexp))
 (defconst go-label-regexp go-identifier-regexp)
 (defconst go-type-regexp "[[:word:][:multibyte:]*]+")
 (defconst go-func-regexp (concat (go--regexp-enclose-in-symbol "func") "\\s *\\(" go-identifier-regexp "\\)"))
@@ -122,6 +133,7 @@
                                "\\s *)\\s *\\)?\\("
                                go-identifier-regexp
                                "\\)("))
+
 (defconst go-builtins
   '("append" "cap"   "close"   "complex" "copy"
     "delete" "imag"  "len"     "make"    "new"
@@ -137,7 +149,11 @@
   "All keywords in the Go language.  Used for font locking.")
 
 (defconst go-constants '("nil" "true" "false" "iota"))
-(defconst go-type-name-regexp (concat "\\(?:[*(]\\)*\\(?:" go-identifier-regexp "\\.\\)?\\(" go-identifier-regexp "\\)"))
+(defconst go-type-name-regexp (concat "\\(?:[*(]\\)*\\(\\(?:" go-identifier-regexp "\\.\\)?" go-identifier-regexp "\\)"))
+
+;; Maximum number of identifiers that can be highlighted as type names
+;; in one function type/declaration.
+(defconst go--font-lock-func-param-num-groups 16)
 
 (defvar go-dangling-cache)
 (defvar go-godoc-history nil)
@@ -175,12 +191,31 @@ from https://github.com/bradfitz/goimports."
   :type 'string
   :group 'go)
 
+(defcustom gofmt-show-errors 'buffer
+  "Where to display gofmt error output. It can either be
+displayed in its own buffer, in the echo area, or not at all.
+
+Please note that Emacs outputs to the echo area when writing
+files and will overwrite gofmt's echo output if used from inside
+a before-save-hook."
+  :type '(choice
+          (const :tag "Own buffer" buffer)
+          (const :tag "Echo area" echo)
+          (const :tag "None" nil))
+  :group 'go)
+
 (defcustom go-other-file-alist
   '(("_test\\.go\\'" (".go"))
     ("\\.go\\'" ("_test.go")))
   "See the documentation of `ff-other-file-alist' for details."
   :type '(repeat (list regexp (choice (repeat string) function)))
   :group 'go)
+
+(defcustom go-coverage-display-buffer-func 'display-buffer-reuse-window
+  "How go-coverage should display the coverage buffer. See
+`display-buffer' for a list of possible functions."
+  :type 'function
+  :group 'go-cover)
 
 (defface go-coverage-untracked
   '((t (:foreground "#505050")))
@@ -267,7 +302,10 @@ For mode=set, all covered lines will have this weight."
   ;; we cannot use 'symbols in regexp-opt because GNU Emacs <24
   ;; doesn't understand that
   (append
-   `((,(go--regexp-enclose-in-symbol (regexp-opt go-mode-keywords t)) . font-lock-keyword-face)
+   `((go--match-func
+      ,@(mapcar (lambda (x) `(,x font-lock-type-face))
+                (number-sequence 1 go--font-lock-func-param-num-groups)))
+     (,(go--regexp-enclose-in-symbol (regexp-opt go-mode-keywords t)) . font-lock-keyword-face)
      (,(concat "\\(" (go--regexp-enclose-in-symbol (regexp-opt go-builtins t)) "\\)[[:space:]]*(") 1 font-lock-builtin-face)
      (,(go--regexp-enclose-in-symbol (regexp-opt go-constants t)) . font-lock-constant-face)
      (,go-func-regexp 1 font-lock-function-name-face)) ;; function (not method) name
@@ -282,15 +320,13 @@ For mode=set, all covered lines will have this weight."
      (,(concat (go--regexp-enclose-in-symbol "type") "[[:space:]]+\\([^[:space:]]+\\)") 1 font-lock-type-face) ;; types
      (,(concat (go--regexp-enclose-in-symbol "type") "[[:space:]]+" go-identifier-regexp "[[:space:]]*" go-type-name-regexp) 1 font-lock-type-face) ;; types
      (,(concat "[^[:word:][:multibyte:]]\\[\\([[:digit:]]+\\|\\.\\.\\.\\)?\\]" go-type-name-regexp) 2 font-lock-type-face) ;; Arrays/slices
-     (,(concat "\\(" go-identifier-regexp "\\)" "{") 1 font-lock-type-face)
+     (,(concat "\\(" go-type-name-regexp "\\)" "{") 1 font-lock-type-face)
      (,(concat (go--regexp-enclose-in-symbol "map") "\\[[^]]+\\]" go-type-name-regexp) 1 font-lock-type-face) ;; map value type
      (,(concat (go--regexp-enclose-in-symbol "map") "\\[" go-type-name-regexp) 1 font-lock-type-face) ;; map key type
-     (,(concat (go--regexp-enclose-in-symbol "chan") "[[:space:]]*\\(?:<-\\)?" go-type-name-regexp) 1 font-lock-type-face) ;; channel type
+     (,(concat (go--regexp-enclose-in-symbol "chan") "[[:space:]]*\\(?:<-[[:space:]]*\\)?" go-type-name-regexp) 1 font-lock-type-face) ;; channel type
      (,(concat (go--regexp-enclose-in-symbol "\\(?:new\\|make\\)") "\\(?:[[:space:]]\\|)\\)*(" go-type-name-regexp) 1 font-lock-type-face) ;; new/make type
      ;; TODO do we actually need this one or isn't it just a function call?
      (,(concat "\\.\\s *(" go-type-name-regexp) 1 font-lock-type-face) ;; Type conversion
-     (,(concat (go--regexp-enclose-in-symbol "func") "[[:space:]]+(" go-identifier-regexp "[[:space:]]+" go-type-name-regexp ")") 1 font-lock-type-face) ;; Method receiver
-     (,(concat (go--regexp-enclose-in-symbol "func") "[[:space:]]+(" go-type-name-regexp ")") 1 font-lock-type-face) ;; Method receiver without variable name
      ;; Like the original go-mode this also marks compound literal
      ;; fields. There, it was marked as to fix, but I grew quite
      ;; accustomed to it, so it'll stay for now.
@@ -376,14 +412,15 @@ STOP-AT-STRING is not true, over strings."
 (defun go--match-raw-string-literal (end)
   "Search for a raw string literal. Set point to the end of the
 occurence found on success. Returns nil on failure."
-  (when (search-forward "`" end t)
-    (goto-char (match-beginning 0))
-    (if (go-in-string-or-comment-p)
-        (progn (goto-char (match-end 0))
-               (go--match-raw-string-literal end))
-      (when (looking-at "\\(`\\)\\([^`]*\\)\\(`\\)")
-        (goto-char (match-end 0))
-        t))))
+  (unless (go-in-string-or-comment-p)
+    (when (search-forward "`" end t)
+      (goto-char (match-beginning 0))
+      (if (go-in-string-or-comment-p)
+          (progn (goto-char (match-end 0))
+                 (go--match-raw-string-literal end))
+        (when (looking-at "\\(`\\)\\([^`]*\\)\\(`\\)")
+          (goto-char (match-end 0))
+          t)))))
 
 (defun go-previous-line-has-dangling-op-p ()
   "Returns non-nil if the current line is a continuation line."
@@ -486,10 +523,12 @@ current line will be returned."
           (goto-char (- (point-max) pos))))))
 
 (defun go-beginning-of-defun (&optional count)
+  (unless (bolp)
+    (end-of-line))
   (setq count (or count 1))
-  (let ((first t)
-        failure)
+  (let (first failure)
     (dotimes (i (abs count))
+      (setq first t)
       (while (and (not failure)
                   (or first (go-in-string-or-comment-p)))
         (if (>= count 0)
@@ -511,12 +550,234 @@ current line will be returned."
     ;; It can happen that we're not placed before a function by emacs
     (if (not (looking-at "func"))
         (go-beginning-of-defun -1))
-    (skip-chars-forward "^{")
-    (forward-char)
+    ;; Find the { that starts the function, i.e., the next { that isn't
+    ;; preceded by struct or interface, or a comment or struct tag.  BUG:
+    ;; breaks if there's a comment between the struct/interface keyword and
+    ;; bracket, like this:
+    ;;
+    ;;     struct /* why? */ { 
+    (while (progn
+      (skip-chars-forward "^{")
+      (forward-char)
+      (or (go-in-string-or-comment-p)
+          (looking-back "\\(struct\\|interface\\)\\s-*{"))))
     (setq orig-level (go-paren-level))
     (while (>= (go-paren-level) orig-level)
       (skip-chars-forward "^}")
       (forward-char))))
+
+(defun go--find-enclosing-parentheses (position)
+  "Return points of outermost '(' and ')' surrounding POSITION if
+such parentheses exist.
+
+If outermost '(' exists but ')' does not, it returns the next blank
+line or end-of-buffer position instead of the position of the closing
+parenthesis.
+
+If the starting parenthesis is not found, it returns (POSITION
+POSITION).
+"
+  (save-excursion
+    (let (beg end)
+      (goto-char position)
+      (while (> (go-paren-level) 0)
+        (re-search-backward "[(\\[{]" nil t)
+        (when (looking-at "(")
+          (setq beg (point))))
+      (if (null beg)
+          (list position position)
+        (goto-char position)
+        (while (and (> (go-paren-level) 0)
+                    (search-forward ")" nil t)))
+        (when (> (go-paren-level) 0)
+          (unless (re-search-forward "^[[:space:]]*$" nil t)
+            (goto-char (point-max))))
+        (list beg (point))))))
+
+(defun go--search-next-comma (end)
+  "Search forward from point for a comma whose nesting level is
+the same as point. If it reaches the end of line or a closing
+parenthesis before a comma, it stops at it."
+  (let ((orig-level (go-paren-level)))
+    (while (and (< (point) end)
+                (or (looking-at "[^,)\n]")
+                    (> (go-paren-level) orig-level)))
+      (forward-char))
+    (when (and (looking-at ",")
+               (< (point) (1- end)))
+      (forward-char))))
+
+(defun go--looking-at-keyword ()
+  (and (looking-at (concat "\\(" go-identifier-regexp "\\)"))
+       (member (match-string 1) go-mode-keywords)))
+
+(defun go--match-func (end)
+  "Search for identifiers used as type names from a function
+parameter list, and set the identifier positions as the results
+of last search. Return t if search succeeded."
+  (when (re-search-forward (go--regexp-enclose-in-symbol "func") end t)
+    (let ((regions (go--match-func-type-names end)))
+      (if (null regions)
+          ;; Nothing to highlight. This can happen if the current func
+          ;; is "func()". Try next one.
+          (go--match-func end)
+        ;; There are something to highlight. Set those positions as
+        ;; last search results.
+        (setq regions (go--filter-match-data regions end))
+        (when regions
+          (set-match-data (go--make-match-data regions))
+          t)))))
+
+(defun go--match-func-type-names (end)
+  (cond
+   ;; Function declaration (e.g. "func foo(")
+   ((looking-at (concat "[[:space:]\n]*" go-identifier-regexp "[[:space:]\n]*("))
+    (goto-char (match-end 0))
+    (nconc (go--match-parameter-list end)
+           (go--match-function-result end)))
+   ;; Method declaration, function literal, or function type
+   ((looking-at "[[:space:]]*(")
+    (goto-char (match-end 0))
+    (let ((regions (go--match-parameter-list end)))
+      ;; Method declaration (e.g. "func (x y) foo(")
+      (when (looking-at (concat "[[:space:]]*" go-identifier-regexp "[[:space:]\n]*("))
+        (goto-char (match-end 0))
+        (setq regions (nconc regions (go--match-parameter-list end))))
+      (nconc regions (go--match-function-result end))))))
+
+(defun go--parameter-list-type (end)
+  "Return 'present if the parameter list has names, or 'absent if
+not, assuming point is at the beginning of a parameter list, just
+after '('."
+  (save-excursion
+    (skip-chars-forward "[:space:]\n" end)
+    (cond ((> (point) end)
+           nil)
+          ((looking-at (concat go-identifier-regexp "[[:space:]\n]*,"))
+           (goto-char (match-end 0))
+           (go--parameter-list-type end))
+          ((or (looking-at go-qualified-identifier-regexp)
+               (looking-at (concat go-type-name-no-prefix-regexp "[[:space:]\n]*\\(?:)\\|\\'\\)"))
+               (go--looking-at-keyword)
+               (looking-at "[*\\[]\\|\\.\\.\\.\\|\\'"))
+           'absent)
+          (t 'present))))
+
+(defconst go--opt-dotdotdot-regexp "\\(?:\\.\\.\\.\\)?")
+(defconst go--parameter-type-regexp
+  (concat go--opt-dotdotdot-regexp "[[:space:]*\n]*\\(" go-type-name-no-prefix-regexp "\\)[[:space:]\n]*\\([,)]\\|\\'\\)"))
+(defconst go--func-type-in-parameter-list-regexp
+  (concat go--opt-dotdotdot-regexp "[[:space:]*\n]*\\(" (go--regexp-enclose-in-symbol "func") "\\)"))
+
+(defun go--match-parameters-common (identifier-regexp end)
+  (let ((acc ())
+        (start -1))
+    (while (progn (skip-chars-forward "[:space:]\n" end)
+                  (and (not (looking-at "\\(?:)\\|\\'\\)"))
+                       (< start (point))
+                       (<= (point) end)))
+      (setq start (point))
+      (cond
+       ((looking-at (concat identifier-regexp go--parameter-type-regexp))
+        (setq acc (nconc acc (list (match-beginning 1) (match-end 1))))
+        (goto-char (match-beginning 2)))
+       ((looking-at (concat identifier-regexp go--func-type-in-parameter-list-regexp))
+        (goto-char (match-beginning 1))
+        (setq acc (nconc acc (go--match-func-type-names end)))
+        (go--search-next-comma end))
+       (t
+        (go--search-next-comma end))))
+    (when (and (looking-at ")")
+               (< (point) end))
+      (forward-char))
+    acc))
+
+(defun go--match-parameters-with-identifier-list (end)
+  (go--match-parameters-common
+   (concat go-identifier-regexp "[[:space:]\n]+")
+   end))
+
+(defun go--match-parameters-without-identifier-list (end)
+  (go--match-parameters-common "" end))
+
+(defun go--filter-match-data (regions end)
+  "Remove points from regions if they are beyond end. Regions are
+a list whose size is multiple of 2. Element 2n is beginning of a
+region and 2n+1 is end of it.
+
+This function is used to make sure we don't override end point
+that font-lock-mode gave to us."
+  (when regions
+    (let* ((vec (vconcat regions))
+           (i 0)
+           (len (length vec)))
+      (while (and (< i len)
+                  (<= (nth i regions) end)
+                  (<= (nth (1+ i) regions) end))
+        (setq i (+ i 2)))
+      (cond ((= i len)
+             regions)
+            ((zerop i)
+             nil)
+            (t
+             (setcdr (nth i regions) nil)
+             regions)))))
+
+(defun go--make-match-data (regions)
+  (let ((deficit (- (* 2 go--font-lock-func-param-num-groups)
+                    (length regions))))
+    (when (> deficit 0)
+      (let ((last (car (last regions))))
+        (setq regions (nconc regions (make-list deficit last))))))
+  `(,(car regions) ,@(last regions) ,@regions))
+
+(defun go--match-parameter-list (end)
+  "Returns a list of identifier positions that are used as type
+names in a function parameter list, assuming point is at the
+beginning of a parameter list. Returns nil if the text after
+point does not look like a parameter list.
+
+Set point to end of closing parenthesis on success.
+
+In Go, the names must either all be present or all be absent
+within a list of parameters.
+
+Parsing a parameter list is a little bit complicated because we
+have to scan through the parameter list to determine whether or
+not the list has names. Until a type name is found or reaching
+end of a parameter list, we are not sure which form the parameter
+list is.
+
+For example, X and Y are type names in a parameter list \"(X,
+Y)\" but are parameter names in \"(X, Y int)\". We cannot say if
+X is a type name until we see int after Y.
+
+Note that even \"(int, float T)\" is a valid parameter
+list. Builtin type names are not reserved words. In this example,
+int and float are parameter names and only T is a type name.
+
+In this function, we first scan the parameter list to see if the
+list has names, and then handle it accordingly."
+  (let ((name (go--parameter-list-type end)))
+    (cond ((eq name 'present)
+           (go--match-parameters-with-identifier-list end))
+          ((eq name 'absent)
+           (go--match-parameters-without-identifier-list end))
+          (t nil))))
+
+(defun go--match-function-result (end)
+  "Returns a list of identifier positions that are used as type
+names in a function result, assuming point is at the beginning of
+a result.
+
+Function result is a unparenthesized type or a parameter list."
+  (cond ((and (looking-at (concat "[[:space:]*]*\\(" go-type-name-no-prefix-regexp "\\)"))
+              (not (member (match-string 1) go-mode-keywords)))
+         (list (match-beginning 1) (match-end 1)))
+        ((looking-at "[[:space:]]*(")
+         (goto-char (match-end 0))
+         (go--match-parameter-list end))
+        (t nil)))
 
 ;;;###autoload
 (define-derived-mode go-mode prog-mode "Go"
@@ -567,11 +828,12 @@ go get code.google.com/p/rog-go/exp/cmd/godef
 
 If you're looking for even more integration with Go, namely
 on-the-fly syntax checking, auto-completion and snippets, it is
-recommended that you look at goflymake
-\(https://github.com/dougm/goflymake), gocode
-\(https://github.com/nsf/gocode), go-eldoc
-\(github.com/syohex/emacs-go-eldoc) and yasnippet-go
-\(https://github.com/dominikh/yasnippet-go)"
+recommended that you look at flycheck
+\(see URL `https://github.com/flycheck/flycheck') or flymake in combination
+with goflymake \(see URL `https://github.com/dougm/goflymake'), gocode
+\(see URL `https://github.com/nsf/gocode'), go-eldoc
+\(see URL `github.com/syohex/emacs-go-eldoc') and yasnippet-go
+\(see URL `https://github.com/dominikh/yasnippet-go')"
 
   ;; Font lock
   (set (make-local-variable 'font-lock-defaults)
@@ -675,45 +937,51 @@ buffer."
   (interactive)
   (let ((tmpfile (make-temp-file "gofmt" nil ".go"))
         (patchbuf (get-buffer-create "*Gofmt patch*"))
-        (errbuf (get-buffer-create "*Gofmt Errors*"))
+        (errbuf (if gofmt-show-errors (get-buffer-create "*Gofmt Errors*")))
         (coding-system-for-read 'utf-8)
         (coding-system-for-write 'utf-8))
 
-    (with-current-buffer errbuf
-      (setq buffer-read-only nil)
-      (erase-buffer))
-    (with-current-buffer patchbuf
-      (erase-buffer))
+    (save-restriction
+      (widen)
+      (if errbuf
+          (with-current-buffer errbuf
+            (setq buffer-read-only nil)
+            (erase-buffer)))
+      (with-current-buffer patchbuf
+        (erase-buffer))
 
-    (write-region nil nil tmpfile)
+      (write-region nil nil tmpfile)
 
-    ;; We're using errbuf for the mixed stdout and stderr output. This
-    ;; is not an issue because gofmt -w does not produce any stdout
-    ;; output in case of success.
-    (if (zerop (call-process gofmt-command nil errbuf nil "-w" tmpfile))
-        (if (zerop (call-process-region (point-min) (point-max) "diff" nil patchbuf nil "-n" "-" tmpfile))
-            (progn
-              (kill-buffer errbuf)
-              (message "Buffer is already gofmted"))
-          (go--apply-rcs-patch patchbuf)
-          (kill-buffer errbuf)
-          (message "Applied gofmt"))
-      (message "Could not apply gofmt. Check errors for details")
-      (gofmt--process-errors (buffer-file-name) tmpfile errbuf))
+      ;; We're using errbuf for the mixed stdout and stderr output. This
+      ;; is not an issue because gofmt -w does not produce any stdout
+      ;; output in case of success.
+      (if (zerop (call-process gofmt-command nil errbuf nil "-w" tmpfile))
+          (progn
+            (if (zerop (call-process-region (point-min) (point-max) "diff" nil patchbuf nil "-n" "-" tmpfile))
+                (message "Buffer is already gofmted")
+              (go--apply-rcs-patch patchbuf)
+              (message "Applied gofmt"))
+            (if errbuf (kill-buffer errbuf)))
+        (message "Could not apply gofmt")
+        (if errbuf (gofmt--process-errors (buffer-file-name) tmpfile errbuf)))
 
-    (kill-buffer patchbuf)
-    (delete-file tmpfile)))
+      (kill-buffer patchbuf)
+      (delete-file tmpfile))))
 
 
 (defun gofmt--process-errors (filename tmpfile errbuf)
-  ;; Convert the gofmt stderr to something understood by the compilation mode.
   (with-current-buffer errbuf
-    (goto-char (point-min))
-    (insert "gofmt errors:\n")
-    (while (search-forward-regexp (concat "^\\(" (regexp-quote tmpfile) "\\):") nil t)
-      (replace-match (file-name-nondirectory filename) t t nil 1))
-    (compilation-mode)
-    (display-buffer errbuf)))
+    (if (eq gofmt-show-errors 'echo)
+        (progn
+          (message "%s" (buffer-string))
+          (kill-buffer errbuf))
+      ;; Convert the gofmt stderr to something understood by the compilation mode.
+      (goto-char (point-min))
+      (insert "gofmt errors:\n")
+      (while (search-forward-regexp (concat "^\\(" (regexp-quote tmpfile) "\\):") nil t)
+        (replace-match (file-name-nondirectory filename) t t nil 1))
+      (compilation-mode)
+      (display-buffer errbuf))))
 
 ;;;###autoload
 (defun gofmt-before-save ()
@@ -939,7 +1207,7 @@ uncommented, otherwise a new import will be added."
   (let* ((output (split-string (shell-command-to-string (concat go-command " env GOROOT GOPATH"))
                                "\n"))
          (root (car output))
-         (paths (split-string (cadr output) ":")))
+         (paths (split-string (cadr output) path-separator)))
     (append (list root) paths)))
 
 (defun go--string-prefix-p (s1 s2 &optional ignore-case)
@@ -1229,6 +1497,8 @@ for."
           (go--coverage-make-overlay range (cadr ranges-and-divisor))))
 
       (if (not (eq cur-buffer (current-buffer)))
-          (display-buffer (current-buffer) #'display-buffer-reuse-window)))))
+          (display-buffer (current-buffer) `(,go-coverage-display-buffer-func))))))
 
 (provide 'go-mode)
+
+;;; go-mode.el ends here
