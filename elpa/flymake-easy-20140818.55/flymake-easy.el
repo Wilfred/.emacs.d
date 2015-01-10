@@ -4,7 +4,7 @@
 
 ;; Author: Steve Purcell <steve@sanityinc.com>
 ;; URL: https://github.com/purcell/flymake-easy
-;; Version: 20130907.131
+;; Version: 20140818.55
 ;; X-Original-Version: DEV
 ;; Keywords: convenience, internal
 
@@ -38,7 +38,8 @@
 (defvar flymake-easy--command-fn nil
   "The user-specified function for building the flymake command.")
 (defvar flymake-easy--location nil
-  "Where to create the temp file when checking, one of 'tempdir or 'inplace.")
+  "Where to create the temp file when checking, one of 'tempdir, 'inplace or
+'temp-with-folder.")
 (defvar flymake-easy--extension nil
   "The canonical file name extension to use for the current file.")
 
@@ -64,6 +65,8 @@ Argument PREFIX temp file prefix, supplied by flymake."
              'flymake-easy--tempfile-in-temp-dir)
             ((eq 'inplace flymake-easy--location)
              'flymake-create-temp-inplace)
+            ((eq 'temp-with-folder flymake-easy--location)
+             'flymake-create-temp-with-folder-structure)
             (t
              (error "unknown location for flymake-easy: %s" flymake-easy--location)))))
          (command (funcall flymake-easy--command-fn tempfile)))
@@ -81,7 +84,7 @@ Argument COMMAND-FN function called to build the
    command line to run (receives filename, returns list).
 Argument ERR-LINE-PATTERNS patterns for identifying errors (see `flymake-err-line-patterns').
 Argument EXTENSION a canonical extension for this type of source file, e.g. \"rb\".
-Argument LOCATION where to create the temporary copy: one of 'tempdir (default) or 'inplace.
+Argument LOCATION where to create the temporary copy: one of 'tempdir (default), 'inplace or 'temp-with-folder
 Argument WARNING-RE a pattern which identifies error messages as warnings.
 Argument INFO-RE a pattern which identifies messages as infos (supported only
 by the flymake fork at https://github.com/illusori/emacs-flymake)."
