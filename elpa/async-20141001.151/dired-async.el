@@ -6,7 +6,6 @@
 ;; Authors: John Wiegley <jwiegley@gmail.com>
 ;;          Thierry Volpiatto <thierry.volpiatto@gmail.com>
 
-;; Version: 1.0
 ;; Keywords: dired async network
 ;; X-URL: https://github.com/jwiegley/dired-async
 
@@ -287,7 +286,7 @@ ESC or `q' to not overwrite any of the remaining files,
     ;; Start async process.
     (when (and async-fn-list dired-async-be-async)
       (async-start `(lambda ()
-                      (require 'cl-lib) (require 'dired-aux)
+                      (require 'cl-lib) (require 'dired-aux) (require 'dired-x)
                       ,(async-inject-variables dired-async-env-variables-regexp)
                       (condition-case err
                           (let ((dired-recursive-copies (quote always)))

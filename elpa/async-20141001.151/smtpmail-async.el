@@ -4,7 +4,7 @@
 
 ;; Author: John Wiegley <jwiegley@gmail.com>
 ;; Created: 18 Jun 2012
-;; Version: 1.0
+
 ;; Keywords: email async
 ;; X-URL: https://github.com/jwiegley/emacs-async
 
@@ -34,12 +34,15 @@
 ;;
 ;; This assumes you already have smtpmail.el working.
 
+;;; Code:
+
 (defgroup smtpmail-async nil
   "Send e-mail with smtpmail.el asynchronously"
   :group 'smptmail)
 
 (require 'async)
 (require 'smtpmail)
+(require 'message)
 
 (defvar async-smtpmail-before-send-hook nil
   "Hook running in the child emacs in `async-smtpmail-send-it'.

@@ -4,7 +4,7 @@
 
 ;; Author: John Wiegley <jwiegley@gmail.com>
 ;; Created: 18 Jun 2012
-;; Version: 1.1
+
 ;; Keywords: async
 ;; X-URL: https://github.com/jwiegley/emacs-async
 
@@ -268,7 +268,10 @@ returns nil.  It can still be useful, however, as an argument to
                        (expand-file-name invocation-name
                                          invocation-directory))
               ,finish-func
-              "-Q" "-l" ,(symbol-file 'async-batch-invoke 'defun)
+              "-Q" "-l"
+              ;; Using `locate-library' ensure we use the right file
+              ;; when the .elc have been deleted.
+              ,(locate-library "async")
               "-batch" "-f" "async-batch-invoke"
               (if async-send-over-pipe
                   "<none>"

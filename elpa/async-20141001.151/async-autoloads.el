@@ -1,10 +1,9 @@
 ;;; async-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (async-start async-start-process) "async" "async.el"
-;;;;;;  (21284 32989 803866 399000))
+;;;### (autoloads nil "async" "async.el" (21613 8220 987346 801000))
 ;;; Generated autoloads from async.el
 
 (autoload 'async-start-process "async" "\
@@ -68,16 +67,14 @@ returns nil.  It can still be useful, however, as an argument to
 
 ;;;***
 
-;;;### (autoloads nil nil ("async-pkg.el" "dired-async.el" "smtpmail-async.el")
-;;;;;;  (21284 32989 900822 167000))
+;;;### (autoloads nil nil ("async-bytecomp.el" "async-pkg.el" "dired-async.el"
+;;;;;;  "smtpmail-async.el") (21613 8221 97046 708000))
 
 ;;;***
 
-(provide 'async-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; async-autoloads.el ends here
