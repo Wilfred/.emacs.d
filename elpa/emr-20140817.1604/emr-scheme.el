@@ -1,4 +1,4 @@
-;;; emr-scheme.el --- Refactoring commands for Scheme.
+;;; emr-scheme.el --- Refactoring commands for Scheme.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -83,26 +83,22 @@ The variable will be called NAME."
 
 ; ------------------
 
-(emr-declare-command emr-scm-extract-function
+(emr-declare-command 'emr-scm-extract-function
   :title "function"
   :description "define"
-  :modes scheme-mode
+  :modes 'scheme-mode
   :predicate (lambda ()
                (not (or (emr-scm:looking-at-def?)
                         (emr-el:looking-at-let-binding-symbol?)))))
 
-(emr-declare-command emr-scm-extract-variable
+(emr-declare-command 'emr-scm-extract-variable
   :title "variable"
   :description "define"
-  :modes scheme-mode
+  :modes 'scheme-mode
   :predicate (lambda ()
                (not (or (emr-scm:looking-at-def?)
                         (emr-el:looking-at-let-binding-symbol?)))))
 
 (provide 'emr-scheme)
-
-;; Local Variables:
-;; lexical-binding: t
-;; End:
 
 ;;; emr-scheme.el ends here

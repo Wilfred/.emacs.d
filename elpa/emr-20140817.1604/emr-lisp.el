@@ -1,4 +1,4 @@
-;;; emr-lisp.el --- Refactoring commands common to all Lisps.
+;;; emr-lisp.el --- Refactoring commands common to all Lisps.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -83,7 +83,7 @@
 Return the position of the end of FORM-STR."
   (emr-insert-above-defun (emr-lisp-reindent-string form-str)))
 
-(defmacro* emr-lisp-extraction-refactor ((&optional binding) description &rest body)
+(cl-defmacro emr-lisp-extraction-refactor ((&optional binding) description &rest body)
   "Kill the sexp near point then execute forms.
 BINDING is the name to bind to the extracted form.
 DESCRIPTION is used to report the result of the refactoring.
@@ -203,36 +203,24 @@ textual comments."
 
 ; ------------------
 
-(emr-declare-command emr-lisp-comment-form
+(emr-declare-command 'emr-lisp-comment-form
   :title "comment"
   :description "form"
-  :modes
-  (clojure-mode
-   lisp-mode
-   emacs-lisp-mode
-   scheme-mode)
+  :modes '(clojure-mode lisp-mode emacs-lisp-mode scheme-mode)
   :predicate (lambda ()
                (and (not (region-active-p))
                     (thing-at-point 'defun)
                     (not (or (emr-line-matches? (rx bol (* space) ";"))
                              (emr-looking-at-comment?))))))
 
-(emr-declare-command emr-lisp-uncomment-block
+(emr-declare-command 'emr-lisp-uncomment-block
   :title "uncomment"
   :description "block"
-  :modes
-  (clojure-mode
-   lisp-mode
-   emacs-lisp-mode
-   scheme-mode)
+  :modes '(clojure-mode lisp-mode emacs-lisp-mode scheme-mode)
   :predicate (lambda ()
                (and (not (region-active-p))
                     (emr-line-matches? (rx bol (* space) ";")))))
 
 (provide 'emr-lisp)
-
-;; Local Variables:
-;; lexical-binding: t
-;; End:
 
 ;;; emr-lisp.el ends here

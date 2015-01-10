@@ -1,14 +1,9 @@
 ;;; emr-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (emr-initialize emr-show-refactor-menu emr-declare-command
-;;;;;;  emr-reporting-buffer-changes emr-collapse-vertical-whitespace
-;;;;;;  emr-insert-above-defun emr-line-matches\? emr-blank-line\?
-;;;;;;  emr-line-str emr-blank\? emr-looking-at-comment\? emr-looking-at-string\?
-;;;;;;  emr-move-above-defun) "emr" "emr.el" (21258 39093 848152
-;;;;;;  718000))
+;;;### (autoloads nil "emr" "emr.el" (21613 8200 997603 830000))
 ;;; Generated autoloads from emr.el
 
 (autoload 'emr-move-above-defun "emr" "\
@@ -72,12 +67,12 @@ Perform a refactoring action and show a brief diff.
 Define a refactoring command.
 
 * FUNCTION is the refactoring command to perform. It should be
-  either the name of a refactoring command or a
+  either the name of a refactoring command as a symbol or a
   lambda-expression.
 
-* MODES is a symbol or list of symbols of the modes in which this
-  command will be available. This will also enable the command
-  for derived modes.
+* MODES is a symbol or list of symbols. These are the modes in
+  which this command will be available. This will also enable the
+  command for derived modes.
 
 * TITLE is the name of the command that will be displayed in the
   popup menu.
@@ -88,7 +83,7 @@ Define a refactoring command.
 * DESCRIPTION is shown to the left of the title in the popup
   menu.
 
-\(fn FUNCTION &key MODES TITLE DESCRIPTION PREDICATE)" nil (quote macro))
+\(fn FUNCTION &key MODES TITLE DESCRIPTION PREDICATE)" nil nil)
 
 (autoload 'emr-show-refactor-menu "emr" "\
 Show the refactor menu at point.
@@ -102,9 +97,7 @@ Activate language support for EMR.
 
 ;;;***
 
-;;;### (autoloads (emr-c-initialize emr-c-mode emr-c-insert-include
-;;;;;;  emr-c-tidy-includes) "emr-c" "emr-c.el" (21258 39093 801488
-;;;;;;  147000))
+;;;### (autoloads nil "emr-c" "emr-c.el" (21613 8201 17603 571000))
 ;;; Generated autoloads from emr-c.el
 
 (autoload 'emr-c-tidy-includes "emr-c" "\
@@ -133,13 +126,8 @@ Initialize EMR in C buffers and enable the EMR menu.
 
 ;;;***
 
-;;;### (autoloads (emr-el-initialize emr-el-find-unused-definitions
-;;;;;;  emr-el-delete-unused-definition emr-el-inline-function emr-el-inline-let-variable
-;;;;;;  emr-el-extract-to-let emr-el-delete-let-binding-form emr-el-extract-autoload
-;;;;;;  emr-el-tidy-autoloads emr-el-insert-autoload-directive emr-el-extract-constant
-;;;;;;  emr-el-extract-variable emr-el-implement-function emr-el-extract-function
-;;;;;;  emr-el-eval-and-replace emr-el-inline-variable) "emr-elisp"
-;;;;;;  "emr-elisp.el" (21258 39093 711492 187000))
+;;;### (autoloads nil "emr-elisp" "emr-elisp.el" (21613 8200 947604
+;;;;;;  472000))
 ;;; Generated autoloads from emr-elisp.el
 
 (autoload 'emr-el-inline-variable "emr-elisp" "\
@@ -350,8 +338,8 @@ Enable the EMR menu for Elisp buffers.
 
 ;;;***
 
-;;;### (autoloads (emr-lisp-uncomment-block emr-lisp-comment-form)
-;;;;;;  "emr-lisp" "emr-lisp.el" (21258 39093 758156 758000))
+;;;### (autoloads nil "emr-lisp" "emr-lisp.el" (21613 8200 917604
+;;;;;;  856000))
 ;;; Generated autoloads from emr-lisp.el
 
 (autoload 'emr-lisp-comment-form "emr-lisp" "\
@@ -369,8 +357,8 @@ textual comments.
 
 ;;;***
 
-;;;### (autoloads (emr-scm-extract-variable emr-scm-extract-function)
-;;;;;;  "emr-scheme" "emr-scheme.el" (21258 39093 981480 67000))
+;;;### (autoloads nil "emr-scheme" "emr-scheme.el" (21613 8200 897605
+;;;;;;  114000))
 ;;; Generated autoloads from emr-scheme.el
 
 (autoload 'emr-scm-extract-function "emr-scheme" "\
@@ -388,16 +376,14 @@ The variable will be called NAME.
 
 ;;;***
 
-;;;### (autoloads nil nil ("emr-pkg.el" "emr-prog.el") (21258 39094
-;;;;;;  20271 950000))
+;;;### (autoloads nil nil ("emr-js.el" "emr-pkg.el" "emr-prog.el"
+;;;;;;  "emr-ruby.el") (21613 8201 184438 718000))
 
 ;;;***
 
-(provide 'emr-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; emr-autoloads.el ends here

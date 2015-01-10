@@ -1,4 +1,4 @@
-;;; emr.el --- Emacs refactoring system.
+;;; emr.el --- Emacs refactoring system.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -38,8 +38,9 @@
 (require 's)
 (require 'cl-lib)
 (require 'popup)
-(autoload 'in-string-p "thingatpt")
 (autoload 'beginning-of-thing "thingatpt")
+(autoload 'emr-c-initialize "emr-c")
+(autoload 'emr-el-initialize "emr-elisp")
 
 (defgroup emacs-refactor nil
   "Provides refactoring tools for Emacs."
@@ -59,11 +60,7 @@
   "The time to wait before showing documentation in the refactor menu."
   :group 'emr)
 
-; ------------------
-
-;;;; Utility functions
-
-;;; Functions that could be useful to extensions.
+;;; Utility functions
 
 ;;;###autoload
 (defun emr-move-above-defun ()
@@ -82,14 +79,12 @@ If the defun is preceded by comments, move above them."
 ;;;###autoload
 (defun emr-looking-at-string? ()
   "Return non-nil if point is inside a string."
-  (or (ignore-errors (and (in-string-p) t))
-      (equal 'font-lock-string-face (face-at-point))))
+  (nth 3 (syntax-ppss)))
 
 ;;;###autoload
 (defun emr-looking-at-comment? ()
   "Non-nil if point is on a comment."
-  (-contains? '(font-lock-comment-face font-lock-comment-delimiter-face)
-              (face-at-point)))
+  (nth 4 (syntax-ppss)))
 
 ;;;###autoload
 (defun emr-blank? (str)
@@ -103,14 +98,14 @@ If the defun is preceded by comments, move above them."
                     (line-end-position)))
 
 ;;;###autoload
-(defun* emr-blank-line? (&optional (point (point)))
+(cl-defun emr-blank-line? (&optional (point (point)))
   "Non-nil if POINT is on a blank line."
   (save-excursion
     (goto-char point)
     (emr-blank? (emr-line-str))))
 
 ;;;###autoload
-(defun* emr-line-matches? (regex &optional (point (point)))
+(cl-defun emr-line-matches? (regex &optional (point (point)))
   "Non-nil if POINT is on a line that matches REGEX."
   (save-excursion
     (goto-char point)
@@ -152,14 +147,12 @@ Ensure there are at most `emr-lines-between-toplevel-forms' blanks."
       ;; Open a user-specified number of blanks.
       (open-line emr-lines-between-toplevel-forms))))
 
-; ------------------
-
-;;;; Reporting
+;;; Reporting
 
 ;;; These commands may be used to describe the changes made to buffers. See
 ;;; example in emr-elisp.
 
-(defun* emr:ellipsize (str &optional (maxlen (window-width (minibuffer-window))))
+(cl-defun emr:ellipsize (str &optional (maxlen (window-width (minibuffer-window))))
   "Chop STR and add ellipses if it exceeds MAXLEN in length."
   (if (> (length str) maxlen)
       (concat (substring-no-properties str 0 (1- maxlen)) "…")
@@ -175,7 +168,7 @@ The index is the car and the line is the cdr."
   (--remove (equal (car it) (cdr it))
             (-zip (emr:indexed-lines str1) (emr:indexed-lines str2))))
 
-(defun* emr:report-action (description line text)
+(cl-defun emr:report-action (description line text)
   "Report the action that occured at the point of difference.
 
 Displays a short summary containing the line number, a
@@ -212,9 +205,7 @@ buffer."
          (unless (emr:line-visible? line)
            (emr:report-action ,description line text))))))
 
-; ------------------
-
-;;;; Popup menu
+;;; Popup menu
 
 ;;; Items to be displayed in the refactoring popup menu are declared using
 ;;; the `emr-declare-command' macro. This macro adds builds a struct to
@@ -232,7 +223,7 @@ buffer."
 (defun emr:documentation (sym)
   "Get the docstring for SYM.
 Removes the function arglist and lisp usage example."
-  (destructuring-bind (before-example &optional after-example)
+  (cl-destructuring-bind (before-example &optional after-example)
       (->> (documentation sym)
         (s-lines)
         ;; Remove the function arglist.
@@ -253,17 +244,17 @@ Removes the function arglist and lisp usage example."
                 (s-join "\n"))))))
 
 ;;;###autoload
-(defmacro* emr-declare-command
+(cl-defun emr-declare-command
     (function &key modes title description predicate)
   "Define a refactoring command.
 
 * FUNCTION is the refactoring command to perform. It should be
-  either the name of a refactoring command or a
+  either the name of a refactoring command as a symbol or a
   lambda-expression.
 
-* MODES is a symbol or list of symbols of the modes in which this
-  command will be available. This will also enable the command
-  for derived modes.
+* MODES is a symbol or list of symbols. These are the modes in
+  which this command will be available. This will also enable the
+  command for derived modes.
 
 * TITLE is the name of the command that will be displayed in the
   popup menu.
@@ -274,21 +265,20 @@ Removes the function arglist and lisp usage example."
 * DESCRIPTION is shown to the left of the title in the popup
   menu."
   (declare (indent 1))
-  (cl-assert (functionp function))
   (cl-assert title)
   (cl-assert modes)
   (cl-assert (or (functionp predicate)
                  (symbolp predicate)))
   ;; Add the created function into the global table of refactoring commands.
-  `(puthash ',function
-            (make-emr-refactor-spec
-             :function ',function
-             :title ,title
-             :modes ',(if (symbolp modes) (list modes) modes)
-             :predicate ,predicate
-             :description ,description
-             )
-            emr:refactor-commands))
+  (puthash function
+           (make-emr-refactor-spec
+            :function function
+            :title title
+            :modes (if (symbolp modes) (list modes) modes)
+            :predicate predicate
+            :description description
+            )
+           emr:refactor-commands))
 
 (defun emr:hash-values (ht)
   "Return the hash values in hash table HT."
@@ -324,24 +314,17 @@ Return a popup item for the refactoring menu if so."
                       (emr:hash-values)
                       (-map 'emr:make-popup)
                       (-remove 'null)))
-    ;; Display the menu.
-    (atomic-change-group
-      (-when-let (action (popup-menu*
-                          actions
-                          :isearch t
-                          :help-delay emr-popup-help-delay))
-        (call-interactively action)))
+      ;; Display the menu.
+      (atomic-change-group
+        (-when-let (action (popup-menu*
+                            actions
+                            :isearch t
+                            :help-delay emr-popup-help-delay))
+          (call-interactively action)))
 
     ;; Having no items to show implies that no refactoring commands are
     ;; available.
     (message "No refactorings available")))
-
-; ------------------
-
-(defmacro emr:after-load (feature &rest forms)
-  (declare (indent 1))
-  `(eval-after-load ,feature
-     '(progn ,@forms)))
 
 ;;;###autoload
 (defun emr-initialize ()
@@ -351,22 +334,12 @@ Return a popup item for the refactoring menu if so."
 
   ;; Lazily load support for individual languages.
 
-  (emr:after-load "lisp-mode"
-    (require 'emr-lisp)
-    (require 'emr-elisp)
-    (emr-el-initialize))
-
-  (emr:after-load "cc-mode"
-    (require 'emr-c)
-    (emr-c-initialize))
-
-  (emr:after-load "scheme"
-    (require 'emr-scheme)))
+  (eval-after-load 'lisp-mode     '(emr-el-initialize))
+  (eval-after-load 'cc-mode       '(emr-c-initialize))
+  (eval-after-load 'scheme        '(require 'emr-scheme))
+  (eval-after-load 'js2-refactor  '(require 'emr-js))
+  (eval-after-load 'ruby-refactor '(require 'emr-ruby)))
 
 (provide 'emr)
-
-;; Local Variables:
-;; lexical-binding: t
-;; End:
 
 ;;; emr.el ends here
