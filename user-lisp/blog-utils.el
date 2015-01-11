@@ -26,6 +26,11 @@ title: \"%s\"
   ;; inline code
   (query-replace-regexp "{{{\\(.*?\\)}}}" "`\\1`")
   (goto-char (point-min))
+  ;; code blocks
+  ;; FIXME: this is GFM, we'd be better off with vanilla markdown
+  (query-replace-regexp (rx "{{{" (group (*? anything)) "}}}")
+                        "```\\1```")
+  (goto-char (point-min))
   ;; links
   (query-replace-regexp "\\[\\[\\(.*?\\)|\\(.*?\\)\\]\\]" "[\\2](\\1)")
   (goto-char (point-min))
