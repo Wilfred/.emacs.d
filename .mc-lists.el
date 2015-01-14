@@ -9,8 +9,10 @@
         c-electric-semi&comma
         c-electric-slash
         c-electric-star
+        end-of-visual-line
         forward-sexp
         kill-or-delete-region
+        markdown-exdent-or-delete
         org-delete-char
         org-self-insert-command
         python-indent-electric-colon
