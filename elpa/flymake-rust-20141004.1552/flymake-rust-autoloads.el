@@ -1,18 +1,16 @@
 ;;; flymake-rust-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil nil ("flymake-rust-pkg.el" "flymake-rust.el")
-;;;;;;  (21357 11252 621335 504000))
+;;;### (autoloads nil nil ("flymake-rust.el") (21613 8185 998801
+;;;;;;  458000))
 
 ;;;***
 
-(provide 'flymake-rust-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; flymake-rust-autoloads.el ends here
