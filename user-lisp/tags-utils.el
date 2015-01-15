@@ -6,8 +6,6 @@
 
 ;;; Commentary
 
-;; Requires ack to be installed.
-
 ;; Code convention: tags/* are internal functions, tags-* are
 ;; top-level interactive commands.
 
