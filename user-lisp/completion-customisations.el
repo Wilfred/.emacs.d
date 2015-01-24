@@ -1,8 +1,6 @@
 ;;; Commentary
-;; Completion is hard to get right. Currently, this is configured to
-;; give several different types of completion. I want to port to
-;; company-mode eventually, as it's more widely used (cf flycheck and
-;; flymake).
+;; Completion is hard to get right. I'm gradually moving to company,
+;; but this is everything I expect from completion:
 ;;
 ;; DUMB COMPLETION: This is often sufficient. Just complete the
 ;; current substring based on other strings in the buffer. If no
@@ -85,23 +83,19 @@
         try-complete-lisp-symbol))
 (global-set-key (kbd "M-/") 'hippie-expand)
 
-;; auto-completion with neat popup
-(require 'auto-complete-config)
-(ac-config-default)
-; using dabbrev as auto-completion source
-(require 'ac-dabbrev)
-(setq ac-sources
-      (list ac-source-dabbrev))
+(require 'company)
+(require 'company-dabbrev)
+(require 'company-elisp)
+(require 'company-files)
+(require 'company-keywords) ;; might be annoying as many are short.
+(require 'company-css)
+(require 'company-clang)
+(require 'company-tern)
+(require 'company-anaconda)
+(add-hook 'prog-mode-hook #'company-mode)
 
-;; don't try to complete after semicolon (is a pain in CSS)
-(setq ac-ignores '(";"))
-
-; always spaces, never tabs
+;; always spaces, never tabs
 (setq-default indent-tabs-mode nil)
-
-;; Don't show 'AC' in the mode line.
-(require 'diminish)
-(diminish 'auto-complete-mode)
 
 ;; Always use 'y or n' for questions, since 'yes' is tedious to type over and over.
 (fset 'yes-or-no-p 'y-or-n-p)
