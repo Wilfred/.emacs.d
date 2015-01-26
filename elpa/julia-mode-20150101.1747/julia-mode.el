@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2009-2014 Julia contributors
 ;; URL: https://github.com/JuliaLang/julia
-;; Version: 20141212.253
+;; Version: 20150101.1747
 ;; X-Original-Version: 0.3
 ;; Keywords: languages
 
@@ -160,7 +160,8 @@ This function provides equivalent functionality, but makes no efforts to optimis
               (not (any "(" ")"))))
       ")"
       (* space)
-      "="))
+      "="
+      (not (any "="))))
 
 (defconst julia-type-regex
   (rx symbol-start (or "immutable" "type" "abstract") (1+ space) (group (1+ (or word (syntax symbol))))))
