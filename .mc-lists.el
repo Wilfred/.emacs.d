@@ -3,6 +3,7 @@
 
 (setq mc/cmds-to-run-for-all
       '(
+        ace-jump-zap-up-to-char-dwim
         backward-sexp
         beginning-of-line-dwim
         c-electric-delete-forward
@@ -10,12 +11,16 @@
         c-electric-slash
         c-electric-star
         forward-sexp
+        jump-char-forward
+        jump-char-process-char
         kill-or-delete-region
         org-delete-char
         org-self-insert-command
         python-indent-electric-colon
         sgml-slash
         sp--self-insert-command
+        yaml-electric-backspace
+        yaml-electric-dash-and-dot
         yas-expand
         zap-up-to-char
         zap-up-to-non-whitespace
