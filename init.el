@@ -150,7 +150,7 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'smartparens-config)
 (require 'smartparens-html)
 (add-hook 'prog-mode-hook #'smartparens-mode)
-(add-hook 'yaml-mode-hook #'smart-parens-mode)
+(add-hook 'yaml-mode-hook #'smartparens-mode)
 
 (setq sp-autoescape-string-quote nil)
 
