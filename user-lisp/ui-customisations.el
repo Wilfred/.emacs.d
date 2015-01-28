@@ -97,6 +97,10 @@ it to open related buffers easily and discard other buffers (commonly magit)."
 
 (global-set-key (kbd "C-c C-x 2") 'split-this-frame)
 
+(require 'ace-window)
+(setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+(global-set-key (kbd "C-x o") #'ace-window)
+
 (require 'paredit)
 (diminish 'paredit-mode "PE")
 (require 'projectile)
