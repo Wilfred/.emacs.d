@@ -27,29 +27,29 @@
 
 ;; kill-word is less useful than kill-symbol
 (autoload 'forward-symbol "thingatpt")
-(defun kill-symbol (arg)
+(defun wh/kill-symbol (arg)
   "Kill characters forward until encountering the end of a symbol.
 With argument ARG, do this that many times."
   (interactive "p")
   (kill-region (point) (progn (forward-symbol arg) (point))))
 
-(global-set-key (kbd "M-d") 'kill-symbol)
+(global-set-key (kbd "M-d") #'wh/kill-symbol)
 
 
-(defun backward-kill-symbol (arg)
+(defun wh/backward-kill-symbol (arg)
   "Kill characters backward until encountering the beginning of a symbol.
 With argument ARG, do this that many times."
   (interactive "p")
   (kill-symbol (- arg)))
 
-(global-set-key (kbd "C-<backspace>") 'backward-kill-symbol)
+(global-set-key (kbd "C-<backspace>") #'wh/backward-kill-symbol)
 
 ;; to be consistent with C-M-f as forward-sexp, bind C-M-backspace to backward-kill-sexp
 ;; and C-M-d to forward-kill-sexp
 (global-set-key (kbd "C-M-<backspace>") 'backward-kill-sexp)
 (global-set-key (kbd "C-M-d") 'kill-sexp)
 
-(defun toggle-case-next-char ()
+(defun wh/toggle-case-next-char ()
   "Toggles the case of the next character after point.
 The point is also moved one character forward."
   (interactive)
@@ -63,7 +63,7 @@ The point is also moved one character forward."
 
 ;; toggling on char is more useful than capitalising a whole word since
 ;; it doesn't break camelcase
-(global-set-key (kbd "M-c") 'toggle-case-next-char)
+(global-set-key (kbd "M-c") #'wh/toggle-case-next-char)
 
 (autoload 're-find-all "regexp-utils")
 (autoload 're-match-p "regexp-utils")
@@ -81,14 +81,14 @@ The point is also moved one character forward."
     (setq components (mapcar 'downcase components))
     (cond
      ((eq format 'constant) (mapconcat 'upcase components "_"))
-     ((eq format 'camelcase) (mapconcat 'toggle-case-first-char components ""))
-     ((eq format 'camelcase-lower) (toggle-case-first-char
-                                    (mapconcat 'toggle-case-first-char components "")))
+     ((eq format 'camelcase) (mapconcat #'wh/toggle-case-first-char components ""))
+     ((eq format 'camelcase-lower) (wh/toggle-case-first-char
+                                    (mapconcat #'wh/toggle-case-first-char components "")))
      ((eq format 'variable-underscore) (mapconcat (lambda (x) x) components "_"))
      ((eq format 'variable-hyphen) (mapconcat (lambda (x) x) components "-"))
      (t (error "Unknown symbol format")))))
 
-(defun toggle-case-first-char (string)
+(defun wh/toggle-case-first-char (string)
   (let ((first-char (substring string 0 1))
         (rest (substring string 1)))
     (if (re-match-p "[a-z]" first-char)
@@ -117,7 +117,7 @@ The point is also moved one character forward."
 (global-set-key (kbd "C-M-c") 'cycle-symbol-case)
 
 
-(defun transpose-symbols (arg)
+(defun wh/transpose-symbols (arg)
   "Interchange sybmols around point, leaving point at end of them.
 With prefix arg ARG, effect is to take symbol before or around point
 and drag it forward past ARG other symbol (backward if ARG negative).
@@ -127,11 +127,11 @@ are interchanged."
   (transpose-subr 'forward-symbol arg))
 
 ;; bind it to the usual transpose-word key combination
-(global-set-key (kbd "M-t") 'transpose-symbols)
+(global-set-key (kbd "M-t") #'wh/transpose-symbols)
 
 ;; based on my-increment-number-decimal from http://www.emacswiki.org/emacs/IncrementNumber
 ;; unlike that version, we only change the number if point is on a number
-(defun increment-number-decimal (&optional arg)
+(defun wh/increment-number-decimal (&optional arg)
   "Increment the number forward from point by ARG."
   (interactive "p*")
   (save-excursion
@@ -147,12 +147,12 @@ are interchanged."
           (replace-match (format (concat "%0" (int-to-string field-width) "d")
                                  answer)))))))
 
-(defun decrement-number-decimal (&optional arg)
+(defun wh/decrement-number-decimal (&optional arg)
   (interactive "p*")
-  (increment-number-decimal (if arg (- arg) -1)))
+  (wh/increment-number-decimal (if arg (- arg) -1)))
 
-(global-set-key (kbd "<C-up>") 'increment-number-decimal)
-(global-set-key (kbd "<C-down>") 'decrement-number-decimal)
+(global-set-key (kbd "<C-up>") #'wh/increment-number-decimal)
+(global-set-key (kbd "<C-down>") #'wh/decrement-number-decimal)
 
 ;; don't use shift to set the mark, or caps lock creates regions the whole time
 (setq-default shift-select-mode nil)
@@ -208,7 +208,7 @@ are interchanged."
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 
-(defun copy-for-code-snippet (region-start region-end)
+(defun wh/copy-for-code-snippet (region-start region-end)
   "Indent the current selection by four spaces on each line, and
 copy to the clipboard."
   (interactive "r")
@@ -222,19 +222,19 @@ copy to the clipboard."
 ;; If the region is active, delete that instead.
 (global-set-key (kbd "C-S-k") #'whole-line-or-region-delete)
 
-(defun indent-four-spaces (beg end)
+(defun wh/indent-four-spaces (beg end)
   "Indent the text in the active region by four spaces.
 Handy when editing markdown."
   (interactive "r")
   (indent-rigidly beg end 4))
 
-(defun unindent-four-spaces (beg end)
+(defun wh/unindent-four-spaces (beg end)
   "Decrease the indent of the text in the active region by four spaces.
 Handy when editing markdown."
   (interactive "r")
   (indent-rigidly beg end -4))
 
-(defun shebang ()
+(defun wh/shebang ()
   "Insert a shebang in the current buffer, and mark the file as executable."
   (interactive)
   (goto-char (point-min))
@@ -248,7 +248,7 @@ Handy when editing markdown."
   (insert (ido-completing-read "Interpreter: " (list "#!/bin/bash" "#!/bin/env python")))
   (insert "\n\n"))
 
-(defun apply-on-region (beg end func)
+(defun wh/apply-on-region (beg end func)
   "Apply FUNC to the active region, replacing it with the result."
   (interactive "r\na")
   (let ((text (delete-and-extract-region beg end)))
