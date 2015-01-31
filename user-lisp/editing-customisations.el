@@ -248,6 +248,11 @@ Handy when editing markdown."
   (insert (ido-completing-read "Interpreter: " (list "#!/bin/bash" "#!/bin/env python")))
   (insert "\n\n"))
 
+(defun apply-on-region (beg end func)
+  "Apply FUNC to the active region, replacing it with the result."
+  (interactive "r\na")
+  (let ((text (delete-and-extract-region beg end)))
+    (insert (apply func (list text)))))
 
 (require 'change-inner)
 (global-set-key (kbd "M-i") #'change-inner)
