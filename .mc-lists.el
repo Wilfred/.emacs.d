@@ -12,6 +12,7 @@
         c-electric-star
         end-of-visual-line
         forward-sexp
+        isearch-abort
         jump-char-forward
         jump-char-process-char
         kill-or-delete-region
@@ -31,6 +32,7 @@
 (setq mc/cmds-to-run-once
       '(
         ag-project-at-point
+        comment-dwim
         mouse-set-region
         smex
         sp-rewrap-sexp
