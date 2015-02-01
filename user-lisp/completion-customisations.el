@@ -92,6 +92,7 @@
 (require 'company-clang)
 (require 'company-tern)
 (require 'company-anaconda)
+(add-to-list 'company-backends 'company-c-headers)
 (add-hook 'prog-mode-hook #'company-mode)
 
 ;; always spaces, never tabs
