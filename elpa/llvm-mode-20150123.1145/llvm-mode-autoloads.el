@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "llvm-mode" "llvm-mode.el" (21681 21931 825997
-;;;;;;  65000))
+;;;### (autoloads nil "llvm-mode" "llvm-mode.el" (21709 21894 633640
+;;;;;;  268000))
 ;;; Generated autoloads from llvm-mode.el
 
 (autoload 'llvm-mode "llvm-mode" "\
@@ -18,8 +18,8 @@ Major mode for editing LLVM source files.
 
 ;;;***
 
-;;;### (autoloads nil "tablegen-mode" "tablegen-mode.el" (21681 21931
-;;;;;;  789330 909000))
+;;;### (autoloads nil "tablegen-mode" "tablegen-mode.el" (21709 21894
+;;;;;;  603640 655000))
 ;;; Generated autoloads from tablegen-mode.el
 
 (autoload 'tablegen-mode "tablegen-mode" "\
@@ -33,8 +33,8 @@ Major mode for editing TableGen description files.
 
 ;;;***
 
-;;;### (autoloads nil nil ("llvm-mode-pkg.el") (21681 21931 932163
-;;;;;;  278000))
+;;;### (autoloads nil nil ("llvm-mode-pkg.el") (21709 21894 760514
+;;;;;;  641000))
 
 ;;;***
 
