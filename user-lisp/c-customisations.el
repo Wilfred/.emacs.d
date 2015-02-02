@@ -2,7 +2,7 @@
 ;; flycheck.
 (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode)
 
-(add-hook 'c-mode-hook #'flycheck-mode)
+(add-hook 'c-mode-common-hook #'flycheck-mode)
 
 (add-hook 'c-mode-hook #'which-function-mode)
 
