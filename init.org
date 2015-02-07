@@ -848,12 +848,12 @@ Vagrant files are Ruby, so use Ruby syntax highlighting for them.
   (add-to-list 'auto-mode-alist '("Vagrantfile" . ruby-mode))
 #+END_SRC
 
-** C
+** C/C++
 
 Flycheck supports C, so we switch it on.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (add-hook 'c-mode-hook 'flycheck-mode)
+  (add-hook 'c-mode-common-hook #'flycheck-mode)
 #+END_SRC
 
 Always indent with 4 spaces, in the Linux kernel style.
@@ -873,9 +873,9 @@ non-whitespace character on C-d) when removing indentation.
 I use recompile a lot when coding C, so bind it to a convenient key.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (add-hook 'c-mode-hook
-            '(lambda ()
-               (define-key c-mode-map (kbd "<f12>") 'recompile)))
+  (add-hook 'c-mode-common-hook
+            #'(lambda ()
+                (define-key c-mode-map (kbd "<f12>") 'recompile)))
 #+END_SRC
 
 ** HTML
