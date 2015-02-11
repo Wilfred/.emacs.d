@@ -328,16 +328,16 @@ Visit the file after creation."
 
 (add-to-list 'auto-mode-alist '("Vagrantfile" . ruby-mode))
 
-(add-hook 'c-mode-hook 'flycheck-mode)
+(add-hook 'c-mode-common-hook #'flycheck-mode)
 
 (setq-default c-default-style "linux"
               c-basic-offset 4)
 
 (setq-default c-hungry-delete-key t)
 
-(add-hook 'c-mode-hook
-          '(lambda ()
-             (define-key c-mode-map (kbd "<f12>") 'recompile)))
+(add-hook 'c-mode-common-hook
+          #'(lambda ()
+              (define-key c-mode-map (kbd "<f12>") 'recompile)))
 
 (require 'sgml-mode)
 
