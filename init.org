@@ -873,9 +873,7 @@ non-whitespace character on C-d) when removing indentation.
 I use recompile a lot when coding C, so bind it to a convenient key.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (add-hook 'c-mode-common-hook
-            #'(lambda ()
-                (define-key c-mode-map (kbd "<f12>") 'recompile)))
+  (global-set-key (kbd "<f12>") #'recompile)
 #+END_SRC
 
 ** HTML

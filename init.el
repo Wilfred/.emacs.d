@@ -335,9 +335,7 @@ Visit the file after creation."
 
 (setq-default c-hungry-delete-key t)
 
-(add-hook 'c-mode-common-hook
-          #'(lambda ()
-              (define-key c-mode-map (kbd "<f12>") 'recompile)))
+(global-set-key (kbd "<f12>") #'recompile)
 
 (require 'sgml-mode)
 
