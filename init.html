@@ -4,9 +4,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>init</title>
-<!-- 2015-02-07 Sat 17:22 -->
+<!-- 2015-02-14 Sat 22:25 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Wilfred Hughes" />
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   .title  { text-align: center; }
@@ -958,7 +959,8 @@ highlighting.
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">dired+</span><span style="color: #ffffff;">)</span>
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setq diredp-hide-details-initially-flag nil<span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">dired+</span><span style="color: #ffffff;">)</span>
 </pre>
 </div>
 </div>
@@ -1541,9 +1543,7 @@ I use recompile a lot when coding C, so bind it to a convenient key.
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">c-mode-common-hook</span>
-          <span style="color: #8ae234;">#'</span><span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">lambda</span> <span style="color: #ffff00;">()</span>
-              <span style="color: #ffff00;">(</span>define-key c-mode-map <span style="color: #00ff00;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f12&gt;"</span><span style="color: #00ff00;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">recompile</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f12&gt;"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">#'</span><span style="color: #8ae234;">recompile</span><span style="color: #ffffff;">)</span>
 </pre>
 </div>
 </div>
@@ -2019,7 +2019,8 @@ annoying to accidentally close Emacs, so warn first.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2015-02-07 Sat 17:22</p>
+<p class="author">Author: Wilfred Hughes</p>
+<p class="date">Created: 2015-02-14 Sat 22:25</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.4.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

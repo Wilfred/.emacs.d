@@ -488,6 +488,7 @@ Dired isn't very colourful by default, but `dired+' has helpful
 highlighting.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
+  (setq diredp-hide-details-initially-flag nil)
   (require 'dired+)
 #+END_SRC
 

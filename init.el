@@ -177,6 +177,7 @@ If a prefix argument is given, don't change the kill-ring."
 
 (global-set-key (kbd "C-x C-g") 'projectile-find-file)
 
+(setq diredp-hide-details-initially-flag nil)
 (require 'dired+)
 
 (setq delete-by-moving-to-trash t)
