@@ -4,18 +4,18 @@
 ;; Description: Extensions to Dired.
 ;; Author: Drew Adams
 ;; Maintainer: Drew Adams (concat "drew.adams" "@" "oracle" ".com")
-;; Copyright (C) 1999-2014, Drew Adams, all rights reserved.
+;; Copyright (C) 1999-2015, Drew Adams, all rights reserved.
 ;; Created: Fri Mar 19 15:58:58 1999
-;; Version: 20141025.2126
+;; Version: 20150203.521
 ;; X-Original-Version: 2013.07.23
 ;; Package-Requires: ()
-;; Last-Updated: Sat Oct 25 14:25:57 2014 (-0700)
+;; Last-Updated: Tue Feb  3 09:36:32 2015 (-0800)
 ;;           By: dradams
-;;     Update #: 8488
+;;     Update #: 8627
 ;; URL: http://www.emacswiki.org/dired+.el
 ;; Doc URL: http://www.emacswiki.org/DiredPlus
 ;; Keywords: unix, mouse, directories, diredp, dired
-;; Compatibility: GNU Emacs: 20.x, 21.x, 22.x, 23.x, 24.x
+;; Compatibility: GNU Emacs: 20.x, 21.x, 22.x, 23.x, 24.x, 25.x
 ;;
 ;; Features that might be required by this library:
 ;;
@@ -252,6 +252,19 @@
 ;;  to use.  (So `C-0' does both: prompts for `ls' switches and for
 ;;  the Dired buffer name and the files to list.)
 ;;
+;;  `Dired+' adds commands for combining and augmenting Dired
+;;  listings:
+;;
+;;   * `diredp-add-to-dired-buffer', bound globally to `C-x E' ("E"
+;;     for extra files), lets you add arbitrary file and directory
+;;     names to an existing Dired buffer.
+;;
+;;   * `diredp-dired-union', bound globally to `C-x D', lets you take
+;;     the union of multiple Dired listings, or convert an ordinary
+;;     Dired listing to an explicit list of absolute file names.  With
+;;     a non-positive prefix arg, you can add extra file and directory
+;;     names, just as for `diredp-add-to-dired-buffer'.
+;;
 ;;  Some other libraries, such as `Bookmark+' and `Icicles', make it
 ;;  easy to create or re-create Dired buffers that list specific files
 ;;  and have a particular set of markings.  `Bookmark+' records Dired
@@ -305,6 +318,7 @@
 ;;
 ;;  Commands defined here:
 ;;
+;;    `diredp-add-to-dired-buffer', `diredp-add-to-this-dired-buffer',
 ;;    `diredp-async-shell-command-this-file',
 ;;    `diredp-bookmark-this-file', `diredp-byte-compile-this-file',
 ;;    `diredp-capitalize', `diredp-capitalize-recursive',
@@ -320,7 +334,6 @@
 ;;    `diredp-dired-recent-dirs',
 ;;    `diredp-dired-recent-dirs-other-window',
 ;;    `diredp-dired-this-subdir', `diredp-dired-union',
-;;    `diredp-dired-union-other-window',
 ;;    `diredp-do-async-shell-command-recursive', `diredp-do-bookmark',
 ;;    `diredp-do-bookmark-dirs-recursive',
 ;;    `diredp-do-bookmark-in-bookmark-file',
@@ -447,9 +460,10 @@
 ;;    `diredp-dired-union-interactive-spec', `diredp-display-image'
 ;;    (Emacs 22+), `diredp-do-chxxx-recursive',
 ;;    `diredp-do-create-files-recursive', `diredp-do-grep-1',
-;;    `diredp-ensure-mode', `diredp-fewer-than-2-files-p',
-;;    `diredp-fileset-1', `diredp-find-a-file-read-args',
-;;    `diredp-files-within', `diredp-files-within-1',
+;;    `diredp-ensure-mode', `diredp-existing-dired-buffer-p',
+;;    `diredp-fewer-than-2-files-p', `diredp-fileset-1',
+;;    `diredp-find-a-file-read-args', `diredp-files-within',
+;;    `diredp-files-within-1',
 ;;    `diredp-fit-frame-unless-buffer-narrowed' (Emacs 24.4+),
 ;;    `diredp-get-confirmation-recursive', `diredp-get-files',
 ;;    `diredp-get-files-for-dir', `diredp-get-subdirs',
@@ -466,7 +480,7 @@
 ;;    `diredp-read-include/exclude', `diredp-recent-dirs',
 ;;    `diredp-remove-if', `diredp-remove-if-not',
 ;;    `diredp-root-directory-p', `diredp-set-tag-value',
-;;    `diredp-string-match-p', `diredp-tag',
+;;    `diredp-set-union', `diredp-string-match-p', `diredp-tag',
 ;;    `diredp-this-file-marked-p', `diredp-this-file-unmarked-p',
 ;;    `diredp-this-subdir', `diredp-untag', `diredp-y-or-n-files-p'.
 ;;
@@ -581,6 +595,34 @@
 ;;
 ;;; Change Log:
 ;;
+;; 2015/02/03 dadams
+;;     Added: diredp-add-to-this-dired-buffer.
+;;     Removed: diredp-add-to-dired-buffer-other-window, diredp-dired-union-other-window.
+;;     diredp-dired-union-1: Removed optional arg OTHER-WINDOW-P.
+;;     diredp-menu-bar-subdir-menu: Added diredp-add-to-this-dired-buffer.
+;;     dired-read-dir-and-switches, diredp-dired-union-interactive-spec:
+;;       Added optional arg DIRED-BUFFER.  If nil, use current buffer name as default when reading buffer name.
+;; 2015/02/02 dadams
+;;     Added: diredp-add-to-dired-buffer, diredp-add-to-dired-buffer-other-window, diredp-set-union,
+;;            diredp-existing-dired-buffer-p.
+;;     Bind diredp-add-to-dired-buffer(-other-window) globally to C-x E, C-x 4 E.
+;;     diredp-dired-union(-other-window):
+;;       Added args DIRNAME and EXTRA.  Pass them to diredp-dired-union-1.  Moved "UNION" to *-interactive-spec.
+;;       Pass values for new args NO-DIRED-BUFS and READ-EXTRA-FILES-P to diredp-dired-union-interactive-spec.
+;;     diredp-dired-union-interactive-spec:
+;;       Added args NO-DIRED-BUFS and READ-EXTRA-FILES-P.  Use (updated) dired-read-dir-and-switches.
+;;       Delete dead buffers from dired-buffers.  Remove DIRNAME buffer as candidate.
+;;       Apply expand-file-name to default-directory.  Return list of DIRNAME BUFS SWITCHES EXTRA-FILES.
+;;     diredp-dired-union-1:
+;;       Added args DIRED-NAME and EXTRA.
+;;       For existing Dired buffer whose dired-directory is a cons:
+;;         Include its current listing.  Replace buffer with new one of same name, after deleting its window.
+;;     dired-read-dir-and-switches:
+;;       Added arg READ-EXTRA-FILES-P.
+;;       If chosen Dired buffer exists and is an ordinary listing then start out with its directory-files.
+;;     diredp-dired-union, diredp-fileset, diredp-dired-recent-dirs: Bind globally, not just in Dired mode.
+;; 2015/01/30 dadams
+;;     dired-read-dir-and-switches: Remove any killed buffers from dired-buffers, before using for completion.
 ;; 2014/10/25 dadams
 ;;     diredp-dired-union-interactive-spec: Typo: quote buffer-name-history.  Pass other-window STRING.
 ;;     diredp-dired-union-other-window: Pass other-window STRING.
@@ -1874,21 +1916,39 @@ a prefix arg lets you edit the `ls' switches used for the new listing."
 
 ;; REPLACE ORIGINAL in `dired.el'.
 ;;
-;; 1. Non-positive prefix arg means construct cons DIRNAME arg: Read Dired name and files/dirs.
+;; 1. Added behavior for non-positive prefix arg:
+;;    * Construct a cons DIRNAME arg.
+;;    * Read a Dired buffer name (not a directory) for its car.
+;;    * If READ-EXTRA-FILES-P is non-nil then read any number of file and dir names, to be included as its cdr. 
+;;    * If chosen Dired buffer exists and is an ordinary listing then start out with its `directory-files'.
 ;;
 ;; 2. If you use Icicles then this is a multi-command - see doc for `dired' defadvice.
 ;;
-(defun dired-read-dir-and-switches (string)
-  "Read arguments for `dired'.
-With a non-negative prefix arg, read the `ls' switches.
-With a non-positive prefix arg, read the Dired buffer name and then
- read any number of directory or file names, to make up the Dired
- listing.  You can use file-name wildcards (i.e., `*' for globbing),
- to include the matching files and directories.  Use `C-g' when done
- entering files and directories to list.
-
+(defun dired-read-dir-and-switches (string &optional read-extra-files-p dired-buffer)
+  "Read arguments for `dired' commands.
 STRING is added to the prompt after \"Dired \".  If not \"\", it should
-end with a space."
+end with a space.
+
+With a non-negative prefix arg, read the `ls' switches.
+With a non-negative prefix arg or none, read the directory to Dired.
+
+With a non-positive prefix arg:
+* If DIRED-BUFFER is non-nil, it is the name of the Dired buffer to
+  use.  Otherwise, read it (it is not necessarily a directory name).
+  If in Dired now, the current buffer name is the default.
+* If READ-EXTRA-FILES-P is non-nil then read any number of directory
+  or file names, to make up the Dired arbitrary-files listing.  You
+  can use file-name wildcards (i.e., `*' for globbing), to include the
+  matching files and directories.  Use `C-g' when done entering the
+  files and directories to list.
+
+Return a list of arguments for `dired': (DIRNAME SWITCHES).  DIRNAME
+here has the same form as `dired-directory'.  When a non-positive
+prefix arg is used, DIRNAME is a cons of the buffer name and the list
+of file names.
+
+If you use Icicles then reading uses Icicles completion, with
+additional multi-command keys.  See `dired' (defadvice doc)."
   (let* ((switchs                                     (and current-prefix-arg
                                                            (natnump (prefix-numeric-value current-prefix-arg))
                                                            (read-string "Dired listing switches: "
@@ -1899,7 +1959,7 @@ end with a space."
                                                                            dired-listing-switches)))
             (select-window (minibuffer-window))
             (select-frame-set-input-focus (selected-frame))))
-;;; $$$$$$$$ Alternative: Could choose no-op for non-dir candidate.
+;;; $$$$$$ Alternative: Could choose no-op for non-dir candidate.
 ;;;          (icicle-candidate-action-fn
 ;;;           (lambda (cand)
 ;;;             (cond ((file-directory-p cand)
@@ -1976,23 +2036,32 @@ end with a space."
           (if (> (prefix-numeric-value current-prefix-arg) 0)
               ;; If a dialog box is about to be used, call `read-directory-name' so the dialog
               ;; code knows we want directories.  Some dialog boxes can only select directories
-              ;; or files when popped up, not both.
+              ;; or files when popped up, not both. If no dialog box is used, call `read-file-name'
+              ;; because the user may want completion of file names for use in a wildcard pattern.
               (funcall (if (and (fboundp 'read-directory-name)  (next-read-file-uses-dialog-p))
                            #'read-directory-name
                          #'read-file-name)
                        (format "Dired %s(directory): " string) nil default-directory nil)
-            (let (;; $$$$$$$$ (insert-default-directory  nil)
-                  (files                     ())
-                  (dirbuf                    (completing-read (format "Dired %s(buffer name): " string)
-                                                              dired-buffers))
-                  file)
-              (while (condition-case nil ; Use lax completion, to allow wildcards.
-                         (setq file  (read-file-name "File or dir (C-g when done): "))
-                       (quit nil))
-                ;; Do not allow root dir (`/' or a Windows drive letter, e.g. `d:/').
-                (if (diredp-root-directory-p file)
-                    (progn (message "Cannot choose root directory") (sit-for 1))
-                  (push file files)))
+            (dolist (db  dired-buffers) ; Remove any killed buffers from `dired-buffers' (even if DIRED-BUFFER).
+              (unless (buffer-name (cdr db)) (setq dired-buffers  (delq db dired-buffers))))
+            (let* ((dbufs   (and (not dired-buffer)
+                                 (mapcar (lambda (db) (list (buffer-name (cdr db)))) dired-buffers)))
+                   (dirbuf  (or dired-buffer
+                                (completing-read (format "Dired %s(buffer name): " string) dbufs nil nil nil nil
+                                                 (and (derived-mode-p 'dired-mode) (buffer-name)))))
+                   (files   (and (diredp-existing-dired-buffer-p dirbuf)
+                                 (with-current-buffer (get-buffer dirbuf)
+                                   (and (not (consp dired-directory))
+                                        (directory-files dired-directory 'FULL diredp-re-no-dot)))))
+                   file)
+              (when read-extra-files-p
+                (while (condition-case nil ; Use lax completion, to allow wildcards.
+                           (setq file  (read-file-name "File or dir (C-g when done): "))
+                         (quit nil))
+                  ;; Do not allow root dir (`/' or a Windows drive letter, e.g. `d:/').
+                  (if (diredp-root-directory-p file)
+                      (progn (message "Cannot choose root directory") (sit-for 1))
+                    (push file files))))
               (cons dirbuf files)))
           switchs)
       (when (fboundp 'icicle-unbind-file-candidate-keys) (icicle-unbind-file-candidate-keys)))))
@@ -3435,8 +3504,12 @@ If no one is selected, symmetric encryption will be performed.  "
   '(menu-item "Dired Each Inserted Subdir..." diredp-dired-inserted-subdirs
     :enable (cdr dired-subdir-alist)    ; First elt is current dir.  Must have at least one more.
     :help "Open Dired for each of the inserted subdirectories"))
-(define-key diredp-menu-bar-subdir-menu [diredp-dired-union-other-window]
-  '(menu-item "Dired Union..." diredp-dired-union-other-window
+(define-key diredp-menu-bar-subdir-menu [diredp-add-to-this-dired-buffer]
+  '(menu-item "Add Entries Here..." diredp-add-to-this-dired-buffer
+    :help "Add individual file and directory names to the listing"
+    :keys "C-x E"))
+(define-key diredp-menu-bar-subdir-menu [diredp-dired-union]
+  '(menu-item "Dired Union..." diredp-dired-union
     :help "Open Dired for the union of some existing Dired buffers"))
 (define-key diredp-menu-bar-subdir-menu [diredp-fileset-other-window]
   '(menu-item "Dired Fileset..." diredp-fileset-other-window
@@ -3478,12 +3551,12 @@ If no one is selected, symmetric encryption will be performed.  "
 (when (memq (lookup-key dired-mode-map "\M-o") '(dired-omit-mode dired-omit-toggle))
   (define-key dired-mode-map "\M-o" nil))
 
-(define-key dired-mode-map "\C-x\S-d"  'diredp-dired-union)                    ; `C-x D' (aka `C-x S-d')
-(define-key dired-mode-map "\C-x4\S-d" 'diredp-dired-union-other-window)       ; `C-x 4 D'
-(define-key dired-mode-map "\C-x\S-f"  'diredp-fileset)                        ; `C-x F' (aka `C-x S-f')
-(define-key dired-mode-map "\C-x4\S-f" 'diredp-fileset-other-window)           ; `C-x 4 F'
-(define-key dired-mode-map "\C-x\S-r"  'diredp-dired-recent-dirs)              ; `C-x R' (aka `C-x S-r')
-(define-key dired-mode-map "\C-x4\S-r" 'diredp-dired-recent-dirs-other-window) ; `C-x 4 R' (aka `C-x 4 S-r')
+(global-set-key "\C-xD"  'diredp-dired-union)                               ; `C-x D'
+(global-set-key "\C-xE"  'diredp-add-to-dired-buffer)                       ; `C-x E'
+(global-set-key "\C-xF"  'diredp-fileset)                                   ; `C-x F'
+(global-set-key "\C-x4F" 'diredp-fileset-other-window)                      ; `C-x 4 F'
+(global-set-key "\C-xR"  'diredp-dired-recent-dirs)                         ; `C-x R'
+(global-set-key "\C-x4R" 'diredp-dired-recent-dirs-other-window)            ; `C-x 4 R'
 
 ;; Navigation
 (substitute-key-definition 'dired-up-directory 'diredp-up-directory dired-mode-map)
@@ -3519,15 +3592,15 @@ If no one is selected, symmetric encryption will be performed.  "
 (define-key dired-mode-map [(control meta ?*)] 'diredp-marked-other-window)         ; `C-M-*'
 (define-key dired-mode-map "\M-b"    'diredp-do-bookmark)                           ; `M-b'
 (define-key dired-mode-map "\C-\M-b" 'diredp-set-bookmark-file-bookmark-for-marked) ; `C-M-b'
-(define-key dired-mode-map [(control meta shift ?b)]                    ; `C-M-B' (aka `C-M-S-b')
+(define-key dired-mode-map [(control meta shift ?b)]                                ; `C-M-B' (aka `C-M-S-b')
   'diredp-do-bookmark-in-bookmark-file)
 (define-key dired-mode-map "\M-g"    'diredp-do-grep)                               ; `M-g'
 (when (fboundp 'mkhtml-dired-files)     ; In `mkhtml.el'.
   (define-key dired-mode-map "\M-h"  'mkhtml-dired-files))                          ; `M-h'
-(define-key dired-mode-map [(control meta shift ?r)]                    ; `C-M-R' (aka `C-M-S-r')
+(define-key dired-mode-map [(control meta shift ?r)]                                ; `C-M-R' (aka `C-M-S-r')
   'diredp-toggle-find-file-reuse-dir)
 (define-key dired-mode-map "U"       'dired-unmark-all-marks)                       ; `U'
-(substitute-key-definition 'describe-mode 'diredp-describe-mode                    ; `h', `C-h m'
+(substitute-key-definition 'describe-mode 'diredp-describe-mode                     ; `h', `C-h m'
                            dired-mode-map (current-global-map))
 
 ;; Tags - same keys as in `*Bookmark List*'.
@@ -3626,7 +3699,7 @@ If no one is selected, symmetric encryption will be performed.  "
 (define-key diredp-recursive-map [(meta shift ?b)] 'diredp-do-bookmark-dirs-recursive)  ; `M-B'
 (define-key diredp-recursive-map (kbd "C-M-b")                                          ; `C-M-b'
   'diredp-set-bookmark-file-bookmark-for-marked-recursive)
-(define-key diredp-recursive-map [(control meta shift ?b)]                              ; `C-M-B'
+(define-key diredp-recursive-map [(control meta shift ?b)]                             ; `C-M-B' (aka `C-M-S-b')
   'diredp-do-bookmark-in-bookmark-file-recursive)
 (define-key diredp-recursive-map "C"           'diredp-do-copy-recursive)               ; `C'
 (define-key diredp-recursive-map "F"           'diredp-do-find-marked-files-recursive)  ; `F'
@@ -3670,11 +3743,11 @@ dired+.el bug: \
 &body=Describe bug here, starting with `emacs -q'.  \
 Don't forget to mention your Emacs and library versions."))
   :link '(url-link :tag "Other Libraries by Drew"
-          "http://www.emacswiki.org/cgi-bin/wiki/DrewsElispLibraries")
+          "http://www.emacswiki.org/DrewsElispLibraries")
   :link '(url-link :tag "Download"
-          "http://www.emacswiki.org/cgi-bin/wiki/dired+.el")
+          "http://www.emacswiki.org/dired+.el")
   :link '(url-link :tag "Description"
-          "http://www.emacswiki.org/cgi-bin/wiki/DiredPlus")
+          "http://www.emacswiki.org/DiredPlus")
   :link '(emacs-commentary-link :tag "Commentary" "dired+"))
  
 ;;; Face Definitions
@@ -3987,7 +4060,7 @@ Use `C-g' when you are done.  See `dired'."
   (dired-other-window arg switches))
 
 ;;;###autoload
-(defun diredp-dired-recent-dirs (buffer &optional arg) ; Bound to `C-x R' (aka `C-x S-r')
+(defun diredp-dired-recent-dirs (buffer &optional arg) ; Bound to `C-x R'
   "Open Dired in BUFFER, showing recently used directories.
 You are prompted for BUFFER.
 
@@ -4009,7 +4082,7 @@ When entering directories to include or exclude, use `C-g' to end."
     (dired (cons (generate-new-buffer-name buffer) (diredp-recent-dirs arg)) switches)))
 
 ;;;###autoload
-(defun diredp-dired-recent-dirs-other-window (buffer &optional arg) ; Bound to `C-x 4 R' (aka `C-x 4 S-r')
+(defun diredp-dired-recent-dirs-other-window (buffer &optional arg) ; Bound to `C-x 4 R'
   "Same as `diredp-dired-recent-dirs', but use other window."
   (interactive (list (completing-read "Dired buffer name: " dired-buffers) current-prefix-arg))
   (unless (require 'recentf nil t) (error "This command requires library `recentf.el'"))
@@ -4105,108 +4178,200 @@ A new list is returned - list THINGS is not modified."
 ;;;         (read-string "Dired listing switches: " dired-listing-switches))))
 
 ;;;###autoload
-(defun diredp-dired-union (dirbufs &optional switches) ; Bound to `C-x D' in Dired
+(defun diredp-dired-union (dired-name dirbufs &optional switches extra) ; Bound to `C-x D'
   "Create a Dired buffer that is the union of some existing Dired buffers.
-With a prefix arg, read `ls' switches.
-You are prompted for the Dired buffers.  Use `C-g' when done choosing
-them.  Then you are prompted for the name of the new Dired buffer.
-Its `default-directory' is the same as the `default-directory' before
-invoking the command.
+With a non-negative prefix arg, you are prompted for `ls' switches.
+With a non-positive prefix arg, you are prompted for file and dir
+names to add to the listing - see below.
 
-The selected Dired listings are included in the order that you choose
-them, and each entry is listed only once in the new Dired buffer.  The
-new Dired listing respects the markings, subdirectory insertions, and
-hidden subdirectories of the selected Dired listings.
+You are prompted for the name of the Dired union buffer.  Completion
+against names of existing Dired buffers is available, but you can
+enter any other name to create a new Dired buffer of that name.
 
-However, in case of conflict between marked or unmarked status for the
-same entry, the entry is marked.  Similarly, in case of conflict over
-an included subdirectory between it being hidden or shown, it is
-hidden, but its contained files are also listed."
-  (interactive (diredp-dired-union-interactive-spec ""))
-  (diredp-dired-union-1 dirbufs switches))
+If the union buffer name you choose names an existing Dired buffer,
+then what happens depends on whether that buffer is an ordinary Dired
+directory listing or a list of arbitrary file names.  That is, it
+depends on whether `dired-directory' is a directory name or a cons of
+a Dired buffer name plus file names.
+
+* If the buffer is an ordinary Dired listing, then it is converted to
+  an explicit list of absolute file names, just as if these had been
+  chosen individually.  The existing buffer and window are replaced by
+  new ones that show the explicit listing.  (This replacement is
+  necessary because the list of files contained in an ordinary Dired
+  listing cannot be modified.)
+
+* If the buffer lists arbitrary file names explicitly, then it is
+  updated to include also the files from any Dired buffers and any
+  additional files that you specify.
+
+If the union buffer name you choose does not name an existing Dired
+buffer, then its `default-directory' is the same as the
+`default-directory' before invoking the command.
+
+If you use a non-positive prefix arg, then you can next choose
+additional file and directory names to add to the listing.  Use `C-g'
+when done choosing them.  Any directory names you choose this way are
+included as single entries in the listing - the directory contents are
+not included (these directories are not unioned).
+
+You are then prompted for the Dired buffers to union.  Use `C-g' when
+done choosing them.  These Dired listings to union are included in the
+order that you chose them, and each entry is listed only once in the
+new Dired buffer.
+
+The new Dired listing respects the markings, subdirectory insertions,
+and hidden subdirectories of the selected Dired listings.  However, in
+case of conflict between marked or unmarked status for the same entry,
+the entry is marked.  Similarly, in case of conflict over an included
+subdirectory between it being hidden or shown, it is hidden, but its
+contained files are also listed.
+
+From Lisp:
+ DIRED-NAME is the name of the resulting Dired union buffer.
+ DIRBUFS is a list of the names of Dired buffers to union.
+ SWITCHES is a string of `ls' switches.
+ EXTRA is a list of files & directories to be included in the listing."
+  (interactive (diredp-dired-union-interactive-spec "UNION "
+                                                    nil
+                                                    (and current-prefix-arg
+                                                         (<= (prefix-numeric-value current-prefix-arg) 0))))
+  (diredp-dired-union-1 dired-name dirbufs switches extra))
 
 ;;;###autoload
-(defun diredp-dired-union-other-window (dirbufs &optional switches) ; Bound to `C-x 4 D' in Dired
-  "Same as `diredp-dired-union' but uses another window."
-  (interactive (diredp-dired-union-interactive-spec "other window "))
-  (diredp-dired-union-1 dirbufs switches 'OTHER-WINDOW))
+(defun diredp-add-to-dired-buffer (dired-name to-add &optional switches) ; Bound to `C-x E'
+  "Add individual file and directory names to a Dired buffer.
+You are prompted for the buffer name.
+With a prefix arg, you are also prompted for the `ls' switches.
+
+The buffer must either not exist yet or must list arbitrary file and
+directory names.  That is, it cannot be an ordinary Dired directory
+listing - those cannot be modified.
+
+If you want to include a directory listing (ordinary or of arbitrary
+file names), and not just add a line for a directory name, then use
+command `diredp-dired-union' instead.
+
+From Lisp:
+ DIRED-NAME is the name of the Dired buffer to modify.
+ TO-ADD is the list of files and dirs to add to it.
+ SWITCHES is the string of `ls' switches."
+  ;; Bind `current-prefix-arg' to force reading file/dir names.
+  ;; Read `ls' switches too, if user used prefix arg.
+  (interactive
+   (let* ((current-prefix-arg  (if current-prefix-arg 0 -1))
+          (all                 (diredp-dired-union-interactive-spec "add files/dirs "
+                                                                    'NO-DIRED-BUFS
+                                                                    'READ-EXTRA-FILES-P)))
+     (list (nth 0 all) (nth 3 all) (nth 2 all))))
+  (diredp-dired-union-1 dired-name () switches to-add))
+
+;;;###autoload
+(defun diredp-add-to-this-dired-buffer (dired-name to-add &optional switches) ; Not bound by default
+  "Same as `diredp-add-to-dired-buffer' for this Dired buffer."
+  ;; Bind `current-prefix-arg' to force reading file/dir names.
+  ;; Read `ls' switches too, if user used prefix arg.
+  (interactive
+   (progn (unless (derived-mode-p 'dired-mode) (error "Not in a Dired buffer"))
+          (let* ((current-prefix-arg  (if current-prefix-arg 0 -1))
+                 (all                 (diredp-dired-union-interactive-spec "add files/dirs here "
+                                                                           'NO-DIRED-BUFS
+                                                                           'READ-EXTRA-FILES-P
+                                                                           (buffer-name))))
+            (list (nth 0 all) (nth 3 all) (nth 2 all)))))
+  (diredp-dired-union-1 dired-name () switches to-add))
 
 ;; $$$$$ Maybe I should set `dired-sort-inhibit' to t for now (?),
 ;; since there is an Emacs bug (at least on Windows) that prevents
 ;; sorting from working for a Dired buffer with an explicit file list.
-(defun diredp-dired-union-1 (dirbufs switches &optional other-window-p)
-  "Helper for `diredp-dired-union(-other-window)'."
-  (let ((files        ())
+(defun diredp-dired-union-1 (dired-name dirbufs switches extra)
+  "Helper for `diredp-dired-union' and `diredp-add-to-dired-buffer'.
+See `diredp-dired-union' for the argument descriptions."
+  (let ((dbuf         (get-buffer dired-name))
+        (files        extra)
         (marked       ())
         (subdirs      ())
         (hidden-dirs  ())
         hid-here files-here)
-    (dolist (buf  (reverse (cdr dirbufs))) ; The car is the new Dired buffer name.
+    (dolist (buf  (reverse dirbufs))
       (with-current-buffer buf
         (unwind-protect
-             (progn
-               (setq hid-here    (save-excursion (dired-remember-hidden))
-                     files-here  (if (consp dired-directory)
-                                     (reverse (cdr dired-directory)) ; Reverse bc will push.
-                                   ()))
-               (unless files-here
-                 (save-excursion        ; This bit is more or less from `dired-toggle-marks'.
-                   (goto-char (point-min))
-                   (while (not (eobp))
-                     (or (looking-at dired-re-dot)
-                         (push (dired-get-filename nil 'NO-ERROR-P) files-here))
-                     (forward-line 1)))
-                 (setq files-here  (delq nil files-here)))
-               (dolist (hid-here  hid-here) (push hid-here hidden-dirs))
-               (dolist (sub  (cdr (reverse dired-subdir-alist)))
-                 (push (list (car sub)) subdirs))
-               (dolist (mkd  (dired-remember-marks (point-min) (point-max))) ; This unhides.
-                 (push (car mkd) marked))
-               (dolist (file  files-here)
-                 (when (or (not (file-name-absolute-p file))  (not (member file files)))
-                   (push file files))))
+             (progn (setq hid-here    (save-excursion (dired-remember-hidden))
+                          files-here  (if (consp dired-directory)
+                                          (reverse (cdr dired-directory)) ; Reverse bc will push.
+                                        ()))
+                    (unless files-here
+                      (save-excursion   ; This bit is more or less from `dired-toggle-marks'.
+                        (goto-char (point-min))
+                        (while (not (eobp))
+                          (or (looking-at dired-re-dot)
+                              (push (dired-get-filename nil 'NO-ERROR-P) files-here))
+                          (forward-line 1)))
+                      (setq files-here  (delq nil files-here)))
+                    (dolist (hid-here  hid-here) (push hid-here hidden-dirs))
+                    (dolist (sub  (cdr (reverse dired-subdir-alist)))
+                      (push (list (car sub)) subdirs))
+                    (dolist (mkd  (dired-remember-marks (point-min) (point-max))) ; This unhides.
+                      (push (car mkd) marked))
+                    (dolist (file  files-here)
+                      (when (or (not (file-name-absolute-p file))  (not (member file files)))
+                        (push file files))))
           (save-excursion               ; Hide subdirs that were hidden.
             (dolist (dir  hid-here)  (when (dired-goto-subdir dir) (dired-hide-subdir 1)))))))
-    ;; (pp-eval-expression '(list (cons 'FILES files) (cons 'MARKED marked)
-    ;;                            (cons 'SUBDIRS subdirs) (cons 'HIDDEN-SUBDIRS hidden-dirs)))
-    (if other-window-p
-        (dired-other-window (cons (car dirbufs) files) switches)
-      (dired (cons (car dirbufs) files) switches))
-    (with-current-buffer (car dirbufs)
+    ;; For an existing Dired buffer having this name whose `dired-directory' is a cons:
+    ;; 1. Include the files and dirs already listed there.
+    ;; 2. Kill the current buffer and delete its window.  A new buffer of the same name is created and shown.
+    (when dbuf
+      (with-current-buffer dbuf
+        (when (consp dired-directory) (setq files  (diredp-set-union (cdr dired-directory) files)))
+        (let ((win  (get-buffer-window dbuf 0))) (when win (delete-window win)))
+        (kill-buffer dbuf)))
+    (setq dbuf  (dired-other-window (cons dired-name files) switches))
+    (with-current-buffer dbuf
       (let ((inhibit-read-only  t))
         (dired-insert-old-subdirs subdirs)
         (dired-mark-remembered          ; Don't really need `expand-file-name' - already abs.
          (mapcar (lambda (mf) (cons (expand-file-name mf dired-directory) 42)) marked))
         (save-excursion
-          (dolist (dir  hidden-dirs)  (when (dired-goto-subdir dir) (dired-hide-subdir 1))))))))
+          (dolist (hdir  hidden-dirs)  (when (dired-goto-subdir hdir) (dired-hide-subdir 1))))))))
 
-(defun diredp-dired-union-interactive-spec (string)
-  "`interactive' spec for `diredp-dired-dired' commands.
-Read names of Dired buffers to include, and then the new, Dired-union
- buffer name.  User uses `C-g' when done reading Dired buffer names.
-With a prefix arg, read `ls' switches after Dired-union buffer name.
-STRING is added to the prompt after \"Dired-UNION\".  If not \"\", it
- should end with a space."
-  (list
-   (let ((bufs     ())
-         dirbufs buf)
-     (dolist (dbuf  dired-buffers)
-       (when (buffer-live-p (cdr dbuf))
-         (push (cons (buffer-name (cdr dbuf)) (car dbuf)) dirbufs)))
-     (while (and dirbufs  (condition-case nil
-                              (setq buf  (completing-read
-                                          "Dired buffer to include (C-g when done): "
-                                          dirbufs nil t nil 'buffer-name-history
-                                          (and dirbufs  (car (assoc (buffer-name) dirbufs)))))
-                            (quit nil)))
-       (push buf bufs)
-       (setq dirbufs  (delete (cons buf (with-current-buffer buf default-directory)) dirbufs)))
-     (setq bufs  (nreverse bufs))
-     (cons (read-string (format "Dired-UNION %s(buffer name): " string)) bufs))
-   (and current-prefix-arg  (read-string "Dired listing switches: " dired-listing-switches))))
+(defun diredp-dired-union-interactive-spec (string &optional no-dired-bufs read-extra-files-p dired-buffer)
+  "Read arguments for `diredp-dired-union' and `diredp-add-to-dired-buffer'.
+STRING is appended to the prompt for the listing buffer name.
+Non-nil NO-DIRED-BUFS means do not read Dired buffers to union.
+Non-nil READ-EXTRA-FILES-P is passed to `dired-read-dir-and-switches',
+ and means read extra files to add to the listing.
+Non-nil DIRED-BUFFER is passed to `dired-read-dir-and-switches'.
+  It is the name of the Dired union buffer."
+  (let* ((current-prefix-arg  -1)
+         (dir+switches        (dired-read-dir-and-switches string read-extra-files-p dired-buffer))
+         (dirname             (car  dir+switches))
+         (switches            (cadr dir+switches))
+         (dirbufs             ())
+         (bufs                ())
+         (extra-files         ())
+         buf)
+    (when (consp dirname) (setq extra-files  (cdr dirname)
+                                dirname      (car dirname)))
+    (unless no-dired-bufs
+      ;; Remove any killed buffers from `dired-buffers'.  Then use all but the target buffer as candidates.
+      (dolist (db  dired-buffers)
+        (if (buffer-live-p (cdr db))
+            (unless (equal dirname (buffer-name (cdr db))) (push (cons (buffer-name (cdr db)) (car db)) dirbufs))
+          (setq dired-buffers  (delq db dired-buffers))))
+      (while (and dirbufs  (condition-case nil
+                               (setq buf  (completing-read "Existing Dired buffer to include (C-g when done): "
+                                                           dirbufs nil t nil 'buffer-name-history
+                                                           (and dirbufs  (car (assoc (buffer-name) dirbufs)))))
+                             (quit nil)))
+        (push buf bufs)
+        (setq dirbufs  (delete (cons buf (with-current-buffer buf (expand-file-name default-directory)))
+                               dirbufs)))
+      (setq bufs  (nreverse bufs)))
+    (list dirname bufs switches extra-files)))
 
 ;;;###autoload
-(defun diredp-fileset (flset-name)      ; Not bound
+(defun diredp-fileset (flset-name)      ; Bound to `C-x F'
   "Open Dired on the files in fileset FLSET-NAME."
   (interactive
    (list (let ((fd  (or (and (require 'filesets nil t)  filesets-data)
@@ -4215,7 +4380,7 @@ STRING is added to the prompt after \"Dired-UNION\".  If not \"\", it
   (diredp-fileset-1 flset-name))
 
 ;;;###autoload
-(defun diredp-fileset-other-window (flset-name) ; Not bound
+(defun diredp-fileset-other-window (flset-name) ; Bound to `C-x 4 F'
   "Open Dired in another window on the files in fileset FLSET-NAME."
   (interactive
    (list (let ((fd  (or (and (require 'filesets nil t)  filesets-data)
@@ -4762,6 +4927,29 @@ Non-interactively:
   "Map FUNCTION over LIST and its cdrs.
 A simple, recursive version of the classic `maplist'."
   (and list  (cons (funcall function list) (diredp-maplist function (cdr list)))))
+
+(defun diredp-existing-dired-buffer-p (buffer-name)
+  "Return non-nil if BUFFER-NAME names a live, existing Dired buffer."
+  (let ((dbuf  (get-buffer buffer-name)))
+    (and dbuf  (buffer-live-p dbuf)  (rassq dbuf dired-buffers))))
+
+;; From `cl-seq.el', function `union', without keyword treatment.
+;; (Same as `icicle-set-union' in `icicles-fn.el'.)
+(defun diredp-set-union (list1 list2)
+  "Combine LIST1 and LIST2 using a set-union operation.
+The result list contains all items that appear in either LIST1 or
+LIST2.  Comparison is done using `equal'.  This is a non-destructive
+function; it copies the data if necessary."
+  (cond ((null list1)         list2)
+        ((null list2)         list1)
+        ((equal list1 list2)  list1)
+        (t
+         (unless (>= (length list1) (length list2))
+           (setq list1  (prog1 list2 (setq list2  list1)))) ; Swap them.
+         (while list2
+           (unless (member (car list2) list1)  (setq list1  (cons (car list2) list1)))
+           (setq list2  (cdr list2)))
+         list1)))
 
 
 
@@ -6567,7 +6755,7 @@ See also command `diredp-do-bookmark-in-bookmark-file'."
   (diredp-do-bookmark-in-bookmark-file bookmark-file prefix arg 'CREATE-BOOKMARK-FILE-BOOKMARK))
 
 ;;;###autoload
-(defun diredp-do-bookmark-in-bookmark-file (bookmark-file ; Bound to `C-M-S-b' (`C-M-B')
+(defun diredp-do-bookmark-in-bookmark-file (bookmark-file ; Bound to `C-M-B' (aka `C-M-S-b')
                                             &optional prefix arg bfile-bookmarkp files)
   "Bookmark files in BOOKMARK-FILE and save BOOKMARK-FILE.
 The files bookmarked are the marked files, by default.
@@ -9293,7 +9481,7 @@ For just the latter, use \\<dired-mode-map>`\\[diredp-dired-plus-help]'."
            (get 'help-xref 'button-category-symbol)) ; `button.el'
   (define-button-type 'diredp-help-button
       :supertype 'help-xref
-      'help-function #'(lambda () (browse-url "http://www.emacswiki.org/cgi-bin/wiki/DiredPlus"))
+      'help-function #'(lambda () (browse-url "http://www.emacswiki.org/DiredPlus"))
       'help-echo
       (purecopy "mouse-2, RET: Dired+ documentation on the Emacs Wiki (requires \
 Internet access)")))

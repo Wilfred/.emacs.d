@@ -3,7 +3,7 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "dired+" "dired+.el" (21613 8206 467533 529000))
+;;;### (autoloads nil "dired+" "dired+.el" (21727 51931 951109 717000))
 ;;; Generated autoloads from dired+.el
 
 (defvar diredp-auto-focus-frame-for-thumbnail-tooltip-flag nil "\
@@ -108,28 +108,85 @@ Same as `diredp-dired-recent-dirs', but use other window.
 
 (autoload 'diredp-dired-union "dired+" "\
 Create a Dired buffer that is the union of some existing Dired buffers.
-With a prefix arg, read `ls' switches.
-You are prompted for the Dired buffers.  Use `C-g' when done choosing
-them.  Then you are prompted for the name of the new Dired buffer.
-Its `default-directory' is the same as the `default-directory' before
-invoking the command.
+With a non-negative prefix arg, you are prompted for `ls' switches.
+With a non-positive prefix arg, you are prompted for file and dir
+names to add to the listing - see below.
 
-The selected Dired listings are included in the order that you choose
-them, and each entry is listed only once in the new Dired buffer.  The
-new Dired listing respects the markings, subdirectory insertions, and
-hidden subdirectories of the selected Dired listings.
+You are prompted for the name of the Dired union buffer.  Completion
+against names of existing Dired buffers is available, but you can
+enter any other name to create a new Dired buffer of that name.
 
-However, in case of conflict between marked or unmarked status for the
-same entry, the entry is marked.  Similarly, in case of conflict over
-an included subdirectory between it being hidden or shown, it is
-hidden, but its contained files are also listed.
+If the union buffer name you choose names an existing Dired buffer,
+then what happens depends on whether that buffer is an ordinary Dired
+directory listing or a list of arbitrary file names.  That is, it
+depends on whether `dired-directory' is a directory name or a cons of
+a Dired buffer name plus file names.
 
-\(fn DIRBUFS &optional SWITCHES)" t nil)
+* If the buffer is an ordinary Dired listing, then it is converted to
+  an explicit list of absolute file names, just as if these had been
+  chosen individually.  The existing buffer and window are replaced by
+  new ones that show the explicit listing.  (This replacement is
+  necessary because the list of files contained in an ordinary Dired
+  listing cannot be modified.)
 
-(autoload 'diredp-dired-union-other-window "dired+" "\
-Same as `diredp-dired-union' but uses another window.
+* If the buffer lists arbitrary file names explicitly, then it is
+  updated to include also the files from any Dired buffers and any
+  additional files that you specify.
 
-\(fn DIRBUFS &optional SWITCHES)" t nil)
+If the union buffer name you choose does not name an existing Dired
+buffer, then its `default-directory' is the same as the
+`default-directory' before invoking the command.
+
+If you use a non-positive prefix arg, then you can next choose
+additional file and directory names to add to the listing.  Use `C-g'
+when done choosing them.  Any directory names you choose this way are
+included as single entries in the listing - the directory contents are
+not included (these directories are not unioned).
+
+You are then prompted for the Dired buffers to union.  Use `C-g' when
+done choosing them.  These Dired listings to union are included in the
+order that you chose them, and each entry is listed only once in the
+new Dired buffer.
+
+The new Dired listing respects the markings, subdirectory insertions,
+and hidden subdirectories of the selected Dired listings.  However, in
+case of conflict between marked or unmarked status for the same entry,
+the entry is marked.  Similarly, in case of conflict over an included
+subdirectory between it being hidden or shown, it is hidden, but its
+contained files are also listed.
+
+From Lisp:
+ DIRED-NAME is the name of the resulting Dired union buffer.
+ DIRBUFS is a list of the names of Dired buffers to union.
+ SWITCHES is a string of `ls' switches.
+ EXTRA is a list of files & directories to be included in the listing.
+
+\(fn DIRED-NAME DIRBUFS &optional SWITCHES EXTRA)" t nil)
+
+(autoload 'diredp-add-to-dired-buffer "dired+" "\
+Add individual file and directory names to a Dired buffer.
+You are prompted for the buffer name.
+With a prefix arg, you are also prompted for the `ls' switches.
+
+The buffer must either not exist yet or must list arbitrary file and
+directory names.  That is, it cannot be an ordinary Dired directory
+listing - those cannot be modified.
+
+If you want to include a directory listing (ordinary or of arbitrary
+file names), and not just add a line for a directory name, then use
+command `diredp-dired-union' instead.
+
+From Lisp:
+ DIRED-NAME is the name of the Dired buffer to modify.
+ TO-ADD is the list of files and dirs to add to it.
+ SWITCHES is the string of `ls' switches.
+
+\(fn DIRED-NAME TO-ADD &optional SWITCHES)" t nil)
+
+(autoload 'diredp-add-to-this-dired-buffer "dired+" "\
+Same as `diredp-add-to-dired-buffer' for this Dired buffer.
+
+\(fn DIRED-NAME TO-ADD &optional SWITCHES)" t nil)
 
 (autoload 'diredp-fileset "dired+" "\
 Open Dired on the files in fileset FLSET-NAME.
