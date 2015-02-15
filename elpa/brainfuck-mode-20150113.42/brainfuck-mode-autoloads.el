@@ -1,10 +1,10 @@
 ;;; brainfuck-mode-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (brainfuck-mode) "brainfuck-mode" "brainfuck-mode.el"
-;;;;;;  (21423 59532 638643 195000))
+;;;### (autoloads nil "brainfuck-mode" "brainfuck-mode.el" (21719
+;;;;;;  52057 446486 90000))
 ;;; Generated autoloads from brainfuck-mode.el
 
 (autoload 'brainfuck-mode "brainfuck-mode" "\
@@ -18,16 +18,9 @@ Major mode for brainfuck
 
 ;;;***
 
-;;;### (autoloads nil nil ("brainfuck-mode-pkg.el") (21423 59532
-;;;;;;  693007 718000))
-
-;;;***
-
-(provide 'brainfuck-mode-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; brainfuck-mode-autoloads.el ends here
