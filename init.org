@@ -649,6 +649,13 @@ Emacs' undo facility is excellent, but undo-tree is even better.
   (global-undo-tree-mode)
 #+END_SRC
 
+Rather than just showing 'o' for edits, show a relative timestamp for
+when the edit occurred.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq undo-tree-visualizer-timestamps t)
+#+END_SRC
+
 Since we're using it the whole time, it's not very informative to show
 it on the mode line. Hide it.
 

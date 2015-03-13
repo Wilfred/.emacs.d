@@ -259,6 +259,8 @@ Visit the file after creation."
 (require 'undo-tree)
 (global-undo-tree-mode)
 
+(setq undo-tree-visualizer-timestamps t)
+
 (require 'diminish)
 (diminish 'undo-tree-mode)
 

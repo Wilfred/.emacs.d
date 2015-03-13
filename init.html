@@ -4,10 +4,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>init</title>
-<!-- 2015-02-14 Sat 22:25 -->
+<!-- 2015-03-13 Fri 23:30 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
-<meta  name="author" content="Wilfred Hughes" />
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   .title  { text-align: center; }
@@ -1192,6 +1191,17 @@ Emacs' undo facility is excellent, but undo-tree is even better.
 </div>
 
 <p>
+Rather than just showing 'o' for edits, show a relative timestamp for
+when the edit occurred.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setq undo-tree-visualizer-timestamps t<span style="color: #ffffff;">)</span>
+</pre>
+</div>
+
+<p>
 Since we're using it the whole time, it's not very informative to show
 it on the mode line. Hide it.
 </p>
@@ -2019,8 +2029,7 @@ annoying to accidentally close Emacs, so warn first.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="author">Author: Wilfred Hughes</p>
-<p class="date">Created: 2015-02-14 Sat 22:25</p>
+<p class="date">Created: 2015-03-13 Fri 23:30</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.4.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
