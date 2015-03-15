@@ -10,7 +10,6 @@
 (add-hook
  'c++-mode-hook
  (lambda ()
-   (message "hello world")
    (setq flycheck-clang-language-standard "c++11"
          flycheck-clang-definitions '("__STDC_LIMIT_MACROS"
                                       "__STDC_CONSTANT_MACROS"))))
