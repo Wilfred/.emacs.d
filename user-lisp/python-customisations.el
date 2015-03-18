@@ -84,5 +84,23 @@
 (define-key python-mode-map (kbd "M-.") 'anaconda-mode-goto-definitions)
 (define-key python-mode-map (kbd "M-,") 'anaconda-nav-pop-marker)
 
+;; from http://stackoverflow.com/a/17822336
+;; todo: release as a package
+;; todo: replace the prelude: https://github.com/steinn/emacs-prelude/blob/561bb1182d539dd03a57842e6f2538bf5f1f3ddf/modules/prelude-python.el#L41
+;; with that package.
+;; todo: fix http://emacs.stackexchange.com/q/4161
+(when (executable-find "ipython2")
+  (setq
+   python-shell-interpreter "ipython2"
+   python-shell-interpreter-args ""
+   python-shell-prompt-regexp "In \\[[0-9]+\\]: "
+   python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+   python-shell-completion-setup-code
+   "from IPython.core.completerlib import module_completion"
+   python-shell-completion-module-string-code
+   "';'.join(module_completion('''%s'''))\n"
+   python-shell-completion-string-code
+   "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"))
+
 
 (provide 'python-customisations)
