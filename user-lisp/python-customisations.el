@@ -89,4 +89,13 @@
   (setq
    python-shell-interpreter "ipython2"))
 
+;; Emacs 25, as of 1fcc552ac27503c502a9a6e6cf06268e6018db51,
+;; fixes a number of issues with sending single line regions that are indented.
+;; Without this, (e.g. Emacs 24.4) we only send 'if True:', which is a syntax error.
+(defun python-shell-send-region (start end &rest unused)
+  "Send the region delimited by START and END to inferior Python process."
+  (interactive "r")
+  (python-shell-send-string
+   (buffer-substring start end)))
+
 (provide 'python-customisations)
