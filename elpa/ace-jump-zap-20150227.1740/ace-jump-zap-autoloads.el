@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "ace-jump-zap" "ace-jump-zap.el" (21638 16391
-;;;;;;  379652 786000))
+;;;### (autoloads nil "ace-jump-zap" "ace-jump-zap.el" (21745 41532
+;;;;;;  699958 59000))
 ;;; Generated autoloads from ace-jump-zap.el
 
 (autoload 'ace-jump-zap-up-to-char "ace-jump-zap" "\
