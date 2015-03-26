@@ -231,8 +231,8 @@ It's extremely useful to be able to move between different occurrences
 of the same symbol.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (global-set-key (kbd "M-n") 'highlight-symbol-next)
-  (global-set-key (kbd "M-p") 'highlight-symbol-prev)
+  (define-key prog-mode-map (kbd "M-n") 'highlight-symbol-next)
+  (define-key prog-mode-map (kbd "M-p") 'highlight-symbol-prev)
 #+END_SRC
 
 Jumping to the first occurrence of the symbol is handy for finding
@@ -250,8 +250,8 @@ where a symbol was imported.
          (rx symbol-start ,(thing-at-point 'symbol) symbol-end)
          nil t)
         (beginning-of-thing 'symbol))))
-  
-  (global-set-key (kbd "M-P") 'highlight-symbol-first)
+
+  (define-key prog-mode-map (kbd "M-P") #'highlight-symbol-first)
 #+END_SRC
 
 More rarely, it's useful to be able to jump to the last occurrence of

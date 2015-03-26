@@ -50,8 +50,8 @@
 
 (minibuffer-depth-indicate-mode 1)
 
-(global-set-key (kbd "M-n") 'highlight-symbol-next)
-(global-set-key (kbd "M-p") 'highlight-symbol-prev)
+(define-key prog-mode-map (kbd "M-n") 'highlight-symbol-next)
+(define-key prog-mode-map (kbd "M-p") 'highlight-symbol-prev)
 
 (defun highlight-symbol-first ()
   "Jump to the first location of symbol at point."
@@ -65,7 +65,7 @@
        nil t)
       (beginning-of-thing 'symbol))))
 
-(global-set-key (kbd "M-P") 'highlight-symbol-first)
+(define-key prog-mode-map (kbd "M-P") #'highlight-symbol-first)
 
 (defun highlight-symbol-last ()
   "Jump to the last location of symbol at point."
