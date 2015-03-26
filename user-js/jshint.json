@@ -14,5 +14,9 @@
   "maxerr": 10000, // keep reporting even if we find lots of issues
   "eqnull": true, // allow foo == null
   "-W099": true, // allowed mixed tabs and spaces
+  "node": true, // node constants, such as require
+  // whilst it's a bad idea to add "use strict"; at the top of a file
+  // in the browser, it's good in node.
+  "globalstrict": true,
   "laxcomma": true // allow comma-first style
 }
