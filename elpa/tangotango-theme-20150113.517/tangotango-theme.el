@@ -8,9 +8,9 @@
 ;; Author: Julien Barnier
 ;; Adapted-By: Yesudeep Mangalapilly
 ;; Keywords: tango palette color theme emacs
+;; Package-Version: 20150113.517
 ;; URL: https://github.com/juba/color-theme-tangotango
-;; Version: 20141123.1354
-;; X-Original-Version: 0.0.6
+;; Version: 0.0.6
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -48,7 +48,6 @@
  `(fixed-pitch ((t (:inherit (default)))))
  `(variable-pitch ((t (:family "Sans Serif"))))
  `(escape-glyph ((((background dark)) (:foreground "cyan")) (((type pc)) (:foreground "magenta")) (t (:foreground "brown"))))
- `(minibuffer-prompt ((t (:weight bold :foreground "#729fcf"))))
  `(highlight ((t (:background "brown4"))))
  `(region ((t (:background "dark slate blue"))))
  `(shadow ((((class color grayscale) (min-colors 88) (background light)) (:foreground "grey50")) (((class color grayscale) (min-colors 88) (background dark)) (:foreground "grey70")) (((class color) (min-colors 8) (background light)) (:foreground "green")) (((class color) (min-colors 8) (background dark)) (:foreground "yellow"))))
@@ -140,7 +139,7 @@
  `(gnus-header-newsgroups((t (:italic t :bold t :foreground "LightSkyBlue3"))))
  `(gnus-signature((t (:italic t :foreground "dark grey"))))
  `(gnus-summary-cancelled((t (:background "black" :foreground "yellow"))))
- `(gnus-summary-high-ancient((t (:bold t :foreground "rotal blue"))))
+ `(gnus-summary-high-ancient((t (:bold t :foreground "royal blue"))))
  `(gnus-summary-high-read((t (:bold t :foreground "lime green"))))
  `(gnus-summary-high-ticked((t (:bold t :foreground "tomato"))))
  `(gnus-summary-high-unread((t (:bold t :foreground "white"))))
