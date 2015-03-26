@@ -1,6 +1,6 @@
 ;;; company-clang.el --- company-mode completion back-end for Clang  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009, 2011, 2013-2014  Free Software Foundation, Inc.
+;; Copyright (C) 2009, 2011, 2013-2015  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -144,6 +144,18 @@ or automatically through a custom `company-clang-prefix-guesser'."
   (get-text-property 0 'meta candidate))
 
 (defun company-clang--annotation (candidate)
+  (let ((ann (company-clang--annotation-1 candidate)))
+    (if (not (string-prefix-p "(*)" ann))
+        ann
+      (with-temp-buffer
+        (insert ann)
+        (search-backward ")")
+        (let ((pt (1+ (point))))
+          (re-search-forward ".\\_>" nil t)
+          (delete-region pt (point)))
+        (buffer-string)))))
+
+(defun company-clang--annotation-1 (candidate)
   (let ((meta (company-clang--meta candidate)))
     (cond
      ((null meta) nil)
@@ -189,8 +201,11 @@ or automatically through a custom `company-clang-prefix-guesser'."
 (defun company-clang--start-process (prefix callback &rest args)
   (let ((objc (derived-mode-p 'objc-mode))
         (buf (get-buffer-create "*clang-output*"))
+        ;; Looks unnecessary in Emacs 25.1 and later.
         (process-adaptive-read-buffering nil))
-    (with-current-buffer buf (erase-buffer))
+    (with-current-buffer buf
+      (erase-buffer)
+      (setq buffer-undo-list t))
     (if (get-buffer-process buf)
         (funcall callback nil)
       (let ((process (apply #'start-process "company-clang" buf

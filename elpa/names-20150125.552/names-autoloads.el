@@ -3,7 +3,7 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "names" "names.el" (21613 8136 598429 650000))
+;;;### (autoloads nil "names" "names.el" (21777 59905 973708 996000))
 ;;; Generated autoloads from names.el
 
 (defvar names--inside-make-autoload nil "\
@@ -70,6 +70,10 @@ and a description of their effects, see the variable
 
 (put 'define-namespace 'lisp-indent-function '(lambda (&rest x) 0))
 
+(defadvice find-function-search-for-symbol (around names-around-find-function-search-for-symbol-advice (symbol type library) activate) "\
+Make sure `find-function-search-for-symbol' understands namespaces." ad-do-it (ignore-errors (unless (cdr ad-return-value) (with-current-buffer (car ad-return-value) (search-forward-regexp "^(define-namespace\\_>") (skip-chars-forward "
+[:blank:]") (let* ((names--regexp (concat "\\`" (regexp-quote (symbol-name (read (current-buffer)))))) (short-symbol (let ((name (symbol-name symbol))) (when (string-match names--regexp name) (intern (replace-match "" nil nil name)))))) (when short-symbol (ad-set-arg 0 short-symbol) ad-do-it))))))
+
 (defadvice make-autoload (around names-before-make-autoload-advice (form file &optional expansion) activate) "\
 Make sure `make-autoload' understands `define-namespace'.
 Use the `names--inside-make-autoload' variable to indicate to
@@ -77,8 +81,8 @@ Use the `names--inside-make-autoload' variable to indicate to
 
 ;;;***
 
-;;;### (autoloads nil nil ("names-dev.el" "names-pkg.el") (21613
-;;;;;;  8136 743350 54000))
+;;;### (autoloads nil nil ("names-dev.el" "names-pkg.el") (21777
+;;;;;;  59906 111752 244000))
 
 ;;;***
 

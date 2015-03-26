@@ -4,8 +4,8 @@
 
 ;; Author: Johan Andersson <johan.rejeep@gmail.com>
 ;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
-;; Version: 20140828.716
-;; X-Original-Version: 0.17.1
+;; Version: 0.17.2
+;; Package-Version: 20150217.328
 ;; Keywords: files, directories
 ;; URL: http://github.com/rejeep/f.el
 ;; Package-Requires: ((s "1.7.0") (dash "2.2.0"))
@@ -105,7 +105,12 @@ If PATH is not allowed to be modified, throw error."
         (setq paths (-map 'cdr paths))
         (push common re)
         (setq common (caar paths)))
-      (if re (concat (apply 'f-join (nreverse re)) "/") "")))))
+      (cond
+       ((null re) "")
+       ((and (= (length re) 1) (f-root? (car re)))
+        (f-root))
+       (:otherwise
+        (concat (apply 'f-join (nreverse re)) "/")))))))
 
 (defun f-ext (path)
   "Return the file extension of PATH."
@@ -115,8 +120,15 @@ If PATH is not allowed to be modified, throw error."
   "Return everything but the file extension of PATH."
   (file-name-sans-extension path))
 
+(defun f-swap-ext (path ext)
+  "Return PATH but with EXT as the new extension.
+EXT must not be nil or empty."
+  (if (s-blank? ext)
+      (error "extension cannot be empty or nil.")
+    (concat (f-no-ext path) "." ext)))
+
 (defun f-base (path)
-  "Return the name of PATH, excluding the extension if file."
+  "Return the name of PATH, excluding the extension of file."
   (f-no-ext (f-filename path)))
 
 (defun f-relative (path &optional dir)
@@ -484,7 +496,7 @@ RECURSIVE - Search for files and directories recursive."
         parent
       (if (funcall fn dir)
           dir
-        (f-up fn parent)))))
+	(with-no-warnings (f-up fn parent))))))
 
 (defmacro f--traverse-upwards (body &optional path)
   "Anaphoric version of `f-traverse-upwards'."
