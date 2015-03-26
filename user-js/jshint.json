@@ -7,8 +7,7 @@
   "asi": true, // don't require trailing semicolons, since js2-mode handles this already
   "strict": false, // don't require "use strict";
   "sub": true, // don't force foo['bar'] to be rewritten as foo.bar
-  "unused": "vars", // warn on variables that are declared but never
-                    // used, but allow unused function parameters
+  "unused": true, // warn on unused variables and parameters
   "undef": false, // don't warn on variables that aren't defined, js2-mode handles this
   "regexp": true, // warn on unsafe . in regexps
   "maxerr": 10000, // keep reporting even if we find lots of issues
