@@ -274,10 +274,11 @@ a symbol.
 
 *** By indentation
 
-`C-a' normally moves us to the beginning of the line
-unconditionally. This version is more useful, as it moves to the
-first non-whitespace character if we're already at the beginning of
-the line. Repeated use of `C-a' toggles between these two positions.
+[[elisp:(describe-key%20(kbd%20"C-a"))][C-a]] normally moves us to the beginning of the line unconditionally
+with [[elisp:(describe-function%20#'move-beginning-of-line)][move-beginning-of-line]]. This version is more useful, as it moves
+to the first non-whitespace character if we're already at the
+beginning of the line. Repeated use of `C-a' toggles between these two
+positions.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (defun beginning-of-line-dwim ()
