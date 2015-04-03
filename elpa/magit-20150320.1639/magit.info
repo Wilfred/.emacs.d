@@ -485,7 +485,7 @@ File: magit.info,  Node: Tagging,  Next: Resetting,  Prev: Diffing,  Up: Top
 11 Tagging
 **********
 
-Typing ‘t t’ will make a lightweight tag.  Typing ‘t a’ will make an
+Typing ‘t t’ will make a lightweight tag.  Typing ‘t - a t’ will make an
 annotated tag.  It will put you in the normal ‘*magit-log-edit’ buffer
 for writing commit messages, but typing ‘C-c C-c’ in it will make the
 tag instead.  This is controlled by the ‘Tag’ field that will be added
@@ -827,7 +827,7 @@ rewriting, resetting the current head back to the value it had before
 the rewrite was started with ‘r b’.
 
    Typing ‘r f’ will _finish_ the rewrite: it will apply all unused
-commits one after the other, as if you would us ‘A’ with all of them.
+commits one after the other, as if you would use ‘A’ with all of them.
 
    You can change the ‘*’ and ‘.’ marks of a pending commit explicitly
 with ‘r *’ and ‘r .’.
@@ -1518,29 +1518,29 @@ Node: Reflogs17888
 Node: Commit Buffer18320
 Node: Diffing19680
 Node: Tagging20691
-Node: Resetting21165
-Node: Stashing22721
-Node: Branches and Remotes23844
-Node: Branches Popup24669
-Node: Remotes Popup25972
-Node: Branches in the Branch Manager26338
-Node: Remotes in the Branch Manager27559
-Node: Wazzup28140
-Node: Merging28954
-Node: Rebasing30020
-Node: Interactive Rebasing30870
-Node: Rewriting32221
-Node: Pushing and Pulling35629
-Node: Submodules37639
-Node: Bisecting38105
-Node: Finding commits not merged upstream39378
-Node: Using Magit Extensions40682
-Node: Activating extensions40978
-Node: Interfacing with Subversion42399
-Node: Interfacing with Topgit43031
-Node: Interfacing with StGit44105
-Node: Using Git Directly45103
-Node: GNU Free Documentation License45501
+Node: Resetting21169
+Node: Stashing22725
+Node: Branches and Remotes23848
+Node: Branches Popup24673
+Node: Remotes Popup25976
+Node: Branches in the Branch Manager26342
+Node: Remotes in the Branch Manager27563
+Node: Wazzup28144
+Node: Merging28958
+Node: Rebasing30024
+Node: Interactive Rebasing30874
+Node: Rewriting32225
+Node: Pushing and Pulling35634
+Node: Submodules37644
+Node: Bisecting38110
+Node: Finding commits not merged upstream39383
+Node: Using Magit Extensions40687
+Node: Activating extensions40983
+Node: Interfacing with Subversion42404
+Node: Interfacing with Topgit43036
+Node: Interfacing with StGit44110
+Node: Using Git Directly45108
+Node: GNU Free Documentation License45506
 
 End Tag Table
 

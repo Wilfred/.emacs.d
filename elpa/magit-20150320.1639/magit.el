@@ -93,7 +93,6 @@ Use the function by the same name instead of this variable.")
   (require 'ediff)
   (require 'eshell)
   (require 'ido)
-  (require 'iswitchb)
   (require 'package nil t)
   (require 'view))
 
@@ -108,7 +107,6 @@ Use the function by the same name instead of this variable.")
 (declare-function ediff-cleanup-mess 'ediff)
 (declare-function eshell-parse-arguments 'eshell)
 (declare-function ido-completing-read 'ido)
-(declare-function iswitchb-read-buffer 'iswitchb)
 (declare-function package-desc-vers 'package)
 (declare-function package-desc-version 'package)
 (declare-function package-version-join 'package)
@@ -637,8 +635,7 @@ when generating large diffs."
 (defcustom magit-completing-read-function 'magit-builtin-completing-read
   "Function to be called when requesting input from the user."
   :group 'magit
-  :type '(radio (function-item magit-iswitchb-completing-read)
-                (function-item magit-ido-completing-read)
+  :type '(radio (function-item magit-ido-completing-read)
                 (function-item magit-builtin-completing-read)
                 (function :tag "Other")))
 
@@ -1792,17 +1789,6 @@ set before loading libary `magit'.")
 ;;; Utilities (1)
 ;;;; Minibuffer Input
 
-(defun magit-iswitchb-completing-read
-  (prompt choices &optional predicate require-match initial-input hist def)
-  "iswitchb-based completing-read almost-replacement."
-  (require 'iswitchb)
-  (let ((iswitchb-make-buflist-hook
-         (lambda ()
-           (setq iswitchb-temp-buflist (if (consp (car choices))
-                                           (mapcar #'car choices)
-                                         choices)))))
-    (iswitchb-read-buffer prompt (or initial-input def) require-match)))
-
 (defun magit-ido-completing-read
   (prompt choices &optional predicate require-match initial-input hist def)
   "ido-based completing-read almost-replacement."
@@ -2446,9 +2432,9 @@ involving HEAD."
   (let ((beg (magit-read-rev (format "%s range or start" op) def-beg)))
     (save-match-data
       (if (string-match "^\\(.+\\)\\.\\.\\(.+\\)$" beg)
-          (cons (match-string 1 beg) (match-string 2 beg))
+          (match-string 0 beg)
         (let ((end (magit-read-rev (format "%s end" op) def-end nil t)))
-          (if end (cons beg end) beg))))))
+          (if end (concat beg ".." end) beg))))))
 
 (defun magit-read-stash (prompt)
   (let ((n (read-number prompt 0))
@@ -6082,7 +6068,7 @@ With prefix argument, changes in staging area are kept.
 \('git stash save [--keep-index] DESCRIPTION')"
   (interactive (list (read-string "Stash description: " nil
                                   'magit-read-stash-history)))
-  (magit-run-git "stash" "save" magit-custom-options "--" description))
+  (magit-run-git-async "stash" "save" magit-custom-options "--" description))
 
 ;;;###autoload
 (defun magit-stash-snapshot ()
@@ -6227,11 +6213,10 @@ to test.  This command lets Git choose a different one."
 ;;;###autoload
 (defun magit-log (&optional range)
   (interactive)
-  (unless range (setq range "HEAD"))
   (magit-mode-setup magit-log-buffer-name nil
                     #'magit-log-mode
                     #'magit-refresh-log-buffer
-                    'oneline range magit-custom-options))
+                    'oneline (or range "HEAD") magit-custom-options))
 
 ;;;###autoload
 (defun magit-log-ranged (range)
@@ -6241,11 +6226,10 @@ to test.  This command lets Git choose a different one."
 ;;;###autoload
 (defun magit-log-long (&optional range)
   (interactive)
-  (unless range (setq range "HEAD"))
   (magit-mode-setup magit-log-buffer-name nil
                     #'magit-log-mode
                     #'magit-refresh-log-buffer
-                    'long range magit-custom-options))
+                    'long (or range "HEAD") magit-custom-options))
 
 ;;;###autoload
 (defun magit-log-long-ranged (range)

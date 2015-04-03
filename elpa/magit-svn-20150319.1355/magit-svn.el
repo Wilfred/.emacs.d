@@ -1,5 +1,4 @@
 ;;; magit-svn.el --- git-svn plug-in for Magit
-;; Version: 20140807.909
 
 ;; Copyright (C) 2010-2014  The Magit Project Developers
 ;;
@@ -9,6 +8,7 @@
 
 ;; Author: Phil Jackson <phil@shellarchive.co.uk>
 ;; Keywords: vc tools
+;; Package-Version: 20150319.1355
 ;; Package: magit-svn
 ;; Package-Requires: ((cl-lib "0.3") (magit "1.3.0"))
 

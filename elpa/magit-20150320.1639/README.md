@@ -4,48 +4,23 @@
 It's Magit!  An Emacs mode for Git
 ==================================
 
-**The Magit wiki contains a list of [frequently asked questions][faq],
-*please* do consult it.**
+**The Magit wiki contains a list of [FREQUENTLY ASKED QUESTIONS][faq],
+please do consult it.**
+
+**Magit is in [FEATURE FREEZE][roadmap], please keep that in mind
+when making feature requests.**
 
 Magit is an interface to the version control system [Git][git],
 implemented as an [Emacs][emacs] extension.
 
-Unlike the [Version Control][vc] package which is part of Emacs and
-strives to provide a unified interface to various version control
-systems, Magit only supports Git and can therefore better take
-advantage of its native features.
+Unlike the [VC][vc] package which is part of Emacs and strives to
+provide a unified interface to various version control systems, Magit
+only supports Git and can therefore better take advantage of its
+native features.
 
 Magit supports GNU Emacs 23.2 or later; 24.1 or later is recommended.
 Magit supports Git 1.7.2.5 or later; 1.8.2 or later is recommended.
 The minimal versions are those available in Debian oldstable.
-
-Feature Freeze
-==============
-
-There are currently three "versions" of Magit.  The `1.2.1` bugfix
-release which is mostly the same as `1.2.0` released in 2012.  The
-`master` branch, which the packages on Melpa and Melpa-Stable are
-built from.  This hasn't seen many major changes since February of
-this year.  And the `next` branch which contains 99% of the work I
-have done during the last eight months.
-
-It's about time that `next` is merged and that a release is created.
-For that reason I am not going to implement any new features being
-proposed now, until after I have created a release.  Magit isn't in a
-complete feature freeze yet, there are certain new features that I do
-want to be part of the next release.
-
-**No *completely* new features are going to be implemented until after
-the next release.  However some "new" features are going to make it
-into the release which replace existing but broken and/or misguided
-features.**
-
-This shouldn't keep you from making feature requests, but first
-*please* check whether that feature already exists on `next` and don't
-expect it to be implemented until after the release.  For instructions
-on how to install the `next` version of Magit see
-[this](https://github.com/magit/magit/tree/next#installation) and
-[that](https://github.com/magit/magit/issues/1220).
 
 ### Table of Contents
 
@@ -54,9 +29,7 @@ on how to install the `next` version of Magit see
 * [Contributions](#contributions)
 * [Installation](#installation)
   * [Installing from Melpa](#installing-from-melpa)
-  * [Installing from Marmalade](#installing-from-marmalade)
   * [Installing from Git](#installing-from-git)
-  * [Installing from Tarball](#installing-from-tarball)
 * [Dependencies](#dependencies)
 
 Getting Started
@@ -121,9 +94,7 @@ Magit and its dependencies.  Among other things using `package.el`
 is recommended because that automatically takes care of installing
 dependencies.
 
-Magit is available from both of the two popular Elpa repositories,
-[Marmalade][marmalade] (stable releases) and [Melpa][melpa]
-(snapshots).
+Also see [Which version should I install?][faq-which]
 
 ### Installing from Melpa
 
@@ -141,7 +112,7 @@ configure `package.el` once.
 ```lisp
 (require 'package)
 (add-to-list 'package-archives
-             '("melpa" . "http://melpa.milkbox.net/packages/") t)
+             '("melpa" . "http://melpa.org/packages/") t)
 ```
 
 Then evaluate these forms, update the package cache, and install
@@ -154,14 +125,6 @@ You might also want to have a look at the more detailed
 other things it explains how to install only some packages from Melpa
 and others from Marmalade, and how to use `package.el` with older
 versions of Emacs.
-
-### Installing from Marmalade
-
-For the time being we recommend that you install the development
-version available from Melpa, because the latest Magit release (which
-is what you get from Marmalade) is very outdated.  If you are using
-the development version of Emacs, then you have to do so, because it
-contains an incompatible change that breaks the last Magit release.
 
 ### Installing from Git
 
@@ -229,55 +192,6 @@ $ makeinfo -o magit.info magit.texi
 $ install-info --dir=dir magit.info
 ```
 
-### Installing from Tarball
-
-This is only intended for users who have been doing this sort of thing
-for years.  Installing from a tarball isn't particularly difficult but
-because we are only providing this as an alternative method we are a
-bit light on documentation, so it helps to have done this before.
-
-Also most steps have to be repeated every time you want to update.
-
-Because the latest Magit release is very outdated, please consider
-installing the development version even if tarballs are your thing.
-
-Download and unpack [magit-1.2.1.tar.gz][download]. Then build and
-install as usual:
-
-```sh
-$ wget https://github.com/magit/magit/releases/download/1.2.1/magit-1.2.1.tar.gz
-$ tar -xf magit-1.2.1.tar.gz
-$ cd magit-1.2.1
-$ make
-$ sudo make install
-```
-
-This installs the Emacs lisp libraries, as well as the prebuilt
-documentation from the tarball.  You may alternatively build the
-documentation yourself:
-
-```sh
-$ make docs
-$ sudo make install-docs
-```
-
-By default the Emacs lisp libraries are installed in
-`/usr/local/share/emacs/site-lisp/magit/`.  Unless Emacs itself is
-also installed in `/usr/local/` you have to add that directory to the
-`load-path`.
-
-```lisp
-(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/magit")
-```
-
-Then `magit` can be loaded:
-
-```lisp
-(require 'magit)
-```
-
-Add the above lines to your init file and restart Emacs.
-
 Dependencies
 ============
 
@@ -302,9 +216,6 @@ dependencies and install them manually.
 The following libraries build on third-party tools or git subcommands
 that are not installed by the Git base-package on some distributions:
 
-* `magit-stgit.el` requires [`stgit`][stgit].
-* `magit-svn.el` requires the official Git subcommand `svn`.
-* `magit-topgit.el` requires [`topgit`][topgit].
 * `magit-wip.el` requires [`git-wip`][git-wip].
 
 ### Dependencies of Tests
@@ -321,12 +232,14 @@ To run tests the following libraries are also required:
 [development]: http://github.com/magit/magit
 [download]: https://github.com/magit/magit/releases/download/1.2.1/magit-1.2.1.tar.gz
 [faq]: https://github.com/magit/magit/wiki/FAQ
+[faq-which]: https://github.com/magit/magit/wiki/FAQ#which-version-should-i-install
 [group]: https://groups.google.com/forum/?fromgroups#!forum/magit
 [issues]: https://github.com/magit/magit/issues
 [knownissues]: https://github.com/magit/magit/wiki/Known-issues
 [manual]: http://magit.github.io/documentation.html
 [owners]: https://github.com/magit?tab=members
 [pulls]: https://github.com/magit/magit/pulls
+[roadmap]: https://github.com/magit/magit/issues/1645
 [screencast]: http://vimeo.com/2871241
 [website]: http://magit.github.io
 
@@ -350,6 +263,4 @@ To run tests the following libraries are also required:
 [mastering-intro]: http://www.masteringemacs.org/article/introduction-magit-emacs-mode-git
 [melpa]: http://melpa.milkbox.net
 [melpa-intro]: http://melpa.milkbox.net/#/getting-started
-[stgit]: http://www.procode.org/stgit
-[topgit]: https://github.com/greenrd/topgit
 [vc]: http://www.gnu.org/software/emacs/manual/html_node/emacs/Version-Control.html
