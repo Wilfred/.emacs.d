@@ -22,6 +22,7 @@
         python-indent-electric-colon
         sgml-slash
         sp--self-insert-command
+        sp-remove-active-pair-overlay
         yaml-electric-backspace
         yaml-electric-dash-and-dot
         yas-expand
