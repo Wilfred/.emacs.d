@@ -95,6 +95,8 @@
 (add-to-list 'company-backends 'company-c-headers)
 (add-hook 'prog-mode-hook #'company-mode)
 
+(global-set-key (kbd "s-/") #'company-complete)
+
 ;; always spaces, never tabs
 (setq-default indent-tabs-mode nil)
 
