@@ -41,9 +41,6 @@ include the isearch word."
         (error "Internal error in isearch kill function.")))
     (isearch-exit)))
 
-(define-key isearch-mode-map [(meta z)] 'zap-to-isearch)
-
-
 ;; http://www.emacswiki.org/emacs/ZapToISearch
 (defun isearch-exit-other-end (rbeg rend)
   "Exit isearch, but at the other end of the search string.
