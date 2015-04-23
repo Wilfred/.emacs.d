@@ -765,16 +765,6 @@ byte-compilation checks).
 (add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
 #+END_SRC
 
-Flycheck is able to initialise installed packages before checking
-elisp (useful when requiring third party libraries). It does not do
-this by default, to encourage developers to use Cask instead (see
-https://github.com/flycheck/flycheck/pull/176). We switch this
-behaviour back on.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (setq-default flycheck-emacs-lisp-initialize-packages t)
-#+END_SRC
-
 By default, flycheck also runs checkdoc on elisp code. This gets in
 the way for quick throwaway elisp scripts, so we switch off checkdoc.
 

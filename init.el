@@ -299,8 +299,6 @@ Visit the file after creation."
 
 (add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
 
-(setq-default flycheck-emacs-lisp-initialize-packages t)
-
 (require 'flycheck)
 (setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers))
 
