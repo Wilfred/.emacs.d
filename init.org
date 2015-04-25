@@ -227,8 +227,13 @@ It's extremely useful to be able to move between different occurrences
 of the same symbol.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (define-key prog-mode-map (kbd "M-n") 'highlight-symbol-next)
-  (define-key prog-mode-map (kbd "M-p") 'highlight-symbol-prev)
+  (define-key prog-mode-map (kbd "M-n") #'highlight-symbol-next)
+  (define-key prog-mode-map (kbd "M-p") #'highlight-symbol-prev)
+
+  ;; It's not clear to me why c++-mode-map isn't affected by prog-mode-map,
+  ;; I suspect it's a bug.
+  (define-key c++-mode-map (kbd "M-n") #'highlight-symbol-next)
+  (define-key c++-mode-map (kbd "M-p") #'highlight-symbol-prev)
 #+END_SRC
 
 Jumping to the first occurrence of the symbol is handy for finding

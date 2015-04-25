@@ -50,8 +50,13 @@
 
 (minibuffer-depth-indicate-mode 1)
 
-(define-key prog-mode-map (kbd "M-n") 'highlight-symbol-next)
-(define-key prog-mode-map (kbd "M-p") 'highlight-symbol-prev)
+(define-key prog-mode-map (kbd "M-n") #'highlight-symbol-next)
+(define-key prog-mode-map (kbd "M-p") #'highlight-symbol-prev)
+
+;; It's not clear to me why c++-mode-map isn't affected by prog-mode-map,
+;; I suspect it's a bug.
+(define-key c++-mode-map (kbd "M-n") #'highlight-symbol-next)
+(define-key c++-mode-map (kbd "M-p") #'highlight-symbol-prev)
 
 (defun highlight-symbol-first ()
   "Jump to the first location of symbol at point."
