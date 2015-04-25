@@ -1,9 +1,10 @@
-(define-package "flycheck" "20141117.1029" "Modern on-the-fly syntax checking for GNU Emacs"
+(define-package "flycheck" "20150324.823" "Modern on-the-fly syntax checking for GNU Emacs"
   '((dash "2.4.0")
     (pkg-info "0.4")
+    (let-alist "1.0.1")
     (cl-lib "0.3")
     (emacs "24.1"))
-  :url "https://flycheck.readthedocs.org" :keywords
+  :url "https://www.flycheck.org" :keywords
   '("convenience" "languages" "tools"))
 ;; Local Variables:
 ;; no-byte-compile: t

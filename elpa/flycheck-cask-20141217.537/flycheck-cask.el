@@ -4,9 +4,9 @@
 
 ;; Author: Sebastian Wiesner <swiesner@lunaryorn.com>
 ;; URL: https://github.com/flycheck/flycheck-cask
+;; Package-Version: 20141217.537
 ;; Keywords: tools, convenience
-;; Version: 20140814.116
-;; X-Original-Version: 0.2-cvs
+;; Version: 0.3-cvs
 ;; Package-Requires: ((emacs "24.1") (flycheck "0.14") (dash "2.4.0"))
 
 ;; This file is not part of GNU Emacs.
@@ -70,12 +70,15 @@ Set `flycheck-emacs-lisp-initialize-packages' and
 `flycheck-emacs-lisp-package-user-dir' accordingly."
   (when (buffer-file-name)
     (-when-let (root-dir (locate-dominating-file (buffer-file-name) "Cask"))
-      (setq flycheck-emacs-lisp-initialize-packages t
-            flycheck-emacs-lisp-package-user-dir
-            (flycheck-cask-package-dir root-dir))
+      (setq-local flycheck-emacs-lisp-initialize-packages t)
+      (setq-local flycheck-emacs-lisp-package-user-dir
+                  (flycheck-cask-package-dir root-dir))
+      (when (eq flycheck-emacs-lisp-load-path 'inherit)
+        ;; Disable `load-path' inheritance if enabled.
+        (setq-local flycheck-emacs-lisp-load-path nil))
       (when flycheck-cask-add-root-directory
-        (add-to-list 'flycheck-emacs-lisp-load-path
-                     root-dir)))))
+        (setq-local flycheck-emacs-lisp-load-path
+                    (cons root-dir flycheck-emacs-lisp-load-path))))))
 
 (provide 'flycheck-cask)
 

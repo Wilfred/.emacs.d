@@ -1,13 +1,13 @@
 ;;; flycheck-haskell.el --- Flycheck: Cabal projects and sandboxes -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2014 Sebastian Wiesner <swiesner@lunaryorn.com>
+;; Copyright (C) 2014, 2015 Sebastian Wiesner <swiesner@lunaryorn.com>
 ;; Copyright (C) 2014 Gracjan Polak <gracjanpolak@gmail.com>
 
 ;; Author: Sebastian Wiesner <swiesner@lunaryorn.com>
 ;; URL: https://github.com/flycheck/flycheck-haskell
 ;; Keywords: tools, convenience
 ;; Version: 0.6-cvs
-;; Package-Requires: ((flycheck "0.19-cvs") (haskell-mode "13.7") (dash "2.4.0"))
+;; Package-Requires: ((flycheck "0.19-cvs") (haskell-mode "13.7") (dash "2.4.0") (let-alist "1.0.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -53,10 +53,13 @@
 
 ;;; Code:
 
+(eval-when-compile
+  (require 'rx)
+  (require 'let-alist))
+
 (require 'haskell-cabal)
 (require 'flycheck)
 (require 'dash)
-(require 'rx)
 
 
 ;;; Customization
@@ -172,33 +175,27 @@ string, or nil, if no sandbox configuration file was found."
 
 (defun flycheck-haskell-process-configuration (config)
   "Process the a Cabal CONFIG."
-  (let (search-path language-extensions)
-    (dolist (item config)
-      ;; Accumulate the settings in local variables, to preserve the order as
-      ;; emitted by the helper, and because lexical vars are faster
-      (pcase item
-        (`(,(or `build-directories `source-directories) . ,dirs)
-         (setq search-path (append search-path dirs)))
-        (`(,(or `extensions `languages) . ,exts)
-         (setq language-extensions (append language-extensions exts)))))
-    ;; Prepend our dumped settings to any custom search path that is already set
-    (setq flycheck-ghc-search-path
-          (append search-path flycheck-ghc-search-path)
-          flycheck-ghc-language-extensions
-          (append language-extensions flycheck-ghc-language-extensions))))
+  (let-alist config
+    (setq-local flycheck-ghc-search-path
+                (append .build-directories .source-directories
+                        flycheck-ghc-search-path))
+    (setq-local flycheck-ghc-language-extensions
+                (append .extensions .languages
+                        flycheck-ghc-language-extensions))))
 
 (defun flycheck-haskell-configure ()
   "Set paths and package database for the current project."
   (interactive)
-  (when (buffer-file-name)
+  (when (and (buffer-file-name) (file-directory-p default-directory))
     (-when-let* ((cabal-file (haskell-cabal-find-file))
                  (config (flycheck-haskell-get-configuration cabal-file)))
       (flycheck-haskell-process-configuration config))
 
     (-when-let* ((config (flycheck-haskell-find-sandbox-config))
                  (package-db (flycheck-haskell-get-package-db config)))
-      (push package-db flycheck-ghc-package-databases)
-      (setq flycheck-ghc-no-user-package-database t))))
+      (setq-local flycheck-ghc-package-databases
+                  (cons package-db flycheck-ghc-package-databases))
+      (setq-local flycheck-ghc-no-user-package-database t))))
 
 ;;;###autoload
 (defun flycheck-haskell-setup ()
