@@ -55,6 +55,7 @@
 
 ;; It's not clear to me why c++-mode-map isn't affected by prog-mode-map,
 ;; I suspect it's a bug.
+(require 'cc-mode)
 (define-key c++-mode-map (kbd "M-n") #'highlight-symbol-next)
 (define-key c++-mode-map (kbd "M-p") #'highlight-symbol-prev)
 
