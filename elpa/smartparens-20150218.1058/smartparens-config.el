@@ -1,6 +1,6 @@
 ;;; smartparens-config.el --- Default configuration for smartparens package
 
-;; Copyright (C) 2013-2014 Matus Goljer
+;; Copyright (C) 2013-2015 Matus Goljer
 
 ;; Author: Matus Goljer <matus.goljer@gmail.com>
 ;; Maintainer: Matus Goljer <matus.goljer@gmail.com>
@@ -51,7 +51,7 @@
 ;; original definition of closing pair.
 (sp-pair "'" nil :unless '(sp-point-after-word-p))
 
-(defun sp-lisp-invalid-hyperlink-p (_ action _)
+(defun sp-lisp-invalid-hyperlink-p (_1 action _2)
   (when (eq action 'navigate)
     (or (and (looking-at "\\sw\\|\\s_")
              (save-excursion
@@ -82,6 +82,12 @@
                                      (not (sp-point-in-string-or-comment))))
                                 (t (not (sp-point-in-string-or-comment)))))))
 
+;; TODO: this should only be active in docstring, otherwise we want
+;; the regexp completion \\{\\}.  To handle this feature, we must
+;; allow multiple pairs on same opening (therefore, the unique ID must
+;; become the opening and closing pair)
+(sp-local-pair 'emacs-lisp-mode "\\\\{" "}" :when '(sp-in-docstring-p))
+
 ;; NOTE: Normally, `sp-local-pair' accepts list of modes (or a single
 ;; mode) as a first argument.  The macro `sp-with-modes' adds this
 ;; automatically.  If you want to call sp-local-pair outside this
@@ -94,6 +100,7 @@
 (eval-after-load "lua-mode"      '(require 'smartparens-lua))
 (eval-after-load "ruby-mode"     '(require 'smartparens-ruby))
 (eval-after-load "enh-ruby-mode" '(require 'smartparens-ruby))
+(eval-after-load "python-mode"   '(require 'smartparens-python))
 
 (provide 'smartparens-config)
 
