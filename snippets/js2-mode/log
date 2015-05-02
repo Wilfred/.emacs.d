@@ -1,5 +1,0 @@
-# -*- coding: utf-8 -*-
-# name: log
-# key: log
-# --
-console.log("${0:}");
