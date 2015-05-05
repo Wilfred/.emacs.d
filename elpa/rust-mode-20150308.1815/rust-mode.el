@@ -1,7 +1,7 @@
 ;;; rust-mode.el --- A major emacs mode for editing Rust source code
 
-;; Version: 20141111.1026
-;; X-Original-Version: 0.2.0
+;; Version: 0.2.0
+;; Package-Version: 20150308.1815
 ;; Author: Mozilla
 ;; Url: https://github.com/rust-lang/rust
 ;; Keywords: languages
@@ -11,7 +11,8 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'misc))
+(eval-when-compile (require 'misc)
+                   (require 'rx))
 
 ;; for GNU Emacs < 24.3
 (eval-when-compile
@@ -32,7 +33,9 @@
     (modify-syntax-entry ?\" "\"" table)
     (modify-syntax-entry ?\\ "\\" table)
 
-    ;; _ is a word-char
+    ;; mark _ as a word constituent so that identifiers
+    ;; such as xyz_type don't cause type to be highlighted
+    ;; as a keyword
     (modify-syntax-entry ?_ "w" table)
 
     ;; Comments
@@ -40,6 +43,13 @@
     (modify-syntax-entry ?*  ". 23"   table)
     (modify-syntax-entry ?\n "> b"    table)
     (modify-syntax-entry ?\^m "> b"   table)
+
+    table))
+
+(defvar rust-mode-character-literal-syntax-table
+  (let ((table (make-syntax-table rust-mode-syntax-table)))
+    (modify-syntax-entry ?' "\"" table)
+    (modify-syntax-entry ?\" "_" table)
 
     table))
 
@@ -51,6 +61,11 @@
 (defcustom rust-indent-offset 4
   "Indent Rust code by this number of spaces."
   :type 'integer
+  :group 'rust-mode)
+
+(defcustom rust-indent-method-chain nil
+  "Indent Rust method chains, aligned by the '.' operators"
+  :type 'boolean
   :group 'rust-mode)
 
 (defun rust-paren-level () (nth 0 (syntax-ppss)))
@@ -72,8 +87,8 @@
     ;; open bracket ends the line
     (when (not (looking-at "[[:blank:]]*\\(?://.*\\)?$"))
       (when (looking-at "[[:space:]]")
-	(forward-word 1)
-	(backward-word 1))
+    (forward-word 1)
+    (backward-word 1))
       (current-column))))
 
 (defun rust-rewind-to-beginning-of-current-level-expr ()
@@ -82,6 +97,54 @@
     (while (> (rust-paren-level) current-level)
       (backward-up-list)
       (back-to-indentation))))
+
+(defun rust-align-to-method-chain ()
+  (save-excursion
+    ;; for method-chain alignment to apply, we must be looking at
+    ;; another method call or field access or something like
+    ;; that. This avoids rather "eager" jumps in situations like:
+    ;;
+    ;; {
+    ;;     something.foo()
+    ;; <indent>
+    ;;
+    ;; Without this check, we would wind up with the cursor under the
+    ;; `.`. In an older version, I had the inverse of the current
+    ;; check, where we checked for situations that should NOT indent,
+    ;; vs checking for the one situation where we SHOULD. It should be
+    ;; clear that this is more robust, but also I find it mildly less
+    ;; annoying to have to press tab again to align to a method chain
+    ;; than to have an over-eager indent in all other cases which must
+    ;; be undone via tab.
+    
+    (when (looking-at (concat "\s*\." rust-re-ident))
+      (forward-line -1)
+      (end-of-line)
+
+      (let
+          ;; skip-dot-identifier is used to position the point at the
+          ;; `.` when looking at something like
+          ;;
+          ;;      foo.bar
+          ;;         ^   ^
+          ;;         |   |
+          ;;         |  position of point
+          ;;       returned offset      
+          ;;
+          ((skip-dot-identifier
+            (lambda ()
+              (when (looking-back (concat "\\." rust-re-ident))
+                (backward-word 1)
+                (backward-char)
+                (- (current-column) rust-indent-offset)))))
+        (cond
+         ;; foo.bar(...)
+         ((looking-back ")")
+          (backward-list 1)
+          (funcall skip-dot-identifier))
+
+         ;; foo.bar
+         (t (funcall skip-dot-identifier)))))))
 
 (defun rust-mode-indent-line ()
   (interactive)
@@ -98,11 +161,62 @@
                    ;; the inside of it correctly relative to the outside.
                    (if (= 0 level)
                        0
-                     (save-excursion
-                       (backward-up-list)
-                       (rust-rewind-to-beginning-of-current-level-expr)
-                       (+ (current-column) rust-indent-offset)))))
+                     (or
+                      (when rust-indent-method-chain
+                        (rust-align-to-method-chain))
+                      (save-excursion
+                        (rust-rewind-irrelevant)
+                        (backward-up-list)
+                        (rust-rewind-to-beginning-of-current-level-expr)
+                        (+ (current-column) rust-indent-offset))))))
              (cond
+              ;; Indent inside a non-raw string only if the the previous line
+              ;; ends with a backslash that is is inside the same string
+              ((nth 3 (syntax-ppss))
+               (let*
+                   ((string-begin-pos (nth 8 (syntax-ppss)))
+                    (end-of-prev-line-pos (when (> (line-number-at-pos) 1)
+                                            (save-excursion
+                                              (forward-line -1)
+                                              (end-of-line)
+                                              (point)))))
+                 (when
+                     (and
+                      ;; If the string begins with an "r" it's a raw string and
+                      ;; we should not change the indentation
+                      (/= ?r (char-after string-begin-pos))
+
+                      ;; If we're on the first line this will be nil and the
+                      ;; rest does not apply
+                      end-of-prev-line-pos
+
+                      ;; The end of the previous line needs to be inside the
+                      ;; current string...
+                      (> end-of-prev-line-pos string-begin-pos)
+
+                      ;; ...and end with a backslash
+                      (= ?\\ (char-before end-of-prev-line-pos)))
+
+                   ;; Indent to the same level as the previous line, or the
+                   ;; start of the string if the previous line starts the string
+                   (if (= (line-number-at-pos end-of-prev-line-pos) (line-number-at-pos string-begin-pos))
+                       ;; The previous line is the start of the string.
+                       ;; If the backslash is the only character after the
+                       ;; string beginning, indent to the next indent
+                       ;; level.  Otherwise align with the start of the string.
+                       (if (> (- end-of-prev-line-pos string-begin-pos) 2)
+                           (save-excursion
+                             (goto-char (+ 1 string-begin-pos))
+                             (current-column))
+                         baseline)
+
+                     ;; The previous line is not the start of the string, so
+                     ;; match its indentation.
+                     (save-excursion
+                       (goto-char end-of-prev-line-pos)
+                       (back-to-indentation)
+                       (current-column))))))
+              
               ;; A function return type is indented to the corresponding function arguments
               ((looking-at "->")
                (save-excursion
@@ -112,7 +226,7 @@
 
               ;; A closing brace is 1 level unindended
               ((looking-at "}") (- baseline rust-indent-offset))
-
+              
               ;; Doc comments in /** style with leading * indent to line up the *s
               ((and (nth 4 (syntax-ppss)) (looking-at "*"))
                (+ 1 baseline))
@@ -158,13 +272,14 @@
                     ;; so add one additional indent level
                     (+ baseline rust-indent-offset))))))))))
 
-    ;; If we're at the beginning of the line (before or at the current
-    ;; indentation), jump with the indentation change.  Otherwise, save the
-    ;; excursion so that adding the indentations will leave us at the
-    ;; equivalent position within the line to where we were before.
-    (if (<= (current-column) (current-indentation))
-        (indent-line-to indent)
-      (save-excursion (indent-line-to indent)))))
+    (when indent
+      ;; If we're at the beginning of the line (before or at the current
+      ;; indentation), jump with the indentation change.  Otherwise, save the
+      ;; excursion so that adding the indentations will leave us at the
+      ;; equivalent position within the line to where we were before.
+      (if (<= (current-column) (current-indentation))
+          (indent-line-to indent)
+        (save-excursion (indent-line-to indent))))))
 
 
 ;; Font-locking definitions and helpers
@@ -178,7 +293,7 @@
     "if" "impl" "in"
     "let" "loop"
     "match" "mod" "move" "mut"
-    "priv" "proc" "pub"
+    "priv" "pub"
     "ref" "return"
     "self" "static" "struct" "super"
     "true" "trait" "type"
@@ -193,7 +308,7 @@
     "u64" "i64"
 
     "f32" "f64"
-    "float" "int" "uint"
+    "float" "int" "uint" "isize" "usize"
     "bool"
     "str" "char"))
 
@@ -231,14 +346,6 @@
      ;; Lifetimes like `'foo`
      (,(concat "'" (rust-re-grab rust-re-ident) "[^']") 1 font-lock-variable-name-face)
 
-     ;; Character constants, since they're not treated as strings
-     ;; in order to have sufficient leeway to parse 'lifetime above.
-     (,(rust-re-grab "'[^']'") 1 font-lock-string-face)
-     (,(rust-re-grab "'\\\\[nrt]'") 1 font-lock-string-face)
-     (,(rust-re-grab "'\\\\x[[:xdigit:]]\\{2\\}'") 1 font-lock-string-face)
-     (,(rust-re-grab "'\\\\u[[:xdigit:]]\\{4\\}'") 1 font-lock-string-face)
-     (,(rust-re-grab "'\\\\U[[:xdigit:]]\\{8\\}'") 1 font-lock-string-face)
-
      ;; CamelCase Means Type Or Constructor
      (,(rust-re-grabword rust-re-CamelCase) 1 font-lock-type-face)
      )
@@ -254,6 +361,75 @@
              ("use" . font-lock-type-face)
              ("fn" . font-lock-function-name-face)
              ("static" . font-lock-constant-face)))))
+
+(defun rust-look-for-raw-string (bound)
+  ;; Find a raw string, but only if it's not in the middle of another string or
+  ;; a comment
+  
+  (let* ((raw-str-regexp
+          (rx
+           (seq
+            ;; The "r" starts the raw string.  Capture it as group 1 to mark it as such syntactically:
+            (group "r")
+
+            ;; Then either:
+            (or
+             ;; a sequence at least one "#" (followed by quote).  Capture all
+             ;; but the last "#" as group 2 for this case.
+             (seq (group (* "#")) "#\"")
+
+             ;; ...or a quote without any "#".  Capture it as group 3. This is
+             ;; used later to match the opposite quote only if this capture
+             ;; occurred
+             (group "\""))
+
+            ;; The contents of the string:
+            (*? anything)
+
+            ;; If there are any backslashes at the end of the string, capture
+            ;; them as group 4 so we can suppress the normal escape syntax
+            ;; parsing:
+            (group (* "\\"))
+
+            ;; Then the end of the string--the backreferences ensure that we
+            ;; only match the kind of ending that corresponds to the beginning
+            ;; we had:
+            (or
+             ;; There were "#"s - capture the last one as group 5 to mark it as
+             ;; the end of the string:
+             (seq "\"" (backref 2) (group "#"))
+
+             ;; No "#"s - capture the ending quote (using a backref to group 3,
+             ;; so that we can't match a quote if we had "#"s) as group 6
+             (group (backref 3))))))
+         ;; If it matches, it ends up with the starting character of the string
+         ;; as group 1, any ending backslashes as group 4, and the ending
+         ;; character as either group 5 or group 6.
+
+         (ret-list (save-excursion
+                    (let* ((match-end (re-search-forward raw-str-regexp bound t))
+                           (ret-list (and match-end (list match-end (match-beginning 0) (match-data) (point)))))
+                      (when (and ret-list
+                                 (save-excursion
+                                   (goto-char (nth 1 ret-list))
+                                   (not (rust-in-str-or-cmnt))))
+                        ret-list)))))
+    (when ret-list
+      (goto-char (nth 3 ret-list))
+      (set-match-data (nth 2 ret-list))
+      (nth 0 ret-list))))
+
+(defvar rust-mode-font-lock-syntactic-keywords
+  (append
+   ;; Handle single quoted character literals:
+   (mapcar (lambda (re) (list re '(1 "\"") '(2 "\"")))
+           '("\\('\\)[^']\\('\\)"
+             "\\('\\)\\\\['nrt\"\\]\\('\\)"
+             "\\('\\)\\\\x[[:xdigit:]]\\{2\\}\\('\\)"
+             "\\('\\)\\\\u[[:xdigit:]]\\{4\\}\\('\\)"
+             "\\('\\)\\\\U[[:xdigit:]]\\{8\\}\\('\\)"))
+   ;; Handle raw strings:
+   `((rust-look-for-raw-string (1 "|") (4 "_" nil t) (5 "|" nil t) (6 "|" nil t)))))
 
 (defun rust-fill-prefix-for-comment-start (line-start)
   "Determine what to use for `fill-prefix' based on what is at the beginning of a line."
@@ -333,7 +509,7 @@
     (funcall body)))
 
 (defun rust-find-fill-prefix ()
-  (rust-with-comment-fill-prefix (lambda () fill-prefix)))
+  (rust-in-comment-paragraph (lambda () (rust-with-comment-fill-prefix (lambda () fill-prefix)))))
 
 (defun rust-fill-paragraph (&rest args)
   "Special wrapping for `fill-paragraph' to handle multi-line comments with a * prefix on each line."
@@ -398,7 +574,7 @@ This is written mainly to be used as `beginning-of-defun-function' for Rust.
 Don't move to the beginning of the line. `beginning-of-defun',
 which calls this, does that afterwards."
   (interactive "p")
-  (re-search-backward (concat "^\\(" rust-top-item-beg-re "\\)\\b")
+  (re-search-backward (concat "^\\(" rust-top-item-beg-re "\\)\\_>")
                       nil 'move (or arg 1)))
 
 (defun rust-end-of-defun ()
@@ -411,17 +587,97 @@ Assume that this is called after beginning-of-defun. So point is
 at the beginning of the defun body.
 
 This is written mainly to be used as `end-of-defun-function' for Rust."
-  (interactive "p")
+  (interactive)
   ;; Find the opening brace
-  (re-search-forward "[{]" nil t)
-  (goto-char (match-beginning 0))
-  ;; Go to the closing brace
-  (forward-sexp))
+  (if (re-search-forward "[{]" nil t)
+      (progn
+        (goto-char (match-beginning 0))
+        ;; Go to the closing brace
+        (condition-case err
+            (forward-sexp)
+          (scan-error
+           ;; The parentheses are unbalanced; instead of being unable to fontify, just jump to the end of the buffer
+           (goto-char (point-max)))))
+    ;; There is no opening brace, so consider the whole buffer to be one "defun"
+    (goto-char (point-max))))
+
+;; Angle-bracket matching. This is kind of a hack designed to deal
+;; with the fact that we can't add angle-brackets to the list of
+;; matching characters unconditionally. Basically we just have some
+;; special-case code such that whenever `>` is typed, we look
+;; backwards to find a matching `<` and highlight it, whether or not
+;; this is *actually* appropriate. This could be annoying so it is
+;; configurable (but on by default because it's awesome).
+
+(defcustom rust-blink-matching-angle-brackets t
+  "Blink matching `<` (if any) when `>` is typed"
+  :type 'boolean
+  :group 'rust-mode)
+
+(defvar rust-point-before-matching-angle-bracket 0)
+
+(defvar rust-matching-angle-bracker-timer nil)
+
+(defun rust-find-matching-angle-bracket ()
+  (save-excursion
+    (let ((angle-brackets 1)
+          (start-point (point))
+          (invalid nil))
+      (while (and
+              ;; didn't find a match
+              (> angle-brackets 0)
+              ;; we have no guarantee of a match, so give up eventually
+              (< (- start-point (point)) blink-matching-paren-distance)
+              ;; didn't hit the top of the buffer
+              (> (point) (point-min))
+              ;; didn't hit something else weird like a `;`
+              (not invalid))
+        (backward-char 1)
+        (cond
+         ((looking-at ">")
+           (setq angle-brackets (+ angle-brackets 1)))
+          ((looking-at "<")
+           (setq angle-brackets (- angle-brackets 1)))
+          ((looking-at "[;{]")
+           (setq invalid t))))
+      (cond
+       ((= angle-brackets 0) (point))
+       (t nil)))))
+
+(defun rust-restore-point-after-angle-bracket ()
+  (goto-char rust-point-before-matching-angle-bracket)
+  (when rust-matching-angle-bracker-timer
+    (cancel-timer rust-matching-angle-bracker-timer))
+  (setq rust-matching-angle-bracker-timer nil)
+  (remove-hook 'pre-command-hook 'rust-restore-point-after-angle-bracket))
+
+(defun rust-match-angle-bracket-hook ()
+  "If the most recently inserted character is a `>`, briefly moves point to matching `<` (if any)."
+  (interactive)
+  (when (and rust-blink-matching-angle-brackets
+             (looking-back ">"))
+    (let ((matching-angle-bracket-point (save-excursion
+                                          (backward-char 1)
+                                          (rust-find-matching-angle-bracket))))
+      (when matching-angle-bracket-point
+        (progn
+          (setq rust-point-before-matching-angle-bracket (point))
+          (goto-char matching-angle-bracket-point)
+          (add-hook 'pre-command-hook 'rust-restore-point-after-angle-bracket)
+          (setq rust-matching-angle-bracker-timer
+                (run-at-time blink-matching-delay nil 'rust-restore-point-after-angle-bracket)))))))
+
+(defun rust-match-angle-bracket ()
+  "The point should be placed on a `>`. Finds the matching `<` and moves point there."
+  (interactive)
+  (let ((matching-angle-bracket-point (rust-find-matching-angle-bracket)))
+    (if matching-angle-bracket-point
+        (goto-char matching-angle-bracket-point)
+      (message "no matching angle bracket found"))))
 
 ;; For compatibility with Emacs < 24, derive conditionally
 (defalias 'rust-parent-mode
   (if (fboundp 'prog-mode) 'prog-mode 'fundamental-mode))
-
 
 ;;;###autoload
 (define-derived-mode rust-mode rust-parent-mode "Rust"
@@ -433,7 +689,7 @@ This is written mainly to be used as `end-of-defun-function' for Rust."
   (setq-local indent-line-function 'rust-mode-indent-line)
 
   ;; Fonts
-  (setq-local font-lock-defaults '(rust-mode-font-lock-keywords nil nil nil nil))
+  (setq-local font-lock-defaults '(rust-mode-font-lock-keywords nil nil nil nil (font-lock-syntactic-keywords . rust-mode-font-lock-syntactic-keywords)))
 
   ;; Misc
   (setq-local comment-start "// ")
@@ -449,11 +705,14 @@ This is written mainly to be used as `end-of-defun-function' for Rust."
   (setq-local fill-paragraph-function 'rust-fill-paragraph)
   (setq-local fill-forward-paragraph-function 'rust-fill-forward-paragraph)
   (setq-local adaptive-fill-function 'rust-find-fill-prefix)
+  (setq-local adaptive-fill-first-line-regexp "")
   (setq-local comment-multi-line t)
   (setq-local comment-line-break-function 'rust-comment-indent-new-line)
   (setq-local imenu-generic-expression rust-imenu-generic-expression)
   (setq-local beginning-of-defun-function 'rust-beginning-of-defun)
-  (setq-local end-of-defun-function 'rust-end-of-defun))
+  (setq-local end-of-defun-function 'rust-end-of-defun)
+  (setq-local parse-sexp-lookup-properties t)
+  (add-hook 'post-self-insert-hook 'rust-match-angle-bracket-hook))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-mode))
