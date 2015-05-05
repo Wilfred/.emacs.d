@@ -4,8 +4,8 @@
 
 ;; Author: James J Porter <porterjamesj@gmail.com>
 ;; URL: http://github.com/porterjamesj/virtualenvwrapper.el
-;; Version: 20141026.1301
-;; X-Original-Version: 20131514
+;; Package-Version: 20150316.1607
+;; Version: 20131514
 ;; Keywords: python, virtualenv, virtualenvwrapper
 ;; Package-Requires: ((dash "1.5.0") (s "1.6.1"))
 
@@ -225,12 +225,16 @@ interactively."
         (venv-deactivate)
         ;; then switch
         (setq venv-current-name name))
-    (progn
-      ;; if without argument, deactivate first
+    ;; if without argument, deactivate first
+    (let ((old-venv venv-current-name))
       (venv-deactivate)
       ;; then read
-      (setq venv-current-name
-            (venv-read-name "Virtualenv to switch to: "))))
+      (setq
+       venv-current-name
+       (venv-read-name
+        (if old-venv
+            (format "Choose a virtualenv (currently %s): " old-venv)
+          "Choose a virtualenv: ")))))
   (run-hooks 'venv-preactivate-hook)
   (setq venv-current-dir
         (venv-name-to-dir venv-current-name))
