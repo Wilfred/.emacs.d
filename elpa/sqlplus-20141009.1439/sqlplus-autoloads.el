@@ -1,10 +1,9 @@
 ;;; sqlplus-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (sqlplus-shutdown sqlplus) "sqlplus" "sqlplus.el"
-;;;;;;  (21510 17236 997271 441000))
+;;;### (autoloads nil "sqlplus" "sqlplus.el" (21777 59848 75278 435000))
 ;;; Generated autoloads from sqlplus.el
 
 (autoload 'sqlplus "sqlplus" "\
@@ -25,16 +24,9 @@ Kill input, output and process buffer for specified CONNECT-STRING.
 
 ;;;***
 
-;;;### (autoloads nil nil ("sqlplus-pkg.el") (21510 17237 145625
-;;;;;;  583000))
-
-;;;***
-
-(provide 'sqlplus-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; sqlplus-autoloads.el ends here

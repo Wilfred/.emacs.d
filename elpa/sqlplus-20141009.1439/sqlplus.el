@@ -1,5 +1,4 @@
 ;;; sqlplus.el --- User friendly interface to SQL*Plus and support for PL/SQL compilation
-;; Version: 20140902.1004
 
 ;; Copyright (C) 2007, 2008 Peter Karpiuk, Scott Tiger S.A.
 
@@ -8,6 +7,7 @@
 ;; Created: 25 Nov 2007
 ;; Version 0.9.1
 ;; Keywords: sql sqlplus oracle plsql
+;; Package-Version: 20141009.1439
 
 ;; GNU Emacs is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published
