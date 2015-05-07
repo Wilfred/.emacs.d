@@ -1036,8 +1036,7 @@ TODO: document the rest of our HTML configuration.
    
 ** CSS
 
-Currently I'm working on projects that require tabs for CSS
-indentation.
+Typically I work on projects that use 4 spaces for CSS indenetation.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (add-hook 'css-mode-hook
