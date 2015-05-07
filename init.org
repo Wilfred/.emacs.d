@@ -1061,6 +1061,12 @@ brackets.
   (add-hook 'css-mode-hook 'smartparens-mode)
 #+END_SRC
 
+Company does a great job with completion for CSS, so use it here.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-hook 'css-mode-hook #'company-mode)
+#+END_SRC
+
 ** Less (CSS)
 
 The less compiler doesn't give much feedback, but it does gives us a
