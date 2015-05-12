@@ -166,7 +166,7 @@ If a prefix argument is given, don't change the kill-ring."
 (recentf-mode t)
 
 ;; remember this many files
-(setq recentf-max-saved-items 200)
+(setq recentf-max-saved-items 500)
 
 ;; from http://www.masteringemacs.org/article/find-files-faster-recent-files-package
 (defun ido-recentf-open ()
@@ -485,6 +485,8 @@ Visit the file after creation."
 (add-hook 'css-mode-hook 'rainbow-mode)
 
 (add-hook 'css-mode-hook 'smartparens-mode)
+
+(add-hook 'css-mode-hook #'company-mode)
 
 (require 'less-css-mode)
 (add-hook 'less-css-mode-hook 'flymake-mode)
