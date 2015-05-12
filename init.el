@@ -260,6 +260,10 @@ Visit the file after creation."
 (define-key flycheck-mode-map (kbd "<f8>") 'flycheck-previous-error)
 (define-key flycheck-mode-map (kbd "<f9>") 'flycheck-next-error)
 
+(defadvice flycheck-next-error (around wh/flycheck-next-error-push-mark activate)
+  (push-mark)
+  ad-do-it)
+
 (require 'undo-tree)
 (global-undo-tree-mode)
 

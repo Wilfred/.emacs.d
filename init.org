@@ -633,6 +633,16 @@ We use the same movement keys for flycheck as we do for flymake.
   (define-key flycheck-mode-map (kbd "<f9>") 'flycheck-next-error)
 #+END_SRC
 
+flycheck-next-error doesn't push the mark, so we can't use pop-mark to
+go back to our previous position. We define and activate advice to fix
+that.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defadvice flycheck-next-error (around wh/flycheck-next-error-push-mark activate)
+    (push-mark)
+    ad-do-it)
+#+END_SRC
+
 ** Undoing
 
 Emacs' undo facility is excellent, but undo-tree is even better.
