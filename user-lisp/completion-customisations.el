@@ -98,6 +98,8 @@
 ;; Offer completion for as littile as one character.
 (setq company-minimum-prefix-length 1)
 
+(company-quickhelp-mode 1)
+
 (global-set-key (kbd "s-/") #'company-complete)
 
 ;; always spaces, never tabs
