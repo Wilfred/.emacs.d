@@ -221,6 +221,13 @@ not. We display the recursion level in the minibuffer to avoid confusion.
 
 ** Moving Around
 
+C-v and M-v don't undo each other, because the point position isn't
+preservered. Fix that.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq scroll-preserve-screen-position 'always)
+#+END_SRC
+
 *** By Symbol
 
 It's extremely useful to be able to move between different occurrences

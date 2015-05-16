@@ -50,6 +50,8 @@
 
 (minibuffer-depth-indicate-mode 1)
 
+(setq scroll-preserve-screen-position 'always)
+
 (define-key prog-mode-map (kbd "M-n") #'highlight-symbol-next)
 (define-key prog-mode-map (kbd "M-p") #'highlight-symbol-prev)
 
