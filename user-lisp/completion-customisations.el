@@ -108,4 +108,14 @@
 ;; Always use 'y or n' for questions, since 'yes' is tedious to type over and over.
 (fset 'yes-or-no-p 'y-or-n-p)
 
+;; helm
+(require 'helm)
+(setq helm-autoresize-min-height 50
+      helm-autoresize-max-height 50
+      helm-split-window-default-side 'below
+      helm-split-window-in-side-p t)
+
+;; TODO: Emacs is highlighting this incorrectly:
+'other
+
 (provide 'completion-customisations)
