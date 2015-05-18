@@ -4,8 +4,10 @@
 ;; flycheck.
 (add-hook 'c-mode-hook #'c-turn-on-eldoc-mode)
 
+;; TODO: this doesn't belong here.
 (require 'which-func)
-(setq which-func-modes (list #'c-mode))
+(setq which-func-modes (list #'c-mode #'python-mode))
+
 (add-hook 'c-mode-hook #'which-function-mode)
 
 ;; C++
