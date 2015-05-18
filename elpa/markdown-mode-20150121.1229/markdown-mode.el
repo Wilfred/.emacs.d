@@ -26,8 +26,8 @@
 ;; Author: Jason R. Blevins <jrblevin@sdf.org>
 ;; Maintainer: Jason R. Blevins <jrblevin@sdf.org>
 ;; Created: May 24, 2007
-;; Version: 20140914.1012
-;; X-Original-Version: 2.0
+;; Version: 2.0
+;; Package-Version: 20150121.1229
 ;; Keywords: Markdown, GitHub Flavored Markdown, itex
 ;; URL: http://jblevins.org/projects/markdown-mode/
 
@@ -71,7 +71,8 @@
 ;;
 ;; markdown-mode is also available in several package managers, including:
 ;;
-;;    * Debian and Ubuntu Linux: [emacs-goodies-el][]
+;;    * Debian Linux: [emacs-goodies-el][]
+;;    * Ubuntu Linux: [emacs-goodies-el][emacs-goodies-el-ubuntu]
 ;;    * RedHat and Fedora Linux: [emacs-goodies][]
 ;;    * NetBSD: [textproc/markdown-mode][]
 ;;    * Arch Linux (AUR): [emacs-markdown-mode-git][]
@@ -79,9 +80,10 @@
 ;;    * FreeBSD: [textproc/markdown-mode.el][freebsd-port]
 ;;
 ;;  [emacs-goodies-el]: http://packages.debian.org/emacs-goodies-el
-;;  [emacs-goodies]: https://admin.fedoraproject.org/pkgdb/acls/name/emacs-goodies
+;;  [emacs-goodies-el-ubuntu]: http://packages.ubuntu.com/search?keywords=emacs-goodies-el
+;;  [emacs-goodies]: https://apps.fedoraproject.org/packages/emacs-goodies
 ;;  [textproc/markdown-mode]: http://pkgsrc.se/textproc/markdown-mode
-;;  [emacs-markdown-mode-git]: http://aur.archlinux.org/packages.php?ID=30389
+;;  [emacs-markdown-mode-git]: https://aur.archlinux.org/packages/emacs-goodies-el/
 ;;  [macports-package]: https://trac.macports.org/browser/trunk/dports/editors/markdown-mode.el/Portfile
 ;;  [macports-ticket]: http://trac.macports.org/ticket/35716
 ;;  [freebsd-port]: http://svnweb.freebsd.org/ports/head/textproc/markdown-mode.el
