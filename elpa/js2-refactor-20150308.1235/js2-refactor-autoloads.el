@@ -3,24 +3,24 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "js2-refactor" "js2-refactor.el" (21644 14743
-;;;;;;  612914 552000))
+;;;### (autoloads nil "js2-refactor" "js2-refactor.el" (21777 59923
+;;;;;;  103250 42000))
 ;;; Generated autoloads from js2-refactor.el
 
 (autoload 'js2r-add-keybindings-with-prefix "js2-refactor" "\
-
+Add js2r keybindings using the prefix PREFIX.
 
 \(fn PREFIX)" nil nil)
 
 (autoload 'js2r-add-keybindings-with-modifier "js2-refactor" "\
-
+Add js2r keybindings using the modifier MODIFIER.
 
 \(fn MODIFIER)" nil nil)
 
 ;;;***
 
-;;;### (autoloads nil "js2r-vars" "js2r-vars.el" (21644 14743 362923
-;;;;;;  753000))
+;;;### (autoloads nil "js2r-vars" "js2r-vars.el" (21777 59922 833257
+;;;;;;  260000))
 ;;; Generated autoloads from js2r-vars.el
 
 (autoload 'js2r-extract-var "js2r-vars" "\
@@ -33,7 +33,7 @@
 ;;;### (autoloads nil nil ("js2-refactor-pkg.el" "js2r-conditionals.el"
 ;;;;;;  "js2r-conveniences.el" "js2r-formatting.el" "js2r-functions.el"
 ;;;;;;  "js2r-helpers.el" "js2r-iife.el" "js2r-paredit.el" "js2r-wrapping.el")
-;;;;;;  (21644 14743 724954 408000))
+;;;;;;  (21777 59923 200814 940000))
 
 ;;;***
 

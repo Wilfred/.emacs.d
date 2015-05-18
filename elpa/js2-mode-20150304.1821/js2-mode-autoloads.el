@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "js2-imenu-extras" "js2-imenu-extras.el" (21613
-;;;;;;  8151 318241 197000))
+;;;### (autoloads nil "js2-imenu-extras" "js2-imenu-extras.el" (21777
+;;;;;;  59929 193087 412000))
 ;;; Generated autoloads from js2-imenu-extras.el
 
 (autoload 'js2-imenu-extras-setup "js2-imenu-extras" "\
@@ -19,8 +19,8 @@ Toggle Imenu support for frameworks and structural patterns.
 
 ;;;***
 
-;;;### (autoloads nil "js2-mode" "js2-mode.el" (21613 8151 368240
-;;;;;;  557000))
+;;;### (autoloads nil "js2-mode" "js2-mode.el" (21777 59929 303084
+;;;;;;  475000))
 ;;; Generated autoloads from js2-mode.el
 
 (autoload 'js2-minor-mode "js2-mode" "\
@@ -38,8 +38,8 @@ Major mode for editing JavaScript code.
 
 ;;;***
 
-;;;### (autoloads nil nil ("js2-mode-pkg.el") (21613 8151 486315
-;;;;;;  184000))
+;;;### (autoloads nil nil ("js2-mode-pkg.el") (21777 59929 428106
+;;;;;;  217000))
 
 ;;;***
 

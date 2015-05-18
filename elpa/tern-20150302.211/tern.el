@@ -3,8 +3,8 @@
 
 ;; Author: Marijn Haverbeke
 ;; URL: http://ternjs.net/
-;; Version: 20141204.242
-;; X-Original-Version: 0.0.1
+;; Package-Version: 20150302.211
+;; Version: 0.0.1
 ;; Package-Requires: ((json "1.2") (cl-lib "0.5") (emacs "24"))
 
 (require 'cl-lib)
@@ -92,7 +92,8 @@ list of strings, giving the binary name and arguments.")
 
 (defun tern-start-server (c)
   (let* ((default-directory tern-project-dir)
-         (proc (apply #'start-process "Tern" nil tern-command))
+         (cmd (if (member "--strip-crs" tern-command) tern-command (append tern-command '("--strip-crs"))))
+         (proc (apply #'start-process "Tern" nil cmd))
          (all-output ""))
     (set-process-query-on-exit-flag proc nil)
     (set-process-sentinel proc (lambda (_proc _event)
@@ -167,11 +168,15 @@ list of strings, giving the binary name and arguments.")
         callback runner)
     (setf callback (lambda (port err)
                      (if port
-                         (tern-req port doc runner)
+                         (condition-case err
+                             (tern-req port doc runner)
+                           (error (funcall runner (list err) nil)))
                        (funcall f err nil))))
     (setf runner (lambda (err data)
                    (with-current-buffer buffer
-                     (cond ((and err (eq (cl-cadar err) 'connection-failed) (not retrying))
+                     (cond ((and err (not retrying)
+                                 (or (eq (cl-cadar err) 'connection-failed)
+                                     (eq (caar err) 'file-error)))
                             (setf retrying t)
                             (let ((old-port tern-known-port))
                               (setf tern-known-port nil)
@@ -424,7 +429,7 @@ list of strings, giving the binary name and arguments.")
               '(font-lock-comment-face font-lock-comment-delimiter-face font-lock-string-face))
       nil
     (let ((around (buffer-substring-no-properties (max 1 (1- (point))) (min (1+ (point)) (point-max)))))
-      (string-match "\\sw" around))))
+      (string-match "\\sw\\|)\\|]" around))))
 
 (defun tern-find-definition (&optional prompt-var)
   (interactive)

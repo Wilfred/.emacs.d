@@ -3,7 +3,7 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "tern" "tern.el" (21644 56691 713975 413000))
+;;;### (autoloads nil "tern" "tern.el" (21777 59845 95360 51000))
 ;;; Generated autoloads from tern.el
 
 (autoload 'tern-use-server "tern" "\
