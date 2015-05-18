@@ -95,7 +95,7 @@
 (add-to-list 'company-backends 'company-c-headers)
 (add-hook 'prog-mode-hook #'company-mode)
 
-;; Offer completion for as littile as one character.
+;; Offer completion for as little as one character.
 (setq company-minimum-prefix-length 1)
 
 (company-quickhelp-mode 1)
