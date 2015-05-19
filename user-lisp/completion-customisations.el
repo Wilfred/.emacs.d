@@ -115,8 +115,12 @@
       helm-split-window-default-side 'below
       helm-split-window-in-side-p t)
 
+;; Use helm for projectile features, primarily C-x C-g (finding
+;; files) and C-c p p (switching projects).
 (require 'projectile)
 (setq projectile-completion-system 'helm)
+
+(global-set-key (kbd "M-x") #'helm-M-x)
 
 ;; TODO: Emacs is highlighting this incorrectly:
 'other

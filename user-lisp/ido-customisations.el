@@ -52,11 +52,4 @@
       (unless (file-exists-p dir)
         (make-directory dir)))))
 
-(require 'smex)
-(smex-initialize)
-(global-set-key (kbd "M-x") 'smex)
-(global-set-key (kbd "M-X") 'smex-major-mode-commands)
-;; Old traditional M-x
-(global-set-key (kbd "C-c M-x") 'execute-extended-command)
-
 (provide 'ido-customisations)
