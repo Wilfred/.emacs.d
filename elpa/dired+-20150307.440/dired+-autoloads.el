@@ -3,7 +3,7 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "dired+" "dired+.el" (21727 51931 951109 717000))
+;;;### (autoloads nil "dired+" "dired+.el" (21777 59969 632013 985000))
 ;;; Generated autoloads from dired+.el
 
 (defvar diredp-auto-focus-frame-for-thumbnail-tooltip-flag nil "\
@@ -16,6 +16,14 @@ This option has no effect if `diredp-image-preview-in-tooltip' is nil.
 It also has no effect for Emacs versions prior to Emacs 22.")
 
 (custom-autoload 'diredp-auto-focus-frame-for-thumbnail-tooltip-flag "dired+" t)
+
+(defvar diredp-dwim-any-frame-flag pop-up-frames "\
+*Non-nil means the target directory can be in a window in another frame.
+Only visible frames are considered.
+This is used by ``dired-dwim-target-directory'.
+This option has no effect for Emacs versions before Emacs 22.")
+
+(custom-autoload 'diredp-dwim-any-frame-flag "dired+" t)
 
 (defvar diredp-image-preview-in-tooltip (or (and (boundp 'image-dired-thumb-size) image-dired-thumb-size) 100) "\
 *Whether and what kind of image preview to show in a tooltip.
@@ -263,7 +271,7 @@ Like using \\<dired-mode-map>`\\[dired-maybe-insert-subdir]' at each marked dire
 Insert the marked subdirs, including those in marked subdirs.
 Like `diredp-insert-subdirs', but act recursively on subdirs.
 The subdirs inserted are those that are marked in the current Dired
-buffer, or all subdirs in the directory if none are marked.  Marked
+buffer, or ALL subdirs in the directory if none are marked.  Marked
 subdirectories are handled recursively in the same way (their marked
 subdirs are inserted...).
 
@@ -532,6 +540,27 @@ subdirectories are handled recursively in the same way.
 
 \(fn &optional ARG)" t nil)
 
+(autoload 'diredp-mark-files-regexp-recursive "dired+" "\
+Mark all files matching REGEXP, including those in marked subdirs.
+Like `dired-mark-files-regexp' but act recursively on marked subdirs.
+Directories `.' and `..' are never marked.
+
+A non-negative prefix arg means to UNmark the files instead.
+
+A non-positive prefix arg means to ignore subdir markings and act
+instead on ALL subdirs.  That is, mark all matching files in this
+directory and all descendant directories.
+
+REGEXP is an Emacs regexp, not a shell wildcard.  Thus, use `\\.o$' for
+object files--just `.o' will mark more than you might think.
+
+REGEXP is added to `regexp-search-ring', for regexp search.
+
+Note: If there is more than one Dired buffer for a given subdirectory
+then only the first such is used.
+
+\(fn REGEXP &optional MARKER-CHAR IGNORE-MARKS-P)" t nil)
+
 (autoload 'diredp-capitalize-recursive "dired+" "\
 Rename marked files, including in marked subdirs, by capitalizing them.
 Like `diredp-capitalize', but act recursively on subdirs.
@@ -570,6 +599,16 @@ With a prefix argument, ignore all marks - include all files in this
 Dired buffer and all subdirs, recursively.
 
 \(fn &optional IGNORE-MARKS-P)" t nil)
+
+(autoload 'diredp-do-delete-recursive "dired+" "\
+Delete marked (not flagged) files, including in marked subdirs.
+Like `dired-do-delete' but act recursively on subdirs.
+
+The files to be deleted are those that are marked in the current Dired
+buffer, or all files in the directory if none are marked.  Marked
+subdirectories are handled recursively in the same way.
+
+\(fn ARG)" t nil)
 
 (autoload 'diredp-do-move-recursive "dired+" "\
 Move marked files, including in marked subdirs, to a given directory.
@@ -645,6 +684,7 @@ Dired buffer and all subdirs, recursively.
 
 (autoload 'diredp-do-redisplay-recursive "dired+" "\
 Redisplay marked file lines, including those in marked subdirs.
+Non-nil MSGP means show status messages.
 Like `dired-do-redisplay' with no args, but act recursively on
 subdirs.
 
