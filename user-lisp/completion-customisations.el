@@ -115,6 +115,9 @@
       helm-split-window-default-side 'below
       helm-split-window-in-side-p t)
 
+(require 'projectile)
+(setq projectile-completion-system 'helm)
+
 ;; TODO: Emacs is highlighting this incorrectly:
 'other
 
