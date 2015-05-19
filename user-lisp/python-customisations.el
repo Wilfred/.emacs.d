@@ -84,10 +84,13 @@
 (define-key python-mode-map (kbd "M-.") 'anaconda-mode-goto-definitions)
 (define-key python-mode-map (kbd "M-,") 'anaconda-nav-pop-marker)
 
+;; Use ipython, if available.
 ;; from http://emacs.stackexchange.com/q/4161
-(when (executable-find "ipython2")
-  (setq
-   python-shell-interpreter "ipython2"))
+(cond
+ ((executable-find "ipython2")
+  (setq python-shell-interpreter "ipython2"))
+ ((executable-find "ipython")
+  (setq python-shell-interpreter "ipython")))
 
 ;; Emacs 25, as of 1fcc552ac27503c502a9a6e6cf06268e6018db51,
 ;; fixes a number of issues with sending single line regions that are indented.
