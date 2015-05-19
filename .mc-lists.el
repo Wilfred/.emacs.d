@@ -23,6 +23,7 @@
         sgml-slash
         sp--self-insert-command
         sp-remove-active-pair-overlay
+        wh/decrement-number-decimal
         wh/increment-number-decimal
         yaml-electric-backspace
         yaml-electric-dash-and-dot
