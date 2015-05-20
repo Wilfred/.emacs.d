@@ -114,6 +114,8 @@
       helm-autoresize-max-height 50
       helm-split-window-default-side 'below
       helm-split-window-in-side-p t)
+;; Use helm wherever possible, e.g. for C-h f.
+(helm-mode 1)
 
 ;; Use helm for projectile features, primarily C-x C-g (finding
 ;; files) and C-c p p (switching projects).
