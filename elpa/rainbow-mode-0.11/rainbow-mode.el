@@ -1,10 +1,10 @@
 ;;; rainbow-mode.el --- Colorize color names in buffers
 
-;; Copyright (C) 2010-2014 Free Software Foundation, Inc
+;; Copyright (C) 2010-2015 Free Software Foundation, Inc
 
 ;; Author: Julien Danjou <julien@danjou.info>
 ;; Keywords: faces
-;; Version: 0.10
+;; Version: 0.11
 
 ;; This file is part of GNU Emacs.
 
@@ -1050,6 +1050,9 @@ If the percentage value is above 100, it's converted to 100."
         (b (* (string-to-number (match-string-no-properties 3)) 255.0)))
     (rainbow-colorize-match (format "#%02X%02X%02X" r g b))))
 
+(defvar ansi-color-context)
+(defvar xterm-color-current)
+
 (defun rainbow-colorize-ansi ()
   "Return a matched string propertized with ansi color face."
   (let ((xterm-color? (featurep 'xterm-color))
@@ -1160,10 +1163,21 @@ This will fontify with colors the string like \"#aabbcc\" or \"blue\"."
   (progn
     (if rainbow-mode
         (rainbow-turn-on)
-      (rainbow-turn-off))))
+      (rainbow-turn-off))
+    ;; Call font-lock-mode to refresh the buffer when used e.g. interactively
+    (font-lock-mode 1)))
 
 ;;;; ChangeLog:
 
+;; 2015-03-06  Julien Danjou  <julien@danjou.info>
+;; 
+;; 	rainbow: fix font-lock-mode refresh
+;; 
+;; 2014-10-15  Stefan Monnier  <monnier@iro.umontreal.ca>
+;; 
+;; 	* packages/rainbow-mode/rainbow-mode.el (ansi-color-context)
+;; 	(xterm-color-current): Declare.
+;; 
 ;; 2014-09-07  Julien Danjou  <julien@danjou.info>
 ;; 
 ;; 	rainbow-mode: support float in CSS and limit to 100%
