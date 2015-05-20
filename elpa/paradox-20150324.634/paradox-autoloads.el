@@ -3,16 +3,12 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "paradox" "paradox.el" (21613 8112 818733 698000))
+;;;### (autoloads nil "paradox" "paradox.el" (21777 59877 874466
+;;;;;;  967000))
 ;;; Generated autoloads from paradox.el
 
-(autoload 'paradox--refresh-star-count "paradox" "\
-Download the star-count file and populate the respective variable.
-
-\(fn)" t nil)
-
 (autoload 'paradox-list-packages "paradox" "\
-Improved version of `package-list-packages'. The heart of paradox.
+Improved version of `package-list-packages'. The heart of Paradox.
 Function is equivalent to `package-list-packages' (including the
 prefix NO-FETCH), but the resulting Package Menu is improved in
 several ways.
@@ -30,6 +26,21 @@ for packages.
 4. Adds useful information in the mode-line.
 
 \(fn NO-FETCH)" t nil)
+
+(autoload 'paradox-upgrade-packages "paradox" "\
+Upgrade all packages. No questions asked.
+This function is equivalent to `list-packages', followed by a
+`package-menu-mark-upgrades' and a `package-menu-execute'. Except
+the user isn't asked to confirm deletion of packages.
+
+If `paradox-execute-asynchronously' is non-nil, part of this
+operation may be performed in the background.
+
+The NO-FETCH prefix argument is passed to `list-packages'. It
+prevents re-download of information about new versions. It does
+not prevent downloading the actual packages (obviously).
+
+\(fn &optional NO-FETCH)" t nil)
 
 (autoload 'paradox-require "paradox" "\
 A replacement for `require' which also installs the feature if it is absent.
@@ -52,8 +63,9 @@ Passing a non-nil REFRESH argument forces this update.
 
 ;;;***
 
-;;;### (autoloads nil nil ("paradox-compat.el" "paradox-pkg.el")
-;;;;;;  (21613 8112 940835 885000))
+;;;### (autoloads nil nil ("paradox-commit-list.el" "paradox-core.el"
+;;;;;;  "paradox-execute.el" "paradox-github.el" "paradox-menu.el"
+;;;;;;  "paradox-pkg.el") (21777 59878 57943 224000))
 
 ;;;***
 
