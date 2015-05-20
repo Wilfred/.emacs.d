@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "projectile" "projectile.el" (21718 13235 830315
-;;;;;;  95000))
+;;;### (autoloads nil "projectile" "projectile.el" (21777 59869 404696
+;;;;;;  764000))
 ;;; Generated autoloads from projectile.el
 
 (autoload 'projectile-cache-current-file "projectile" "\
@@ -197,7 +197,7 @@ See `def-projectile-commander-method' for defining new methods.
 \(fn)" t nil)
 
 (defvar projectile-mode-line '(:eval (format " Projectile[%s]" (projectile-project-name))) "\
-Mode line ligher for Projectile.
+Mode line lighter for Projectile.
 
 The value of this variable is a mode line template as in
 `mode-line-format'.  See Info Node `(elisp)Mode Line Format' for
