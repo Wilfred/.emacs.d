@@ -5,7 +5,8 @@
   (call-interactively #'org-babel-tangle)
   ;; Export as HTML 5, and include our styling overrides.
   (let ((org-html-doctype "html5")
-        (org-html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"init.css\" />"))
+        (org-html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"init.css\" />")
+        (org-html-htmlize-output-type 'css))
     (call-interactively #'org-html-export-to-html)))
 
 (add-to-list 'load-path "~/.emacs.d/user-lisp/")

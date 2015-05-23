@@ -7,3 +7,28 @@ body {
 pre {
     font-size: 14px;
 }
+
+/* Styles loosely based on the colours used on my blog. */
+.org-keyword {
+    font-weight: 700;
+}
+
+.org-highlight-quoted-symbol, .org-highlight-quoted-quote {
+    color: #008080;
+}
+
+.org-function-name {
+    color: #900;
+}
+
+.org-doc {
+    color: #000080;
+}
+
+.org-string {
+    color: #990073;
+}
+
+.org-comment, .org-comment-delimiter {
+    color: #998;
+}
