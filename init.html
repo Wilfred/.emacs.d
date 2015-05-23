@@ -4,9 +4,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>init</title>
-<!-- 2015-03-13 Fri 23:30 -->
+<!-- 2015-05-23 Sat 09:50 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Wilfred Hughes" />
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   .title  { text-align: center; }
@@ -252,12 +253,6 @@ licensed, see <a href="COPYING">COPYING</a>.
 This file is a literate programming document written with org-mode and
 org-mode-babel. You can view init.html in a web browser, or read
 init.org in Emacs.
-</p>
-
-<p>
-By default, all the sections in this document are collapsed. You can
-expand a header by pressing `&lt;TAB&gt;' when point is on that header. You
-can expand all headers by pressing `C-u C-u C-u &lt;TAB&gt;'.
 </p>
 
 <p>
@@ -589,7 +584,19 @@ not. We display the recursion level in the minibuffer to avoid confusion.
 <div id="outline-container-sec-3-5" class="outline-3">
 <h3 id="sec-3-5"><span class="section-number-3">3.5</span> Moving Around</h3>
 <div class="outline-text-3" id="text-3-5">
-</div><div id="outline-container-sec-3-5-1" class="outline-4">
+<p>
+C-v and M-v don't undo each other, because the point position isn't
+preservered. Fix that.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setq scroll-preserve-screen-position <span style="color: #8ae234;">'</span><span style="color: #8ae234;">always</span><span style="color: #ffffff;">)</span>
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-3-5-1" class="outline-4">
 <h4 id="sec-3-5-1"><span class="section-number-4">3.5.1</span> By Symbol</h4>
 <div class="outline-text-4" id="text-3-5-1">
 <p>
@@ -599,8 +606,14 @@ of the same symbol.
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-n"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">highlight-symbol-next</span><span style="color: #ffffff;">)</span>
-<span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-p"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">highlight-symbol-prev</span><span style="color: #ffffff;">)</span>
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>define-key prog-mode-map <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-n"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">#'</span><span style="color: #8ae234;">highlight-symbol-next</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>define-key prog-mode-map <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-p"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">#'</span><span style="color: #8ae234;">highlight-symbol-prev</span><span style="color: #ffffff;">)</span>
+
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">It's not clear to me why c++-mode-map isn't affected by prog-mode-map,</span>
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">I suspect it's a bug.</span>
+<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">require</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">cc-mode</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>define-key c++-mode-map <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-n"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">#'</span><span style="color: #8ae234;">highlight-symbol-next</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>define-key c++-mode-map <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-p"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">#'</span><span style="color: #8ae234;">highlight-symbol-prev</span><span style="color: #ffffff;">)</span>
 </pre>
 </div>
 
@@ -623,7 +636,7 @@ where a symbol was imported.
        nil t<span style="color: #00ff00;">)</span>
       <span style="color: #00ff00;">(</span>beginning-of-thing <span style="color: #8ae234;">'</span><span style="color: #8ae234;">symbol</span><span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
 
-<span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-P"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">highlight-symbol-first</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>define-key prog-mode-map <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-P"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">#'</span><span style="color: #8ae234;">highlight-symbol-first</span><span style="color: #ffffff;">)</span>
 </pre>
 </div>
 
@@ -655,10 +668,11 @@ a symbol.
 <h4 id="sec-3-5-2"><span class="section-number-4">3.5.2</span> By indentation</h4>
 <div class="outline-text-4" id="text-3-5-2">
 <p>
-`C-a' normally moves us to the beginning of the line
-unconditionally. This version is more useful, as it moves to the
-first non-whitespace character if we're already at the beginning of
-the line. Repeated use of `C-a' toggles between these two positions.
+<a href="(describe-key%20(kbd%20"C-a"))">C-a</a> normally moves us to the beginning of the line unconditionally
+with <a href="(describe-function%20#'move-beginning-of-line)">move-beginning-of-line</a>. This version is more useful, as it moves
+to the first non-whitespace character if we're already at the
+beginning of the line. Repeated use of `C-a' toggles between these two
+positions.
 </p>
 
 <div class="org-src-container">
@@ -851,22 +865,6 @@ I like to use smartparens in all programming modes.
 <span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">yaml-mode-hook</span> <span style="color: #8ae234;">#'</span><span style="color: #8ae234;">smartparens-mode</span><span style="color: #ffffff;">)</span>
 </pre>
 </div>
-
-<p>
-Smartparens allows you to automatically escape string quotation marks
-inside strings. This is handy, but smartparens has a known bug:
-<a href="https://github.com/Fuco1/smartparens/issues/77">https://github.com/Fuco1/smartparens/issues/77</a>
-</p>
-
-<p>
-Instead, we simply switch off this behaviour.
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setq sp-autoescape-string-quote nil<span style="color: #ffffff;">)</span>
-</pre>
-</div>
 </div>
 </div>
 </div>
@@ -878,8 +876,7 @@ Instead, we simply switch off this behaviour.
 <h4 id="sec-3-9-1"><span class="section-number-4">3.9.1</span> Opening</h4>
 <div class="outline-text-4" id="text-3-9-1">
 <p>
-It's useful to be able to quickly open files that we opened before. We
-define a function for this:
+It's useful to be able to quickly open files that we've opened recently.
 </p>
 
 <div class="org-src-container">
@@ -890,27 +887,21 @@ define a function for this:
 <span style="color: #ffffff;">(</span>recentf-mode t<span style="color: #ffffff;">)</span>
 
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">remember this many files</span>
-<span style="color: #ffffff;">(</span>setq recentf-max-saved-items 200<span style="color: #ffffff;">)</span>
-
-<span style="color: #888a85;">;; </span><span style="color: #888a85;">from http://www.masteringemacs.org/article/find-files-faster-recent-files-package</span>
-<span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defun</span> <span style="color: #edd400; font-weight: bold;">ido-recentf-open</span> <span style="color: #00ffff;">()</span>
-  <span style="color: #888a85;">"Use `</span><span style="color: #8ae234;">ido-completing-read</span><span style="color: #888a85;">' to \\[</span><span style="color: #8ae234;">find-file</span><span style="color: #888a85;">] a recent file"</span>
-  <span style="color: #00ffff;">(</span>interactive<span style="color: #00ffff;">)</span>
-  <span style="color: #00ffff;">(</span><span style="color: #729fcf; font-weight: bold;">if</span> <span style="color: #ffff00;">(</span>find-file <span style="color: #00ff00;">(</span>ido-completing-read <span style="color: #ad7fa8; font-style: italic;">"Find recent file: "</span> recentf-list<span style="color: #00ff00;">)</span><span style="color: #ffff00;">)</span>
-      <span style="color: #ffff00;">(</span>message <span style="color: #ad7fa8; font-style: italic;">"Opening file..."</span><span style="color: #ffff00;">)</span>
-    <span style="color: #ffff00;">(</span>message <span style="color: #ad7fa8; font-style: italic;">"Aborting"</span><span style="color: #ffff00;">)</span><span style="color: #00ffff;">)</span><span style="color: #ffffff;">)</span>
+<span style="color: #ffffff;">(</span>setq recentf-max-saved-items 500<span style="color: #ffffff;">)</span>
 </pre>
 </div>
 
 <p>
-We bind this to `C-x C-r' (mnemonic: recent). By default, `C-x C-r' is bound to
-`find-file-read-only', which isn't very useful. (You can set any file
-as read only with `read-only-mode', mapped to `C-x C-q'.)
+We bind a find command to `C-x C-r' (mnemonic: recent), as proprosed by
+<a href="https://www.masteringemacs.org/article/find-files-faster-recent-files-package">https://www.masteringemacs.org/article/find-files-faster-recent-files-package</a>. By
+default, `C-x C-r' is bound to `find-file-read-only', which isn't very
+useful. (You can set any file as read only with `read-only-mode',
+mapped to `C-x C-q'.)
 </p>
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"C-x C-r"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">ido-recentf-open</span><span style="color: #ffffff;">)</span>
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"C-x C-r"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">#'</span><span style="color: #8ae234;">helm-recentf</span><span style="color: #ffffff;">)</span>
 </pre>
 </div>
 
@@ -1172,6 +1163,20 @@ We use the same movement keys for flycheck as we do for flymake.
 <span style="color: #ffffff;">(</span>define-key flycheck-mode-map <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"&lt;f9&gt;"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flycheck-next-error</span><span style="color: #ffffff;">)</span>
 </pre>
 </div>
+
+<p>
+flycheck-next-error doesn't push the mark, so we can't use pop-mark to
+go back to our previous position. We define and activate advice to fix
+that.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #729fcf; font-weight: bold;">defadvice</span> <span style="color: #edd400; font-weight: bold;">flycheck-next-error</span> <span style="color: #00ffff;">(</span>around wh/flycheck-next-error-push-mark activate<span style="color: #00ffff;">)</span>
+  <span style="color: #00ffff;">(</span>push-mark<span style="color: #00ffff;">)</span>
+  ad-do-it<span style="color: #ffffff;">)</span>
+</pre>
+</div>
 </div>
 </div>
 </div>
@@ -1370,20 +1375,6 @@ byte-compilation checks).
 <div class="org-src-container">
 
 <pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">emacs-lisp-mode-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">flycheck-mode</span><span style="color: #ffffff;">)</span>
-</pre>
-</div>
-
-<p>
-Flycheck is able to initialise installed packages before checking
-elisp (useful when requiring third party libraries). It does not do
-this by default, to encourage developers to use Cask instead (see
-<a href="https://github.com/flycheck/flycheck/pull/176">https://github.com/flycheck/flycheck/pull/176</a>). We switch this
-behaviour back on.
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setq-default flycheck-emacs-lisp-initialize-packages t<span style="color: #ffffff;">)</span>
 </pre>
 </div>
 
@@ -1742,8 +1733,7 @@ TODO: document the rest of our HTML configuration.
 <h3 id="sec-3-18"><span class="section-number-3">3.18</span> CSS</h3>
 <div class="outline-text-3" id="text-3-18">
 <p>
-Currently I'm working on projects that require tabs for CSS
-indentation.
+Typically I work on projects that use 4 spaces for CSS indenetation.
 </p>
 
 <div class="org-src-container">
@@ -1776,6 +1766,16 @@ brackets.
 <div class="org-src-container">
 
 <pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">css-mode-hook</span> <span style="color: #8ae234;">'</span><span style="color: #8ae234;">smartparens-mode</span><span style="color: #ffffff;">)</span>
+</pre>
+</div>
+
+<p>
+Company does a great job with completion for CSS, so use it here.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>add-hook <span style="color: #8ae234;">'</span><span style="color: #8ae234;">css-mode-hook</span> <span style="color: #8ae234;">#'</span><span style="color: #8ae234;">company-mode</span><span style="color: #ffffff;">)</span>
 </pre>
 </div>
 </div>
@@ -2022,6 +2022,10 @@ annoying to accidentally close Emacs, so warn first.
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">There are a few applications, such as crontab, that require a</span>
 <span style="color: #888a85;">;; </span><span style="color: #888a85;">trailing new line. To be safe, always leave a trailing newline.</span>
 <span style="color: #ffffff;">(</span>setq-default require-final-newline t<span style="color: #ffffff;">)</span>
+
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">cycle through amounts of spacing</span>
+<span style="color: #888a85;">;; </span><span style="color: #888a85;">http://pragmaticemacs.com/emacs/cycle-spacing/</span>
+<span style="color: #ffffff;">(</span>global-set-key <span style="color: #00ffff;">(</span>kbd <span style="color: #ad7fa8; font-style: italic;">"M-SPC"</span><span style="color: #00ffff;">)</span> <span style="color: #8ae234;">#'</span><span style="color: #8ae234;">cycle-spacing</span><span style="color: #ffffff;">)</span>
 </pre>
 </div>
 </div>
@@ -2029,8 +2033,9 @@ annoying to accidentally close Emacs, so warn first.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2015-03-13 Fri 23:30</p>
-<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.4.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="author">Author: Wilfred Hughes</p>
+<p class="date">Created: 2015-05-23 Sat 09:50</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
