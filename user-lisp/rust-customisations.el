@@ -1,4 +1,4 @@
-(require 'flymake-rust)
-(add-hook 'rust-mode-hook 'flymake-rust-load)
+(require 'flycheck)
+(add-hook 'flycheck-mode-hook #'flycheck-rust-setup)
 
 (provide 'rust-customisations)
