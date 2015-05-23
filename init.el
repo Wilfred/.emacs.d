@@ -651,3 +651,7 @@ The FILE-NAME defaults to the one used in the URL."
 ;; There are a few applications, such as crontab, that require a
 ;; trailing new line. To be safe, always leave a trailing newline.
 (setq-default require-final-newline t)
+
+;; cycle through amounts of spacing
+;; http://pragmaticemacs.com/emacs/cycle-spacing/
+(global-set-key (kbd "M-SPC") #'cycle-spacing)
