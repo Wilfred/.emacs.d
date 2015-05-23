@@ -21,25 +21,18 @@ pressing `C-c '' (press `C-c '' again to escape).
 ** Generating This Document
 
 init.org is the source file that I edit, and init.el and init.html are
-generated from it.
+generated from it. We define a convenience function to generate these files.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (defun export-init-org ()
+  (defun wh/export-init ()
     "Generate init.html and init.html from the current init.org file."
     (interactive)
-    (call-interactively 'org-babel-tangle)
-    (call-interactively 'org-export-as-html))
+    (call-interactively #'org-babel-tangle)
+    ;; Export as HTML 5, and include our styling overrides.
+    (let ((org-html-doctype "html5")
+          (org-html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"init.css\" />"))
+      (call-interactively #'org-html-export-to-html)))
 #+END_SRC
-
-We include an extra CSS file in the export HTML, so we can modify the
-styling.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (setq org-export-html-style-extra "<link rel=\"stylesheet\" type=\"text/css\" href=\"init.css\" />")
-#+END_SRC
-
-TODO: move this to the end of the generated init.el, so as not to slow
-down the loading of styling.
 
 * Installing locally
 

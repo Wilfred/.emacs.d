@@ -3,9 +3,10 @@
   "Generate init.html and init.html from the current init.org file."
   (interactive)
   (call-interactively #'org-babel-tangle)
-  (call-interactively #'org-html-export-to-html))
-
-(setq org-export-html-style-extra "<link rel=\"stylesheet\" type=\"text/css\" href=\"init.css\" />")
+  ;; Export as HTML 5, and include our styling overrides.
+  (let ((org-html-doctype "html5")
+        (org-html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"init.css\" />"))
+    (call-interactively #'org-html-export-to-html)))
 
 (add-to-list 'load-path "~/.emacs.d/user-lisp/")
 
