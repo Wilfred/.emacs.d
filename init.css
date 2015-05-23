@@ -1,6 +1,9 @@
 body {
-    width: 650px;
-    margin: 0px auto;
+    width: 750px;
 
-    font-family: Verdana,Helvetica,sans-serif;
+    font-family: Verdana, Helvetica, sans-serif;
+}
+
+pre {
+    font-size: 14px;
 }
