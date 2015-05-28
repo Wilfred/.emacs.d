@@ -117,6 +117,9 @@
 ;; Use helm wherever possible, e.g. for C-h f.
 (helm-mode 1)
 
+;; Don't bother showing helm in the mode line.
+(diminish #'helm-mode)
+
 ;; Use helm for projectile features, primarily C-x C-g (finding
 ;; files) and C-c p p (switching projects).
 (require 'projectile)
