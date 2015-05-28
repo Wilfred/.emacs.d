@@ -1,10 +1,10 @@
 ;;; paredit.el --- minor mode for editing parentheses  -*- Mode: Emacs-Lisp -*-
 
-;; Copyright (C) 2005--2014 Taylor R. Campbell
+;; Copyright (C) 2005--2015 Taylor R. Campbell
 
 ;; Author: Taylor R. Campbell
-;; Version: 20140128.1248
-;; X-Original-Version: 24 (beta)
+;; Version: 25beta
+;; Package-Version: 20150217.713
 ;; Created: 2005-07-31
 ;; Keywords: lisp
 
@@ -48,7 +48,7 @@
 ;;; Start Paredit Mode on the fly with `M-x enable-paredit-mode RET',
 ;;; or always enable it in a major mode `M' (e.g., `lisp') with:
 ;;;
-;;;   (add-hook M-mode-hook 'enable-paredit-mode)
+;;;   (add-hook 'M-mode-hook 'enable-paredit-mode)
 ;;;
 ;;; Customize paredit using `eval-after-load':
 ;;;
@@ -123,7 +123,7 @@
 
 ;;; This assumes Unix-style LF line endings.
 
-(defconst paredit-version 24)
+(defconst paredit-version 25)
 (defconst paredit-beta-p t)
 
 (eval-and-compile
@@ -193,6 +193,9 @@ If point was on indentation, it stays in indentation."
 
 ;;;; Minor Mode Definition
 
+(defvar paredit-lighter " Paredit"
+  "Mode line lighter Paredit Mode.")
+
 (defvar paredit-mode-map (make-sparse-keymap)
   "Keymap for the paredit minor mode.")
 
@@ -209,7 +212,7 @@ Paredit behaves badly if parentheses are unbalanced, so exercise
   caution when forcing Paredit Mode to be enabled, and consider
   fixing unbalanced parentheses instead.
 \\<paredit-mode-map>"
-  :lighter " Paredit"
+  :lighter paredit-lighter
   ;; Setting `paredit-mode' to false here aborts enabling Paredit Mode.
   (if (and paredit-mode
            (not current-prefix-arg))
