@@ -10,8 +10,8 @@
 ;; Maintainer: Le Wang
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
-;; Version: 20140918.1934
-;; X-Original-Version: 0.1
+;; Version: 0.1
+;; Package-Version: 20150108.1235
 ;;           By: Le Wang
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
@@ -290,18 +290,19 @@ Specifically, make sure point is at beginning of match."
 
 ;;;###autoload
 (defun jump-char-forward (arg &optional backward)
-  "With UNIVERSAL prefix arg <C-u>, invoke `ace-jump-line-mode'
+  "Prompt for a character, and jump to the next occurrence of that character.
+Invokes `ace-jump-line-mode' when called with prefix.
 
+When jump-char is active:
 
-; next
+| key     | does                                                                           |
+|---------+--------------------------------------------------------------------------------|
+| <char>  | move to the next match in the current direction.                               |
+| ;       | next match forward (towards end of buffer) see `jump-char-forward-key'         |
+| ,       | next match backward (towards beginning of buffer) see `jump-char-backward-key' |
+| C-c C-c | invoke `ace-jump-mode' if available                                            |
 
-, previous
-
-search_char next
-
-press current binding for `jump-char-forward' / `jump-char-backward' to reuse
-last input.
-"
+Any other key stops jump-char and edits as normal."
   (interactive "P")
   (if (consp arg)
       (ace-jump-line-mode)
