@@ -12,8 +12,8 @@
 ;;              Aaron Smith <aaron-lua@gelatinous.com>.
 ;;
 ;; URL:         http://immerrr.github.com/lua-mode
-;; Version: 20141025.1746
-;; X-Original-Version:     20130419
+;; Package-Version: 20150303.1303
+;; Version:     20130419
 ;;
 ;; This file is NOT part of Emacs.
 ;;
@@ -45,11 +45,41 @@
 ;; indentation, syntactical font-locking, running interactive shell,
 ;; interacting with `hs-minor-mode' and online documentation lookup.
 
-;; Interesting variables:
-;; - `lua-indent-level': indentation offset
-;; - `lua-default-application': command to use as the interpreter
-;; - `lua-default-command-switches': arguments to the interpreter
-;; - `lua-search-url-prefix': url to use for documentation lookup
+;; The following variables are available for customization (see more via
+;; `M-x customize-group lua`):
+
+;; - Var `lua-indent-level':
+;;   indentation offset in spaces
+;; - Var `lua-indent-string-contents':
+;;   set to `t` if you like to have contents of multiline strings to be
+;;   indented like comments
+;; - Var `lua-mode-hook':
+;;   list of functions to execute when lua-mode is initialized
+;; - Var `lua-documentation-url':
+;;   base URL for documentation lookup
+;; - Var `lua-documentation-function': function used to
+;;   show documentation (`eww` is a viable alternative for Emacs 25)
+
+;; These are variables/commands that operate on Lua subprocess:
+
+;; - Var `lua-default-application':
+;;   command to start up the subprocess (REPL)
+;; - Var `lua-default-command-switches':
+;;   arguments to pass to the subprocess on startup (make sure `-i` is there
+;;   if you expect working with Lua shell interactively)
+;; - Cmd `lua-start-process': start new REPL process, usually happens automatically
+;; - Cmd `lua-kill-process': kill current REPL process
+
+;; These are variables/commands for interaction with Lua subprocess:
+
+;; - Cmd `lua-show-process-buffer': switch to REPL buffer
+;; - Cmd `lua-hide-process-buffer': hide window showing REPL buffer
+;; - Var `lua-always-show': show REPL buffer after sending something
+;; - Cmd `lua-send-buffer': send whole buffer
+;; - Cmd `lua-send-current-line': send current line
+;; - Cmd `lua-send-defun': send current top-level function
+;; - Cmd `lua-send-region': send active region
+;; - Cmd `lua-restart-with-whole-file': restart REPL and send whole buffer
 
 ;; See "M-x apropos-command ^lua-" for a list of commands.
 ;; See "M-x customize-group lua" for a list of customizable variables.
@@ -223,8 +253,19 @@ Should be a list of strings."
   :type 'boolean
   :group 'lua)
 
-(defcustom lua-search-url-prefix "http://www.lua.org/manual/5.1/manual.html#pdf-"
-  "*URL at which to search for documentation on a word"
+(defcustom lua-documentation-function 'browse-url
+  "Function used to fetch the Lua reference manual."
+  :type `(radio (function-item browse-url)
+                ,@(when (fboundp 'eww) '((function-item eww)))
+                ,@(when (fboundp 'w3m-browse-url) '((function-item w3m-browse-url)))
+                (function :tag "Other function"))
+  :group 'lua)
+
+(defcustom lua-documentation-url
+  (or (and (file-readable-p "/usr/share/doc/lua/manual.html")
+           "file:///usr/share/doc/lua/manual.html")
+      "http://www.lua.org/manual/5.1/manual.html")
+  "URL pointing to the Lua reference manual."
   :type 'string
   :group 'lua)
 
@@ -417,9 +458,10 @@ traceback location."
             ("package" . ("config" "cpath" "loaded" "loaders" "loadlib" "path"
                           "preload" "searchers" "searchpath" "seeall"))
             ("string" . ("byte" "char" "dump" "find" "format" "gmatch" "gsub"
-                         "len" "lower" "match" "rep" "reverse" "sub" "upper"))
-            ("table" . ("concat" "insert" "maxn" "pack" "remove" "sort" "unpack"
-                        )))))
+                         "len" "lower" "match" "rep" "reverse" "sub" "upper"
+                         "pack" "unpack" "packsize"))
+            ("table" . ("concat" "insert" "maxn" "pack" "remove" "sort"
+                        "unpack" "move")))))
 
       (lua--cl-labels
        ((module-name-re (x)
@@ -451,7 +493,7 @@ traceback location."
 
   "A regexp that matches lua builtin functions & variables.
 
-This is a compilation of 5.1 and 5.2 builtins taken from the
+This is a compilation of 5.1, 5.2 and 5.3 builtins taken from the
 index of respective Lua reference manuals.")
 
 (eval-and-compile
@@ -757,10 +799,6 @@ This function replaces previous prefix-key binding with a new one."
 
 If point is not inside a comment, return nil."
   (and parsing-state (nth 4 parsing-state) (nth 8 parsing-state)))
-
-(defun lua-comment-p (&optional pos)
-  "Returns true if the point is in a comment."
-  (save-excursion (elt (syntax-ppss pos) 4)))
 
 (defun lua-comment-or-string-p (&optional pos)
   "Returns true if the point is in a comment or string."
@@ -1111,18 +1149,21 @@ Returns final value of point as integer or nil if operation failed."
 
 (eval-when-compile
   (defconst lua-operator-class
-    "-+*/^.=<>~:"))
+    "-+*/^.=<>~:&|"))
 
 (defconst lua-cont-eol-regexp
   (eval-when-compile
     (concat
      "\\(\\_<"
      (regexp-opt '("and" "or" "not" "in" "for" "while"
-                   "local" "function" "if" "until" "elseif" "return") t)
+                   "local" "function" "if" "until" "elseif" "return")
+                 t)
      "\\_>\\|"
      "\\(^\\|[^" lua-operator-class "]\\)"
      (regexp-opt '("+" "-" "*" "/" "%" "^" ".." "=="
-                   "=" "<" ">" "<=" ">=" "~=" "." ":" ) t)
+                   "=" "<" ">" "<=" ">=" "~=" "." ":"
+                   "&" "|" "~" ">>" "<<" "~")
+                 t)
      "\\)"
      "\\s *\\="))
   "Regexp that matches the ending of a line that needs continuation
@@ -1139,7 +1180,9 @@ an optional whitespace till the end of the line.")
      (regexp-opt '("and" "or" "not") t)
      "\\_>\\|"
      (regexp-opt '("+" "-" "*" "/" "%" "^" ".." "=="
-                   "=" "<" ">" "<=" ">=" "~=" "." ":") t)
+                   "=" "<" ">" "<=" ">=" "~=" "." ":"
+                   "&" "|" "~" ">>" "<<" "~")
+                 t)
      "\\($\\|[^" lua-operator-class "]\\)"
      "\\)"))
   "Regexp that matches a line that continues previous one
@@ -1531,6 +1574,11 @@ If not, return nil."
        ;; 4. if there's no previous line, indentation is 0
        0))))
 
+(defvar lua--beginning-of-defun-re
+  (lua-rx-to-string '(: bol (? (symbol "local") ws+) lua-funcheader))
+  "Lua top level (matches only at the beginning of line) function header regex.")
+
+
 (defun lua-beginning-of-proc (&optional arg)
   "Move backward to the beginning of a lua proc (or similar).
 
@@ -1542,11 +1590,11 @@ Returns t unless search stops due to beginning or end of buffer."
   (or arg (setq arg 1))
 
   (while (and (> arg 0)
-              (re-search-backward "^function[ \t]" nil t))
+              (re-search-backward lua--beginning-of-defun-re nil t))
     (setq arg (1- arg)))
 
   (while (and (< arg 0)
-              (re-search-forward "^function[ \t]" nil t))
+              (re-search-forward lua--beginning-of-defun-re nil t))
     (beginning-of-line)
     (setq arg (1+ arg)))
 
@@ -1590,7 +1638,8 @@ This function just searches for a `end' at the beginning of a line."
 (defvar lua-process-init-code
   (mapconcat
    'identity
-   '("function luamode_loadstring(str, displayname, lineoffset)"
+   '("local loadstring = loadstring or load"
+     "function luamode_loadstring(str, displayname, lineoffset)"
      "  if lineoffset > 1 then"
      "    str = string.rep('\\n', lineoffset - 1) .. str"
      "  end"
@@ -1791,7 +1840,8 @@ Create a Lua process if one doesn't already exist."
 (defun lua-search-documentation ()
   "Search Lua documentation for the word at the point."
   (interactive)
-  (browse-url (concat lua-search-url-prefix (lua-funcname-at-point))))
+  (let ((url (concat lua-documentation-url "#pdf-" (lua-funcname-at-point))))
+    (funcall lua-documentation-function url)))
 
 (defun lua-toggle-electric-state (&optional arg)
   "Toggle the electric indentation feature.
