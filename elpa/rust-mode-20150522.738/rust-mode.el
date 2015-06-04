@@ -1,9 +1,9 @@
 ;;; rust-mode.el --- A major emacs mode for editing Rust source code
 
 ;; Version: 0.2.0
-;; Package-Version: 20150308.1815
+;; Package-Version: 20150522.738
 ;; Author: Mozilla
-;; Url: https://github.com/rust-lang/rust
+;; Url: https://github.com/rust-lang/rust-mode
 ;; Keywords: languages
 
 ;;; Commentary:
@@ -32,11 +32,6 @@
     ;; Strings
     (modify-syntax-entry ?\" "\"" table)
     (modify-syntax-entry ?\\ "\\" table)
-
-    ;; mark _ as a word constituent so that identifiers
-    ;; such as xyz_type don't cause type to be highlighted
-    ;; as a keyword
-    (modify-syntax-entry ?_ "w" table)
 
     ;; Comments
     (modify-syntax-entry ?/  ". 124b" table)
@@ -68,13 +63,22 @@
   :type 'boolean
   :group 'rust-mode)
 
+(defcustom rust-playpen-url-format "https://play.rust-lang.org/?code=%s"
+  "Format string to use when submitting code to the playpen"
+  :type 'string
+  :group 'rust-mode)
+(defcustom rust-shortener-url-format "http://is.gd/create.php?format=simple&url=%s"
+  "Format string to use for creating the shortened link of a playpen submission"
+  :type 'string
+  :group 'rust-mode)
+
 (defun rust-paren-level () (nth 0 (syntax-ppss)))
 (defun rust-in-str-or-cmnt () (nth 8 (syntax-ppss)))
 (defun rust-rewind-past-str-cmnt () (goto-char (nth 8 (syntax-ppss))))
 (defun rust-rewind-irrelevant ()
   (let ((starting (point)))
     (skip-chars-backward "[:space:]\n")
-    (if (looking-back "\\*/") (backward-char))
+    (if (looking-back "\\*/" nil) (backward-char))
     (if (rust-in-str-or-cmnt)
         (rust-rewind-past-str-cmnt))
     (if (/= starting (point))
@@ -94,9 +98,14 @@
 (defun rust-rewind-to-beginning-of-current-level-expr ()
   (let ((current-level (rust-paren-level)))
     (back-to-indentation)
+    (when (looking-at "->")
+      (rust-rewind-irrelevant)
+      (back-to-indentation))
     (while (> (rust-paren-level) current-level)
       (backward-up-list)
       (back-to-indentation))))
+
+(defconst rust-re-ident "[[:word:][:multibyte:]_][[:word:][:multibyte:]_[:digit:]]*")
 
 (defun rust-align-to-method-chain ()
   (save-excursion
@@ -116,7 +125,7 @@
     ;; annoying to have to press tab again to align to a method chain
     ;; than to have an over-eager indent in all other cases which must
     ;; be undone via tab.
-    
+
     (when (looking-at (concat "\s*\." rust-re-ident))
       (forward-line -1)
       (end-of-line)
@@ -129,17 +138,17 @@
           ;;         ^   ^
           ;;         |   |
           ;;         |  position of point
-          ;;       returned offset      
+          ;;       returned offset
           ;;
           ((skip-dot-identifier
             (lambda ()
-              (when (looking-back (concat "\\." rust-re-ident))
-                (backward-word 1)
+              (when (looking-back (concat "\\." rust-re-ident) nil)
+                (forward-thing 'symbol -1)
                 (backward-char)
                 (- (current-column) rust-indent-offset)))))
         (cond
          ;; foo.bar(...)
-         ((looking-back ")")
+         ((looking-back ")" nil)
           (backward-list 1)
           (funcall skip-dot-identifier))
 
@@ -171,7 +180,7 @@
                         (+ (current-column) rust-indent-offset))))))
              (cond
               ;; Indent inside a non-raw string only if the the previous line
-              ;; ends with a backslash that is is inside the same string
+              ;; ends with a backslash that is inside the same string
               ((nth 3 (syntax-ppss))
                (let*
                    ((string-begin-pos (nth 8 (syntax-ppss)))
@@ -216,7 +225,7 @@
                        (goto-char end-of-prev-line-pos)
                        (back-to-indentation)
                        (current-column))))))
-              
+
               ;; A function return type is indented to the corresponding function arguments
               ((looking-at "->")
                (save-excursion
@@ -224,9 +233,9 @@
                  (or (rust-align-to-expr-after-brace)
                      (+ baseline rust-indent-offset))))
 
-              ;; A closing brace is 1 level unindended
+              ;; A closing brace is 1 level unindented
               ((looking-at "}") (- baseline rust-indent-offset))
-              
+
               ;; Doc comments in /** style with leading * indent to line up the *s
               ((and (nth 4 (syntax-ppss)) (looking-at "*"))
                (+ 1 baseline))
@@ -263,7 +272,7 @@
                           ;; ..or if the previous line ends with any of these:
                           ;;     { ? : ( , ; [ }
                           ;; then we are at the beginning of an expression, so stay on the baseline...
-                          (looking-back "[(,:;?[{}]\\|[^|]|")
+                          (looking-back "[(,:;?[{}]\\|[^|]|" nil)
                           ;; or if the previous line is the end of an attribute, stay at the baseline...
                           (progn (rust-rewind-to-beginning-of-current-level-expr) (looking-at "#")))))
                       baseline
@@ -312,7 +321,6 @@
     "bool"
     "str" "char"))
 
-(defconst rust-re-ident "[[:word:][:multibyte:]_][[:word:][:multibyte:]_[:digit:]]*")
 (defconst rust-re-CamelCase "[[:upper:]][[:word:][:multibyte:]_[:digit:]]*")
 (defun rust-re-word (inner) (concat "\\<" inner "\\>"))
 (defun rust-re-grab (inner) (concat "\\(" inner "\\)"))
@@ -320,14 +328,19 @@
 (defun rust-re-item-def (itype)
   (concat (rust-re-word itype) "[[:space:]]+" (rust-re-grab rust-re-ident)))
 
+;; (See PR #42 -- this is just like `(regexp-opt words 'symbols)` from
+;; newer Emacs versions, but will work on Emacs 23.)
+(defun regexp-opt-symbols (words)
+  (concat "\\_<" (regexp-opt words t) "\\_>"))
+
 (defvar rust-mode-font-lock-keywords
   (append
    `(
      ;; Keywords proper
-     (,(regexp-opt rust-mode-keywords 'words) . font-lock-keyword-face)
+     (,(regexp-opt-symbols rust-mode-keywords) . font-lock-keyword-face)
 
      ;; Special types
-     (,(regexp-opt rust-special-types 'words) . font-lock-type-face)
+     (,(regexp-opt-symbols rust-special-types) . font-lock-type-face)
 
      ;; Attributes like `#[bar(baz)]` or `#![bar(baz)]` or `#[bar = "baz"]`
      (,(rust-re-grab (concat "#\\!?\\[" rust-re-ident "[^]]*\\]"))
@@ -365,7 +378,7 @@
 (defun rust-look-for-raw-string (bound)
   ;; Find a raw string, but only if it's not in the middle of another string or
   ;; a comment
-  
+
   (let* ((raw-str-regexp
           (rx
            (seq
@@ -627,7 +640,8 @@ This is written mainly to be used as `end-of-defun-function' for Rust."
               ;; didn't find a match
               (> angle-brackets 0)
               ;; we have no guarantee of a match, so give up eventually
-              (< (- start-point (point)) blink-matching-paren-distance)
+	      (or (not blink-matching-paren-distance)
+		  (< (- start-point (point)) blink-matching-paren-distance))
               ;; didn't hit the top of the buffer
               (> (point) (point-min))
               ;; didn't hit something else weird like a `;`
@@ -655,7 +669,7 @@ This is written mainly to be used as `end-of-defun-function' for Rust."
   "If the most recently inserted character is a `>`, briefly moves point to matching `<` (if any)."
   (interactive)
   (when (and rust-blink-matching-angle-brackets
-             (looking-back ">"))
+             (looking-back ">" nil))
     (let ((matching-angle-bracket-point (save-excursion
                                           (backward-char 1)
                                           (rust-find-matching-angle-bracket))))
@@ -740,11 +754,55 @@ This is written mainly to be used as `end-of-defun-function' for Rust."
   "Specifications for matching errors in rustc invocations.
 See `compilation-error-regexp-alist for help on their format.")
 
+;; Match test run failures and panics during compilation as
+;; compilation warnings
+(defvar cargo-compilation-regexps
+  '("^\\s-+thread '[^']+' panicked at \\('[^']+', \\([^:]+\\):\\([0-9]+\\)\\)" 2 3 nil nil 1)
+  "Specifications for matching panics in cargo test invocations.
+See `compilation-error-regexp-alist for help on their format.")
+
 (eval-after-load 'compile
   '(progn
      (add-to-list 'compilation-error-regexp-alist-alist
                   (cons 'rustc rustc-compilation-regexps))
-     (add-to-list 'compilation-error-regexp-alist 'rustc)))
+     (add-to-list 'compilation-error-regexp-alist 'rustc)
+     (add-to-list 'compilation-error-regexp-alist-alist
+                  (cons 'cargo cargo-compilation-regexps))
+     (add-to-list 'compilation-error-regexp-alist 'cargo)))
+
+;;; Functions to submit (parts of) buffers to the rust playpen, for
+;;; sharing.
+(defun rust-playpen-region (begin end)
+  "Create a sharable URL for the contents of the current region
+   on the Rust playpen."
+  (interactive "r")
+  (let* ((data (buffer-substring begin end))
+         (escaped-data (url-hexify-string data))
+         (escaped-playpen-url (url-hexify-string (format rust-playpen-url-format escaped-data))))
+    (if (> (length escaped-playpen-url) 5000)
+        (error "encoded playpen data exceeds 5000 character limit (length %s)"
+               (length escaped-playpen-url))
+      (let ((shortener-url (format rust-shortener-url-format escaped-playpen-url))
+            (url-request-method "POST"))
+        (url-retrieve shortener-url
+                      (lambda (state)
+                        ; filter out the headers etc. included at the
+                        ; start of the buffer: the relevant text
+                        ; (shortened url or error message) is exactly
+                        ; the last line.
+                        (goto-char (point-max))
+                        (let ((last-line (thing-at-point 'line t))
+                              (err (plist-get state :error)))
+                          (kill-buffer)
+                          (if err
+                              (error "failed to shorten playpen url: %s" last-line)
+                            (message "%s" last-line)))))))))
+
+(defun rust-playpen-buffer ()
+  "Create a sharable URL for the contents of the current buffer
+   on the Rust playpen."
+  (interactive)
+  (rust-playpen-region (point-min) (point-max)))
 
 (provide 'rust-mode)
 
