@@ -260,4 +260,6 @@ Handy when editing markdown."
 (global-set-key (kbd "C-.") #'goto-last-change)
 (global-set-key (kbd "C-,") #'goto-last-change-reverse)
 
+(global-set-key (kbd "C-d") #'hungry-delete-forward)
+
 (provide 'editing-customisations)
