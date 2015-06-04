@@ -4,8 +4,8 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 September 2014
-;; Version: 20140922.1330
-;; X-Original-Version: 0.4
+;; Version: 0.4
+;; Package-Version: 20150228.309
 ;; Package-Requires: ((dash "2.8.0"))
 
 ;;; License:
@@ -65,7 +65,7 @@
 (defconst pip-requirements-name-regex
   (rx
    line-start
-   (group (1+ (or alphanumeric "-")))))
+   (group (1+ (or alphanumeric "-" ".")))))
 
 (defconst pip-requirements-version-regex
   (rx
@@ -141,7 +141,7 @@ information about Auto Complete."
                            'pip-requirements-auto-complete-setup)
 
 ;;;###autoload
-(define-derived-mode pip-requirements-mode fundamental-mode "pip-require"
+(define-derived-mode pip-requirements-mode prog-mode "pip-require"
   "Major mode for editing pip requirements files."
   :syntax-table pip-requirements-syntax-table
   (set (make-local-variable 'font-lock-defaults) '(pip-requirements-operators))
