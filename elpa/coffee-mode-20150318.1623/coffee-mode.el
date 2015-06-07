@@ -2,8 +2,8 @@
 
 ;; Copyright (C) 2010 Chris Wanstrath
 
-;; Version: 20141216.620
-;; X-Original-Version: 0.5.7
+;; Version: 0.6.0
+;; Package-Version: 20150318.1623
 ;; Keywords: CoffeeScript major mode
 ;; Author: Chris Wanstrath <chris@ozmm.org>
 ;; URL: http://github.com/defunkt/coffee-mode
@@ -28,102 +28,7 @@
 ;;; Commentary
 
 ;; Provides syntax highlighting, indentation support, imenu support,
-;; a menu bar, and a few cute commands.
-
-;; ## Indentation
-
-;; ### TAB Theory
-
-;; It goes like this: when you press `TAB`, we indent the line unless
-;; doing so would make the current line more than two indentation levels
-;; deepers than the previous line. If that's the case, remove all
-;; indentation.
-
-;; Consider this code, with point at the position indicated by the
-;; caret:
-
-;;     line1()
-;;       line2()
-;;       line3()
-;;          ^
-
-;; Pressing `TAB` will produce the following code:
-
-;;     line1()
-;;       line2()
-;;         line3()
-;;            ^
-
-;; Pressing `TAB` again will produce this code:
-
-;;     line1()
-;;       line2()
-;;     line3()
-;;        ^
-
-;; And so on. I think this is a pretty good way of getting decent
-;; indentation with a whitespace-sensitive language.
-
-;; ### Newline and Indent
-
-;; We all love hitting `RET` and having the next line indented
-;; properly. Given this code and cursor position:
-
-;;     line1()
-;;       line2()
-;;       line3()
-;;             ^
-
-;; Pressing `RET` would insert a newline and place our cursor at the
-;; following position:
-
-;;     line1()
-;;       line2()
-;;       line3()
-
-;;       ^
-
-;; In other words, the level of indentation is maintained. This
-;; applies to comments as well. Combined with the `TAB` you should be
-;; able to get things where you want them pretty easily.
-
-;; ### Indenters
-
-;; `class`, `for`, `if`, and possibly other keywords cause the next line
-;; to be indented a level deeper automatically.
-
-;; For example, given this code and cursor position::
-
-;;     class Animal
-;;                 ^
-
-;; Pressing enter would produce the following:
-
-;;     class Animal
-
-;;       ^
-
-;; That is, indented a column deeper.
-
-;; This also applies to lines ending in `->`, `=>`, `{`, `[`, and
-;; possibly more characters.
-
-;; So this code and cursor position:
-
-;;     $('#demo').click ->
-;;                        ^
-
-;; On enter would produce this:
-
-;;     $('#demo').click ->
-
-;;       ^
-
-;; Pretty slick.
-
-;; Thanks to Jeremy Ashkenas for CoffeeScript, and to
-;; http://xahlee.org/emacs/elisp_syntax_coloring.html, Jason
-;; Blevins's markdown-mode.el and Steve Yegge's js2-mode for guidance.
+;; compiling to JavaScript, REPL, a menu bar, and a few cute commands.
 
 ;;; Code:
 
@@ -138,7 +43,7 @@
 ;; Customizable Variables
 ;;
 
-(defconst coffee-mode-version "0.5.7"
+(defconst coffee-mode-version "0.6.0"
   "The version of `coffee-mode'.")
 
 (defgroup coffee nil
@@ -495,7 +400,7 @@ called `coffee-compiled-buffer-name'."
 ;;
 
 ;; Instance variables (implicit this)
-(defvar coffee-this-regexp "\\(?:@\\w+\\|\\<this\\)\\>")
+(defvar coffee-this-regexp "\\(?:@[_[:word:]]+\\|\\<this\\)\\>")
 
 ;; Prototype::access
 (defvar coffee-prototype-regexp "[_[:word:].$]+?::")
@@ -514,16 +419,14 @@ called `coffee-compiled-buffer-name'."
 
 ;; Booleans
 (defvar coffee-boolean-regexp
-  (concat "\\(?:^\\|[^.]\\)"
-          (regexp-opt '("true" "false" "yes" "no" "on" "off" "null" "undefined")
-                      'words)))
+  (rx (or bol (not (any ".")))
+      (group symbol-start
+             (or "true" "false" "yes" "no" "on" "off" "null" "undefined")
+             symbol-end)))
 
 ;; Regular expressions
 (eval-and-compile
   (defvar coffee-regexp-regexp "\\s/\\(\\(?:\\\\/\\|[^/\n\r]\\)*\\)\\s/"))
-
-;; String Interpolation(This regexp is taken from ruby-mode)
-(defvar coffee-string-interpolation-regexp "#{[^}\n\\\\]*\\(?:\\\\.[^}\n\\\\]*\\)*}")
 
 ;; JavaScript Keywords
 (defvar coffee-js-keywords
@@ -567,10 +470,28 @@ called `coffee-compiled-buffer-name'."
     (,coffee-prototype-regexp . font-lock-type-face)
     (,coffee-assign-regexp . font-lock-type-face)
     (,coffee-local-assign-regexp 1 font-lock-variable-name-face)
-    (,coffee-boolean-regexp . font-lock-constant-face)
+    (,coffee-boolean-regexp 1 font-lock-constant-face)
     (,coffee-lambda-regexp 1 font-lock-function-name-face)
     (,coffee-keywords-regexp 1 font-lock-keyword-face)
-    (,coffee-string-interpolation-regexp 0 font-lock-variable-name-face t)))
+    (,(lambda (limit)
+        (let ((res nil)
+              start)
+          (while (and (not res) (search-forward "#{" limit t))
+            (let ((restart-pos (match-end 0)))
+              (setq start (match-beginning 0))
+              (let (finish)
+                (while (and (not finish) (search-forward "}" limit t))
+                  (let ((end-pos (point)))
+                    (save-excursion
+                      (when (and (ignore-errors (backward-list 1))
+                                 (= start (1- (point))))
+                        (setq res end-pos finish t)))))
+                (unless finish
+                  (goto-char restart-pos)))))
+          (when (and res start)
+            (set-match-data (list start res)))
+          res))
+     (0 font-lock-variable-name-face t))))
 
 ;;
 ;; Helper Functions
@@ -834,7 +755,7 @@ Delete ARG spaces if ARG!=1."
 ;; line starts with `class', for instance, you're probably going to
 ;; want to indent the next line.
 
-(defvar coffee-indenters-bol '("class" "for" "if" "else" "while" "until"
+(defvar coffee-indenters-bol '("class" "for" "if" "else" "unless" "while" "until"
                                "try" "catch" "finally" "switch")
   "Keywords or syntax whose presence at the start of a line means the
 next line should probably be indented.")
@@ -928,6 +849,28 @@ END lie."
         (amount (if count (prefix-numeric-value count)
                   (coffee-indent-shift-amount start end 'right))))
     (indent-rigidly start end amount)))
+
+(defun coffee-indent-region (start end)
+  (interactive "r")
+  (save-excursion
+    (goto-char start)
+    (forward-line 1)
+    (while (and (not (eobp)) (< (point) end))
+      (let ((prev-indent (coffee-previous-indent))
+            (curindent (current-indentation))
+            indent-size)
+        (if (coffee-line-wants-indent)
+            (let ((expected (+ prev-indent coffee-tab-width)))
+              (when (/= curindent expected)
+                (setq indent-size expected)))
+          (when (> curindent prev-indent)
+            (setq indent-size prev-indent)))
+        (when indent-size
+          (save-excursion
+            (goto-char (line-beginning-position))
+            (delete-horizontal-space)
+            (coffee-insert-spaces indent-size))))
+      (forward-line 1))))
 
 ;;
 ;; Fill
@@ -1103,16 +1046,16 @@ comments such as the following:
   (defconst coffee-block-strings-delimiter
     (rx (and
          ;; Match even number of backslashes.
-         (or (not (any ?\\ ?\' ?\"))
+         (or (not (any ?\\ ?\' ?\" ?/))
              point
              ;; Quotes might be preceded by a escaped quote.
              (and (or (not (any ?\\)) point)
                   ?\\
                   (* ?\\ ?\\)
-                  (any ?\' ?\")))
+                  (any ?\' ?\" ?/)))
          (* ?\\ ?\\)
          ;; Match single or triple quotes of any kind.
-         (group (or "'''" "\"\"\""))))))
+         (group (or "'''" "\"\"\"" "///"))))))
 
 (defsubst coffee-syntax-count-quotes (quote-char start-point limit)
   (let ((i 0))
@@ -1164,21 +1107,53 @@ comments such as the following:
         (put-text-property (- curpoint 3) curpoint
                            'syntax-table (string-to-syntax "!"))))))
 
+(defsubst coffee--in-string-p ()
+  (nth 3 (syntax-ppss)))
+
+(defun coffee-syntax-string-interpolation ()
+  (let ((start (match-beginning 0))
+        (end (point)))
+    (if (not (coffee--in-string-p))
+        (put-text-property start (1+ start)
+                           'syntax-table (string-to-syntax "< b"))
+      (goto-char start)
+      (let (finish res)
+        (while (and (not finish) (search-forward "}" nil t))
+          (let ((end-pos (match-end 0)))
+            (save-excursion
+              (when (and (ignore-errors (backward-list 1))
+                         (= start (1- (point))))
+                (setq res end-pos finish t)))))
+        (goto-char end)
+        (when res
+          (while (re-search-forward "[\"'#]" res t)
+            (put-text-property (match-beginning 0) (match-end 0)
+                               'syntax-table (string-to-syntax "_")))
+          (goto-char (1- res)))))))
+
 (defun coffee-syntax-propertize-function (start end)
   (goto-char start)
   (funcall
    (syntax-propertize-rules
     (coffee-block-strings-delimiter
      (0 (ignore (coffee-syntax-block-strings-stringify))))
-    ("\\(?:[^\\]\\)\\(/\\)"
-     (1 (ignore
-         (let ((ppss (progn
-                       (goto-char (match-beginning 1))
-                       (syntax-ppss))))
-           (when (nth 8 ppss)
-             (put-text-property (match-beginning 1) (match-end 1)
-                                'syntax-table (string-to-syntax "_")))))))
-    (coffee-regexp-regexp (1 (string-to-syntax "_")))
+    ("/"
+     (0 (ignore
+         (let ((curpoint (point))
+               (start (match-beginning 0))
+               (end (match-end 0)))
+           (goto-char start)
+           (let ((ppss (syntax-ppss)))
+             (cond ((nth 8 ppss)
+                    (put-text-property start end
+                                       'syntax-table (string-to-syntax "_"))
+                    (goto-char curpoint))
+                   ((looking-at coffee-regexp-regexp)
+                    (put-text-property (match-beginning 1) (match-end 1)
+                                       'syntax-table (string-to-syntax "_"))
+                    (goto-char (match-end 0)))
+                   (t (goto-char curpoint))))))))
+    ("#{" (0 (ignore (coffee-syntax-string-interpolation))))
     ("###"
      (0 (ignore (coffee-syntax-propertize-block-comment)))))
    (point) end))
@@ -1210,6 +1185,7 @@ comments such as the following:
   (make-local-variable 'coffee-tab-width)
   (make-local-variable 'coffee-indent-tabs-mode)
   (set (make-local-variable 'indent-line-function) 'coffee-indent-line)
+  (set (make-local-variable 'indent-region-function) 'coffee-indent-region)
   (set (make-local-variable 'tab-width) coffee-tab-width)
 
   (set (make-local-variable 'syntax-propertize-function)
