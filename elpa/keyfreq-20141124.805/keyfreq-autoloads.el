@@ -1,10 +1,10 @@
 ;;; keyfreq-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (keyfreq-autosave-mode keyfreq-mode) "keyfreq"
-;;;;;;  "keyfreq.el" (21423 59471 49548 315000))
+;;;### (autoloads nil "keyfreq" "keyfreq.el" (21777 59919 133356
+;;;;;;  215000))
 ;;; Generated autoloads from keyfreq.el
 
 (defvar keyfreq-mode nil "\
@@ -41,16 +41,9 @@ and when emacs is killed.
 
 ;;;***
 
-;;;### (autoloads nil nil ("keyfreq-pkg.el") (21423 59471 103091
-;;;;;;  905000))
-
-;;;***
-
-(provide 'keyfreq-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; keyfreq-autoloads.el ends here
