@@ -421,6 +421,14 @@ I like to use smartparens in all programming modes.
   (add-hook 'yaml-mode-hook #'smartparens-mode)
 #+END_SRC
 
+Since we're using it the whole time, there's no point in showing it in
+the mode line.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'diminish)
+  (diminish #'smartparens-mode)
+#+END_SRC
+
 ** Files
 
 *** Opening

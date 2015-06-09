@@ -162,6 +162,9 @@ If a prefix argument is given, don't change the kill-ring."
 (add-hook 'prog-mode-hook #'smartparens-mode)
 (add-hook 'yaml-mode-hook #'smartparens-mode)
 
+(require 'diminish)
+(diminish #'smartparens-mode)
+
 (require 'recentf)
 
 ;; offer recently accessed files from the menu
