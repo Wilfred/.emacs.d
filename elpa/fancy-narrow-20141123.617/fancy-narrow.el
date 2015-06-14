@@ -4,8 +4,8 @@
 
 ;; Author: Artur Malabarba <bruce.connor.am@gmail.com>
 ;; URL: http://github.com/Bruce-Connor/fancy-narrow
-;; Version: 20140424.1627
-;; X-Original-Version: 0.9.4
+;; Package-Version: 20141123.617
+;; Version: 0.9.4
 ;; Keywords: faces convenience
 ;; Prefix: fancy-narrow
 ;; Separator: -
@@ -85,6 +85,10 @@ Please include your emacs and fancy-narrow-region versions."
   "List of properties given to text beyond the narrowed region."
   :type 'list
   :group 'fancy-narrow-region)
+
+(defvar fancy-narrow--was-semantic nil
+  "")
+(make-variable-buffer-local 'fancy-narrow--was-semantic)
 
 ;;;###autoload
 (defun fancy-narrow-active-p ()
@@ -205,9 +209,12 @@ To widen the region again afterwards use `fancy-widen'."
       ;; unless it was already active, patch font-lock and flyspell
       (unless font-lock-mode
         (setq fancy-narrow--wasnt-font-lock t))
-      (when flyspell-mode
+      (when (and (boundp 'flyspell-mode) flyspell-mode)
         (setq fancy-narrow--was-flyspell t)
-        (flyspell-mode 0)))
+        (flyspell-mode 0))
+      (when (and (boundp 'semantic-mode) semantic-mode)
+        (setq fancy-narrow--was-semantic t)
+        (semantic-mode 0)))
     (add-hook 'post-command-hook 'fancy-narrow--motion-function t t)
     (add-text-properties (point-min) l fancy-narrow-properties-stickiness)
     (fancy-narrow--propertize-region (point-min) l)
@@ -250,6 +257,9 @@ To widen the region again afterwards use `fancy-widen'."
     (when fancy-narrow--was-flyspell
       (setq fancy-narrow--was-flyspell nil)
       (flyspell-mode 1))
+    (when fancy-narrow--was-semantic
+      (setq fancy-narrow--was-semantic nil)
+      (semantic-mode 1))
     (setq fancy-narrow--beginning nil
           fancy-narrow--end nil)
     (delete-overlay fancy-narrow--overlay-left)
