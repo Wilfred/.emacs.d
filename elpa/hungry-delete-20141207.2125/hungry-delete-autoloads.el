@@ -1,11 +1,10 @@
 ;;; hungry-delete-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (global-hungry-delete-mode turn-on-hungry-delete-mode
-;;;;;;  hungry-delete-mode hungry-delete-backward hungry-delete-forward)
-;;;;;;  "hungry-delete" "hungry-delete.el" (21478 8377 519081 905000))
+;;;### (autoloads nil "hungry-delete" "hungry-delete.el" (21777 59936
+;;;;;;  202900 543000))
 ;;; Generated autoloads from hungry-delete.el
 
 (autoload 'hungry-delete-forward "hungry-delete" "\
@@ -79,16 +78,9 @@ See `hungry-delete-mode' for more information on Hungry-Delete mode.
 
 ;;;***
 
-;;;### (autoloads nil nil ("hungry-delete-pkg.el") (21478 8377 652956
-;;;;;;  378000))
-
-;;;***
-
-(provide 'hungry-delete-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; hungry-delete-autoloads.el ends here
