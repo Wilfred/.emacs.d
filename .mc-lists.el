@@ -12,6 +12,7 @@
         c-electric-star
         end-of-visual-line
         forward-sexp
+        hungry-delete-forward
         isearch-abort
         jump-char-forward
         jump-char-process-char
