@@ -208,8 +208,8 @@ are interchanged."
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 
-(global-unset-key (kbd "M-<down-mouse-1>"))
-(global-set-key (kbd "M-<mouse-1>") 'mc/add-cursor-on-click)
+(global-unset-key (kbd "C-<down-mouse-1>"))
+(global-set-key (kbd "C-<mouse-1>") 'mc/add-cursor-on-click)
 
 (defun wh/copy-for-code-snippet (region-start region-end)
   "Indent the current selection by four spaces on each line, and
