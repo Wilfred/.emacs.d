@@ -18,5 +18,6 @@
   // whilst it's a bad idea to add "use strict"; at the top of a file
   // in the browser, it's good in node.
   "globalstrict": true,
+  "laxbreak": true, // allow "foo"\n+ "bar"
   "laxcomma": true // allow comma-first style
 }
