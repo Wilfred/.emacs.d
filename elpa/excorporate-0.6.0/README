@@ -1,0 +1,66 @@
+Excorporate provides Exchange integration for Emacs.
+
+To create a connection to a web service:
+
+M-x excorporate
+
+Excorporate will prompt for an email address that it will use to
+automatically discover settings.  Then it will connect to two
+separate hosts: the autodiscovery host and the web service host, so
+you may be prompted for your credentials twice.
+
+You should see a message indicating that the connection is ready
+either in the minibuffer or failing that in the *Messages* buffer.
+
+Finally, run M-x calendar, and press 'e' to show today's meetings.
+
+Please try autodiscovery first and report issues not yet listed
+below.  When autodiscovery works it is very convenient; the goal is
+to make it work for as many users as possible.
+
+If autodiscovery fails, customize `excorporate-configuration' to
+skip autodiscovery.
+
+Autodiscovery will fail if:
+
+- Excorporate is accessing the server through a proxy (Emacs
+  bug#10).
+
+- The server is not configured to support autodiscovery.
+
+- The email address is at a different domain than the server, e.g.,
+  user@domain1.com, autodiscover.domain2.com.
+
+- Authentication is Kerberos/GSSAPI.
+
+Excorporate does know about the special case where the mail address
+is at a subdomain, e.g., user@sub.domain.com, and the server is at
+the main domain, e.g., autodiscover.domain.com.  Autodiscovery will
+work in that case.
+
+Excorporate must be loaded before any other package that requires
+`soap-client'.  The version of `soap-client' that Excorporate
+bundles is backward compatible.
+
+Acknowledgments:
+
+Alexandru Harsanyi <AlexHarsanyi@gmail.com> provided help and
+guidance on how to extend soap-client.el's WSDL and XSD handling,
+enabling support for the full Exchange Web Services API.
+
+Alex Luccisano <casual.lexicon@gmail.com> tested early versions of
+this library against a corporate installation of Exchange and
+provided feedback.
+
+Jon Miller <jonebird@gmail.com> tested against Exchange 2013 and
+provided feedback.  Jon also tracked down and reported a bad
+interaction with other packages that require soap-client.
+
+Nicolas Lamirault <nicolas.lamirault@gmail.com> tested the
+autodiscovery feature and provided feedback.
+
+Trey Jackson <bigfaceworm@gmail.com> confirmed autodiscovery worked
+for him.
+
+Joakim Verona <joakim@verona.se> tested autodiscovery in a
+Kerberos/GSSAPI environment and provided feedback.
