@@ -2,9 +2,10 @@
 <html>
 <head>
 <title>init</title>
-<!-- 2015-06-09 Tue 23:49 -->
+<!-- 2015-06-17 Wed 18:29 -->
 <meta  charset="utf-8">
 <meta  name="generator" content="Org-mode">
+<meta  name="author" content="Wilfred Hughes">
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   .title  { text-align: center; }
@@ -596,10 +597,13 @@ of the same symbol.
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key prog-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-p"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-prev</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-comment-delimiter">;; </span><span class="org-comment">It's not clear to me why c++-mode-map isn't affected by prog-mode-map,</span>
-<span class="org-comment-delimiter">;; </span><span class="org-comment">I suspect it's a bug.</span>
+<span class="org-comment-delimiter">;; </span><span class="org-comment">I suspect it's a bug (tested on 24.5).</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">cc-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key c++-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-n"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-next</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key c++-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-p"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-prev</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-comment-delimiter">;; </span><span class="org-comment">Java-mode has the same problem.</span>
+<span class="org-rainbow-delimiters-depth-1">(</span>define-key java-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-n"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-next</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span>define-key java-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-p"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-prev</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 
@@ -2031,7 +2035,8 @@ annoying to accidentally close Emacs, so warn first.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2015-06-09 Tue 23:49</p>
+<p class="author">Author: Wilfred Hughes</p>
+<p class="date">Created: 2015-06-17 Wed 18:29</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

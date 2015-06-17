@@ -58,10 +58,13 @@
 (define-key prog-mode-map (kbd "M-p") #'highlight-symbol-prev)
 
 ;; It's not clear to me why c++-mode-map isn't affected by prog-mode-map,
-;; I suspect it's a bug.
+;; I suspect it's a bug (tested on 24.5).
 (require 'cc-mode)
 (define-key c++-mode-map (kbd "M-n") #'highlight-symbol-next)
 (define-key c++-mode-map (kbd "M-p") #'highlight-symbol-prev)
+;; Java-mode has the same problem.
+(define-key java-mode-map (kbd "M-n") #'highlight-symbol-next)
+(define-key java-mode-map (kbd "M-p") #'highlight-symbol-prev)
 
 (defun highlight-symbol-first ()
   "Jump to the first location of symbol at point."
