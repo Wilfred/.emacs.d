@@ -101,6 +101,14 @@
 ;; Offer completion for as little as one character.
 (setq company-minimum-prefix-length 1)
 
+;; Show a list of numbers next to completion options, where M-1
+;; selects the first option and so on.
+(setq company-show-numbers t)
+
+;; In the completion list, wrap around so going backwards from the
+;; last option shows the first.
+(setq company-selection-wrap-around t)
+
 (global-set-key (kbd "s-/") #'company-complete)
 
 ;; always spaces, never tabs
