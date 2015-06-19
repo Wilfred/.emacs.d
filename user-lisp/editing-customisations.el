@@ -265,4 +265,8 @@ Handy when editing markdown."
 
 (global-set-key (kbd "C-d") #'hungry-delete-forward)
 
+;; iedit sets up this key binding when you first use it, but it's nice
+;; to have the keybinding generally available.
+(global-set-key (kbd "C-;") #'iedit-mode)
+
 (provide 'editing-customisations)
