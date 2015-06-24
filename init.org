@@ -213,6 +213,9 @@ not. We display the recursion level in the minibuffer to avoid confusion.
   (minibuffer-depth-indicate-mode 1)
 #+END_SRC
 
+Occasionally, you end up with an active minibuffer that you didn't
+want. ESC ESC ESC will close the minibuffer.
+
 ** Moving Around
 
 C-v and M-v don't undo each other, because the point position isn't
@@ -1122,11 +1125,6 @@ annoying to accidentally close Emacs, so warn first.
 ** Undocumented
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  ; always close the minibuffer on C-x o:
-  ; <jlf> wilfredh: you could before-advise other-window to quit first
-  ; if the minibuffer is active.. but it would be better to break that
-  ; habit :)
-
   (require 'ui-customisations)
 
   (require 'file-customisations)
