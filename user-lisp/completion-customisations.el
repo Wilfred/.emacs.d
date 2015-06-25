@@ -98,8 +98,9 @@
 
 (diminish 'company-mode)
 
-;; Offer completion for as little as one character.
-(setq company-minimum-prefix-length 1)
+;; Offer completion for as little as two characters (I've tried
+;; setting this to one, but it's a bit noisy).
+(setq company-minimum-prefix-length 2)
 
 ;; Show a list of numbers next to completion options, where M-1
 ;; selects the first option and so on.
