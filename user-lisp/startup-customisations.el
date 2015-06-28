@@ -20,11 +20,13 @@
 (require 'random-utils)
 
 ;; populate the initial scratch buffer with a random quote.
-(setq-default initial-scratch-message (random-choice programming-quotes))
+(setq initial-scratch-message (random-choice programming-quotes))
+(setq initial-major-mode #'fundamental-mode)
 
 ;; Use hard line wrapping on the quote in the scratch buffer.
 (with-current-buffer (get-buffer-create "*scratch*")
-  (fill-region (point-min) (point-max)))
+  (goto-char (point-min))
+  (fill-paragraph))
 
 ; create a separate scratch buffer for elisp experimentation
 (with-current-buffer (get-buffer-create "*scratch-elisp*")
