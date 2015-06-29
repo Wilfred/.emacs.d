@@ -581,16 +581,20 @@ value of `iedit-occurrence-context-lines' is used for this time."
   (iedit-barf-if-buffering)
   (iedit-apply-on-occurrences 'downcase-region))
 
-(defun iedit-replace-occurrences(to-string)
+(defun iedit-replace-occurrences()
   "Replace occurrences with STRING.
 This function preserves case."
-  (interactive "*sReplace with: ")
+  (interactive "*")
   (iedit-barf-if-buffering)
   (let* ((ov (iedit-find-current-occurrence-overlay))
          (offset (- (point) (overlay-start ov)))
          (from-string (downcase (buffer-substring-no-properties
                                  (overlay-start ov)
-                                 (overlay-end ov)))))
+                                 (overlay-end ov))))
+         (to-string (read-string "Replace with: "
+                                 nil nil
+                                 from-string
+                                 nil)))
     (iedit-apply-on-occurrences
      (lambda (beg end from-string to-string)
        (goto-char beg)
