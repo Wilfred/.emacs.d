@@ -25,6 +25,8 @@ elpa/*.txt
 elpa/archives
 elpa/*.signed
 
+elpa/gnupg
+
 # Projectile metadata
 projectile.cache
 projectile-bookmarks.eld
