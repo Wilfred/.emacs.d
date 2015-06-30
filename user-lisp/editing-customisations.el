@@ -216,6 +216,10 @@ copy to the clipboard."
 ;; If the region is active, delete that instead.
 (global-set-key (kbd "C-S-k") #'whole-line-or-region-delete)
 
+;; Copy the whole line to the kill ring.
+(global-set-key (kbd "C-c C-k")
+                #'whole-line-or-region-copy-region-as-kill)
+
 (defun wh/indent-four-spaces (beg end)
   "Indent the text in the active region by four spaces.
 Handy when editing markdown."
