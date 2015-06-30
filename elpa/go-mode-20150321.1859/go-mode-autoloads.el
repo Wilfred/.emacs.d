@@ -3,7 +3,7 @@
 ;;; Code:
 
 
-;;;### (autoloads nil "go-mode" "go-mode.el" (21613 8179 367881 581000))
+;;;### (autoloads nil "go-mode" "go-mode.el" (21777 59954 52426 251000))
 ;;; Generated autoloads from go-mode.el
 
 (autoload 'go-mode "go-mode" "\
@@ -75,19 +75,20 @@ you save any file, kind of defeating the point of autoloading.
 \(fn)" t nil)
 
 (autoload 'godoc "go-mode" "\
-Show Go documentation for a query, much like M-x man.
+Show Go documentation for QUERY, much like M-x man.
 
 \(fn QUERY)" t nil)
 
 (autoload 'go-download-play "go-mode" "\
-Downloads a paste from the playground and inserts it in a Go
-buffer. Tries to look for a URL at point.
+Download a paste from the playground and insert it in a Go buffer.
+Tries to look for a URL at point.
 
 \(fn URL)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil nil ("go-mode-pkg.el") (21613 8179 432583 807000))
+;;;### (autoloads nil nil ("go-mode-pkg.el") (21777 59954 138707
+;;;;;;  779000))
 
 ;;;***
 
