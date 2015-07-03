@@ -243,7 +243,7 @@ Handy when editing markdown."
   
   (set-file-modes (buffer-file-name)
                   (file-modes-symbolic-to-number "u+rwx" (file-modes (buffer-file-name))))
-  (insert (ido-completing-read "Interpreter: " (list "#!/bin/bash" "#!/bin/env python")))
+  (insert (ido-completing-read "Interpreter: " (list "#!/bin/bash" "#!/usr/bin/env python")))
   (insert "\n\n"))
 
 (defun wh/apply-on-region (beg end func)
