@@ -35,9 +35,18 @@
 (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
 (yas-global-mode 1)
 
-;; bind yas-expand to SPC, since TAB is used by ac-complete
+;; bind yas-expand to SPC
 (define-key yas-minor-mode-map (kbd "<tab>") nil)
 (define-key yas-minor-mode-map (kbd "SPC") 'yas-expand)
+
+(defun wh-yas-no-expand-in-comment/string ()
+  "Don't expand yasnippets in strings or comments.
+Taken from http://stackoverflow.com/a/25532190/509706."
+  (setq yas-buffer-local-condition
+        '(if (nth 8 (syntax-ppss)) ;; non-nil if in a string or comment
+             '(require-snippet-condition . force-in-comment)
+           t)))
+(add-hook 'prog-mode-hook #'wh-yas-no-expand-in-comment/string)
 
 ;; dabbrev-expand should match case
 (require 'dabbrev)
