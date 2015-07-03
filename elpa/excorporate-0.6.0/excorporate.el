@@ -658,8 +658,8 @@ The mail address to use for autodiscovery."
 	   :tag "Prompt for Exchange mail address to use for autodiscovery" nil)
 	  (string :tag "Exchange mail address to use for autodiscovery")
 	  (cons :tag "Skip autodiscovery"
-		(string :tag "Exchange mail address")
-		(string :tag "Exchange Web Services URL"))))
+		(string :tag "Exchange mail address, e.g you@example.com")
+		(string :tag "Exchange Web Services URL e.g. https://example.com/Exchange.asmx"))))
 
 ;;;###autoload
 (defun excorporate ()

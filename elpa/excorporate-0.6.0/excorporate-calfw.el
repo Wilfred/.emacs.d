@@ -28,12 +28,9 @@
 (require 'excorporate)
 (eval-when-compile (require 'cl))
 
-(defun exco-calfw-maybe-extra-argument (server-version)
-  "If SERVER-VERSION is less than 2013 then return an empty list.
-Otherwise return a list with one nil element."
-  (if (< ( string-to-number (substring server-version 8 12)) 2013)
-      '()
-    '(nil)))
+(defun exco-calfw-server-year (server-version)
+  "Extract the year as an integer from SERVER-VERSION"
+  (string-to-number (substring server-version 8 12)))
 
 (defun exco-calfw-get-meetings-for-day (month day year callback)
   "Return the meetings for the specified day.
@@ -63,8 +60,11 @@ CALLBACK with two arguments, IDENTIFIER and RESPONSE."
 	(ParentFolderIds
 	 (DistinguishedFolderId (Id . "calendar"))))
        ;; Empty arguments.
-       nil nil nil nil nil ,@(exco-calfw-maybe-extra-argument
-			      (exco-server-version nil)))
+       ,@(let ((year (exco-calfw-server-year (exco-server-version nil))))
+           (cond
+            ((<= year 2007) '(nil nil nil nil))
+            ((< year 2013) '(nil nil nil nil nil))
+            (t '(nil nil nil nil nil nil)))))
      callback)))
 
 (defun exco-calfw-show-day (month day year)
