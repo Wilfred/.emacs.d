@@ -35,8 +35,8 @@
 (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
 (yas-global-mode 1)
 
-;; bind yas-expand to SPC
-(define-key yas-minor-mode-map (kbd "<tab>") nil)
+;; bind yas-expand to SPC and not TAB.
+(define-key yas-minor-mode-map (kbd "TAB") nil)
 (define-key yas-minor-mode-map (kbd "SPC") 'yas-expand)
 
 (defun wh-yas-no-expand-in-comment/string ()
