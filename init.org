@@ -675,15 +675,6 @@ it on the mode line. Hide it.
   (diminish 'undo-tree-mode)
 #+END_SRC
 
-Magit-Auto-Revert is also harmless and we always want it enabled, so
-we don't want to see it shown on the mode line either.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (require 'diminish)
-  (require 'magit)
-  (diminish 'magit-auto-revert-mode)
-#+END_SRC
-
 ** Emacs Lisp
 
 *** Shortcuts
@@ -1239,8 +1230,6 @@ annoying to accidentally close Emacs, so warn first.
     "Indent the everything in the current buffer."
     (interactive)
     (indent-region (point-min) (point-max)))
-
-  (add-hook 'magit-log-edit-mode-hook 'auto-fill-mode)
 
   (require 'f)
   (require 's)

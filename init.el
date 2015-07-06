@@ -274,10 +274,6 @@ Visit the file after creation."
 (require 'diminish)
 (diminish 'undo-tree-mode)
 
-(require 'diminish)
-(require 'magit)
-(diminish 'magit-auto-revert-mode)
-
 (define-key emacs-lisp-mode-map (kbd "C-c e") #'edebug-eval-defun)
 
 (define-key emacs-lisp-mode-map (kbd "C-c d") 'toggle-debug-on-error)
@@ -622,8 +618,6 @@ Visit the file after creation."
   "Indent the everything in the current buffer."
   (interactive)
   (indent-region (point-min) (point-max)))
-
-(add-hook 'magit-log-edit-mode-hook 'auto-fill-mode)
 
 (require 'f)
 (require 's)
