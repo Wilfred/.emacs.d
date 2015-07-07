@@ -144,8 +144,6 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 (require 'projectile)
 (setq projectile-completion-system 'helm)
 
-(global-set-key (kbd "M-x") #'helm-M-x)
-
 ;; TODO: Emacs is highlighting this incorrectly:
 'other
 
