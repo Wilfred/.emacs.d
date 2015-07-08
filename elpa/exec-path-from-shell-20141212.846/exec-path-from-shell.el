@@ -4,9 +4,9 @@
 
 ;; Author: Steve Purcell <steve@sanityinc.com>
 ;; Keywords: environment
+;; Package-Version: 20141212.846
 ;; URL: https://github.com/purcell/exec-path-from-shell
-;; Version: 20140731.907
-;; X-Original-Version: DEV
+;; Version: DEV
 
 ;; This file is not part of GNU Emacs.
 
@@ -92,7 +92,7 @@
 
 (defun exec-path-from-shell--tcsh-p (shell)
   "Return non-nil if SHELL appears to be tcsh."
-  (string-match "tcsh$" shell))
+  (and shell (string-match "tcsh$" shell)))
 
 (defun exec-path-from-shell--login-arg (shell)
   "Return the name of the --login arg for SHELL."
