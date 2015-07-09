@@ -124,7 +124,20 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 ;; or ; to carry on typing the relevant line of code.
 (setq company-auto-complete t)
 
+;; Bind `company-complete' next to hippie-expand, because they're both useful.
 (global-set-key (kbd "s-/") #'company-complete)
+
+;; TODO: Use C-n and C-p for consistency with helm.
+
+(defun wh/company-complete-common-or-select ()
+  "If invoked once, complete the common prefix.
+If invoked again immediately, select the current completion candidate."
+  (interactive)
+  (if (eq last-command 'wh/company-complete-common-or-select)
+      (company-complete-selection)
+    (company-complete-common)))
+
+(define-key company-active-map (kbd "<tab>") #'wh/company-complete-common-or-select)
 
 ;; always spaces, never tabs
 (setq-default indent-tabs-mode nil)
