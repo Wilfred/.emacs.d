@@ -127,17 +127,23 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 ;; Bind `company-complete' next to hippie-expand, because they're both useful.
 (global-set-key (kbd "s-/") #'company-complete)
 
-;; TODO: Use C-n and C-p for consistency with helm.
+;; Use C-n and C-p when company is active (for consistency with helm).
+(define-key company-active-map (kbd "C-n") #'company-select-next)
+(define-key company-active-map (kbd "C-p") #'company-select-previous)
 
-(defun wh/company-complete-common-or-select ()
-  "If invoked once, complete the common prefix.
-If invoked again immediately, select the current completion candidate."
+(defun wh/company-complete-dwim ()
+  "If we've just started completion, just complete the common prefix.
+However, if called again, or if we've just selected a value,
+select the current completion candidate."
   (interactive)
-  (if (eq last-command 'wh/company-complete-common-or-select)
+  (if (-contains? '(wh/company-complete-dwim
+                    company-select-previous
+                    company-select-next)
+                  last-command)
       (company-complete-selection)
     (company-complete-common)))
 
-(define-key company-active-map (kbd "<tab>") #'wh/company-complete-common-or-select)
+(define-key company-active-map (kbd "<tab>") #'wh/company-complete-dwim)
 
 ;; always spaces, never tabs
 (setq-default indent-tabs-mode nil)
