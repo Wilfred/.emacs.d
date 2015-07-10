@@ -119,11 +119,6 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 ;; last option shows the first.
 (setq company-selection-wrap-around t)
 
-;; Select the current completion candidate when we press any character
-;; from `company-auto-complete-chars'. This allows you to press space
-;; or ; to carry on typing the relevant line of code.
-(setq company-auto-complete t)
-
 ;; Bind `company-complete' next to hippie-expand, because they're both useful.
 (global-set-key (kbd "s-/") #'company-complete)
 
