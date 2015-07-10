@@ -80,6 +80,7 @@
 ;; tell it which virtualenv you're using, see `virtualenv-workon'.
 (add-hook 'python-mode-hook 'anaconda-mode)
 (add-hook 'python-mode-hook 'eldoc-mode)
+(diminish 'anaconda-mode "Ana")
 
 (define-key python-mode-map (kbd "M-.") 'anaconda-mode-goto-definitions)
 (define-key python-mode-map (kbd "M-,") 'anaconda-nav-pop-marker)
