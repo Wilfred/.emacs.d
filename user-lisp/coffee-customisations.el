@@ -2,8 +2,10 @@
 
 (setq coffee-tab-width 2)
 
+(require 'company)
+
 (defun wh/company-in-coffee-mode ()
-  (setq company-backends (list #'company-dabbrev-code)))
+  (set (make-local-variable 'company-backends) (list #'company-dabbrev-code)))
 
 (add-hook 'coffee-mode-hook #'wh/company-in-coffee-mode)
 
