@@ -77,7 +77,7 @@
 (define-key python-mode-map (kbd "C-M-p") 'python-nav-backward-statement)
 
 ;; Anaconda is great for jump-to-definition and eldoc. You do need to
-;; tell it which virtualenv you're using, see `virtualenv-workon'.
+;; tell it which virtualenv you're using, see `venv-workon'.
 (add-hook 'python-mode-hook 'anaconda-mode)
 (add-hook 'python-mode-hook 'eldoc-mode)
 (diminish 'anaconda-mode "Ana")
