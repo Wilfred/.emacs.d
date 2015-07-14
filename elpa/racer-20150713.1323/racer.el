@@ -4,7 +4,7 @@
 
 ;; Author: Phil Dawes
 ;; URL: https://github.com/phildawes/racer
-;; Package-Version: 20150628.2228
+;; Package-Version: 20150713.1323
 ;; Version: 0.0.2
 ;; Package-Requires: ((emacs "24.3") (company "0.8.0") (rust-mode "0.2.0"))
 ;; Keywords: abbrev, convenience, matching, rust, tools
@@ -60,6 +60,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'etags)
 (require 'company)
 (require 'rust-mode)
 
@@ -68,7 +69,10 @@
   :link '(url-link "https://github.com/phildawes/racer/")
   :group 'rust-mode)
 
-(defcustom racer-cmd "/usr/local/bin/racer"
+(defcustom racer-cmd
+  (if (locate-file "racer" exec-path)
+      (locate-file "racer" exec-path)
+    "/usr/local/bin/racer")
   "Path to the racer binary."
   :type 'file
   :group 'racer)
@@ -91,7 +95,7 @@
 (defun racer--write-tmp-file (tmp-file-name)
   "Write the racer temporary file to `TMP-FILE-NAME'."
     (push-mark)
-    (write-region nil nil tmp-file-name))
+    (write-region nil nil tmp-file-name nil 'silent))
 
 (defun racer--candidates ()
   "Run the racer complete command and process the results."
@@ -199,7 +203,7 @@
   (let ((racer-tmp-file-name (concat (buffer-file-name) ".racertmp")))
     (racer--write-tmp-file racer-tmp-file-name)
     (setenv "RUST_SRC_PATH" (expand-file-name racer-rust-src-path))
-    (push-mark)
+    (ring-insert find-tag-marker-ring (point-marker))
     (let ((lines (process-lines racer-cmd
                                 "find-definition"
                                 (number-to-string (racer-get-line-number))

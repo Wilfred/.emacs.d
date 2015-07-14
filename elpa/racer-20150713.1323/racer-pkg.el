@@ -1,0 +1,1 @@
+(define-package "racer" "20150713.1323" "Rust completion via racer with company" '((emacs "24.3") (company "0.8.0") (rust-mode "0.2.0")) :url "https://github.com/phildawes/racer" :keywords '("abbrev" "convenience" "matching" "rust" "tools"))
