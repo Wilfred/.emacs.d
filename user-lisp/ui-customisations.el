@@ -43,6 +43,9 @@ Defaults to `t'.")
 (require 'ibuffer)
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 
+;; Cycle between buffers with the same major mode.
+(global-set-key (kbd "C-x v") #'cbm-cycle)
+
 ;; Use human readable Size column instead of original one
 (define-ibuffer-column size-h
   (:name "Size" :inline t)
