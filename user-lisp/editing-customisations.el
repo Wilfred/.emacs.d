@@ -31,7 +31,7 @@ With argument ARG, do this that many times."
   "Kill characters backward until encountering the beginning of a symbol.
 With argument ARG, do this that many times."
   (interactive "p")
-  (kill-symbol (- arg)))
+  (wh/kill-symbol (- arg)))
 
 (global-set-key (kbd "C-<backspace>") #'wh/backward-kill-symbol)
 
