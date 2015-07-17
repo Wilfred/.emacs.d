@@ -77,7 +77,7 @@
 (defun magit-remote-set-url (remote url)
   "Change the url of the remote named REMOTE to URL."
   (interactive
-   (let  ((remote (magit-read-remote "Rename remote")))
+   (let  ((remote (magit-read-remote "Set url of remote")))
      (list remote (magit-read-string "Url" (magit-get "remote" remote "url")))))
   (magit-set url "remote" remote "url"))
 
@@ -140,7 +140,10 @@ then read the remote."
 (defun magit-pull-current (remote branch &optional args)
   "Fetch and merge into current branch."
   (interactive (magit-pull-read-args t))
-  (magit-run-git-async "pull" args remote branch))
+  (magit-run-git-async "pull" args
+                       (and (not (equal remote (magit-get-remote)))
+                            (not (equal branch (magit-get-remote-branch)))
+                            (list remote branch))))
 
 ;;;###autoload
 (defun magit-pull (remote branch &optional args)
@@ -165,12 +168,14 @@ then read the remote."
               (?h "Disable hooks" "--no-verify")
               (?d "Dry run"       "--dry-run")
               (?u "Set upstream"  "--set-upstream"))
-  :actions  '((?P "Current"   magit-push-current)
-              (?e "Elsewhere" magit-push-elsewhere)
-              (?t "Tags"      magit-push-tags)
-              (?o "Other"     magit-push)
-              (?m "Matching"  magit-push-matching)
-              (?T "Tag"       magit-push-tag))
+  :actions  '((?P "Current"    magit-push-current)
+              (?q "Quickly"    magit-push-quickly)
+              (?t "Tags"       magit-push-tags)
+              (?o "Other"      magit-push)
+              (?i "Implicitly" magit-push-implicitly)
+              (?T "Tag"        magit-push-tag)
+              (?e "Elsewhere"  magit-push-elsewhere)
+              (?m "Matching"   magit-push-matching))
   :default-action 'magit-push-current
   :max-action-columns 3)
 
@@ -208,7 +213,8 @@ Read the local and remote branch."
                               (magit-list-local-branch-names))
                      nil nil nil 'magit-revision-history
                      (or (and default-current current)
-                         (magit-local-branch-at-point)))
+                         (magit-local-branch-at-point)
+                         (magit-commit-at-point)))
                     (user-error "Nothing selected")))
          (remote (and (magit-branch-p local)
                       (magit-get-remote-branch local))))
@@ -218,14 +224,38 @@ Read the local and remote branch."
     (list local (car remote) (cdr remote) (magit-push-arguments))))
 
 ;;;###autoload
+(defun magit-push-quickly (&optional args)
+  "Push the current branch to some remote.
+When the Git variable `magit.pushRemote' is set, then push to
+that remote.  If that variable is undefined or the remote does
+not exist, then push to \"origin\".  If that also doesn't exist
+then raise an error.  The local branch is pushed to the remote
+branch with the same name."
+  (interactive (list (magit-push-arguments)))
+  (-if-let (branch (magit-get-current-branch))
+      (-if-let (remote (or (magit-remote-p (magit-get "magit.pushRemote"))
+                           (magit-remote-p "origin")))
+          (magit-run-git-async-no-revert "push" "-v" args remote branch)
+        (user-error "Cannot determine remote to push to"))
+    (user-error "No branch is checked out")))
+
+;;;###autoload
+(defun magit-push-implicitly (&optional args)
+  "Push without explicitly specifing what to push.
+This runs `git push -v'.  What is being pushed depends on various
+Git variables as described in the `git-push(1)' and `git-config(1)'
+manpages."
+  (interactive (list (magit-push-arguments)))
+  (magit-run-git-async-no-revert "push" "-v" args))
+
+;;;###autoload
 (defun magit-push-matching (remote &optional args)
   "Push all matching branches to another repository.
 If multiple remotes exit, then read one from the user.
 If just one exists, use that without requiring confirmation."
   (interactive (list (magit-read-remote "Push matching branches to" nil t)))
-  (magit-run-git-async "push" "-v" args remote ":"))
+  (magit-run-git-async-no-revert "push" "-v" args remote ":"))
 
-;;;###autoload
 (defun magit-push-tags (remote &optional args)
   "Push all tags to another repository.
 If only one remote exists, then push to that.  Otherwise prompt

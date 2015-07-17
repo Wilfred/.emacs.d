@@ -81,7 +81,13 @@ With a prefix argument and if necessary, attempt a 3-way merge."
                                                (magit-section-end section)))))
 
 (defun magit-apply-region (section &rest args)
-  (magit-apply-patch section args (magit-diff-hunk-region-patch section args)))
+  (unless (magit-diff-context-p)
+    (user-error "Not enough context to apply region.  Increase the context"))
+  (when (string-match "^diff --cc" (magit-section-parent-value section))
+    (user-error "Cannot un-/stage resolution hunks.  Stage the whole file"))
+  (magit-apply-patch section args
+                     (concat (magit-diff-file-header section)
+                             (magit-diff-hunk-region-patch section args))))
 
 (defvar magit-apply-inhibit-wip nil)
 
@@ -98,7 +104,7 @@ With a prefix argument and if necessary, attempt a 3-way merge."
     (with-temp-buffer
       (insert patch)
       (magit-run-git-with-input nil
-        "apply" args
+        "apply" args "-p0"
         (unless (magit-diff-context-p) "--unidiff-zero")
         "--ignore-space-change" "-"))
     (when (and magit-wip-after-apply-mode (not magit-apply-inhibit-wip))
@@ -382,29 +388,29 @@ without requiring confirmation."
 
 ;;;; Reverse
 
-(defun magit-reverse ()
+(defun magit-reverse (&rest args)
   "Reverse the change at point in the working tree."
-  (interactive)
+  (interactive (and current-prefix-arg (list "--3way")))
   (--when-let (magit-current-section)
     (pcase (list (magit-diff-type) (magit-diff-scope))
       (`(untracked ,_) (user-error "Cannot reverse untracked changes"))
       (`(unstaged  ,_) (user-error "Cannot reverse unstaged changes"))
-      (`(,_      list) (magit-reverse-files (magit-section-children it)))
-      (`(,_     files) (magit-reverse-files (magit-region-sections)))
-      (`(,_      file) (magit-reverse-files (list it)))
-      (_               (magit-reverse-apply it)))))
+      (`(,_      list) (magit-reverse-files (magit-section-children it) args))
+      (`(,_     files) (magit-reverse-files (magit-region-sections) args))
+      (`(,_      file) (magit-reverse-files (list it) args))
+      (_               (magit-reverse-apply it args)))))
 
-(defun magit-reverse-apply (section)
+(defun magit-reverse-apply (section args)
   (let ((scope (magit-diff-scope section)))
     (when (or (eq scope 'file)
               (magit-confirm 'reverse (format "Reverse %s" scope)))
-      (funcall (pcase scope
-                 (`region 'magit-apply-region)
-                 (`hunk   'magit-apply-hunk)
-                 (`file   'magit-apply-diff))
-               section "--reverse"))))
+      (apply (pcase scope
+               (`region 'magit-apply-region)
+               (`hunk   'magit-apply-hunk)
+               (`file   'magit-apply-diff))
+             section "--reverse" args))))
 
-(defun magit-reverse-files (sections)
+(defun magit-reverse-files (sections args)
   (cl-destructuring-bind (binaries sections)
       (let ((binaries (magit-staged-binary-files)))
         (--separate (member (magit-section-value it) binaries) sections))
@@ -412,7 +418,7 @@ without requiring confirmation."
       (when (magit-confirm-files 'reverse files)
         (magit-wip-commit-before-change files " before reverse")
         (let ((magit-apply-inhibit-wip t))
-          (mapc #'magit-reverse-apply sections))
+          (--each sections (magit-reverse-apply it args)))
         (magit-wip-commit-after-apply files " after reverse")))
     (when binaries
       (user-error "Cannot reverse binary files"))))

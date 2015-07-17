@@ -711,7 +711,7 @@ File: magit.info,  Node: Automatic refresh and revert,  Next: Sections,  Prev: A
 4.3 Automatic refresh and revert
 ================================
 
-After running a commands which may change the state of the current
+After running a command which may change the state of the current
 repository, the current Magit buffer and the corresponding status buffer
 are refreshed.  This ensures that the displayed information is
 up-to-date but can lead to a noticeable delay in big repositories.
@@ -1938,15 +1938,15 @@ popup is the only way to change certain arguments.
 
      Toggle hunk refinement on or off.
 
-   In addition to the above popup, which allow changing any of the
+   In addition to the above popup, which allows changing any of the
 supported arguments, there also exist some commands which change a
 particular argument.
 
-‘+’     (‘magit-diff-less-context’)
+‘-’     (‘magit-diff-less-context’)
 
      Decrease the context for diff hunks by COUNT lines.
 
-‘-’     (‘magit-diff-more-context’)
+‘+’     (‘magit-diff-more-context’)
 
      Increase the context for diff hunks by COUNT lines.
 
@@ -2512,7 +2512,7 @@ interface of a ‘git add --interactive’ session.
 
    With Magit, on the other hand, one can un-/stage individual hunks by
 just moving point into the respective section inside a diff displayed in
-the status buffer or a separate diff buffer and typing ‘s~/~u’.  To
+the status buffer or a separate diff buffer and typing ‘s’ or ‘u’.  To
 operate on just parts of a hunk, mark the changes that should be
 un-/staged using the region and then press the same key that would be
 used to un-/stage.  To stage multiple files or hunks at once use a
@@ -4164,7 +4164,7 @@ Per-repository configuration.
 
    • ‘magit-diff-highlight-indentation’
 
-   • ‘magit-diff-highlight-whitespace’
+   • ‘magit-diff-highlight-trailing’
 
    • ‘magit-diff-paint-whitespace’
 
@@ -5178,6 +5178,14 @@ A.9 Magit claims repository accessed using Tramp does not exist
    Magit requires at least version ‘1.9.4’.  When connecting to a remote
 machine using Tramp it requires that same version on that remote.
 
+   By default Tramp searches for programs in the directories given by
+the output of ‘getconf PATH’ on the remote host.  Therefore, if the
+remote git version that you intend to use lives in a non-standard
+location, you may need to alter ‘tramp-remote-path’.  Consult the Tramp
+documentation on remote programs
+<http://www.gnu.org/software/emacs/manual/html_node/tramp/Remote-Programs.html>
+for details.
+
    There are others reasons why Magit/Git might think that there is no
 repository where there actually is one, but when this is being reported
 then it’s usually the above.
@@ -5237,7 +5245,7 @@ A.12 Emacs 24.5 hangs when loading Magit
 ========================================
 
 This is actually triggered by loading Tramp.  See
-<https://debbugs.gnu.org/cgi/bugreport.cgi?bug~20015> for details.  You
+<https://debbugs.gnu.org/cgi/bugreport.cgi?bug=20015> for details.  You
 can work around the problem by setting
 ‘tramp-ssh-controlmaster-options’.  Changing your DNS server (e.g.  to
 Google’s ‘8.8.8.8’) may also be sufficient to work around the issue.
@@ -5263,8 +5271,8 @@ Appendix B Keystroke Index
                                                               (line  34)
 * $:                                     Viewing Git output.  (line  11)
 * +:                                     Log Buffer.          (line  47)
-* + <1>:                                 Refreshing diffs.    (line  41)
-* -:                                     Refreshing diffs.    (line  45)
+* + <1>:                                 Refreshing diffs.    (line  45)
+* -:                                     Refreshing diffs.    (line  41)
 * 0:                                     Refreshing diffs.    (line  49)
 * 1:                                     Section visibility.  (line  26)
 * 2:                                     Section visibility.  (line  26)
@@ -6165,30 +6173,30 @@ Node: Interface concepts22795
 Node: Modes and Buffers23121
 Node: Automatic save25221
 Node: Automatic refresh and revert26286
-Node: Sections30059
-Node: Section movement31008
-Node: Section visibility33559
-Node: Section hooks37150
-Node: Section types and values39188
-Node: Section options40458
-Node: Popup buffers and prefix commands40930
-Node: Completion and confirmation42244
-Node: Running Git45150
-Node: Viewing Git output45386
-Node: Running Git manually46386
-Node: Git executable47681
-Node: Global Git arguments49688
-Node: Inspecting50495
-Node: Status buffer51622
-Node: Status sections54073
-Node: Status header sections58416
-Node: Status options59980
-Node: Logging61193
-Node: Log Buffer62745
-Node: Select from log65693
-Node: Reflog66633
-Node: Diffing67111
-Node: Refreshing diffs68985
+Node: Sections30058
+Node: Section movement31007
+Node: Section visibility33558
+Node: Section hooks37149
+Node: Section types and values39187
+Node: Section options40457
+Node: Popup buffers and prefix commands40929
+Node: Completion and confirmation42243
+Node: Running Git45149
+Node: Viewing Git output45385
+Node: Running Git manually46385
+Node: Git executable47680
+Node: Global Git arguments49687
+Node: Inspecting50494
+Node: Status buffer51621
+Node: Status sections54072
+Node: Status header sections58415
+Node: Status options59979
+Node: Logging61192
+Node: Log Buffer62744
+Node: Select from log65692
+Node: Reflog66632
+Node: Diffing67110
+Node: Refreshing diffs68984
 Node: Diff buffer71516
 Node: Diff options73418
 Node: Revision buffer75904
@@ -6201,65 +6209,65 @@ Node: Blaming83865
 Node: Manipulating87137
 Node: Repository setup87429
 Node: Staging and unstaging88068
-Node: Staging from file-visiting buffers90512
-Node: Applying91680
-Node: Committing93259
-Node: Initiating a commit93842
-Node: Editing commit messages96677
-Node: Branching104184
-Node: Merging106538
-Node: Rebasing108623
-Node: Editing rebase sequences110326
-Node: Cherry picking112735
-Node: Reverting114342
-Node: Resetting115706
-Node: Stashing116990
-Node: Transferring120055
-Node: Remotes120293
-Node: Fetching121097
-Node: Pulling121914
-Node: Pushing122415
-Node: Creating and sending patches123734
-Node: Applying patches124430
-Node: Miscellaneous125429
-Node: Tagging125616
-Node: Notes126402
-Node: Submodules128928
-Node: Wip Modes130159
-Node: Customizing136079
-Node: Per-repository configuration137751
-Node: Essential settings139399
-Node: Safety139723
-Node: Performance142904
-Node: Plumbing147059
-Node: Calling Git147687
-Node: Getting a value from Git149210
-Node: Calling Git for effect152314
-Node: Section plumbing158818
-Node: Creating sections159046
-Node: Section selection162849
-Node: Matching sections164529
-Node: Refreshing buffers169731
-Node: Conventions172866
-Node: Confirmation and completion173043
-Node: Theming Faces173941
-Node: FAQ182092
-Node: Magit is slow183101
-Node: I am having problems committing183267
-Node: I am using an Emacs release older than 244183665
-Node: I am using a Git release older than 194185111
-Node: I am using MS Windows and cannot push with Magit185950
-Node: How to install the gitman info manual?186528
-Node: How can I show Git's output?189110
-Node: Expanding a file to show the diff causes it to disappear189920
-Node: Magit claims repository accessed using Tramp does not exist190460
-Node: Can Magit be used as ediff-version-control-package?191195
-Node: How to show diffs for gpg-encrypted files?193235
-Node: Emacs 245 hangs when loading Magit193826
-Node: Keystroke Index194345
-Node: Command Index217364
-Node: Function Index240901
-Node: Variable Index250525
+Node: Staging from file-visiting buffers90519
+Node: Applying91687
+Node: Committing93266
+Node: Initiating a commit93849
+Node: Editing commit messages96684
+Node: Branching104191
+Node: Merging106545
+Node: Rebasing108630
+Node: Editing rebase sequences110333
+Node: Cherry picking112742
+Node: Reverting114349
+Node: Resetting115713
+Node: Stashing116997
+Node: Transferring120062
+Node: Remotes120300
+Node: Fetching121104
+Node: Pulling121921
+Node: Pushing122422
+Node: Creating and sending patches123741
+Node: Applying patches124437
+Node: Miscellaneous125436
+Node: Tagging125623
+Node: Notes126409
+Node: Submodules128935
+Node: Wip Modes130166
+Node: Customizing136086
+Node: Per-repository configuration137758
+Node: Essential settings139406
+Node: Safety139730
+Node: Performance142911
+Node: Plumbing147064
+Node: Calling Git147692
+Node: Getting a value from Git149215
+Node: Calling Git for effect152319
+Node: Section plumbing158823
+Node: Creating sections159051
+Node: Section selection162854
+Node: Matching sections164534
+Node: Refreshing buffers169736
+Node: Conventions172871
+Node: Confirmation and completion173048
+Node: Theming Faces173946
+Node: FAQ182097
+Node: Magit is slow183106
+Node: I am having problems committing183272
+Node: I am using an Emacs release older than 244183670
+Node: I am using a Git release older than 194185116
+Node: I am using MS Windows and cannot push with Magit185955
+Node: How to install the gitman info manual?186533
+Node: How can I show Git's output?189115
+Node: Expanding a file to show the diff causes it to disappear189925
+Node: Magit claims repository accessed using Tramp does not exist190465
+Node: Can Magit be used as ediff-version-control-package?191611
+Node: How to show diffs for gpg-encrypted files?193651
+Node: Emacs 245 hangs when loading Magit194242
+Node: Keystroke Index194761
+Node: Command Index217780
+Node: Function Index241317
+Node: Variable Index250941
 
 End Tag Table
 

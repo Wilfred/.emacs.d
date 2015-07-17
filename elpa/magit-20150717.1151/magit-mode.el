@@ -171,7 +171,7 @@ therefore does not have to be reverted."
 If this is non-nil then all modified file-visiting buffers
 belonging to the current repository may be saved before running
 commands, before creating new Magit buffers, and before
-explicitly refreshing such buffers.  It this is `dontask' then
+explicitly refreshing such buffers.  If this is `dontask' then
 this is done without user intervention, if it is t then the user
 has to confirm each save."
   :group 'magit
@@ -298,7 +298,7 @@ has to confirm each save."
     "---"
     ["Push" magit-push t]
     ["Pull" magit-pull t]
-    ["Remote update" magit-remote-update t]
+    ["Remote update" magit-fetch-all t]
     ("Submodule"
      ["Submodule update" magit-submodule-update t]
      ["Submodule update and init" magit-submodule-update-init t]
@@ -362,6 +362,11 @@ The value is usually set using `magit-mode-setup'.")
 The value is usually set using `magit-mode-setup'.")
 (put 'magit-refresh-args 'permanent-local t)
 
+;; Kludge.  We use this instead of adding a new, optional argument to
+;; `magit-setup-mode' in order to avoid breaking third-party packages.
+;; See #2054 and #2060.
+(defvar magit-mode-setup--topdir nil)
+
 (defmacro magit-mode-setup
   (buffer switch-func mode refresh-func &rest refresh-args)
   "Display and select BUFFER, turn on MODE, and refresh a first time.
@@ -377,10 +382,13 @@ before switching to BUFFER."
         (sargs (cl-gensym "args"))
         (sbuf  (cl-gensym "buffer")))
     `(let* ((,smode ,mode)
-            (,sroot (magit-toplevel))
+            (,sroot (let ((default-directory (or magit-mode-setup--topdir
+                                                 default-directory)))
+                      (magit-toplevel)))
             (,sfunc ,refresh-func)
             (,sargs (list ,@refresh-args))
-            (,sbuf  (magit-mode-display-buffer ,buffer ,smode ,switch-func)))
+            (,sbuf  (magit-mode-display-buffer
+                     ,buffer ,smode ,switch-func ,sroot)))
        (when find-file-visit-truename
          (setq ,sroot (file-truename ,sroot)))
        (if ,sroot
@@ -407,7 +415,7 @@ before switching to BUFFER."
 (defvar-local magit-previous-section nil)
 (put 'magit-previous-section 'permanent-local t)
 
-(defun magit-mode-display-buffer (buffer mode &optional switch-function)
+(defun magit-mode-display-buffer (buffer mode &optional switch-function topdir)
   "Display BUFFER in some window and select it.
 BUFFER may be a buffer or a string, the name of a buffer.  Return
 the buffer.
@@ -418,13 +426,17 @@ can later be restored by `magit-mode-bury-buffer'.
 
 Then display and select BUFFER using SWITCH-FUNCTION.  If that is
 nil either use `pop-to-buffer' if the current buffer's major mode
-derives from Magit mode; or else use `switch-to-buffer'."
+derives from Magit mode; or else use `switch-to-buffer'.
+
+When optional TOPDIR is specified, then it has to be the top-level
+directory of the repository.  Otherwise that is determined using
+the function `magit-toplevel'."
   (cond ((stringp buffer)
-         (setq buffer (magit-mode-get-buffer-create buffer mode)))
+         (setq buffer (magit-mode-get-buffer-create buffer mode topdir)))
         ((not (bufferp buffer))
          (signal 'wrong-type-argument (list 'bufferp nil))))
   (let ((section (magit-current-section)))
-    (with-current-buffer (get-buffer-create buffer)
+    (with-current-buffer buffer
       (setq magit-previous-section section)
       (if magit-inhibit-save-previous-winconf
           (when (eq magit-inhibit-save-previous-winconf 'unset)
@@ -696,18 +708,20 @@ When called interactively then the revert is forced."
 Like `vc-mode-line' but simpler, more efficient, and less buggy."
   (setq vc-mode
         (if vc-display-status
-            (let* ((rev (or (magit-get-current-branch)
-                            (magit-rev-parse "--short" "HEAD")))
-                   (msg (cl-letf (((symbol-function #'vc-working-revision)
-                                   (lambda (&rest _) rev)))
-                          (vc-default-mode-line-string 'Git buffer-file-name))))
-              (propertize
-               (concat " " msg)
-               'mouse-face 'mode-line-highlight
-               'help-echo (concat (get-text-property 0 'help-echo msg)
-                                  "\nCurrent revision: " rev
-                                  "\nmouse-1: Version Control menu")
-               'local-map vc-mode-line-map))
+            (magit-with-toplevel
+              (let* ((rev (or (magit-get-current-branch)
+                              (magit-rev-parse "--short" "HEAD")))
+                     (msg (cl-letf (((symbol-function #'vc-working-revision)
+                                     (lambda (&rest _) rev)))
+                            (vc-default-mode-line-string
+                             'Git buffer-file-name))))
+                (propertize
+                 (concat " " msg)
+                 'mouse-face 'mode-line-highlight
+                 'help-echo (concat (get-text-property 0 'help-echo msg)
+                                    "\nCurrent revision: " rev
+                                    "\nmouse-1: Version Control menu")
+                 'local-map vc-mode-line-map)))
           " Git"))
   (force-mode-line-update))
 

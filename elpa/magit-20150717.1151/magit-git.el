@@ -407,6 +407,13 @@ If the file is not inside a Git repository then return nil."
   (let ((default-directory (magit-toplevel)))
     (magit-git-items "ls-tree" "-z" "-r" "--name-only" rev)))
 
+(defun magit-changed-files (rev-or-range)
+  (let ((default-directory (magit-toplevel)))
+    (magit-git-items "diff" "-z" "--name-only"
+                     (if (string-match-p "\\.\\." rev-or-range)
+                         rev-or-range
+                       (format "%s~..%s" rev-or-range rev-or-range)))))
+
 (defun magit-file-status (&rest args)
   (with-temp-buffer
     (save-excursion (magit-git-insert "status" "-z" args))
@@ -512,8 +519,11 @@ string \"true\", otherwise return nil."
   (magit-git-success "diff" "--quiet" a b))
 
 (defun magit-rev-head-p (rev)
-  (equal (magit-rev-parse rev)
-         (magit-rev-parse "HEAD")))
+  (or (equal rev "HEAD")
+      (and rev
+           (not (string-match-p "\\.\\." rev))
+           (equal (magit-rev-parse rev)
+                  (magit-rev-parse "HEAD")))))
 
 (defun magit-rev-name (rev &optional pattern)
   (magit-git-string "name-rev" "--name-only" "--no-undefined"
@@ -746,6 +756,9 @@ where COMMITS is the number of commits in TAG but not in REV."
   (and (or (member string (magit-list-branches))
            (member string (magit-list-branch-names))) t))
 
+(defun magit-remote-p (string)
+  (car (member string (magit-list-remotes))))
+
 (defun magit-rev-diff-count (a b)
   "Return the commits in A but not B and vice versa.
 Return a list of two integers: (A>B B>A)."
@@ -976,10 +989,9 @@ Return a list of two integers: (A>B B>A)."
 (defun magit-read-stash (prompt &optional use-at-point)
   (let ((atpoint (magit-stash-at-point)))
     (or (and use-at-point atpoint)
-        (magit-completing-read prompt
-                               (--map (car (split-string it ":"))
-                                      (magit-git-lines "stash" "list"))
-                               nil t nil nil atpoint))))
+        (let ((stashes (magit-git-lines "stash" "list" "--format=%gd")))
+          (magit-completing-read prompt stashes nil t nil nil
+                                 (or atpoint (car stashes)))))))
 
 (defun magit-read-remote (prompt &optional default use-only)
   (let ((remotes (magit-list-remotes)))

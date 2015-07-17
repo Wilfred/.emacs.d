@@ -80,7 +80,7 @@
   "Resume the current cherry-pick or revert sequence."
   (interactive)
   (if (magit-sequencer-in-progress-p)
-      (if (magit-anything-unstaged-p)
+      (if (magit-anything-unstaged-p t)
           (user-error "Cannot continue due to unstaged changes")
         (magit-run-git-sequencer
          (if (magit-revert-in-progress-p) "revert" "cherry-pick") "--continue"))
@@ -255,7 +255,7 @@ without prompting."
   "Resume the current patch applying sequence."
   (interactive)
   (if (magit-am-in-progress-p)
-      (if (magit-anything-unstaged-p)
+      (if (magit-anything-unstaged-p t)
           (error "Cannot continue due to unstaged changes")
         (magit-run-git-sequencer "am" "--continue"))
     (user-error "Not applying any patches")))
@@ -360,7 +360,8 @@ selected from a list of recent commits.
 (defun magit-rebase-unpushed (commit &optional args)
   "Start an interactive rebase sequence of all unpushed commits.
 \n(git rebase -i UPSTREAM [ARGS])"
-  (interactive (list (magit-get-tracked-branch)
+  (interactive (list (--when-let (magit-get-tracked-branch)
+                       (magit-git-string "merge-base" it "HEAD")) 
                      (magit-rebase-arguments)))
   (if (setq commit (magit-rebase-interactive-assert commit))
       (magit-run-git-sequencer "rebase" "-i" commit args)
@@ -373,7 +374,9 @@ selected from a list of recent commits.
 (defun magit-rebase-autosquash (commit &optional args)
   "Combine squash and fixup commits with their intended targets.
 \n(git rebase -i COMMIT[^] --autosquash [ARGS])"
-  (interactive (list (magit-get-tracked-branch) (magit-rebase-arguments)))
+  (interactive (list (--when-let (magit-get-tracked-branch)
+                       (magit-git-string "merge-base" it "HEAD"))
+                     (magit-rebase-arguments)))
   (if (setq commit (magit-rebase-interactive-assert commit))
       (let ((process-environment process-environment))
         (setenv "GIT_SEQUENCE_EDITOR" "true")
@@ -427,8 +430,8 @@ selected from a list of recent commits.
   "Restart the current rebasing operation."
   (interactive)
   (if (magit-rebase-in-progress-p)
-      (if (magit-anything-unstaged-p)
-          (error "Cannot continue rebase with unstaged changes")
+      (if (magit-anything-unstaged-p t)
+          (user-error "Cannot continue rebase with unstaged changes")
         (magit-run-git-sequencer "rebase" "--continue"))
     (user-error "No rebase in progress")))
 

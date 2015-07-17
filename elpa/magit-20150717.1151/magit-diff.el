@@ -45,6 +45,13 @@
 (declare-function magit-blame-chunk-get 'magit-blame)
 (declare-function magit-blame-mode 'magit-blame)
 (defvar magit-blame-mode)
+(defvar git-rebase-line)
+
+;; Work around the dreaded Elpa issue.
+(cl-eval-when (compile)
+  (cl-defstruct magit-section
+    type value start content end hidden washer refined
+    source diff-header process parent children))
 
 (require 'diff-mode)
 (require 'smerge-mode)
@@ -161,10 +168,30 @@ changes to be displayed automatically.
 In the event that expanding very large patches takes a long time
 \\<global-map>\\[keyboard-quit] can be used to abort that step.
 This is especially useful when you would normally not look at the
-changes, e.g. because you are committing some binary files."
+changes, e.g. because you are committing some binary files.
+
+Also see `magit-diff-auto-show-delay'."
   :package-version '(magit . "2.1.0")
   :group 'magit-diff
   :type 'sexp)
+
+(defcustom magit-diff-auto-show-delay 0.2
+  "Delay before automatically showing or updating the revision buffer.
+
+Depending on the value of `magit-diff-auto-show' (which see),
+moving in a log buffer, or with blame information active in
+a file-visiting buffer, may automatically show the commit at
+point in the revision.
+
+When holding down a key to move by several lines/chunks, then
+that would update that buffer for each line/chunk on the way.
+To prevent that, updating the revision buffer is delayed, and
+this option controls for how long.  For optiomal experience you
+might have to adjust this delay and/or the keyboard repeat rate
+and delay of your graphical environment or operating system."
+  :package-version '(magit . "2.2.0")
+  :group 'magit-diff
+  :type 'number)
 
 (defun magit-diff-auto-show-p (op)
   (if (eq (car magit-diff-auto-show) 'not)
@@ -504,10 +531,13 @@ The following `format'-like specs are supported:
                 (?c "Detect copies"  "-C" read-from-minibuffer)
                 (?a "Diff algorithm" "--diff-algorithm="
                     magit-diff-select-algorithm))
-    :actions  '((?g "Refresh"       magit-diff-refresh)
-                (?s "Set defaults"  magit-diff-set-default-arguments)
-                (?w "Save defaults" magit-diff-save-default-arguments)
-                (?t "Toggle hunk refinement" magit-diff-toggle-refine-hunk))))
+    :actions  '((?g "Refresh"                magit-diff-refresh)
+                (?t "Toggle hunk refinement" magit-diff-toggle-refine-hunk)
+                (?s "Set defaults"           magit-diff-set-default-arguments)
+                (?r "Switch range type"      magit-diff-switch-range-type)
+                (?w "Save defaults"          magit-diff-save-default-arguments)
+                (?f "Flip revisions"         magit-diff-flip-revs))
+    :max-action-columns 2))
 
 (defadvice magit-diff-refresh-popup (around get-current-arguments activate)
   (if (derived-mode-p 'magit-diff-mode)
@@ -591,7 +621,7 @@ a commit read from the minibuffer."
   (interactive (magit-diff-read-args))
   (-if-let (tracked (magit-get-tracked-ref))
       (magit-diff (concat tracked "...") args files)
-    (error "Detached HEAD or upstream unset")))
+    (user-error "No upstream set")))
 
 ;;;###autoload
 (defun magit-diff-unpulled (&optional args files)
@@ -599,7 +629,7 @@ a commit read from the minibuffer."
   (interactive (magit-diff-read-args))
   (-if-let (tracked (magit-get-tracked-ref))
       (magit-diff (concat "..." tracked) args files)
-    (error "Detached HEAD or upstream unset")))
+    (user-error "No upstream set")))
 
 ;;;###autoload
 (defun magit-diff-while-committing (&optional args)
@@ -726,6 +756,44 @@ for a commit."
          (kill-local-variable 'magit-diff-section-arguments)))
   (magit-refresh))
 
+(defconst magit-diff-range-re
+  (concat "\\`\\([^ \t]*[^.]\\)?"       ; revA
+          "\\(\\.\\.\\.?\\)"            ; range marker
+          "\\([^.][^ \t]*\\)?\\'"))     ; revB
+
+(defun magit-diff-switch-range-type (args)
+  "Convert diff range type.
+Change \"revA..revB\" to \"revB...revA\", or vice versa."
+  (interactive (list (magit-diff-refresh-arguments)))
+  (let ((range (car magit-refresh-args)))
+    (if (and (derived-mode-p 'magit-diff-mode)
+             (string-match magit-diff-range-re range))
+        (progn
+          (setcar magit-refresh-args
+                  (concat (match-string 1 range)
+                          (if (string= (match-string 2 range) "..")
+                              "..."
+                            "..")
+                          (match-string 3 range)))
+          (magit-refresh))
+      (user-error "No range to change"))))
+
+(defun magit-diff-flip-revs (args)
+  "Swap revisions in diff range.
+Change \"revA..revB\" to \"revB..revA\"."
+  (interactive (list (magit-diff-refresh-arguments)))
+  (let ((range (car magit-refresh-args)))
+    (if (and range
+             (derived-mode-p 'magit-diff-mode)
+             (string-match magit-diff-range-re range))
+        (progn
+          (setcar magit-refresh-args
+                  (concat (match-string 3 range)
+                          (match-string 2 range)
+                          (match-string 1 range)))
+          (magit-refresh))
+      (user-error "No range to swap"))))
+
 (defun magit-diff-less-context (&optional count)
   "Decrease the context for diff hunks by COUNT lines."
   (interactive "p")
@@ -802,12 +870,17 @@ which, as the name suggests always visits the actual file."
   (if (file-accessible-directory-p file)
       (magit-diff-visit-directory file other-window)
     (let ((current (magit-current-section))
-          rev diff hunk line col buffer)
-      (when (and (derived-mode-p 'magit-revision-mode)
-                 (not force-worktree))
-        (setq rev (car (last magit-refresh-args 2)))
-        (when (magit-rev-head-p rev)
-          (setq rev nil)))
+          (rev (cond (force-worktree nil)
+                     ((derived-mode-p 'magit-revision-mode)
+                      (car (last magit-refresh-args 2)))
+                     ((derived-mode-p 'magit-diff-mode)
+                      (-when-let (range (car magit-refresh-args))
+                        (and (string-match "\\.\\.\\([^.].*\\)?[ \t]*\\'" range)
+                             (match-string 1 range))))))
+          (unmerged-p (magit-anything-unmerged-p file))
+          diff hunk line col buffer)
+      (when (and rev (magit-rev-head-p rev))
+        (setq rev nil))
       (setq hunk
             (pcase (magit-diff-scope)
               ((or `hunk `region) current)
@@ -828,9 +901,9 @@ which, as the name suggests always visits the actual file."
         (goto-char (point-min))
         (forward-line (1- line))
         (when col
-          (move-to-column col)))))
-  (when (magit-anything-unmerged-p file)
-    (smerge-start-session)))
+          (move-to-column col)))
+      (when unmerged-p
+        (smerge-start-session)))))
 
 (defun magit-diff-visit-file-worktree (file &optional other-window)
   "From a diff, visit the corresponding file at the appropriate position.
@@ -844,9 +917,9 @@ hunk headers get less useful the \"older\" the changes are, and
 as a result, jumping to the appropriate position gets less
 reliable.
 
-Also see `magit-diff-visit-file-worktree' which visits the
-respective blob, unless the diff shows changes in the worktree,
-the index, or `HEAD'."
+Also see `magit-diff-visit-file' which visits the respective
+blob, unless the diff shows changes in the worktree, the index,
+or `HEAD'."
   (interactive (list (or (magit-file-at-point)
                          (user-error "No file at point"))
                      current-prefix-arg))
@@ -934,7 +1007,6 @@ commit or stash at point, then prompt for a commit."
                cmd 'magit-stash-show
                buf (magit-mode-get-buffer
                     magit-diff-buffer-name-format 'magit-diff-mode))))))
-    (message "--- %s %s" rev buf)
     (if rev
         (if (and buf
                  (setq win (get-buffer-window buf))
@@ -1116,32 +1188,48 @@ section or a child thereof."
       (unless (and (derived-mode-p 'magit-status-mode)
                    (not (member "--cached" args)))
         (magit-insert-section (file file)
-          (magit-insert (propertize (format "unmerged   %s" file)
-                                    'face 'magit-diff-file-heading) nil ?\n))))
+          (magit-insert
+           (propertize
+            (format "unmerged   %s%s" file
+                    (pcase (cddr (car (magit-file-status file)))
+                      (`(?D ?D) " (both deleted)")
+                      (`(?D ?U) " (deleted by us)")
+                      (`(?U ?D) " (deleted by them)")
+                      (`(?A ?A) " (both added)")
+                      (`(?A ?U) " (added by us)")
+                      (`(?U ?A) " (added by them)")
+                      (`(?U ?U) "")))
+            'face 'magit-diff-file-heading) nil ?\n))))
     t)
    ((looking-at "^\\(merged\\|changed in both\\)")
     (let ((status (if (equal (match-string 1) "merged") 'merged 'conflict))
-          file orig modes blobs blobA blobB)
+          file orig modes)
       (magit-delete-line)
       (while (looking-at
               "^  \\([^ ]+\\) +[0-9]\\{6\\} \\([a-z0-9]\\{40\\}\\) \\(.+\\)$")
         (magit-bind-match-strings (side blob name) nil
           (pcase side
-            ("result" (setq file name blobB blob))
-            ("our"    (setq orig name blobA blob))
-            ("their"  (setq file name blobB blob))))
+            ("result" (setq file name))
+            ("our"    (setq orig name))
+            ("their"  (setq file name))))
         (magit-delete-line))
       (setq orig (magit-decode-git-path orig))
       (setq file (magit-decode-git-path file))
-      (magit-diff-insert-file-section file orig status modes
-                                      (concat blobA ".." blobB))))
+      (magit-diff-insert-file-section file orig status modes nil)))
    ((looking-at "^diff --\\(git\\|cc\\|combined\\) \\(?:\\(.+?\\) \\2\\)?")
     (let ((status (cond ((equal (match-string 1) "git")        "modified")
                         ((derived-mode-p 'magit-revision-mode) "resolved")
                         (t                                     "unmerged")))
           (orig (match-string 2))
           (file (match-string 2))
-          modes blobs)
+          (beg (point))
+          header modes)
+      (save-excursion
+        (forward-line 1)
+        (setq header (buffer-substring
+                      beg (if (re-search-forward magit-diff-headline-re nil t)
+                              (match-beginning 0)
+                            (point-max)))))
       (magit-delete-line)
       (while (not (or (eobp) (looking-at magit-diff-headline-re)))
         (if (looking-at "^old mode \\([^\n]+\\)\nnew mode \\([^\n]+\\)\n")
@@ -1158,18 +1246,16 @@ section or a child thereof."
             (setq file (match-string 2))
             (setq status (if (equal (match-string 1) "copy") "new file" "renamed")))
            ((looking-at "^\\(new file\\|deleted\\)")
-            (setq status (match-string 1)))
-           ((looking-at "^index \\([^\s\n]+\\)")
-            (setq blobs (match-string 1))))
+            (setq status (match-string 1))))
           (magit-delete-line)))
       (when orig
         (setq orig (magit-decode-git-path orig)))
       (setq file (magit-decode-git-path file))
       (when diffstat
         (setf (magit-section-value diffstat) file))
-      (magit-diff-insert-file-section file orig status modes blobs)))))
+      (magit-diff-insert-file-section file orig status modes header)))))
 
-(defun magit-diff-insert-file-section (file orig status modes blobs)
+(defun magit-diff-insert-file-section (file orig status modes header)
   (magit-insert-section section
     (file file (or (equal status "deleted")
                    (derived-mode-p 'magit-status-mode)))
@@ -1181,7 +1267,7 @@ section or a child thereof."
     (magit-insert-heading)
     (unless (equal orig file)
       (setf (magit-section-source section) orig))
-    (setf (magit-section-blobs section) blobs)
+    (setf (magit-section-diff-header section) header)
     (when modes
       (magit-insert-section (hunk)
         (insert modes)))
@@ -1242,7 +1328,7 @@ section or a child thereof."
 
 
 (defun magit-diff-expansion-threshold (section)
-  "Keep new diff sections collapsed if washing takes to long."
+  "Keep new diff sections collapsed if washing takes too long."
   (and (memq (magit-section-type section) '(file))
        (> (float-time (time-subtract (current-time) magit-refresh-start-time))
           magit-diff-expansion-threshold)
@@ -1250,7 +1336,7 @@ section or a child thereof."
 
 ;;; Revision Mode
 
-(define-derived-mode magit-revision-mode magit-diff-mode "Magit"
+(define-derived-mode magit-revision-mode magit-diff-mode "Magit Rev"
   "Mode for looking at a Git commit.
 This mode is documented in info node `(magit)Commit Buffer'.
 
@@ -1470,13 +1556,20 @@ buffers the type is always `committed'.
 
 Do not confuse this with `magit-diff-scope' (which see)."
   (--when-let (or section (magit-current-section))
-    (cond ((derived-mode-p 'magit-diff-mode)
-           (if (car magit-refresh-args)
-               'undefined
-             (if (member "--cached" (cadr magit-refresh-args))
-                 'staged
-               'unstaged)))
-          ((derived-mode-p 'magit-revision-mode 'magit-stash-mode) 'committed)
+    (cond ((derived-mode-p 'magit-revision-mode 'magit-stash-mode) 'committed)
+          ((derived-mode-p 'magit-diff-mode)
+           (let ((range (car magit-refresh-args))
+                 (args (cadr magit-refresh-args)))
+             (cond ((member "--no-index" args) 'undefined)
+                   ((not range)
+                    (if (member "--cached" args)
+                        'staged
+                      'unstaged))
+                   ((member "--cached" args)
+                    (if (magit-rev-head-p range)
+                        'staged
+                      'undefined)) ; i.e. committed and staged
+                   (t 'committed))))
           ((derived-mode-p 'magit-status-mode)
            (let ((stype (magit-section-type it)))
              (if (memq stype '(staged unstaged tracked untracked))
@@ -1751,19 +1844,14 @@ are highlighted."
   (when (eq (magit-section-type section) 'hunk)
     (setq section (magit-section-parent section)))
   (when (eq (magit-section-type section) 'file)
-    (let* ((file (magit-section-value section))
-           (orig (or (magit-section-source section) file)))
-      (format "diff --git a/%s b/%s\nindex %s\n--- a/%s\n+++ b/%s\n"
-              orig file (magit-section-blobs section) orig file))))
+    (magit-section-diff-header section)))
 
 (defun magit-diff-hunk-region-header (section)
-  (nth 4 (split-string (magit-diff-hunk-region-patch section) "\n")))
+  (let ((patch (magit-diff-hunk-region-patch section)))
+    (string-match "\n" patch)
+    (substring patch 0 (1- (match-end 0)))))
 
 (defun magit-diff-hunk-region-patch (section &optional args)
-  (unless (magit-diff-context-p)
-    (user-error "Not enough context to apply region.  Increase the context"))
-  (when (string-match "^diff --cc" (magit-section-parent-value section))
-    (user-error "Cannot un-/stage resolution hunks.  Stage the whole file"))
   (let ((op (if (member "--reverse" args) "+" "-"))
         (sbeg (magit-section-start section))
         (rbeg (save-excursion
@@ -1771,7 +1859,7 @@ are highlighted."
                 (line-beginning-position)))
         (rend (region-end))
         (send (magit-section-end section))
-        (patch (list (magit-diff-file-header section))))
+        (patch nil))
     (save-excursion
       (goto-char sbeg)
       (while (< (point) send)

@@ -47,7 +47,7 @@ The hooks are run in the Ediff control buffer.  This is similar
 to `ediff-quit-hook' but takes the needs of Magit into account.
 The `ediff-quit-hook' is ignored by Ediff sessions which were
 invoked using Magit."
-  :package-version '(magit . "2.1.1")
+  :package-version '(magit . "2.2.0")
   :group 'magit-ediff
   :type 'hook
   :options '(magit-ediff-cleanup-auxiliary-buffers
@@ -146,11 +146,14 @@ FILE has to be relative to the top directory of the repository."
 ;;;###autoload
 (defun magit-ediff-compare (revA revB fileA fileB)
   "Compare REVA:FILEA with REVB:FILEB using Ediff.
+
 FILEA and FILEB have to be relative to the top directory of the
 repository.  If REVA or REVB is nil then this stands for the
 working tree state."
   (interactive (cl-destructuring-bind (range revA revB)
-                   (magit-ediff-compare--read-revisions)
+                   (magit-ediff-compare--read-revisions
+                    (--when-let (magit-region-values 'commit 'branch)
+                      (concat (car (last it)) ".." (car it))))
                  (nconc (list revA revB)
                         (magit-ediff-compare--read-files range revA revB))))
   (let ((conf (current-window-configuration))
@@ -193,10 +196,11 @@ working tree state."
 
 (defun magit-ediff-compare--read-files (range revA revB &optional fileB)
   (unless fileB
-    (setq fileB (magit-read-file-from-rev
-                 revB (if range
-                          (format "In range %s compare file" range)
-                        (format "Show changes in %s to file" revB)))))
+    (setq fileB (magit-read-changed-file
+                 (or range (concat revA ".." revB))
+                 (if range
+                     (format "In range %s compare file" range)
+                   (format "Show changes in %s to file" revB)))))
   (list (or (car (member fileB (magit-revision-files revA)))
             (car (rassoc fileB
                          (cl-mapcan
@@ -206,8 +210,9 @@ working tree state."
                               (list (cons (nth 1 elt) (nth 2 elt)))))
                           (magit-git-items
                            "diff-tree" "-z" "-M" "HEAD^" "HEAD"))))
-            (magit-read-file-from-rev
-             revA (format "Compare %s:%s with file in %s" revB fileB revA)))
+            (magit-read-changed-file
+             (or range (concat revA ".." revB))
+             range (format "Compare %s:%s with file in %s" revB fileB revA)))
         fileB))
 
 ;;;###autoload
@@ -218,14 +223,15 @@ the user wants to compare, stage, or resolve using Ediff.  It
 might only be able to guess either the file, or range or commit,
 in which case the user is asked about the other.  It might not
 always guess right, in which case the appropriate `magit-ediff-*'
-command has to be used explicitly.  If it cannot read the users
+command has to be used explicitly.  If it cannot read the user's
 mind at all, then it asks the user for a command to run."
   (interactive)
   (magit-section-case
     (hunk (save-excursion
             (goto-char (magit-section-start (magit-section-parent it)))
             (magit-ediff-dwim)))
-    (commit (call-interactively 'magit-ediff-compare))
+    ((commit branch)
+     (call-interactively 'magit-ediff-compare))
     (t
      (let ((command 'magit-ediff-compare)
            (file (magit-current-file))
@@ -288,8 +294,11 @@ mind at all, then it asks the user for a command to run."
 ;;;###autoload
 (defun magit-ediff-show-staged (file)
   "Show staged changes using Ediff.
+
 This only allows looking at the changes; to stage, unstage,
-and discard changes using Ediff, use `magit-ediff-stage'."
+and discard changes using Ediff, use `magit-ediff-stage'.
+
+FILE must be relative to the top directory of the repository."
   (interactive
    (list (magit-completing-read "Show staged changes for file" nil
                                 (magit-tracked-files) nil nil nil
@@ -313,8 +322,11 @@ and discard changes using Ediff, use `magit-ediff-stage'."
 ;;;###autoload
 (defun magit-ediff-show-unstaged (file)
   "Show unstaged changes using Ediff.
+
 This only allows looking at the changes; to stage, unstage,
-and discard changes using Ediff, use `magit-ediff-stage'."
+and discard changes using Ediff, use `magit-ediff-stage'.
+
+FILE must be relative to the top directory of the repository."
   (interactive
    (list (magit-completing-read "Show unstaged changes for file" nil
                                 (magit-tracked-files) nil nil nil

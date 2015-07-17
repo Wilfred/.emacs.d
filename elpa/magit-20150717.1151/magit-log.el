@@ -163,7 +163,7 @@ units, in what language, are being used."
 (defcustom magit-log-show-refname-after-summary nil
   "Whether to show refnames after commit summaries.
 This is useful if you use really long branch names."
-  :package-version '(magit . "2.1.1")
+  :package-version '(magit . "2.2.0")
   :group 'magit-log
   :type 'boolean)
 
@@ -281,7 +281,7 @@ are no unpulled commits) show."
   "Additional Git arguments used when creating log sections.
 Only `--graph', `--color', `--decorate', and `--show-signature'
 are currently supported.  This option has no associated popup."
-  :package-version '(magit . "2.1.1")
+  :package-version '(magit . "2.2.0")
   :group 'magit-status
   :type '(repeat (choice (const "--graph")
                          (const "--color")
@@ -289,7 +289,7 @@ are currently supported.  This option has no associated popup."
                          (const "--show-signature"))))
 
 (define-obsolete-variable-alias 'magit-log-section-args
-  'magit-log-section-arguments "2.1.1")
+  'magit-log-section-arguments "2.2.0")
 
 ;;; Commands
 
@@ -351,7 +351,10 @@ are currently supported.  This option has no associated popup."
               '(crm--choose-completion-string))
              (minibuffer-completion-table #'crm--collection-fn)
              (minibuffer-completion-confirm t)
-             (crm-completion-table (magit-list-branch-names))
+             (crm-completion-table
+              `(,@(and (file-exists-p (magit-git-dir "FETCH_HEAD"))
+                       (list "FETCH_HEAD"))
+                ,@(magit-list-branch-names)))
              (crm-separator "\\(\\.\\.\\.?\\|[, ]\\)")
              (default (or (magit-branch-or-commit-at-point)
                           (unless use-current
@@ -434,7 +437,8 @@ completion candidates."
 (defun magit-log-buffer-file ()
   "Show log for the file visited in the current buffer."
   (interactive)
-  (-if-let (file (or buffer-file-name magit-buffer-file-name))
+  (-if-let (file (or (buffer-file-name (buffer-base-buffer))
+                     magit-buffer-file-name))
       (magit-mode-setup magit-log-buffer-name-format nil
                         #'magit-log-mode
                         #'magit-log-refresh-buffer
@@ -443,7 +447,7 @@ completion candidates."
                                   (magit-get-current-branch) "HEAD"))
                         (magit-log-arguments)
                         (list (file-relative-name file (magit-toplevel))))
-    (user-error "Buffer does not visit a file"))
+    (user-error "Buffer isn't visiting a file"))
   (magit-log-goto-same-commit))
 
 ;;;###autoload
@@ -551,7 +555,7 @@ Type \\[magit-reset-head] to reset HEAD to the commit at point.
 For internal use; don't add to a hook."
   (magit-git-wash (apply-partially 'magit-log-wash-log 'oneline)
     "log" (magit-log-format-max-count)
-    (format "--format=%%h%s %s[%%an][%%at]%%s"
+    (format "--format=%%h%s %s[%%aN][%%at]%%s"
             (if (member "--decorate" args) "%d" "")
             (if (member "--show-signature" args)
                 (progn (setq args (remove "--show-signature" args)) "%G?")
@@ -559,6 +563,7 @@ For internal use; don't add to a hook."
     (if (member "--decorate" args)
         (cons "--decorate=full" (remove "--decorate" args))
       args)
+    "--use-mailmap"
     revs "--" files))
 
 (defun magit-insert-log-verbose (revs &optional args files)
@@ -822,24 +827,38 @@ and `magit-log-auto-more' is non-nil."
     (forward-line -1)
     (magit-section-forward)))
 
+(defvar magit-log-show-commit-timer nil)
+
 (defun magit-log-maybe-show-commit (&optional section)
   "Automatically show commit at point in another window.
 If the section at point is a `commit' section and the value of
 `magit-diff-auto-show-p' calls for it, then show that commit in
 another window, using `magit-show-commit'."
-  (--when-let
-      (or (and section
-               (eq (magit-section-type section) 'commit)
-               (or (and (magit-diff-auto-show-p 'log-follow)
-                        (get-buffer-window magit-revision-buffer-name-format))
-                   (and (magit-diff-auto-show-p 'log-oneline)
-                        (derived-mode-p 'magit-log-mode)))
-               (magit-section-value section))
-          (and magit-blame-mode
-               (magit-diff-auto-show-p 'blame-follow)
-               (get-buffer-window magit-revision-buffer-name-format)
-               (magit-blame-chunk-get :hash)))
-    (magit-show-commit it t)))
+  (unless magit-log-show-commit-timer
+    (setq magit-log-show-commit-timer
+          (run-with-idle-timer
+           magit-diff-auto-show-delay nil
+           (-partial
+              (lambda (section)
+                (--when-let
+                    (or (and section
+                             (eq (magit-section-type section) 'commit)
+                             (or (and (magit-diff-auto-show-p 'log-follow)
+                                      (magit-mode-get-buffer
+                                       magit-revision-buffer-name-format
+                                       'magit-revision-mode))
+                                 (and (magit-diff-auto-show-p 'log-oneline)
+                                      (derived-mode-p 'magit-log-mode)))
+                             (magit-section-value section))
+                        (and magit-blame-mode
+                             (magit-diff-auto-show-p 'blame-follow)
+                             (magit-mode-get-buffer
+                              magit-revision-buffer-name-format
+                              'magit-revision-mode)
+                             (magit-blame-chunk-get :hash)))
+                  (magit-show-commit it t))
+                (setq magit-log-show-commit-timer nil))
+              section)))))
 
 (defun magit-log-goto-same-commit ()
   (--when-let
@@ -993,7 +1012,7 @@ Type \\[magit-reset-head] to reset HEAD to the commit at point.
         (propertize (concat " Reflog for " ref) 'face 'magit-header-line))
   (magit-insert-section (reflogbuf)
     (magit-git-wash (apply-partially 'magit-log-wash-log 'reflog)
-      "reflog" "show" "--format=%h [%an] %ct %gd %gs"
+      "reflog" "show" "--format=%h [%aN] %ct %gd %gs"
       (magit-log-format-max-count) ref)))
 
 (defvar magit-reflog-labels
