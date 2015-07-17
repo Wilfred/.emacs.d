@@ -18,7 +18,7 @@
 
 (defun company-jit-should-complete-p ()
   "Return nil if point is in a comment or string."
-  (-let [(_ _ in-string in-comment _ _ _ _ _) (syntax-ppss)]
+  (-let [(_ _ _ in-string in-comment &rest _) (syntax-ppss)]
     (and (not in-string) (not in-comment))))
 
 (defun company-jit-post-self-insert ()
