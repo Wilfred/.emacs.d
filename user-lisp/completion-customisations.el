@@ -126,19 +126,7 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 (define-key company-active-map (kbd "C-n") #'company-select-next)
 (define-key company-active-map (kbd "C-p") #'company-select-previous)
 
-(defun wh/company-complete-dwim ()
-  "If we've just started completion, just complete the common prefix.
-However, if called again, or if we've just selected a value,
-select the current completion candidate."
-  (interactive)
-  (if (-contains? '(wh/company-complete-dwim
-                    company-select-previous
-                    company-select-next)
-                  last-command)
-      (company-complete-selection)
-    (company-complete-common)))
-
-(define-key company-active-map (kbd "<tab>") #'wh/company-complete-dwim)
+(define-key company-active-map (kbd "<tab>") #'company-complete-selection)
 
 ;; always spaces, never tabs
 (setq-default indent-tabs-mode nil)
