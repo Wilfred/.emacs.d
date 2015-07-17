@@ -2,10 +2,9 @@
 <html>
 <head>
 <title>init</title>
-<!-- 2015-06-17 Wed 18:29 -->
+<!-- 2015-07-18 Sat 00:19 -->
 <meta  charset="utf-8">
 <meta  name="generator" content="Org-mode">
-<meta  name="author" content="Wilfred Hughes">
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   .title  { text-align: center; }
@@ -431,7 +430,6 @@ later.
 
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">package</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>add-to-list <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">package-archives</span> <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span><span class="org-string">"melpa"</span> . <span class="org-string">"http://melpa.milkbox.net/packages/"</span><span class="org-rainbow-delimiters-depth-2">)</span> t<span class="org-rainbow-delimiters-depth-1">)</span>
-<span class="org-rainbow-delimiters-depth-1">(</span>add-to-list <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">package-archives</span> <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span><span class="org-string">"user42"</span> . <span class="org-string">"http://download.tuxfamily.org/user42/elpa/packages/"</span><span class="org-rainbow-delimiters-depth-2">)</span> t<span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span>package-initialize<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -564,6 +562,11 @@ not. We display the recursion level in the minibuffer to avoid confusion.
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>minibuffer-depth-indicate-mode 1<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
+
+<p>
+Occasionally, you end up with an active minibuffer that you didn't
+want. ESC ESC ESC will close the minibuffer.
+</p>
 </div>
 </div>
 </div>
@@ -1219,19 +1222,6 @@ it on the mode line. Hide it.
 <span class="org-rainbow-delimiters-depth-1">(</span>diminish <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">undo-tree-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
-
-<p>
-Magit-Auto-Revert is also harmless and we always want it enabled, so
-we don't want to see it shown on the mode line either.
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">diminish</span><span class="org-rainbow-delimiters-depth-1">)</span>
-<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">magit</span><span class="org-rainbow-delimiters-depth-1">)</span>
-<span class="org-rainbow-delimiters-depth-1">(</span>diminish <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">magit-auto-revert-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
-</pre>
-</div>
 </div>
 </div>
 
@@ -1870,12 +1860,7 @@ annoying to accidentally close Emacs, so warn first.
 <div class="outline-text-3" id="text-3-24">
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span class="org-comment-delimiter">; </span><span class="org-comment">always close the minibuffer on C-x o:</span>
-<span class="org-comment-delimiter">; </span><span class="org-comment">&lt;jlf&gt; wilfredh: you could before-advise other-window to quit first</span>
-<span class="org-comment-delimiter">; </span><span class="org-comment">if the minibuffer is active.. but it would be better to break that</span>
-<span class="org-comment-delimiter">; </span><span class="org-comment">habit :)</span>
-
-<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">ui-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">ui-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">file-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">editing-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -1990,8 +1975,6 @@ annoying to accidentally close Emacs, so warn first.
   <span class="org-rainbow-delimiters-depth-2">(</span>interactive<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>indent-region <span class="org-rainbow-delimiters-depth-3">(</span>point-min<span class="org-rainbow-delimiters-depth-3">)</span> <span class="org-rainbow-delimiters-depth-3">(</span>point-max<span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
-<span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">magit-log-edit-mode-hook</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">auto-fill-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
-
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">f</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">s</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
@@ -2035,8 +2018,7 @@ annoying to accidentally close Emacs, so warn first.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="author">Author: Wilfred Hughes</p>
-<p class="date">Created: 2015-06-17 Wed 18:29</p>
+<p class="date">Created: 2015-07-18 Sat 00:19</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

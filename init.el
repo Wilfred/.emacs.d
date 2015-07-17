@@ -15,7 +15,6 @@
 
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
-(add-to-list 'package-archives '("user42" . "http://download.tuxfamily.org/user42/elpa/packages/") t)
 
 (package-initialize)
 
@@ -498,11 +497,6 @@ Visit the file after creation."
 (setq gc-cons-threshold (* 10 1024 1024))
 
 (setq confirm-kill-emacs #'y-or-n-p)
-
-; always close the minibuffer on C-x o:
-; <jlf> wilfredh: you could before-advise other-window to quit first
-; if the minibuffer is active.. but it would be better to break that
-; habit :)
 
 (require 'ui-customisations)
 
