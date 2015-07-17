@@ -25,8 +25,8 @@
   "Open company in situations where the user probably wants completions."
   (when (let ((prefixes (ht-get company-jit-prefixes major-mode '())))
           (and
-           (company-jit-should-complete-p)
-           (--any-p (company-jit-match-p it) prefixes)))
+           (--any-p (company-jit-match-p it) prefixes)
+           (company-jit-should-complete-p)))
     (company-complete)))
 
 (add-hook 'post-self-insert-hook #'company-jit-post-self-insert)
