@@ -146,6 +146,10 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 ;; Don't bother showing helm in the mode line.
 (diminish #'helm-mode)
 
+;; Ensure we show the shortest match when searching commands.
+;; See http://emacs.stackexchange.com/q/10398/304
+(global-set-key (kbd "M-x") #'helm-M-x)
+
 ;; Use helm for projectile features, primarily C-x C-g (finding
 ;; files) and C-c p p (switching projects).
 (require 'projectile)
