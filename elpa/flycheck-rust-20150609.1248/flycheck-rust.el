@@ -4,7 +4,7 @@
 
 ;; Author: Sebastian Wiesner <swiesner@lunaryorn.com>
 ;; URL: https://github.com/flycheck/flycheck-rust
-;; Package-Version: 20150417.1048
+;; Package-Version: 20150609.1248
 ;; Keywords: tools, convenience
 ;; Version: 0.1-cvs
 ;; Package-Requires: ((emacs "24.1") (flycheck "0.20") (dash "2.4.0"))
@@ -26,12 +26,20 @@
 
 ;;; Commentary:
 
-;; Improve Rust support in Flycheck by configuring Flycheck automatically in
-;; Cargo projects.
-
-;;;; Setup
-
-;; (add-hook 'flycheck-mode-hook #'flycheck-rust-setup)
+;; This Flycheck extension configures Flycheck automatically for the current
+;; Cargo project.
+;;
+;; # Setup
+;;
+;;     (add-hook 'flycheck-mode-hook #'flycheck-rust-setup)
+;;
+;; # Usage
+;;
+;; Just use Flycheck as usual in your Rust/Cargo projects.
+;;
+;; Note: You must run `cargo build` initially to install all dependencies.  If
+;; you add new dependencies to `Cargo.toml` you need to run `cargo build`
+;; again. Otherwise you will see spurious errors about missing crates.
 
 ;;; Code:
 

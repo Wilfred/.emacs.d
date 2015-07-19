@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "flycheck" "flycheck.el" (21777 59962 782195
-;;;;;;  44000))
+;;;### (autoloads nil "flycheck" "flycheck.el" (21932 5181 772946
+;;;;;;  974000))
 ;;; Generated autoloads from flycheck.el
 
 (autoload 'flycheck-info "flycheck" "\
@@ -163,9 +163,8 @@ of command checkers is `flycheck-sanitize-errors'.
 
 Note that you may not give `:start', `:interrupt', and
 `:print-doc' for a command checker.  You can give a custom
-`:verify' function, but you should take care to call
-`flycheck-verify-command-checker' in a custom `:verify'
-function.
+`:verify' function, though, whose results will be appended to the
+default `:verify' function of command checkers.
 
 \(fn SYMBOL DOCSTRING &rest PROPERTIES)" nil nil)
 
@@ -210,8 +209,8 @@ Use this together with the `option', `option-list' and
 
 ;;;***
 
-;;;### (autoloads nil nil ("flycheck-ert.el" "flycheck-pkg.el") (21777
-;;;;;;  59962 884855 656000))
+;;;### (autoloads nil nil ("flycheck-ert.el" "flycheck-pkg.el") (21932
+;;;;;;  5181 781031 134000))
 
 ;;;***
 

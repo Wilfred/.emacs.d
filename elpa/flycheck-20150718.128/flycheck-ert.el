@@ -1,8 +1,9 @@
 ;;; flycheck-ert.el --- Flycheck: ERT extensions  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2013-2015  Sebastian Wiesner <swiesner@lunaryorn.com>
+;; Copyright (C) 2013-2015 Sebastian Wiesner and Flycheck contributors
 
 ;; Author: Sebastian Wiesner <swiesner@lunaryorn.com>
+;; Maintainer: Sebastian Wiesner <swiesner@lunaryorn.com>
 ;; URL: https://github.com/flycheck/flycheck
 
 ;; This file is not part of GNU Emacs.
@@ -45,8 +46,8 @@
   (unless flycheck-ert-ert-can-skip
     ;; Fake skipping
 
-    (put 'flycheck-ert-skipped 'error-message "Test skipped")
-    (put 'flycheck-ert-skipped 'error-conditions '(error))
+    (setf (get 'flycheck-ert-skipped 'error-message) "Test skipped")
+    (setf (get 'flycheck-ert-skipped 'error-conditions) '(error))
 
     (defun ert-skip (data)
       (signal 'flycheck-ert-skipped data))
@@ -278,7 +279,7 @@ assertions and setup code."
                      ,(plist-get keys :tags))
        ,@(mapcar (lambda (c) `(skip-unless
                                ;; Ignore non-command checkers
-                               (or (not (get ',c 'flycheck-command))
+                               (or (not (flycheck-checker-get ',c 'command))
                                    (executable-find (flycheck-checker-executable ',c)))))
                  checkers)
        ,@body)))
@@ -427,7 +428,7 @@ resource directory."
     (flycheck-ert-with-resource-buffer resource-file
       (funcall mode)
       ;; Configure config file locating for unit tests
-      (dolist (fn '(flycheck-locate-config-file-absolute-path
+      (dolist (fn '(flycheck-locate-config-file-by-path
                     flycheck-ert-locate-config-file))
         (add-hook 'flycheck-locate-config-file-functions fn 'append 'local))
       (let ((process-hook-called 0))
