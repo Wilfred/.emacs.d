@@ -5,6 +5,7 @@
 *.pyc
 *.elc
 
+history
 image-dired
 tramp
 bookmarks
