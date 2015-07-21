@@ -2,9 +2,10 @@
 <html>
 <head>
 <title>init</title>
-<!-- 2015-07-18 Sat 00:19 -->
+<!-- 2015-07-21 Tue 17:55 -->
 <meta  charset="utf-8">
 <meta  name="generator" content="Org-mode">
+<meta  name="author" content="Hughes">
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   .title  { text-align: center; }
@@ -826,9 +827,9 @@ programming languages and even HTML.
 </p>
 
 <p>
-Currently, I only use a few smartparens commands, loosely based on how
-I used paredit. You can view a list of all smartparens commands with
-the command `sp-cheat-sheet'.
+Currently, I only use a few smartparens commands, using the same
+keybindings as the equivalent paredit command. You can view a list of all smartparens
+commands with the command `sp-cheat-sheet'.
 </p>
 
 <div class="org-src-container">
@@ -843,6 +844,13 @@ the command `sp-cheat-sheet'.
 
 <span class="org-comment-delimiter">;; </span><span class="org-comment">(foo) bar -&gt; (foo bar)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key smartparens-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"&lt;C-right&gt;"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">sp-slurp-hybrid-sexp</span><span class="org-rainbow-delimiters-depth-1">)</span>
+
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">wh/smartparens-wrap-round</span> <span class="org-rainbow-delimiters-depth-2">(</span>arg<span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-doc">"Smartparens equivalent of `</span><span class="org-doc"><span class="org-constant">paredit-wrap-round</span></span><span class="org-doc">'."</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span>interactive <span class="org-string">"P"</span><span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span>sp-wrap-with-pair <span class="org-string">"("</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
+
+<span class="org-rainbow-delimiters-depth-1">(</span>define-key smartparens-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-("</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">wh/smartparens-wrap-round</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 
@@ -2018,7 +2026,8 @@ annoying to accidentally close Emacs, so warn first.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2015-07-18 Sat 00:19</p>
+<p class="author">Author: Hughes</p>
+<p class="date">Created: 2015-07-21 Tue 17:55</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

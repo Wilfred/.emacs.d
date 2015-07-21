@@ -400,21 +400,28 @@ Smartparens is an excellent way of editing pairs of brackets, quotes
 etc. It's similar to paredit, but can be used in lisp, other
 programming languages and even HTML.
 
-Currently, I only use a few smartparens commands, loosely based on how
-I used paredit. You can view a list of all smartparens commands with
-the command `sp-cheat-sheet'.
+Currently, I only use a few smartparens commands, using the same
+keybindings as the equivalent paredit command. You can view a list of all smartparens
+commands with the command `sp-cheat-sheet'.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (require 'smartparens)
-  
+
   ;; (foo bar) -> foo bar
   (define-key smartparens-mode-map (kbd "M-s") 'sp-splice-sexp)
-  
+
   ;; (foo bar) -> [foo bar]
   (define-key smartparens-mode-map (kbd "M-S") 'sp-rewrap-sexp)
-  
+
   ;; (foo) bar -> (foo bar)
   (define-key smartparens-mode-map (kbd "<C-right>") 'sp-slurp-hybrid-sexp)
+
+  (defun wh/smartparens-wrap-round (arg)
+    "Smartparens equivalent of `paredit-wrap-round'."
+    (interactive "P")
+    (sp-wrap-with-pair "("))
+
+  (define-key smartparens-mode-map (kbd "M-(") #'wh/smartparens-wrap-round)
 #+END_SRC
 
 I like to use smartparens in all programming modes.
