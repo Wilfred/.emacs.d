@@ -202,6 +202,11 @@ are interchanged."
 (global-unset-key (kbd "C-<down-mouse-1>"))
 (global-set-key (kbd "C-<mouse-1>") 'mc/add-cursor-on-click)
 
+(global-set-key (kbd "M-'") 'mc/mark-all-symbols-like-this)
+(global-set-key (kbd "C-c M-'") 'mc/mark-all-symbols-like-this-in-defun)
+
+(global-set-key (kbd "M-@") 'mc/mark-next-symbol-like-this)
+
 (defun wh/copy-for-code-snippet (region-start region-end)
   "Indent the current selection by four spaces on each line, and
 copy to the clipboard."
