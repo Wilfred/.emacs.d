@@ -269,4 +269,19 @@ Handy when editing markdown."
 ;; to have the keybinding generally available.
 (global-set-key (kbd "C-;") #'iedit-mode)
 
+;; `comment-dwim' is good, but it adds a comment to end of the line,
+;; which is rarely useful.
+(defun wh/comment-dwim ()
+  "Toggle commenting on the current line.
+If the region is active, toggle commenting on the whole region."
+  (interactive)
+  (if (region-active-p)
+      (comment-or-uncomment-region (region-beginning) (region-end))
+    (save-excursion
+      (let ((line-start (progn (beginning-of-line) (point)))
+            (line-end (progn (end-of-line) (point))))
+        (comment-or-uncomment-region line-start line-end)))))
+
+(global-set-key (kbd "M-;") #'wh/comment-dwim)
+
 (provide 'editing-customisations)
