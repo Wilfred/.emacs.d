@@ -128,6 +128,8 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 
 (define-key company-active-map (kbd "<tab>") #'company-complete-selection)
 
+(require 'company-jit)
+
 ;; always spaces, never tabs
 (setq-default indent-tabs-mode nil)
 
