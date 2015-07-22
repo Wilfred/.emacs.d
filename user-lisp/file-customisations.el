@@ -16,8 +16,6 @@
   (not-modified)
   (set-visited-file-modtime))
 
-(setq revert-buffer-function 'revert-buffer-keep-history)
-
 ;; note there is also set-visited-file-name but this is for name changes, not path changes
 (defun rename-file-and-buffer (new-name)
   "Renames both current buffer and file it's visiting to NEW-NAME."
