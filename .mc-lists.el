@@ -37,6 +37,7 @@
       '(
         ag-project-at-point
         comment-dwim
+        helm-M-x
         mouse-set-region
         smex
         sp-rewrap-sexp
