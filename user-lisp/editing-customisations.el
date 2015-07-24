@@ -157,11 +157,12 @@ are interchanged."
 (global-set-key (kbd "<M-up>") 'move-text-up)
 (global-set-key (kbd "<M-down>") 'move-text-down)
 
-;; ace-jump-mode -- quickly jump to an arbitrary word or line
-(require 'ace-jump-mode)
-(setq act-jump-case-fold nil)
-(define-key global-map (kbd "<f11>") 'ace-jump-word-mode)
-(define-key global-map (kbd "C-c <f11>") 'ace-jump-line-mode)
+;; avy -- quickly jump to an arbitrary word or line
+(setq avy-case-fold-search nil)
+(setq avy-keys
+      (append (number-sequence ?a ?z) (number-sequence ?A ?Z)))
+(define-key global-map (kbd "<f11>") #'avy-goto-word-or-subword-1)
+(define-key global-map (kbd "C-c <f11>") #'avy-goto-line)
 
 (require 'ez-query-replace)
 
