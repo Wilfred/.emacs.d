@@ -6,6 +6,7 @@
 *.elc
 
 history
+helm-adaptive-history
 image-dired
 tramp
 bookmarks
