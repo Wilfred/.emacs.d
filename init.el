@@ -508,13 +508,12 @@ Visit the file after creation."
 (require 'ui-customisations)
 
 (require 'file-customisations)
+(require 'movement-customisations)
 (require 'editing-customisations)
 (require 'kill-ring-customisations)
 
 (if (eq system-type 'darwin)
     (require 'os-x-fixes))
-
-; TODO: increase kill ring size
 
 (require 'ido-customisations)
 

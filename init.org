@@ -1125,6 +1125,7 @@ annoying to accidentally close Emacs, so warn first.
   (require 'ui-customisations)
 
   (require 'file-customisations)
+  (require 'movement-customisations)
   (require 'editing-customisations)
   (require 'kill-ring-customisations)
 
