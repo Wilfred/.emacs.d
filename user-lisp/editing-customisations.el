@@ -11,10 +11,12 @@
 ;; Automatically indent the new line when we hit enter
 (define-key global-map (kbd "RET") 'newline-and-indent)
 
-;; zap-to-char but don't delete the character itself
-;; bind it to the usual zap-to-char shortcut
-(setq ajz/forward-only t)
-(global-set-key (kbd "M-z") #'ace-jump-zap-up-to-char-dwim)
+;; zap-to-char but don't delete the character itself bind it to the
+;; usual zap-to-char shortcut. With a prefix, prompt for the char to
+;; zap up to.
+(require 'avy-zap)
+(setq avy-zap-forward-only t)
+(global-set-key (kbd "M-z") #'avy-zap-up-to-char-dwim)
 
 ;; kill-word is less useful than kill-symbol
 (autoload 'forward-symbol "thingatpt")
