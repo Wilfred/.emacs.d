@@ -31,6 +31,8 @@
   (next-line)
   (hydra-move/body))
 
+(global-set-key (kbd "C-n") #'next-line-repeatable)
+
 (defun previous-line-repeatable ()
   "Move to the previous line, then enter `hydra-move/body'."
   (interactive)
