@@ -9,6 +9,9 @@
 ;; I use next/previous-line and forward/backward-char an awful lot
 ;; according to `keyfreq-show'. Allow these commands to be repeated,
 ;; so 'C-n n' is equivalent to 'C-n C-n' and so on.
+;;
+;; Similar to god-mode, but specialised to just a whitelist of
+;; movement commands.
 (global-set-key
  (kbd "C-n")
  (defhydra hydra-move
@@ -22,7 +25,8 @@
    ("e" move-end-of-line)
    ("v" scroll-up-command)
    ;; Converting M-v to V here by analogy.
-   ("V" scroll-down-command)))
+   ("V" scroll-down-command)
+   ("l" recenter-top-bottom)))
 
 
 (provide 'movement-customisations)
