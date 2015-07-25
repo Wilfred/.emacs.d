@@ -12,21 +12,31 @@
 ;;
 ;; Similar to god-mode, but specialised to just a whitelist of
 ;; movement commands.
-(global-set-key
- (kbd "C-n")
- (defhydra hydra-move
-   (:body-pre (next-line))
-   "move"
-   ("n" next-line)
-   ("p" previous-line)
-   ("f" forward-char)
-   ("b" backward-char)
-   ("a" beginning-of-line-dwim)
-   ("e" move-end-of-line)
-   ("v" scroll-up-command)
-   ;; Converting M-v to V here by analogy.
-   ("V" scroll-down-command)
-   ("l" recenter-top-bottom)))
+(defhydra hydra-move ()
+  "move"
+  ("n" next-line)
+  ("p" previous-line)
+  ("f" forward-char)
+  ("b" backward-char)
+  ("a" beginning-of-line-dwim)
+  ("e" move-end-of-line)
+  ("v" scroll-up-command)
+  ;; Converting M-v to V here by analogy.
+  ("V" scroll-down-command)
+  ("l" recenter-top-bottom))
 
+(defun next-line-repeatable ()
+  "Move to the next line, then enter `hydra-move/body'."
+  (interactive)
+  (next-line)
+  (hydra-move/body))
+
+(defun previous-line-repeatable ()
+  "Move to the previous line, then enter `hydra-move/body'."
+  (interactive)
+  (previous-line)
+  (hydra-move/body))
+
+(global-set-key (kbd "C-p") #'previous-line-repeatable)
 
 (provide 'movement-customisations)
