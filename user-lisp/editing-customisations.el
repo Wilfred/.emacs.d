@@ -156,8 +156,7 @@ are interchanged."
 (global-set-key (kbd "C-=") 'er/expand-region)
 
 (require 'move-text)
-(global-set-key (kbd "<M-up>") 'move-text-up)
-(global-set-key (kbd "<M-down>") 'move-text-down)
+(move-text-default-bindings)
 
 ;; avy -- quickly jump to an arbitrary word or line
 (setq avy-case-fold-search nil)
