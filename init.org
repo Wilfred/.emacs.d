@@ -1131,8 +1131,6 @@ annoying to accidentally close Emacs, so warn first.
   (if (eq system-type 'darwin)
       (require 'os-x-fixes))
 
-  ; TODO: increase kill ring size
-
   (require 'ido-customisations)
 
   ;; make re-builder use the same regexp format as regexp-replace (no double escaping)
