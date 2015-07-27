@@ -422,6 +422,13 @@ commands with the command `sp-cheat-sheet'.
     (sp-wrap-with-pair "("))
 
   (define-key smartparens-mode-map (kbd "M-(") #'wh/smartparens-wrap-round)
+
+  (defun wh/smartparens-wrap-singlequote (arg)
+    "As `wh/smartparens-wrap-round' but for wrapping with single quotes."
+    (interactive "P")
+    (sp-wrap-with-pair "'"))
+
+  (define-key smartparens-mode-map (kbd "M-'") #'wh/smartparens-wrap-singlequote)
 #+END_SRC
 
 I like to use smartparens in all programming modes.
