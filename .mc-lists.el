@@ -10,8 +10,10 @@
         c-electric-semi&comma
         c-electric-slash
         c-electric-star
+        coffee-dedent-line-backspace
         end-of-visual-line
         forward-sexp
+        helm-confirm-and-exit-minibuffer
         hungry-delete-forward
         isearch-abort
         jump-char-forward
@@ -24,6 +26,7 @@
         sgml-slash
         sp--self-insert-command
         sp-remove-active-pair-overlay
+        sp-slurp-hybrid-sexp
         wh/decrement-number-decimal
         wh/increment-number-decimal
         yaml-electric-backspace
@@ -37,6 +40,8 @@
       '(
         ag-project-at-point
         comment-dwim
+        helm-M-x
+        iedit-mode
         mouse-set-region
         smex
         sp-rewrap-sexp
