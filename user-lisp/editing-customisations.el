@@ -18,27 +18,13 @@
 (setq avy-zap-forward-only t)
 (global-set-key (kbd "M-z") #'avy-zap-up-to-char-dwim)
 
-;; kill-word is less useful than kill-symbol
-(autoload 'forward-symbol "thingatpt")
-(defun wh/kill-symbol (arg)
-  "Kill characters forward until encountering the end of a symbol.
-With argument ARG, do this that many times."
-  (interactive "p")
-  (kill-region (point) (progn (forward-symbol arg) (point))))
+;; `kill-sexp' is a very useful operation, deleting chunks of syntax.
+(global-set-key (kbd "M-d") #'kill-sexp)
+(global-set-key (kbd "C-<backspace>") #'backward-kill-sexp)
 
-(global-set-key (kbd "M-d") #'wh/kill-symbol)
-
-
-(defun wh/backward-kill-symbol (arg)
-  "Kill characters backward until encountering the beginning of a symbol.
-With argument ARG, do this that many times."
-  (interactive "p")
-  (wh/kill-symbol (- arg)))
-
-(global-set-key (kbd "C-<backspace>") #'wh/backward-kill-symbol)
-
-;; to be consistent with C-M-f as forward-sexp, bind C-M-backspace to backward-kill-sexp
-;; and C-M-d to forward-kill-sexp
+;; To be consistent with C-M-f as forward-sexp, we also bind
+;; C-M-<backspace> and C-M-d. In practice, these commands are so
+;; useful that I use the previous keybindings more.
 (global-set-key (kbd "C-M-<backspace>") 'backward-kill-sexp)
 (global-set-key (kbd "C-M-d") 'kill-sexp)
 
