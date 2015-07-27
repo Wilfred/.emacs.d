@@ -11,10 +11,12 @@
 ;; Automatically indent the new line when we hit enter
 (define-key global-map (kbd "RET") 'newline-and-indent)
 
-;; zap-to-char but don't delete the character itself
-;; bind it to the usual zap-to-char shortcut
-(setq ajz/forward-only t)
-(global-set-key (kbd "M-z") #'ace-jump-zap-up-to-char-dwim)
+;; zap-to-char but don't delete the character itself bind it to the
+;; usual zap-to-char shortcut. With a prefix, prompt for the char to
+;; zap up to.
+(require 'avy-zap)
+(setq avy-zap-forward-only t)
+(global-set-key (kbd "M-z") #'avy-zap-up-to-char-dwim)
 
 ;; kill-word is less useful than kill-symbol
 (autoload 'forward-symbol "thingatpt")
@@ -154,14 +156,7 @@ are interchanged."
 (global-set-key (kbd "C-=") 'er/expand-region)
 
 (require 'move-text)
-(global-set-key (kbd "<M-up>") 'move-text-up)
-(global-set-key (kbd "<M-down>") 'move-text-down)
-
-;; ace-jump-mode -- quickly jump to an arbitrary word or line
-(require 'ace-jump-mode)
-(setq act-jump-case-fold nil)
-(define-key global-map (kbd "<f11>") 'ace-jump-word-mode)
-(define-key global-map (kbd "C-c <f11>") 'ace-jump-line-mode)
+(move-text-default-bindings)
 
 (require 'ez-query-replace)
 
