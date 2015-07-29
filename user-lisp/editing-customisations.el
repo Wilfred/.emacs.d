@@ -158,10 +158,15 @@ are interchanged."
 (require 'move-text)
 (move-text-default-bindings)
 
-(require 'ez-query-replace)
+;; Fastest load, according to https://github.com/jwiegley/use-package#use-packageel-is-no-longer-needed-at-runtime
+(eval-when-compile
+  (require 'use-package))
+(require 'diminish)
+(require 'bind-key)
 
-(define-key global-map (kbd "M-%") 'ez-query-replace)
-(define-key global-map (kbd "C-c M-%") 'ez-query-replace-repeat)
+(use-package ez-query-replace
+  :bind (("M-%" . ez-query-replace)
+         ("C-c M-%" . ez-query-replace-repeat)))
 
 ;; open line and indent is a frequent and useful operation
 ;; so we can go from this (where `|` represents the cursor:
@@ -252,11 +257,12 @@ Handy when editing markdown."
   (let ((text (delete-and-extract-region beg end)))
     (insert (apply func (list text)))))
 
-(require 'change-inner)
-(global-set-key (kbd "M-i") #'change-inner)
+(use-package change-inner
+  :bind ("M-i" . change-inner))
 
-(global-set-key (kbd "C-.") #'goto-last-change)
-(global-set-key (kbd "C-,") #'goto-last-change-reverse)
+(use-package goto-chg
+  :bind (("C-." . goto-last-change)
+         ("C-," . goto-last-change-reverse)))
 
 (global-set-key (kbd "C-d") #'hungry-delete-forward)
 
