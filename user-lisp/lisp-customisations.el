@@ -11,9 +11,10 @@
 ;; Paredit's C-M-f and C-M-b are really handy but difficult to type.
 (global-set-key (kbd "s-f") #'paredit-forward)
 (global-set-key (kbd "s-b") #'paredit-backward)
-;; Likewise for up and down.
+;; Likewise for other sexp commands.
 (global-set-key (kbd "s-u") #'paredit-backward-up)
 (global-set-key (kbd "s-d") #'paredit-forward-down)
+(global-set-key (kbd "<s-backspace>") #'backward-kill-sexp)
 
 (require 'highlight-quoted)
 ;; Highlight the ' character itself in the same colour
