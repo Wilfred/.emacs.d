@@ -8,6 +8,13 @@
                              scheme-mode-hook lisp-mode-hook))
   (add-hook hook 'switch-on-paredit))
 
+;; Paredit's C-M-f and C-M-b are really handy but difficult to type.
+(global-set-key (kbd "s-f") #'paredit-forward)
+(global-set-key (kbd "s-b") #'paredit-backward)
+;; Likewise for up and down.
+(global-set-key (kbd "s-u") #'paredit-backward-up)
+(global-set-key (kbd "s-d") #'paredit-forward-down)
+
 (require 'highlight-quoted)
 ;; Highlight the ' character itself in the same colour
 ;; as the quoted symbol.
