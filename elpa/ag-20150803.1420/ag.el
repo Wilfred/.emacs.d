@@ -4,8 +4,8 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 January 2013
-;; Version: 20150105.1314
-;; X-Original-Version: 0.46
+;; Version: 0.47
+;; Package-Version: 20150803.1420
 ;; Package-Requires: ((dash "2.8.0") (s "1.9.0") (cl-lib "0.5"))
 ;;; Commentary:
 
@@ -38,7 +38,6 @@
 (require 'dired) ;; dired-sort-inhibit
 (require 'dash)
 (require 's)
-(require 'ido)  ;; completion
 (require 'find-dired) ;; find-dired-filter
 
 (defcustom ag-executable
@@ -48,7 +47,7 @@
   :group 'ag)
 
 (defcustom ag-arguments
-  (list "--line-number" "--smart-case" "--nogroup" "--column" "--")
+  (list "--line-number" "--smart-case" "--nogroup" "--column" "--stats" "--")
   "Default arguments passed to ag.
 
 Ag.el requires --nogroup and --column, so we recommend you add any
@@ -110,6 +109,14 @@ If set to nil, fall back to finding VCS root directories."
   "Face name to use for ag matches."
   :group 'ag)
 
+(defvar ag-search-finished-hook nil
+  "Hook run when ag completes a search in a buffer.")
+
+(defun ag/run-finished-hook (buffer how-finished)
+  "Run the ag hook to signal that the search has completed."
+  (with-current-buffer buffer
+    (run-hooks 'ag-search-finished-hook)))
+
 (defmacro ag/with-patch-function (fun-name fun-args fun-body &rest body)
   "Temporarily override the definition of FUN-NAME whilst BODY is executed.
 
@@ -146,6 +153,8 @@ different window, according to `ag-reuse-window'."
        (list (cons 'compilation-ag-nogroup (list ag/file-column-pattern 1 2 3))))
   (set (make-local-variable 'compilation-error-face) 'ag-hit-face)
   (set (make-local-variable 'next-error-function) #'ag/next-error-function)
+  (set (make-local-variable 'compilation-finish-functions)
+       #'ag/run-finished-hook)
   (add-hook 'compilation-filter-hook 'ag-filter nil t))
 
 (define-key ag-mode-map (kbd "p") #'compilation-previous-error)
@@ -367,7 +376,7 @@ matched literally."
 with STRING defaulting to the symbol under point.
 
 If called with a prefix, prompts for flags to pass to ag."
-  (interactive (list (read-from-minibuffer "Search string: " (ag/dwim-at-point))
+  (interactive (list (ag/read-from-minibuffer "Search regexp")
                      (read-directory-name "Directory: ")))
   (ag/search string directory))
 
@@ -378,7 +387,7 @@ limited to files that match FILE-TYPE. STRING defaults to
 the symbol under point.
 
 If called with a prefix, prompts for flags to pass to ag."
-  (interactive (list (read-from-minibuffer "Search string: " (ag/dwim-at-point))
+  (interactive (list (ag/read-from-minibuffer "Search string")
                      (ag/read-file-type)
                      (read-directory-name "Directory: ")))
   (apply #'ag/search string directory file-type))
@@ -398,7 +407,7 @@ If called with a prefix, prompts for flags to pass to ag."
 for the given string.
 
 If called with a prefix, prompts for flags to pass to ag."
-  (interactive (list (read-from-minibuffer "Search string: " (ag/dwim-at-point))))
+  (interactive (list (ag/read-from-minibuffer "Search string")))
   (ag/search string (ag/project-root default-directory)))
 
 ;;;###autoload
@@ -408,9 +417,28 @@ limited to files that match FILE-TYPE. STRING defaults to the
 symbol under point.
 
 If called with a prefix, prompts for flags to pass to ag."
-  (interactive (list (read-from-minibuffer "Search string: " (ag/dwim-at-point))
+  (interactive (list (ag/read-from-minibuffer "Search string")
                      (ag/read-file-type)))
   (apply 'ag/search string (ag/project-root default-directory) file-type))
+
+(defun ag/read-from-minibuffer (prompt)
+  "Read a value from the minibuffer with PROMPT.
+If there's a string at point, offer that as a default."
+  (let* ((suggested (ag/dwim-at-point))
+         (final-prompt
+          (if suggested
+              (format "%s (default %s): " prompt suggested)
+            (format "%s: " prompt)))
+         ;; Ask the user for input, but add `suggested' to the history
+         ;; so they can use M-n if they want to modify it.
+         (user-input (read-from-minibuffer
+                      final-prompt
+                      nil nil nil nil suggested)))
+    ;; Return the input provided by the user, or use `suggested' if
+    ;; the input was empty.
+    (if (> (length user-input) 0)
+        user-input
+      suggested)))
 
 ;;;###autoload
 (defun ag-project-regexp (regexp)
@@ -419,8 +447,7 @@ for the given regexp. The regexp should be in PCRE syntax, not
 Emacs regexp syntax.
 
 If called with a prefix, prompts for flags to pass to ag."
-  (interactive (list (read-from-minibuffer "Search regexp: "
-                                           (ag/escape-pcre (ag/dwim-at-point)))))
+  (interactive (list (ag/escape-pcre (ag/read-from-minibuffer "Search regexp"))))
   (ag/search regexp (ag/project-root default-directory) :regexp t))
 
 (autoload 'symbol-at-point "thingatpt")
