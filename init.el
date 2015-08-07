@@ -166,6 +166,13 @@ If a prefix argument is given, don't change the kill-ring."
 
 (define-key smartparens-mode-map (kbd "M-(") #'wh/smartparens-wrap-round)
 
+(defun wh/smartparens-wrap-singlequote (arg)
+  "As `wh/smartparens-wrap-round' but for wrapping with single quotes."
+  (interactive "P")
+  (sp-wrap-with-pair "'"))
+
+(define-key smartparens-mode-map (kbd "M-'") #'wh/smartparens-wrap-singlequote)
+
 (require 'smartparens-config)
 (require 'smartparens-html)
 (add-hook 'prog-mode-hook #'smartparens-mode)
@@ -347,8 +354,6 @@ Visit the file after creation."
               c-basic-offset 4)
 
 (setq-default c-hungry-delete-key t)
-
-(global-set-key (kbd "<f12>") #'recompile)
 
 (require 'sgml-mode)
 

@@ -2,9 +2,10 @@
 <html>
 <head>
 <title>init</title>
-<!-- 2015-07-25 Sat 11:12 -->
+<!-- 2015-08-07 Fri 10:45 -->
 <meta  charset="utf-8">
 <meta  name="generator" content="Org-mode">
+<meta  name="author" content="Hughes">
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   .title  { text-align: center; }
@@ -850,6 +851,13 @@ commands with the command `sp-cheat-sheet'.
   <span class="org-rainbow-delimiters-depth-2">(</span>sp-wrap-with-pair <span class="org-string">"("</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key smartparens-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-("</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">wh/smartparens-wrap-round</span><span class="org-rainbow-delimiters-depth-1">)</span>
+
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">wh/smartparens-wrap-singlequote</span> <span class="org-rainbow-delimiters-depth-2">(</span>arg<span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-doc">"As `</span><span class="org-doc"><span class="org-constant">wh/smartparens-wrap-round</span></span><span class="org-doc">' but for wrapping with single quotes."</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span>interactive <span class="org-string">"P"</span><span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span>sp-wrap-with-pair <span class="org-string">"'"</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
+
+<span class="org-rainbow-delimiters-depth-1">(</span>define-key smartparens-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-'"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">wh/smartparens-wrap-singlequote</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 
@@ -1536,16 +1544,6 @@ non-whitespace character on C-d) when removing indentation.
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>setq-default c-hungry-delete-key t<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
-
-<p>
-I use recompile a lot when coding C, so bind it to a convenient key.
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>global-set-key <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"&lt;f12&gt;"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">recompile</span><span class="org-rainbow-delimiters-depth-1">)</span>
-</pre>
-</div>
 </div>
 </div>
 
@@ -2024,8 +2022,9 @@ annoying to accidentally close Emacs, so warn first.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2015-07-25 Sat 11:12</p>
-<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="author">Author: Hughes</p>
+<p class="date">Created: 2015-08-07 Fri 10:45</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.3 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

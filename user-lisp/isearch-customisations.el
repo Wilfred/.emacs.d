@@ -51,4 +51,6 @@ This is useful when followed by an immediate kill."
 
 (define-key isearch-mode-map [(control return)] 'isearch-exit-other-end)
 
+(global-set-key (kbd "<f12>") #'swiper)
+
 (provide 'isearch-customisations)

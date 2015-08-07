@@ -883,12 +883,6 @@ non-whitespace character on C-d) when removing indentation.
   (setq-default c-hungry-delete-key t)
 #+END_SRC
 
-I use recompile a lot when coding C, so bind it to a convenient key.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (global-set-key (kbd "<f12>") #'recompile)
-#+END_SRC
-
 ** HTML
 
 I like to indent my HTML with tabs (company policy at the first web
