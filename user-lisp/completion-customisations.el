@@ -51,7 +51,9 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 ;; dabbrev-expand should match case
 (require 'dabbrev)
 (setq dabbrev-case-fold-search nil)
+(require 'company-dabbrev)
 (setq company-dabbrev-ignore-case nil)
+(setq company-dabbrev-downcase nil)
 
 ;; force hippie-expand completions to be case-sensitive
 (defadvice hippie-expand (around hippie-expand-case-fold)
