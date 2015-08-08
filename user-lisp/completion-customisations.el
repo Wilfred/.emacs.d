@@ -97,7 +97,6 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 (global-set-key (kbd "M-/") 'hippie-expand)
 
 (require 'company)
-(require 'company-dabbrev)
 (require 'company-elisp)
 (require 'company-files)
 (require 'company-keywords) ;; might be annoying as many are short.
@@ -121,6 +120,11 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 ;; In the completion list, wrap around so going backwards from the
 ;; last option shows the first.
 (setq company-selection-wrap-around t)
+
+;; Allow typing keys that don't match any candidates. This is useful
+;; for imports, e.g. when we want to type foo::* in Rust but '*' isn't
+;; in the candidates.
+(setq company-require-match nil)
 
 ;; Bind `company-complete' next to hippie-expand, because they're both useful.
 (global-set-key (kbd "s-/") #'company-complete)
