@@ -5,7 +5,7 @@
 (defvar company-jit-prefixes
   (ht
    (#'python-mode '("import " "from "))
-   (#'rust-mode '("::"))
+   (#'rust-mode '("::" "."))
    (#'css-mode '(": ")))
   )
 
