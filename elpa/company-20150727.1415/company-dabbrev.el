@@ -1,6 +1,6 @@
 ;;; company-dabbrev.el --- dabbrev-like company-mode completion back-end  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009, 2011, 2014  Free Software Foundation, Inc.
+;; Copyright (C) 2009, 2011, 2014, 2015  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -100,25 +100,25 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
 (defun company-dabbrev--search-buffer (regexp pos symbols start limit
                                        ignore-comments)
   (save-excursion
-    (cl-flet ((maybe-collect-match
-               ()
-               (let ((match (match-string-no-properties 0)))
-                 (when (and (>= (length match) company-dabbrev-minimum-length)
-                            (not (and company-dabbrev-ignore-invisible
-                                      (invisible-p (match-beginning 0)))))
-                   (push match symbols)))))
+    (cl-labels ((maybe-collect-match
+                 ()
+                 (let ((match (match-string-no-properties 0)))
+                   (when (and (>= (length match) company-dabbrev-minimum-length)
+                              (not (and company-dabbrev-ignore-invisible
+                                        (invisible-p (match-beginning 0)))))
+                     (push match symbols)))))
       (goto-char (if pos (1- pos) (point-min)))
       ;; search before pos
       (company-dabrev--time-limit-while (re-search-backward regexp nil t)
           start limit
-        (if (and ignore-comments (company-in-string-or-comment))
+        (if (and ignore-comments (save-match-data (company-in-string-or-comment)))
             (goto-char (nth 8 (syntax-ppss)))
           (maybe-collect-match)))
       (goto-char (or pos (point-min)))
       ;; search after pos
       (company-dabrev--time-limit-while (re-search-forward regexp nil t)
           start limit
-        (if (and ignore-comments (company-in-string-or-comment))
+        (if (and ignore-comments (save-match-data (company-in-string-or-comment)))
             (re-search-forward "\\s>\\|\\s!\\|\\s\"" nil t)
           (maybe-collect-match)))
       symbols)))

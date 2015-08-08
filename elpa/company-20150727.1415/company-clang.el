@@ -145,7 +145,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
 
 (defun company-clang--annotation (candidate)
   (let ((ann (company-clang--annotation-1 candidate)))
-    (if (not (string-prefix-p "(*)" ann))
+    (if (not (and ann (string-prefix-p "(*)" ann)))
         ann
       (with-temp-buffer
         (insert ann)
@@ -203,11 +203,11 @@ or automatically through a custom `company-clang-prefix-guesser'."
         (buf (get-buffer-create "*clang-output*"))
         ;; Looks unnecessary in Emacs 25.1 and later.
         (process-adaptive-read-buffering nil))
-    (with-current-buffer buf
-      (erase-buffer)
-      (setq buffer-undo-list t))
     (if (get-buffer-process buf)
         (funcall callback nil)
+      (with-current-buffer buf
+        (erase-buffer)
+        (setq buffer-undo-list t))
       (let ((process (apply #'start-process "company-clang" buf
                             company-clang-executable args)))
         (set-process-sentinel
@@ -288,24 +288,6 @@ or automatically through a custom `company-clang-prefix-guesser'."
               (/ ver 100)
             ver))
       0)))
-
-(defun company-clang-objc-templatify (selector)
-  (let* ((end (point-marker))
-         (beg (- (point) (length selector) 1))
-         (templ (company-template-declare-template beg end))
-         (cnt 0))
-    (save-excursion
-      (goto-char beg)
-      (catch 'stop
-        (while (search-forward ":" end t)
-          (when (looking-at "([^)]*) ?")
-            (delete-region (match-beginning 0) (match-end 0)))
-          (company-template-add-field templ (point) (format "arg%d" cnt))
-          (if (< (point) end)
-              (insert " ")
-            (throw 'stop t))
-          (cl-incf cnt))))
-    (company-template-move-to-first templ)))
 
 (defun company-clang (command &optional arg &rest ignored)
   "`company-mode' completion back-end for Clang.

@@ -366,13 +366,20 @@ from the list.
 progresses, unless the back-end returns t for this command.  The second
 argument is the latest prefix.
 
+`ignore-case': Return t here if the backend returns case-insensitive
+matches.  This value is used to determine the longest common prefix (as
+used in `company-complete-common'), and to filter completions when fetching
+them from cache.
+
 `meta': The second argument is a completion candidate.  Return a (short)
 documentation string for it.
 
 `doc-buffer': The second argument is a completion candidate.  Return a
-buffer with documentation for it.  Preferably use `company-doc-buffer',
+buffer with documentation for it.  Preferably use `company-doc-buffer'.  If
+not all buffer contents pertain to this candidate, return a cons of buffer
+and window start position.
 
-`location': The second argument is a completion candidate.  Return the cons
+`location': The second argument is a completion candidate.  Return a cons
 of buffer and buffer location, or of file and line number where the
 completion candidate was defined.
 
@@ -389,9 +396,10 @@ will be used when rendering the popup.  This command only makes sense for
 backends that provide non-prefix completion.
 
 `require-match': If this returns t, the user is not allowed to enter
-anything not offered as a candidate.  Use with care!  The default value nil
-gives the user that choice with `company-require-match'.  Return value
-`never' overrides that option the other way around.
+anything not offered as a candidate.  Please don't use that value in normal
+backends.  The default value nil gives the user that choice with
+`company-require-match'.  Return value `never' overrides that option the
+other way around.
 
 `init': Called once for each buffer. The back-end can check for external
 programs and files and load any required libraries.  Raising an error here
@@ -700,6 +708,9 @@ inactive, as well.
 The completion data is retrieved using `company-backends' and displayed
 using `company-frontends'.  If you want to start a specific back-end, call
 it interactively or use `company-begin-backend'.
+
+By default, the completions list is sorted alphabetically, unless the
+backend chooses otherwise, or `company-transformers' changes it later.
 
 regular keymap (`company-mode-map'):
 
@@ -1461,10 +1472,14 @@ from the rest of the back-ends in the group, if any, will be left at the end."
           (setq company-prefix (company--prefix-str prefix)
                 company-backend backend
                 c (company-calculate-candidates company-prefix))
-          ;; t means complete/unique.  We don't start, so no hooks.
           (if (not (consp c))
-              (when company--manual-action
-                (message "No completion found"))
+              (progn
+                (when company--manual-action
+                  (message "No completion found"))
+                (when (eq c t)
+                  ;; t means complete/unique.
+                  ;; Run the hooks anyway, to e.g. clear the cache.
+                  (company-cancel 'unique)))
             (when company--manual-action
               (setq company--manual-prefix prefix))
             (company-update-candidates c)
@@ -1508,6 +1523,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
           company-point nil)
     (when company-timer
       (cancel-timer company-timer))
+    (company-echo-cancel t)
     (company-search-mode 0)
     (company-call-frontends 'hide)
     (company-enable-overriding-keymap nil))
@@ -1538,6 +1554,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
   (when company-timer
     (cancel-timer company-timer)
     (setq company-timer nil))
+  (company-echo-cancel t)
   (company-uninstall-map))
 
 (defun company-post-command ()
@@ -1557,6 +1574,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
           (if company-candidates
               (company-call-frontends 'post-command)
             (and (numberp company-idle-delay)
+                 (not defining-kbd-macro)
                  (company--should-begin)
                  (setq company-timer
                        (run-with-timer company-idle-delay nil
@@ -1938,6 +1956,20 @@ With ARG, move by that many elements."
               (current-prefix-arg arg))
           (call-interactively 'company-select-next))))))
 
+(defun company-indent-or-complete-common ()
+  "Indent the current line or region, or complete the common part."
+  (interactive)
+  (cond
+   ((use-region-p)
+    (indent-region (region-beginning) (region-end)))
+   ((let ((old-point (point))
+          (old-tick (buffer-chars-modified-tick))
+          (tab-always-indent t))
+      (call-interactively #'indent-for-tab-command)
+      (when (and (eq old-point (point))
+                 (eq old-tick (buffer-chars-modified-tick)))
+        (company-complete-common))))))
+
 (defun company-complete ()
   "Insert the common part of all candidates or the current selection.
 The first time this is called, the common part is inserted, the second
@@ -2058,11 +2090,14 @@ character, stripping the modifiers.  That character must be a digit."
     (company--electric-do
       (let* ((selected (nth company-selection company-candidates))
              (doc-buffer (or (company-call-backend 'doc-buffer selected)
-                             (error "No documentation available"))))
+                             (error "No documentation available")))
+             start)
+        (when (consp doc-buffer)
+          (setq start (cdr doc-buffer)
+                doc-buffer (car doc-buffer)))
         (setq other-window-scroll-buffer (get-buffer doc-buffer))
-        (with-current-buffer doc-buffer
-          (goto-char (point-min)))
-        (display-buffer doc-buffer t)))))
+        (let ((win (display-buffer doc-buffer t)))
+          (set-window-start win (if start start (point-min))))))))
 (put 'company-show-doc-buffer 'company-keep t)
 
 (defun company-show-location ()
@@ -2141,6 +2176,7 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
 If SHOW-VERSION is non-nil, show the version in the echo area."
   (interactive (list t))
   (with-temp-buffer
+    (require 'find-func)
     (insert-file-contents (find-library-name "company"))
     (require 'lisp-mnt)
     (if show-version
@@ -2148,8 +2184,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       (lm-version))))
 
 (defun company-diag ()
-  (interactive)
   "Pop a buffer with information about completions at point."
+  (interactive)
   (let* ((bb company-backends)
          backend
          (prefix (cl-loop for b in bb
@@ -2329,7 +2365,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (while (and (not (eobp)) ; http://debbugs.gnu.org/19553
                 (> (setq lines-moved (vertical-motion 1)) 0)
                 (<= (point) end))
-      (let ((bound (min end (1- (point)))))
+      (let ((bound (min end (point))))
         ;; A visual line can contain several physical lines (e.g. with outline's
         ;; folding overlay).  Take only the first one.
         (push (buffer-substring beg
@@ -2377,8 +2413,12 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                     (or (cdr margins) 0)))))
     (when (and word-wrap
                (version< emacs-version "24.4.51.5"))
-      ;; http://debbugs.gnu.org/18384
+      ;; http://debbugs.gnu.org/19300
       (cl-decf ww))
+    ;; whitespace-mode with newline-mark
+    (when (and buffer-display-table
+               (aref buffer-display-table ?\n))
+      (cl-decf ww (1- (length (aref buffer-display-table ?\n)))))
     ww))
 
 (defun company--replacement-string (lines old column nl &optional align-top)
@@ -2413,8 +2453,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                     (company--offset-line (pop lines) offset))
             new))
 
-    (let ((str (concat (when nl " ")
-                       "\n"
+    (let ((str (concat (when nl " \n")
                        (mapconcat 'identity (nreverse new) "\n")
                        "\n")))
       (font-lock-append-text-property 0 (length str) 'face 'default str)
@@ -2566,7 +2605,7 @@ Returns a negative number if the tooltip should be displayed above point."
              (end (save-excursion
                     (move-to-window-line (+ row (abs height)))
                     (point)))
-             (ov (make-overlay (if nl beg (1- beg)) end nil t))
+             (ov (make-overlay beg end nil t))
              (args (list (mapcar 'company-plainify
                                  (company-buffer-lines beg end))
                          column nl above)))
@@ -2607,7 +2646,8 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company-pseudo-tooltip-hide-temporarily ()
   (when (overlayp company-pseudo-tooltip-overlay)
     (overlay-put company-pseudo-tooltip-overlay 'invisible nil)
-    (overlay-put company-pseudo-tooltip-overlay 'after-string nil)))
+    (overlay-put company-pseudo-tooltip-overlay 'after-string nil)
+    (overlay-put company-pseudo-tooltip-overlay 'display nil)))
 
 (defun company-pseudo-tooltip-unhide ()
   (when company-pseudo-tooltip-overlay
@@ -2615,12 +2655,13 @@ Returns a negative number if the tooltip should be displayed above point."
            (disp (overlay-get ov 'company-display)))
       ;; Beat outline's folding overlays, at least.
       (overlay-put ov 'priority 1)
-      ;; `display' could be better (http://debbugs.gnu.org/18285), but it
-      ;; doesn't work when the overlay is empty, which is what happens at eob.
-      ;; It also seems to interact badly with `cursor'.
-      ;; We deal with priorities by having the overlay start before the newline.
-      (overlay-put ov 'after-string disp)
-      (overlay-put ov 'invisible t)
+      ;; `display' is better
+      ;; (http://debbugs.gnu.org/18285, http://debbugs.gnu.org/20847),
+      ;; but it doesn't work on 0-length overlays.
+      (if (< (overlay-start ov) (overlay-end ov))
+          (overlay-put ov 'display disp)
+        (overlay-put ov 'after-string disp)
+        (overlay-put ov 'invisible t))
       (overlay-put ov 'window (selected-window)))))
 
 (defun company-pseudo-tooltip-guard ()
@@ -2750,13 +2791,19 @@ Returns a negative number if the tooltip should be displayed above point."
       (message ""))))
 
 (defun company-echo-show-soon (&optional getter)
-  (when company-echo-timer
-    (cancel-timer company-echo-timer))
+  (company-echo-cancel)
   (setq company-echo-timer (run-with-timer 0 nil 'company-echo-show getter)))
 
-(defsubst company-echo-show-when-idle (&optional getter)
-  (when (sit-for company-echo-delay)
-    (company-echo-show getter)))
+(defun company-echo-cancel (&optional unset)
+  (when company-echo-timer
+    (cancel-timer company-echo-timer))
+  (when unset
+    (setq company-echo-timer nil)))
+
+(defun company-echo-show-when-idle (&optional getter)
+  (company-echo-cancel)
+  (setq company-echo-timer
+        (run-with-idle-timer company-echo-delay nil 'company-echo-show getter)))
 
 (defun company-echo-format ()
 
