@@ -59,6 +59,19 @@
 (declare-function cua--pre-command-handler "cua-base")
 (declare-function delete-selection-pre-hook "delsel")
 
+;;; backport for older emacsen
+
+;; introduced in 24.3
+(unless (fboundp 'defvar-local)
+  (defmacro defvar-local (var val &optional docstring)
+    "Define VAR as a buffer-local variable with default value VAL.
+Like `defvar' but additionally marks the variable as being automatically
+buffer-local wherever it is set."
+    (declare (debug defvar) (doc-string 3))
+    ;; Can't use backquote here, it's too early in the bootstrap.
+    (list 'progn (list 'defvar var val docstring)
+          (list 'make-variable-buffer-local (list 'quote var)))))
+
 ;;;###autoload
 (defun sp-cheat-sheet (&optional arg)
   "Generate a cheat sheet of all the smartparens interactive functions.
@@ -439,22 +452,25 @@ Pairs are defined as expressions delimited by pairs from
 Symbol is defined as a chunk of text recognized by
 `sp-forward-symbol'.")
 
-(defvar sp--lisp-modes '(emacs-lisp-mode
+(defvar sp--lisp-modes '(cider-repl-mode
+                         clojure-mode
+                         clojurec-mode
+                         clojurescript-mode
+                         clojurex-mode
+                         common-lisp-mode
+                         emacs-lisp-mode
+                         eshell-mode
+                         geiser-repl-mode
+                         inf-clojure-mode
                          inferior-emacs-lisp-mode
                          inferior-lisp-mode
-                         inf-clojure-mode
-                         lisp-interaction-mode
-                         scheme-mode
-                         scheme-interaction-mode
                          inferior-scheme-mode
-                         geiser-repl-mode
+                         lisp-interaction-mode
                          lisp-mode
-                         eshell-mode
-                         slime-repl-mode
                          monroe-mode
-                         cider-repl-mode
-                         clojure-mode
-                         common-lisp-mode)
+                         scheme-interaction-mode
+                         scheme-mode
+                         slime-repl-mode)
   "List of Lisp modes.")
 
 (defcustom sp-no-reindent-after-kill-modes '(
@@ -1062,6 +1078,52 @@ by specifying its :suffix property."
                 string))
   :group 'smartparens)
 
+(defcustom sp-split-sexp-always-split-as-string t
+  "Determine if sexp inside string is split.
+
+If the point is inside a sexp inside a string, the default
+behaviour is now to split the string, such that:
+
+  \"foo (|) bar\"
+
+becomes
+
+   \"foo (\"|\") bar\"
+
+instead of
+
+   \"foo ()|() bar\".
+
+Note: the old default behaviour was the reverse, it would split
+the sexp, but this is hardly ever what you want.
+
+You can add a post-handler on string pair and check for
+'split-string action to add concatenation operators of the
+language you work in (in each major-mode you can have a separate
+hook).
+
+For example, in PHP the string concatenation operator is a
+dot (.), so you would add:
+
+  (defun my-php-post-split-handler (_ action _)
+    (when (eq action 'split-sexp)
+      (just-one-space)
+      (insert \".  . \")
+      (backward-char 3)))
+
+  (sp-local-pair 'php-mode \"'\" nil
+   :post-handlers '(my-php-post-split-handler))
+
+Then
+
+  echo 'foo |baz';
+
+results in
+
+  echo 'foo' . | . 'baz';"
+  :type 'boolean
+  :group 'smartparens)
+
 ;; hybrid lines
 (defcustom sp-hybrid-kill-excessive-whitespace nil
   "If non-nil, `sp-kill-hybrid-sexp' will kill all whitespace up
@@ -1465,6 +1527,7 @@ replacement of all the keywords with actual calls to sp-get."
 ;; exposed by the sp-get macro.  This way, we can later change the
 ;; internal representation without much trouble.
 
+;; TODO: rewrite this in terms of `symbol-macrolet' ??
 (defmacro sp-get (struct &rest forms)
   "Get a property from a structure.
 
@@ -2500,11 +2563,12 @@ see `sp-pair' for description."
           (context (sp--get-handler-context type)))
       (if hook
           (--each hook (sp--run-function-or-insertion it id action context))
+        ;; TODO: WHAT THE FUCK IS THIS ???11?
         (let ((tag-hook (plist-get
                          (--first (string-match-p
                                    (replace-regexp-in-string "_" ".*?" (plist-get it :open))
                                    id)
-                                  (cdr (assq 'html-mode sp-tags)))
+                                  (cdr (assq 'html-mode sp-tags))) ;; REALLY?
                          type)))
           (run-hook-with-args 'tag-hook id action context))))))
 
@@ -3250,8 +3314,6 @@ achieve this by using `sp-pair' or `sp-local-pair' with
                                                     (match-beginning 0)
                                                     (match-end 0))))
                         (get-sexp))
-                       ;; here comes the feature when we're somewhere in the
-                       ;; middle of the sexp (or outside), if ever supported.
                        ((eq sp-autoskip-closing-pair 'always)
                         (get-enclosing-sexp))))))
           (when (and active-sexp
@@ -3278,6 +3340,8 @@ achieve this by using `sp-pair' or `sp-local-pair' with
               (unless (or test-only
                           sp-buffer-modified-p)
                 (set-buffer-modified-p nil))
+              (unless test-only
+                (sp--run-hook-with-args (sp-get active-sexp :op) :post-handlers 'skip-closing-pair))
               re)))))))
 
 (defun sp-delete-pair (&optional arg)
@@ -4214,12 +4278,13 @@ is used to retrieve the prefix instead of the global setting."
             (match-string-no-properties 0))
         (-if-let (mmode-prefix (cdr (assoc major-mode sp-sexp-prefix)))
             (cond
-             ((eq (car mmode-prefix) 'regexp)
-              (sp--looking-back (cadr mmode-prefix))
+             ((and (eq (car mmode-prefix) 'regexp)
+                   (sp--looking-back (cadr mmode-prefix)))
               (match-string-no-properties 0))
              ((eq (car mmode-prefix) 'syntax)
               (skip-syntax-backward (cadr mmode-prefix))
-              (buffer-substring-no-properties (point) p)))
+              (buffer-substring-no-properties (point) p))
+             (t ""))
           (skip-syntax-backward "'")
           (buffer-substring-no-properties (point) p))))))
 
@@ -4241,12 +4306,13 @@ is used to retrieve the prefix instead of the global setting."
             (match-string-no-properties 0))
         (-if-let (mmode-suffix (cdr (assoc major-mode sp-sexp-suffix)))
             (cond
-             ((eq (car mmode-suffix) 'regexp)
-              (sp--looking-at (cadr mmode-suffix))
+             ((and (eq (car mmode-suffix) 'regexp)
+                   (sp--looking-at (cadr mmode-suffix)))
               (match-string-no-properties 0))
              ((eq (car mmode-suffix) 'syntax)
               (skip-syntax-forward (cadr mmode-suffix))
-              (buffer-substring-no-properties p (point))))
+              (buffer-substring-no-properties p (point)))
+             (t ""))
           (skip-syntax-forward ".")
           (buffer-substring-no-properties p (point)))))))
 
@@ -6412,9 +6478,10 @@ Examples:
   (-when-let (ok (sp-get-enclosing-sexp arg))
     (if (equal ";" (sp-get ok :prefix))
         (sp-get ok
-          (goto-char :beg)
-          (-when-let (enc (sp-get-enclosing-sexp arg))
-            (sp--unwrap-sexp enc)))
+          (save-excursion
+            (goto-char :beg)
+            (-when-let (enc (sp-get-enclosing-sexp arg))
+              (sp--unwrap-sexp enc))))
       (sp--unwrap-sexp ok))))
 
 (defun sp--splice-sexp-do-killing (beg end expr &optional jump-end)
@@ -6432,10 +6499,6 @@ the point after the re-inserted text."
       (setq p (point)))
     (when (eq jump-end 'end) (goto-char p))))
 
-;; The following two functions could be very simply implemented using
-;; `sp-splice-sexp-killing-around' but these are more efficient
-;; implementations.  With sufficiently big lists the difference is
-;; noticable.
 (defun sp-splice-sexp-killing-backward (&optional arg)
   "Unwrap the current list and kill all the expressions
 between start of this list and the point.
@@ -6460,62 +6523,10 @@ delimiters you can use \\[universal-argument] \\[sp-backward-kill-sexp].
 See `sp-backward-kill-sexp' for more information."
   (interactive "p")
   (while (> arg 0)
-    (let (inside-comment-inside-sexp)
-      (-if-let (ok (save-excursion
-                     ;; If the point is inside a comment, we want to
-                     ;; operate on the sexp that contains it.  However,
-                     ;; if we are inside a sexp inside a comment, we
-                     ;; should operate on that instead.
-                     (if (sp-point-in-comment)
-                         (let ((enc (sp-get-enclosing-sexp 1))
-                               (cb (sp-get-comment-bounds)))
-                           (if (> (sp-get enc :beg) (car cb))
-                               (progn
-                                 (setq inside-comment-inside-sexp t)
-                                 enc)
-                             (goto-char (cdr cb))
-                             (skip-chars-forward "\t\n ")
-                             (sp-get-enclosing-sexp 1)))
-                       (sp-get-enclosing-sexp 1))))
-          (let* ((next (sp-get-thing))
-                 (from (cond
-                        ((and (sp-point-in-comment)
-                              (not inside-comment-inside-sexp))
-                         (car (sp-get-comment-bounds)))
-                        ((and (sp-point-in-comment)
-                              inside-comment-inside-sexp)
-                         (sp-get next :beg-prf))
-                        ;; If we are splicing before a comment, the
-                        ;; comment might be connected to the sexp
-                        ;; after it, so we better don't kill it.  Only
-                        ;; do that if the comment is on its own line
-                        ;; though, otherwise it is connected to the
-                        ;; sexp before it.
-                        ((save-excursion
-                           (skip-chars-forward "\t\n ")
-                           (when (and (sp-point-in-comment)
-                                      (save-excursion
-                                        (skip-chars-backward "\t ")
-                                        (looking-back "^")))
-                             (point))))
-                        ;; similarly, if there is a comment before
-                        ;; this sexp, keep it.
-                        ((save-excursion
-                           (sp-backward-symbol)
-                           (when (and (sp-point-in-comment)
-                                      (goto-char (car (sp-get-comment-bounds)))
-                                      (save-excursion
-                                        (skip-chars-backward "\t ")
-                                        (looking-back "^")))
-                             (point))))
-                        (t (sp-get next :beg-prf))))
-                 (to (sp-get ok :end-in)))
-            (if (sp-compare-sexps next ok)
-                (sp-kill-sexp '(16))
-              (sp--splice-sexp-do-killing from to ok)))
-        (setq arg -1)))
+    (sp-splice-sexp-killing-around '(4))
     (setq arg (1- arg))))
 
+;; TODO: write in terms of `sp-splice-sexp-killing-around'.
 (defun sp-splice-sexp-killing-forward (&optional arg)
   "Unwrap the current list and kill all the expressions between
 the point and the end of this list.
@@ -6577,23 +6588,84 @@ Examples:
   (foo (bar |baz) quux) -> |(bar baz) ;; with arg = \\[universal-argument] \\[universal-argument]"
   (interactive "P")
   (cond
-   ((equal arg '(4))
-    (sp-splice-sexp-killing-backward 1))
    ((equal arg '(-4))
     (sp-splice-sexp-killing-forward 1))
    (t
     (if (equal arg '(16))
         (progn
           (sp-backward-up-sexp)
-          (setq arg 1))
-      (setq arg (prefix-numeric-value arg)))
-    (let ((ok (sp-get-enclosing-sexp)) str)
+          (setq arg 1)))
+    (let* (inside-comment-inside-sexp
+           (num-arg (prefix-numeric-value arg))
+           (ok ;; (sp-get-enclosing-sexp 1)
+            (save-excursion
+              (sp-skip-backward-to-symbol)
+              ;; if the point is inside a comment, we want to
+              ;; operate on the sexp that contains it.  however,
+              ;; if we are inside a sexp inside a comment, we
+              ;; should operate on that instead.
+              (if (sp-point-in-comment)
+                  (let ((enc (sp-get-enclosing-sexp 1))
+                        (cb (sp-get-comment-bounds)))
+                    (if (> (sp-get enc :beg) (car cb))
+                        (progn
+                          (setq inside-comment-inside-sexp t)
+                          enc)
+                      (goto-char (cdr cb))
+                      ;; todo: replace with something more
+                      ;; abstract
+                      (skip-chars-forward "\t\n ")
+                      (sp-get-enclosing-sexp 1)))
+                (sp-get-enclosing-sexp 1))))
+           str)
       (when ok
-        (sp-select-next-thing-exchange arg)
-        (sp--splice-sexp-do-killing
-         (region-beginning)
-         (region-end)
-         ok (if (> arg 0) nil 'end)))))))
+        (when (and (sp-point-in-comment)
+                   (not inside-comment-inside-sexp))
+          (let ((cb (sp-get-comment-bounds)))
+            (goto-char (if (> num-arg 0) (car cb) (cdr cb)))))
+        (sp-skip-backward-to-symbol)
+        (-let* ((next (sp--next-thing-selection arg))
+                ((from . to)
+                 (cond
+                  ((and (sp-point-in-comment)
+                        (not inside-comment-inside-sexp))
+                   (if (> num-arg 0)
+                       ;; only extends to keep the comment if raising
+                       ;; towards the end.
+                       (cons (car (sp-get-comment-bounds))
+                             (sp-get next :end-suf))
+                     (sp-get next (cons :beg-prf :end-suf))))
+                  ((and (sp-point-in-comment)
+                        inside-comment-inside-sexp)
+                   (sp-get next (cons :beg-prf :end-suf)))
+                  ;; If we are splicing before a comment, the
+                  ;; comment might be connected to the sexp
+                  ;; after it, so we better don't kill it.  Only
+                  ;; do that if the comment is on its own line
+                  ;; though, otherwise it is connected to the
+                  ;; sexp before it.
+                  ((save-excursion
+                     (skip-chars-forward "\t\n ")
+                     (when (and (> num-arg 0)
+                                (sp-point-in-comment)
+                                (save-excursion
+                                  (skip-chars-backward "\t ")
+                                  (looking-back "^")))
+                       (cons (point) (sp-get next :end-suf)))))
+                  ;; similarly, if there is a comment before
+                  ;; this sexp, keep it.
+                  ((save-excursion
+                     (sp-backward-symbol)
+                     (when (and (> num-arg 0)
+                                (sp-point-in-comment)
+                                (goto-char (car (sp-get-comment-bounds)))
+                                (save-excursion
+                                  (skip-chars-backward "\t ")
+                                  (looking-back "^")))
+                       (cons (point) (sp-get next :end-suf)))))
+                  (t (sp-get next (cons :beg-prf :end-suf))))))
+          (sp--splice-sexp-do-killing from to
+                                      ok (if (> num-arg 0) nil 'end))))))))
 
 (defalias 'sp-raise-sexp 'sp-splice-sexp-killing-around)
 
@@ -6839,6 +6911,11 @@ If ARG is a raw prefix \\[universal-argument] split all the sexps in current exp
 in separate lists enclosed with delimiters of the current
 expression.
 
+See also setting `sp-split-sexp-always-split-as-string' which
+determines how sexps inside strings are treated and also for a
+discussion of how to automatically add concatenation operators to
+string splitting.
+
 Examples:
 
   (foo bar |baz quux)   -> (foo bar) |(baz quux)
@@ -6871,9 +6948,23 @@ Examples:
           (goto-char beg)
           (delete-char (length op))))))
    (t
-    (-when-let (ok (sp-get-enclosing-sexp 1))
-      (forward-char (- (prog1 (sp-backward-whitespace t) (insert (sp-get ok :cl)))))
-      (save-excursion (sp-forward-whitespace) (insert (sp-get ok :op)))))))
+    (let ((should-split-as-string
+           (and sp-split-sexp-always-split-as-string
+                (sp-point-in-string))))
+      (-when-let (ok (if should-split-as-string
+                         (save-excursion
+                           (goto-char (1- (cdr (sp-get-quoted-string-bounds))))
+                           (sp-get-enclosing-sexp 1))
+                       (sp-get-enclosing-sexp 1)))
+        (sp-get ok
+          (sp--run-hook-with-args :op :pre-handlers 'split-sexp)
+          (if should-split-as-string
+              (progn
+                (insert :cl)
+                (save-excursion (insert :op)))
+            (forward-char (- (prog1 (sp-backward-whitespace t) (insert :cl))))
+            (save-excursion (sp-forward-whitespace) (insert :op)))
+          (sp--run-hook-with-args :op :post-handlers 'split-sexp)))))))
 
 (defun sp--join-sexp (prev next)
   "Join the expressions PREV and NEXT if they are of the same type.
@@ -7340,7 +7431,8 @@ string delimiter enclosing this string."
              (save-excursion (forward-char) (not (sp-point-in-string)))
              (save-excursion (backward-char) (not (sp-point-in-string))))
     (save-excursion
-      (let ((c (char-to-string (nth 3 (syntax-ppss pos)))))
+      (let* ((syntax (nth 3 (syntax-ppss pos)))
+             (c (char-to-string (if (eq syntax t) (following-char) syntax))))
         (cons c c)))))
 
 (defun sp-zap-syntax (syntax &optional back)
