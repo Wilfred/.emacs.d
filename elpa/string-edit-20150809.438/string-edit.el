@@ -3,8 +3,8 @@
 ;; Copyright (C) 2013 Magnar Sveen
 
 ;; Author: Magnar Sveen <magnars@gmail.com>
-;; Version: 20130815.2115
-;; X-Original-Version: 0.1.0
+;; Version: 0.1.0
+;; Package-Version: 20150809.438
 ;; Package-Requires: ((dash "1.2.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -140,7 +140,7 @@
   "The char that is the current quote delimiter, or nil if not in a string."
   (let ((delimiter (nth 3 (syntax-ppss))))
     (cond ((stringp delimiter) delimiter)
-          ;; `syntax-ppss' can return 't meaning 'a generic string delimiter'.
+          ;; `syntax-ppss' can return t meaning 'a generic string delimiter'.
           (delimiter ?\"))))
 
 (defalias 'se/point-inside-string-p 'se/current-quotes-char)
