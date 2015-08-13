@@ -278,10 +278,13 @@ If the region is active, toggle commenting on the whole region."
   (interactive)
   (if (region-active-p)
       (comment-or-uncomment-region (region-beginning) (region-end))
-    (save-excursion
-      (let ((line-start (progn (beginning-of-line) (point)))
-            (line-end (progn (end-of-line) (point))))
-        (comment-or-uncomment-region line-start line-end)))))
+    (progn
+      ;; Comment the current line, then move to the next.
+      (save-excursion
+        (let ((line-start (progn (beginning-of-line) (point)))
+              (line-end (progn (end-of-line) (point))))
+          (comment-or-uncomment-region line-start line-end)))
+      (forward-line))))
 
 (global-set-key (kbd "M-;") #'wh/comment-dwim)
 
