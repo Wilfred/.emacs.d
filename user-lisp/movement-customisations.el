@@ -4,7 +4,7 @@
 (setq avy-keys
       (append (number-sequence ?a ?z) (number-sequence ?A ?Z)))
 (define-key global-map (kbd "<f11>") #'avy-goto-word-or-subword-1)
-(define-key global-map (kbd "C-c <f11>") #'avy-goto-line)
+(global-set-key (kbd "<f10>") #'avy-goto-line)
 
 ;; I use next/previous-line and forward/backward-char an awful lot
 ;; according to `keyfreq-show'. Allow these commands to be repeated,
