@@ -285,4 +285,7 @@ If the region is active, toggle commenting on the whole region."
 
 (global-set-key (kbd "M-;") #'wh/comment-dwim)
 
+;; Disable fringe now we're using diff-hl-mode. TODO: find a better file for this.
+(setq flycheck-indication-mode nil)
+
 (provide 'editing-customisations)
