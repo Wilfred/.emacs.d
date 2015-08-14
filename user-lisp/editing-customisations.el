@@ -288,6 +288,10 @@ If the region is active, toggle commenting on the whole region."
 
 (global-set-key (kbd "M-;") #'wh/comment-dwim)
 
+(defun wh/insert-autoload-cookie ()
+  (interactive)
+  (insert ";;;###autoload"))
+
 ;; Disable fringe now we're using diff-hl-mode. TODO: find a better file for this.
 (setq flycheck-indication-mode nil)
 
