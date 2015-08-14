@@ -8,11 +8,9 @@
   (interactive)
   (occur "<<<<<<< ")
 
-  ; put mark on the first result in the occur window
+  ;; put mark on the first result in the occur window
   (other-window 1)
   (forward-line))
-
-(global-set-key (kbd "<f10>") 'conflicts-list)
 
 (defalias 'conflicts-keep-current 'smerge-keep-current)
 
