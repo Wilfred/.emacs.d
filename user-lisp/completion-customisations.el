@@ -164,6 +164,10 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 (require 'projectile)
 (setq projectile-completion-system 'helm)
 
+;; Don't use helm for C-x C-f. I prefer ido in this case (see
+;; discussion at http://emacs.stackexchange.com/q/3798/304 ).
+(add-to-list 'helm-completing-read-handlers-alist '(find-file))
+
 ;; TODO: Emacs is highlighting this incorrectly:
 'other
 
