@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "git-rebase" "git-rebase.el" (21929 26828 644710
-;;;;;;  59000))
+;;;### (autoloads nil "git-rebase" "git-rebase.el" (21967 8131 890812
+;;;;;;  841000))
 ;;; Generated autoloads from git-rebase.el
 
 (autoload 'git-rebase-mode "git-rebase" "\
@@ -23,7 +23,7 @@ running 'man git-rebase' at the command line) for details.
 
 ;;;***
 
-;;;### (autoloads nil "magit" "magit.el" (21929 26829 194692 149000))
+;;;### (autoloads nil "magit" "magit.el" (21967 8132 500790 142000))
 ;;; Generated autoloads from magit.el
 
 (autoload 'magit-status "magit" "\
@@ -34,6 +34,11 @@ If that directory isn't the root of an existing repository
 then offer to initialize it as a new repository.
 
 \(fn &optional DIRECTORY)" t nil)
+
+(autoload 'magit-status-internal "magit" "\
+
+
+\(fn DIRECTORY &optional SWITCH-FUNCTION)" nil nil)
  (autoload 'magit-show-refs-popup "magit" nil t)
 
 (autoload 'magit-show-refs-head "magit" "\
@@ -275,6 +280,32 @@ Fetch all submodules.
 With a prefix argument fetch all remotes.
 
 \(fn &optional ALL)" t nil)
+
+(autoload 'magit-submodule-deinit "magit" "\
+Unregister the submodule at PATH.
+
+\(fn PATH)" t nil)
+
+(defvar global-magit-file-buffer-mode nil "\
+Non-nil if Global-Magit-File-Buffer mode is enabled.
+See the command `global-magit-file-buffer-mode' for a description of this minor mode.
+Setting this variable directly does not take effect;
+either customize it (see the info node `Easy Customization')
+or call the function `global-magit-file-buffer-mode'.")
+
+(custom-autoload 'global-magit-file-buffer-mode "magit" nil)
+
+(autoload 'global-magit-file-buffer-mode "magit" "\
+Toggle Magit-File-Buffer mode in all buffers.
+With prefix ARG, enable Global-Magit-File-Buffer mode if ARG is positive;
+otherwise, disable it.  If called from Lisp, enable the mode if
+ARG is omitted or nil.
+
+Magit-File-Buffer mode is enabled in all buffers where
+`magit-file-buffer-mode-turn-on' would do it.
+See `magit-file-buffer-mode' for more information on Magit-File-Buffer mode.
+
+\(fn &optional ARG)" t nil)
  (autoload 'magit-dispatch-popup "magit" nil t)
  (autoload 'magit-run-popup "magit" nil t)
 
@@ -289,8 +320,8 @@ Non-interactively run Git in DIRECTORY with ARGS.
 
 ;;;***
 
-;;;### (autoloads nil "magit-apply" "magit-apply.el" (21929 26828
-;;;;;;  794705 170000))
+;;;### (autoloads nil "magit-apply" "magit-apply.el" (21967 8132
+;;;;;;  30807 635000))
 ;;; Generated autoloads from magit-apply.el
 
 (autoload 'magit-stage-file "magit-apply" "\
@@ -326,8 +357,8 @@ Remove all changes from the staging area.
 
 ;;;***
 
-;;;### (autoloads nil "magit-bisect" "magit-bisect.el" (21929 26828
-;;;;;;  734707 128000))
+;;;### (autoloads nil "magit-bisect" "magit-bisect.el" (21967 8131
+;;;;;;  980809 490000))
 ;;; Generated autoloads from magit-bisect.el
  (autoload 'magit-bisect-popup "magit-bisect" nil t)
 
@@ -374,8 +405,8 @@ Bisect automatically by running commands after each step.
 
 ;;;***
 
-;;;### (autoloads nil "magit-blame" "magit-blame.el" (21929 26829
-;;;;;;  154693 442000))
+;;;### (autoloads nil "magit-blame" "magit-blame.el" (21967 8132
+;;;;;;  470791 258000))
 ;;; Generated autoloads from magit-blame.el
  (autoload 'magit-blame-popup "magit-blame" nil t)
 
@@ -399,8 +430,8 @@ only arguments available from `magit-blame-popup' should be used.
 
 ;;;***
 
-;;;### (autoloads nil "magit-commit" "magit-commit.el" (21929 26828
-;;;;;;  374718 860000))
+;;;### (autoloads nil "magit-commit" "magit-commit.el" (21967 8131
+;;;;;;  620822 888000))
 ;;; Generated autoloads from magit-commit.el
  (autoload 'magit-commit-popup "magit-commit" nil t)
 
@@ -491,10 +522,9 @@ Create a squash commit and instantly rebase.
 
 ;;;***
 
-;;;### (autoloads nil "magit-diff" "magit-diff.el" (21929 26829 94695
-;;;;;;  387000))
+;;;### (autoloads nil "magit-diff" "magit-diff.el" (21967 8132 420793
+;;;;;;  113000))
 ;;; Generated autoloads from magit-diff.el
- (autoload 'magit-diff-popup "magit-diff" nil t)
 
 (autoload 'magit-diff-dwim "magit-diff" "\
 Show changes for the thing at point.
@@ -503,10 +533,17 @@ Show changes for the thing at point.
 
 (autoload 'magit-diff "magit-diff" "\
 Show differences between two commits.
+
 RANGE should be a range (A..B or A...B) but can also be a single
 commit.  If one side of the range is omitted, then it defaults
 to HEAD.  If just a commit is given, then changes in the working
 tree relative to that commit are shown.
+
+If the region is active, use the revisions on the first and last
+line of the region.  With a prefix argument, instead of diffing
+the revisions, choose a revision to view changes along, starting
+at the common ancestor of both revisions (i.e., use a \"...\"
+range).
 
 \(fn RANGE &optional ARGS FILES)" t nil)
 
@@ -545,7 +582,7 @@ While amending, invoking the command again toggles between
 showing just the new changes or all the changes that will
 be commited.
 
-\(fn &optional ARGS)" t nil)
+\(fn &optional ARGS FILES)" t nil)
 
 (autoload 'magit-diff-paths "magit-diff" "\
 Show changes between any two files on disk.
@@ -557,12 +594,12 @@ Show the commit at point.
 If there is no commit at point or with a prefix argument prompt
 for a commit.
 
-\(fn COMMIT &optional NOSELECT MODULE ARGS)" t nil)
+\(fn COMMIT &optional NOSELECT MODULE ARGS FILES)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil "magit-ediff" "magit-ediff.el" (21929 26829
-;;;;;;  4698 321000))
+;;;### (autoloads nil "magit-ediff" "magit-ediff.el" (21967 8132
+;;;;;;  330796 460000))
 ;;; Generated autoloads from magit-ediff.el
  (autoload 'magit-ediff-popup "magit-ediff" nil t)
 
@@ -588,6 +625,12 @@ Compare REVA:FILEA with REVB:FILEB using Ediff.
 FILEA and FILEB have to be relative to the top directory of the
 repository.  If REVA or REVB is nil then this stands for the
 working tree state.
+
+If the region is active, use the revisions on the first and last
+line of the region.  With a prefix argument, instead of diffing
+the revisions, choose a revision to view changes along, starting
+at the common ancestor of both revisions (i.e., use a \"...\"
+range).
 
 \(fn REVA REVB FILEA FILEB)" t nil)
 
@@ -623,10 +666,21 @@ FILE must be relative to the top directory of the repository.
 
 \(fn FILE)" t nil)
 
+(autoload 'magit-ediff-show-working-tree "magit-ediff" "\
+Show changes between HEAD and working tree using Ediff.
+FILE must be relative to the top directory of the repository.
+
+\(fn FILE)" t nil)
+
+(autoload 'magit-ediff-show-commit "magit-ediff" "\
+Show changes introduced by COMMIT using Ediff.
+
+\(fn COMMIT)" t nil)
+
 ;;;***
 
-;;;### (autoloads nil "magit-extras" "magit-extras.el" (21929 26828
-;;;;;;  424717 227000))
+;;;### (autoloads nil "magit-extras" "magit-extras.el" (21967 8131
+;;;;;;  670821 21000))
 ;;; Generated autoloads from magit-extras.el
 
 (autoload 'magit-run-git-gui "magit-extras" "\
@@ -688,10 +742,9 @@ on a position in a file-visiting buffer.
 
 ;;;***
 
-;;;### (autoloads nil "magit-log" "magit-log.el" (21929 26829 54696
-;;;;;;  696000))
+;;;### (autoloads nil "magit-log" "magit-log.el" (21967 8132 380794
+;;;;;;  608000))
 ;;; Generated autoloads from magit-log.el
- (autoload 'magit-log-popup "magit-log" nil t)
 
 (autoload 'magit-log-current "magit-log" "\
 Show log for the current branch.
@@ -731,8 +784,10 @@ Show log for all references and `HEAD'.
 
 (autoload 'magit-log-buffer-file "magit-log" "\
 Show log for the file visited in the current buffer.
+With a prefix argument or when `--follow' is part of
+`magit-log-arguments', then follow renames.
 
-\(fn)" t nil)
+\(fn &optional FOLLOW)" t nil)
 
 (autoload 'magit-reflog-current "magit-log" "\
 Display the reflog of the current branch.
@@ -756,12 +811,13 @@ Show commits in a branch that are not merged in the upstream branch.
 
 ;;;***
 
-;;;### (autoloads nil "magit-remote" "magit-remote.el" (21929 26829
-;;;;;;  324687 894000))
+;;;### (autoloads nil "magit-remote" "magit-remote.el" (21967 8132
+;;;;;;  630785 295000))
 ;;; Generated autoloads from magit-remote.el
 
 (autoload 'magit-clone "magit-remote" "\
 Clone the REPOSITORY to DIRECTORY.
+Then show the status buffer for the new repository.
 
 \(fn REPOSITORY DIRECTORY)" t nil)
  (autoload 'magit-remote-popup "magit-remote" nil t)
@@ -867,6 +923,10 @@ Push a tag to another repository.
 
 (autoload 'magit-format-patch "magit-remote" "\
 Create patches for the commits in RANGE.
+When a single commit is given for RANGE, create a patch for the
+changes introduced by that commit (unlike 'git format-patch'
+which creates patches for all commits that are reachable from
+HEAD but not from the specified commit).
 
 \(fn RANGE ARGS)" t nil)
 
@@ -882,8 +942,8 @@ is asked to pull.  START has to be reachable from that commit.
 
 ;;;***
 
-;;;### (autoloads nil "magit-sequence" "magit-sequence.el" (21929
-;;;;;;  26829 244690 502000))
+;;;### (autoloads nil "magit-sequence" "magit-sequence.el" (21967
+;;;;;;  8132 540788 643000))
 ;;; Generated autoloads from magit-sequence.el
 
 (autoload 'magit-sequencer-continue "magit-sequence" "\
@@ -1027,8 +1087,8 @@ Abort the current rebase operation, restoring the original branch.
 
 ;;;***
 
-;;;### (autoloads nil "magit-stash" "magit-stash.el" (21929 26828
-;;;;;;  914701 255000))
+;;;### (autoloads nil "magit-stash" "magit-stash.el" (21967 8132
+;;;;;;  240799 814000))
 ;;; Generated autoloads from magit-stash.el
  (autoload 'magit-stash-popup "magit-stash" nil t)
 
@@ -1115,12 +1175,12 @@ List all stashes in a buffer.
 (autoload 'magit-stash-show "magit-stash" "\
 Show all diffs of a stash in a buffer.
 
-\(fn STASH &optional NOSELECT ARGS)" t nil)
+\(fn STASH &optional NOSELECT ARGS FILES)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil "magit-wip" "magit-wip.el" (21929 26828 514714
-;;;;;;  290000))
+;;;### (autoloads nil "magit-wip" "magit-wip.el" (21967 8131 760817
+;;;;;;  686000))
 ;;; Generated autoloads from magit-wip.el
 
 (defvar magit-wip-after-save-mode nil "\
@@ -1151,7 +1211,14 @@ See the command `magit-wip-after-apply-mode' for a description of this minor mod
 (custom-autoload 'magit-wip-after-apply-mode "magit-wip" nil)
 
 (autoload 'magit-wip-after-apply-mode "magit-wip" "\
-Commit to work-in-progress refs
+Commit to work-in-progress refs.
+
+After applying a change using any \"apply variant\"
+command (apply, stage, unstage, discard, and reverse) commit the
+affected files to the current wip refs.  For each branch there
+may be two wip refs; one contains snapshots of the files as found
+in the worktree and the other contains snapshots of the entries
+in the index.
 
 \(fn &optional ARG)" t nil)
 
@@ -1180,7 +1247,7 @@ command which is about to be called are committed.
 
 ;;;### (autoloads nil nil ("magit-core.el" "magit-git.el" "magit-mode.el"
 ;;;;;;  "magit-pkg.el" "magit-process.el" "magit-section.el" "magit-utils.el")
-;;;;;;  (21929 26829 665032 577000))
+;;;;;;  (21967 8132 827035 621000))
 
 ;;;***
 

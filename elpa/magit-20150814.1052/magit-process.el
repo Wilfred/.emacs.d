@@ -131,13 +131,13 @@ When this is nil, no sections are ever removed."
   :group 'magit-process
   (hack-dir-local-variables-non-file-buffer))
 
-(defun magit-process-buffer (&optional topdir create)
+(defun magit-process-buffer (&optional pwd create)
   (or (magit-mode-get-buffer magit-process-buffer-name-format
-                             'magit-process-mode topdir)
+                             'magit-process-mode pwd)
       (and create
            (with-current-buffer (magit-mode-get-buffer-create
                                  magit-process-buffer-name-format
-                                 'magit-process-mode topdir)
+                                 'magit-process-mode pwd)
              (magit-process-mode)
              (let ((inhibit-read-only t))
                (make-local-variable 'text-property-default-nonsticky)
@@ -429,15 +429,16 @@ tracked in the current repository are reverted if
 
 (defun magit-process-setup (program args)
   (magit-process-set-mode-line program args)
-  (let ((buf (magit-process-buffer)))
+  (let ((pwd default-directory)
+        (buf (magit-process-buffer)))
     (if  buf
         (magit-process-truncate-log buf)
       (setq buf (magit-process-buffer nil t)))
     (cons buf (with-current-buffer buf
-                (prog1 (magit-process-insert-section program args)
+                (prog1 (magit-process-insert-section pwd program args nil nil)
                   (backward-char 1))))))
 
-(defun magit-process-insert-section (program args &optional errcode errlog)
+(defun magit-process-insert-section (pwd program args &optional errcode errlog)
   (let ((inhibit-read-only t)
         (magit-insert-section--parent magit-root-section))
     (goto-char (1- (point-max)))
@@ -446,6 +447,8 @@ tracked in the current repository are reverted if
                   (format "%3s " (propertize (number-to-string errcode)
                                              'face 'magit-process-ng))
                 "run "))
+      (unless (equal pwd default-directory)
+        (insert (file-relative-name pwd default-directory) ?\s))
       (insert (propertize program 'face 'magit-section-heading))
       (insert " ")
       (when (and args (equal program magit-git-executable))
@@ -642,6 +645,8 @@ tracked in the current repository are reverted if
 (defvar magit-process-error-message-re
   (concat "^\\(?:error\\|fatal\\|git\\): \\(.*\\)" paragraph-separate))
 
+(define-error 'magit-git-error "Git error")
+
 (defun magit-process-finish (arg &optional process-buf command-buf
                                  default-dir section)
   (unless (integerp arg)
@@ -673,28 +678,31 @@ tracked in the current repository are reverted if
               (goto-char (1+ (line-end-position)))
               (delete-char -1)
               (setf (magit-section-content section) nil))
-          (when (= arg 0)
+          (when (and (= arg 0)
+                     (not (--any-p (eq (window-buffer it)
+                                       (magit-process-buffer))
+                                   (window-list))))
             (magit-section-hide section))))))
   (unless (= arg 0)
-    (funcall
-     (if magit-process-raise-error #'error #'message)
-     "%s ... [%s buffer %s for details]"
-     (or (and (buffer-live-p process-buf)
-              (with-current-buffer process-buf
-                (save-excursion
-                  (goto-char (magit-section-end section))
-                  (--when-let (magit-section-content section)
-                    (when (re-search-backward
-                           magit-process-error-message-re it t)
-                      (match-string 1))))))
-         "Git failed")
-     (-if-let (key (and (buffer-live-p command-buf)
-                        (with-current-buffer command-buf
-                          (car (where-is-internal
-                                'magit-process-display-buffer)))))
-         (format "Hit %s to see" (key-description key))
-       "See")
-     (buffer-name process-buf)))
+    (let ((msg (or (and (buffer-live-p process-buf)
+                        (with-current-buffer process-buf
+                          (save-excursion
+                            (goto-char (magit-section-end section))
+                            (--when-let (magit-section-content section)
+                              (when (re-search-backward
+                                     magit-process-error-message-re it t)
+                                (match-string 1))))))
+                   "Git failed")))
+      (if magit-process-raise-error
+          (signal 'magit-git-error msg)
+        (message "%s ... [%s buffer %s for details]" msg
+                 (-if-let (key (and (buffer-live-p command-buf)
+                                    (with-current-buffer command-buf
+                                      (car (where-is-internal
+                                            'magit-process-display-buffer)))))
+                     (format "Hit %s to see" (key-description key))
+                   "See")
+                 (buffer-name process-buf)))))
   arg)
 
 (defun magit-process-display-buffer (process)

@@ -920,7 +920,9 @@ invisible."
             (unless (eq (magit-current-section) it)
               (goto-char start))))
       (goto-char (--if-let (magit-section-goto-successor-1 section)
-                     (magit-section-start it)
+                     (if (eq (magit-section-type it) 'button)
+                         (point-min)
+                       (magit-section-start it))
                    (point-min))))))
 
 (defun magit-section-goto-successor-1 (section)
@@ -1069,7 +1071,8 @@ sections at point, moving point forward.  FUNCTION may choose not
 to insert its section(s), when doing so would not make sense.  It
 should not be abused for other side-effects.  To remove FUNCTION
 again use `remove-hook'."
-  (or (boundp hook) (set hook nil))
+  (unless (boundp hook)
+    (error "Cannot add function to undefined hook variable %s" hook))
   (or (default-boundp hook) (set-default hook nil))
   (let ((value (if local
                    (if (local-variable-p hook)

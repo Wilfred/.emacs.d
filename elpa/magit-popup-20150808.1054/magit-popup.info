@@ -340,6 +340,13 @@ to an existing popup using the following functions.
      ‘:switch’, or ‘:option’.  KEY is the character which is to be
      unbound.
 
+   It is also possible to change other aspects of a popup by setting a
+property using ‘plist-put’.  See *note Defining prefix commands:
+Defining prefix commands. for valid properties.  The most likely change
+Magit users might want to make is:
+
+     (plist-put magit-show-refs-popup :use-prefix nil)
+
 
 File: magit-popup.info,  Node: Other options,  Prev: Customizing existing popups,  Up: Usage
 
@@ -373,6 +380,11 @@ File: magit-popup.info,  Node: Other options,  Prev: Customizing existing popups
         • ‘nil’
 
           Ignore prefix arguments.
+     This option can be overriden for individual popups.
+     ‘magit-show-refs-popup’ for example defaults to invoking the
+     default action directly.  It only shows the popup buffer when a
+     prefix argument is used.  See *note Customizing existing popups:
+     Customizing existing popups.
 
  -- User Option: magit-popup-manpage-package
 
@@ -626,10 +638,10 @@ Node: Top989
 Node: Introduction2158
 Node: Usage4735
 Node: Customizing existing popups9392
-Node: Other options13208
-Node: Defining prefix and suffix commands14481
-Node: Defining prefix commands16633
-Node: Defining suffix commands22640
+Node: Other options13512
+Node: Defining prefix and suffix commands15085
+Node: Defining prefix commands17237
+Node: Defining suffix commands23244
 
 End Tag Table
 

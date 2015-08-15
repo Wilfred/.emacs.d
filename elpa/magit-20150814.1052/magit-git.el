@@ -99,13 +99,13 @@ Magit basically calls Git for one of these two reasons: for
 side-effects or to do something with its standard output.
 
 When Git is run for side-effects then its output, including error
-messages go into the process buffer which is shown when using \
+messages, go into the process buffer which is shown when using \
 \\<magit-status-mode-map>\\[magit-process].
 
-When Git's output is consumed in some way, then it would be to
+When Git's output is consumed in some way, then it would be too
 expensive to also insert it into this buffer, but when this
 option is non-nil and Git returns with a non-zero exit status,
-then at least its standart error is inserted into this buffer."
+then at least its standard error is inserted into this buffer."
   :group 'magit
   :group 'magit-process
   :type 'boolean)
@@ -225,7 +225,8 @@ message and add a section in the respective process buffer."
                                        (match-string 1))))
                       (let ((magit-git-debug nil))
                         (with-current-buffer (magit-process-buffer nil t)
-                          (magit-process-insert-section magit-git-executable
+                          (magit-process-insert-section default-directory
+                                                        magit-git-executable
                                                         args exit log))))
                     (message "%s" msg)))
                 exit))
@@ -407,12 +408,19 @@ If the file is not inside a Git repository then return nil."
   (let ((default-directory (magit-toplevel)))
     (magit-git-items "ls-tree" "-z" "-r" "--name-only" rev)))
 
-(defun magit-changed-files (rev-or-range)
+(defun magit-changed-files (rev-or-range &optional other-rev)
+  "Return list of files the have changed between two revisions.
+If OTHER-REV is non-nil, REV-OR-RANGE should be a revision, not a
+range.  Otherwise, it can be any revision or range accepted by
+\"git diff\" (i.e., <rev>, <revA>..<revB>, or <revA>...<revB>)."
   (let ((default-directory (magit-toplevel)))
-    (magit-git-items "diff" "-z" "--name-only"
-                     (if (string-match-p "\\.\\." rev-or-range)
-                         rev-or-range
-                       (format "%s~..%s" rev-or-range rev-or-range)))))
+    (magit-git-items "diff" "-z" "--name-only" rev-or-range other-rev)))
+
+(defun magit-renamed-files (revA revB)
+  (--map (cons (nth 1 it) (nth 2 it))
+         (-partition 3 (magit-git-items
+                        "diff-tree" "-r" "--diff-filter=R" "-z" "-M"
+                        revA revB))))
 
 (defun magit-file-status (&rest args)
   (with-temp-buffer
@@ -569,14 +577,14 @@ string \"true\", otherwise return nil."
 (defun magit-commit-at-point ()
   (or (magit-section-when commit)
       (and (derived-mode-p 'magit-revision-mode)
-           (car (last magit-refresh-args 2)))))
+           (car magit-refresh-args))))
 
 (defun magit-branch-or-commit-at-point ()
   (or (magit-section-case
         (branch (magit-section-value it))
         (commit (magit-get-shortname (magit-section-value it))))
       (and (derived-mode-p 'magit-revision-mode)
-           (car (last magit-refresh-args 2)))))
+           (car magit-refresh-args))))
 
 
 (defun magit-tag-at-point ()
@@ -801,8 +809,8 @@ Return a list of two integers: (A>B B>A)."
         (magit-git-success "update-ref" "-m" "enable reflog" ref oldrev "")))))
 
 (defun magit-rev-format (format &optional rev)
-  "Return output of `git show -s --format=FORMAT [REV]'."
-  (magit-git-string "show" "-s" (concat "--format=" format) rev))
+  "Return output of `git show -s --format=FORMAT [REV]' --."
+  (magit-git-string "show" "-s" (concat "--format=" format) rev "--"))
 
 (defun magit-format-rev-summary (rev)
   (--when-let (magit-rev-format "%h %s" rev)
@@ -886,6 +894,11 @@ Return a list of two integers: (A>B B>A)."
 (defun magit-update-files (files)
   (magit-git-success "update-index" "--add" "--remove" "--" files))
 
+(defconst magit-range-re
+  (concat "\\`\\([^ \t]*[^.]\\)?"       ; revA
+          "\\(\\.\\.\\.?\\)"            ; range marker
+          "\\([^.][^ \t]*\\)?\\'"))     ; revB
+
 ;;; Completion
 
 (defvar magit-revision-history nil)
@@ -905,20 +918,24 @@ Return a list of two integers: (A>B B>A)."
       (user-error "Nothing selected")))
 
 (defun magit-read-range-or-commit (prompt &optional secondary-default)
+  (magit-read-range
+   prompt
+   (or (--when-let (magit-region-values 'commit 'branch)
+         (deactivate-mark)
+         (concat (car (last it)) ".." (car it)))
+       (magit-branch-or-commit-at-point)
+       secondary-default
+       (magit-get-current-branch))))
+
+(defun magit-read-range (prompt &optional default)
   (let* ((choose-completion-string-functions
           '(crm--choose-completion-string))
          (minibuffer-completion-table #'crm--collection-fn)
          (minibuffer-completion-confirm t)
          (crm-completion-table (magit-list-refnames))
          (crm-separator "\\.\\.\\.?")
-         (default (or (--when-let (magit-region-values 'commit 'branch)
-                        (deactivate-mark)
-                        (concat (car (last it)) ".." (car it)))
-                      (magit-branch-or-commit-at-point)
-                      secondary-default
-                      (magit-get-current-branch)))
          (input (read-from-minibuffer
-                 (format "%s (%s): " prompt default)
+                 (concat prompt (and default (format " (%s)" default)) ": ")
                  nil crm-local-completion-map
                  nil 'magit-revision-history
                  default)))
@@ -997,7 +1014,7 @@ Return a list of two integers: (A>B B>A)."
   (let ((remotes (magit-list-remotes)))
     (if (and use-only (= (length remotes) 1))
         (car remotes)
-      (magit-completing-read prompt (magit-list-remotes)
+      (magit-completing-read prompt remotes
                              nil t nil nil
                              (or default
                                  (magit-remote-at-point)

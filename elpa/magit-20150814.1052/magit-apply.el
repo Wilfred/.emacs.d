@@ -67,6 +67,12 @@ With a prefix argument and if necessary, attempt a 3-way merge."
       (`(,_        file) (magit-apply-diff it args)))))
 
 (defun magit-apply-diff (section &rest args)
+  (magit-section-when [file diffstat]
+    (--if-let (magit-get-section
+               (append `((file . ,(magit-section-value section)))
+                       (magit-section-ident magit-root-section)))
+        (setq section it)
+      (error "Cannot get required diff headers")))
   (magit-apply-patch section args
                      (concat (magit-diff-file-header section)
                              (buffer-substring (magit-section-content section)
@@ -165,7 +171,8 @@ ignored) files.
 
 (defun magit-stage-1 (arg &optional files)
   (magit-wip-commit-before-change files " before stage")
-  (magit-run-git-no-revert "add" arg (if files (cons "--" files) ".")))
+  (magit-run-git-no-revert "add" arg (if files (cons "--" files) "."))
+  (magit-wip-commit-after-apply files " after stage"))
 
 (defun magit-stage-untracked ()
   (let* ((section (magit-current-section))
@@ -187,7 +194,8 @@ ignored) files.
           (goto-char (magit-section-start
                       (magit-get-section
                        `((file . ,repo) (untracked) (status)))))
-          (call-interactively 'magit-submodule-add))))))
+          (call-interactively 'magit-submodule-add))))
+    (magit-wip-commit-after-apply files " after stage")))
 
 ;;;; Unstage
 
@@ -229,7 +237,8 @@ without requiring confirmation."
   (magit-wip-commit-before-change files " before unstage")
   (if (magit-no-commit-p)
       (magit-run-git "rm" "--cached" "--" files)
-    (magit-run-git "reset" "HEAD" "--" files)))
+    (magit-run-git "reset" "HEAD" "--" files))
+  (magit-wip-commit-after-apply files " after unstage"))
 
 ;;;###autoload
 (defun magit-unstage-all ()
@@ -239,7 +248,8 @@ without requiring confirmation."
                  (not (magit-untracked-files)))
             (magit-confirm 'unstage-all-changes))
     (magit-wip-commit-before-change nil " before unstage")
-    (magit-run-git "reset" "HEAD" "--")))
+    (magit-run-git "reset" "HEAD" "--")
+    (magit-wip-commit-after-apply nil " after unstage")))
 
 ;;;; Discard
 
@@ -331,9 +341,8 @@ without requiring confirmation."
     (let ((delete-by-moving-to-trash magit-delete-by-moving-to-trash))
       (dolist (file files)
         (if (memq (magit-diff-type) '(unstaged untracked))
-            (with-no-warnings ; #1933
-              (dired-delete-file file dired-recursive-deletes
-                                 magit-delete-by-moving-to-trash))
+            (dired-delete-file file dired-recursive-deletes
+                               magit-delete-by-moving-to-trash)
           (pcase (nth 3 (assoc file status))
             (?  (delete-file file t)
                 (magit-call-git "rm" "--cached" "--" file))

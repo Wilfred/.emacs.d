@@ -65,6 +65,8 @@ and then turned on again when turning on the latter."
   :group 'magit-blame
   :type '(choice (const :tag "No lighter" "") string))
 
+(unless (find-lisp-object-file-name 'magit-blame-goto-chunk-hook 'defvar)
+  (add-hook 'magit-blame-goto-chunk-hook 'magit-log-maybe-show-commit))
 (defcustom magit-blame-goto-chunk-hook '(magit-log-maybe-show-commit)
   "Hook run by `magit-blame-next-chunk' and `magit-blame-previous-chunk'."
   :package-version '(magit . "2.1.0")
@@ -356,16 +358,16 @@ This is intended for debugging purposes.")
              (concat magit-blame-heading-format "\n")
              `((?H . ,(propertize (or (plist-get chunk :hash) "")
                                   'face 'magit-blame-hash))
-               (?s . ,(propertize (plist-get chunk :summary)
+               (?s . ,(propertize (or (plist-get chunk :summary) "")
                                   'face 'magit-blame-summary))
-               (?a . ,(propertize (plist-get chunk :author)
+               (?a . ,(propertize (or (plist-get chunk :author) "")
                                   'face 'magit-blame-name))
                (?A . ,(propertize (magit-blame-format-time-string
                                    magit-blame-time-format
                                    (plist-get chunk :author-time)
                                    (plist-get chunk :author-tz))
                                   'face 'magit-blame-date))
-               (?c . ,(propertize (plist-get chunk :committer)
+               (?c . ,(propertize (or (plist-get chunk :committer) "")
                                   'face 'magit-blame-name))
                (?C . ,(propertize (magit-blame-format-time-string
                                    magit-blame-time-format

@@ -154,7 +154,7 @@ without prompting."
 Prompt for a commit, defaulting to the commit at point.  If
 the region selects multiple commits, then apply all of them,
 without prompting."
-  (interactive (magit-cherry-pick-read-args "Apply commit"))
+  (interactive (magit-cherry-pick-read-args "Apply changes from commit"))
   (magit-assert-one-parent commit "cherry-pick")
   (magit-run-git-sequencer "cherry-pick" "--no-commit"
                            (remove "--ff" args) commit))
@@ -355,20 +355,20 @@ selected from a list of recent commits.
     (magit-log-select
       `(lambda (commit)
          (magit-rebase-interactive (concat commit "^") (list ,@args)))
-      "Type %p on a commit to interactively rebase it and all commits above it,")))
+      "Type %p on a commit to rebase it and all commits above it,")))
 
 (defun magit-rebase-unpushed (commit &optional args)
   "Start an interactive rebase sequence of all unpushed commits.
 \n(git rebase -i UPSTREAM [ARGS])"
   (interactive (list (--when-let (magit-get-tracked-branch)
-                       (magit-git-string "merge-base" it "HEAD")) 
+                       (magit-git-string "merge-base" it "HEAD"))
                      (magit-rebase-arguments)))
   (if (setq commit (magit-rebase-interactive-assert commit))
       (magit-run-git-sequencer "rebase" "-i" commit args)
     (magit-log-select
       `(lambda (commit)
          (magit-rebase-interactive (concat commit "^") (list ,@args)))
-      "Type %p on a commit to interactively rebase it and all commits above it,")))
+      "Type %p on a commit to rebase it and all commits above it,")))
 
 ;;;###autoload
 (defun magit-rebase-autosquash (commit &optional args)

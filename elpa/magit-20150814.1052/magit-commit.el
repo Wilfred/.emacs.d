@@ -138,12 +138,12 @@ used to inverse the meaning of the prefix argument.
 \n(git commit --amend --no-edit)"
   (interactive (list (magit-commit-arguments)
                      (if current-prefix-arg
-                         (not magit-commit-reword-override-date)
-                       magit-commit-reword-override-date)))
+                         (not magit-commit-extend-override-date)
+                       magit-commit-extend-override-date)))
   (when (setq args (magit-commit-assert args (not override-date)))
     (let ((process-environment process-environment))
       (unless override-date
-        (setenv "GIT_COMMITTER_DATE" (magit-rev-format "%cd")))
+        (setenv "GIT_COMMITTER_DATE" (magit-rev-format "%cD")))
       (magit-run-git-with-editor "commit" "--amend" "--no-edit" args))))
 
 ;;;###autoload
@@ -163,7 +163,7 @@ and ignore the option.
                        magit-commit-reword-override-date)))
   (let ((process-environment process-environment))
     (unless override-date
-      (setenv "GIT_COMMITTER_DATE" (magit-rev-format "%cd")))
+      (setenv "GIT_COMMITTER_DATE" (magit-rev-format "%cD")))
     (magit-run-git-with-editor "commit" "--amend" "--only" args)))
 
 ;;;###autoload
@@ -288,7 +288,8 @@ depending on the value of option `magit-commit-squash-confirm'.
                      (`magit-commit-reword 'magit-diff-while-amending)))
     (setq with-editor-previous-winconf (current-window-configuration))
     (let ((magit-inhibit-save-previous-winconf 'unset)
-          (magit-diff-switch-buffer-function 'display-buffer))
+          (magit-diff-switch-buffer-function
+           (lambda (buffer) (display-buffer buffer t))))
       (funcall it))))
 
 (add-hook 'server-switch-hook 'magit-commit-diff)

@@ -35,15 +35,21 @@
 
 ;;;###autoload
 (defun magit-clone (repository directory)
-  "Clone the REPOSITORY to DIRECTORY."
+  "Clone the REPOSITORY to DIRECTORY.
+Then show the status buffer for the new repository."
   (interactive
-   (let  ((url (magit-read-string "Clone repository")))
-     (list url (read-directory-name
-                "Clone to: " nil nil nil
-                (and (string-match "\\([^./]+\\)\\(\\.git\\)?$" url)
-                     (match-string 1 url))))))
+   (let  ((url (magit-read-string-ns "Clone repository")))
+     (list url (file-name-as-directory
+                (expand-file-name
+                 (read-directory-name
+                  "Clone to: " nil nil nil
+                  (and (string-match "\\([^./]+\\)\\(\\.git\\)?$" url)
+                       (match-string 1 url))))))))
   (make-directory directory t)
-  (magit-run-git "clone" repository directory))
+  (message "Cloning %s..." repository)
+  (magit-call-git "clone" repository directory)
+  (message "Cloning %s...done" repository)
+  (magit-status-internal directory))
 
 ;;; Setup
 
@@ -60,8 +66,8 @@
 ;;;###autoload
 (defun magit-remote-add (remote url)
   "Add a remote named REMOTE and fetch it."
-  (interactive (list (magit-read-string "Remote name")
-                     (magit-read-string "Remote url")))
+  (interactive (list (magit-read-string-ns "Remote name")
+                     (magit-read-string-ns "Remote url")))
   (magit-run-git-async "remote" "add" "-f" remote url))
 
 ;;;###autoload
@@ -69,7 +75,7 @@
   "Rename the remote named OLD to NEW."
   (interactive
    (let  ((remote (magit-read-remote "Rename remote")))
-     (list remote (magit-read-string (format "Rename %s to" remote)))))
+     (list remote (magit-read-string-ns (format "Rename %s to" remote)))))
   (unless (string= old new)
     (magit-run-git "remote" "rename" old new)))
 
@@ -78,7 +84,8 @@
   "Change the url of the remote named REMOTE to URL."
   (interactive
    (let  ((remote (magit-read-remote "Set url of remote")))
-     (list remote (magit-read-string "Url" (magit-get "remote" remote "url")))))
+     (list remote (magit-read-string-ns
+                   "Url" (magit-get "remote" remote "url")))))
   (magit-set url "remote" remote "url"))
 
 ;;;###autoload
@@ -169,7 +176,7 @@ then read the remote."
               (?d "Dry run"       "--dry-run")
               (?u "Set upstream"  "--set-upstream"))
   :actions  '((?P "Current"    magit-push-current)
-              (?q "Quickly"    magit-push-quickly)
+              (?Q "Quickly"    magit-push-quickly)
               (?t "Tags"       magit-push-tags)
               (?o "Other"      magit-push)
               (?i "Implicitly" magit-push-implicitly)
@@ -204,6 +211,60 @@ Read the local and remote branch."
   (interactive (magit-push-read-args nil nil t))
   (magit-push branch remote remote-branch args))
 
+(defcustom magit-push-always-verify 'nag
+  "Whether certain commands require verification before pushing.
+
+Starting with v2.1.0 some of the push commands are supposed to
+push to the configured upstream branch without requiring user
+confirmation or offering to push somewhere else.
+
+This has taken a few users by surprise, and they suggested that
+we force users to opt-in to this behavior.  Unfortunately adding
+this option means that now other users will complain about us
+needlessly forcing them to set an option.  But what can you do?
+\(I am not making this up.  This has happened in the past and it
+is very frustrating.)
+
+You should set the value of this option to nil, causing all push
+commands to behave as intended:
+
+`PP' Push the current branch to its upstream branch, no questions
+     asked.  If no upstream branch is configured or if that is
+     another local branch, then prompt for the remote and branch
+     to push to.
+
+`Po' Push another local branch (not the current branch) to its
+     upstream branch.  If no upstream branch is configured or if
+     that is another local branch, then prompt for the remote and
+     branch to push to.
+
+`Pe' Push any local branch to any remote branch.  This command
+     isn't affected by this option.  It always asks which branch
+     should be pushed (defaulting to the current branch) and then
+     where that should be pushed (defaulting to the upstream
+     branch of the previously selected branch).
+
+There are other push commands besides these.  You should read
+their doc-strings instead of blindly trying them out and then
+being surprised if it turns out that they do something different
+from what you expected.  For example inside the push popup type
+`?i' to learn what \"implicitly\" means here.  Or to learn about
+all push commands at once, consult the manual.
+
+While I have your attention, I would also like to warn you that
+pushing will be further improved in a later release (probably
+v2.3.0), and that you might be surprised by some of these
+changes, unless you read the documentation.
+
+Setting this option to t makes little sense.  If you consider
+doing that, then you should probably just use `Pe' instead of
+`PP' or `Po'."
+  :package-version '(magit . "2.2.0")
+  :group 'magit-commands
+  :type '(choice (const :tag "require verification and mention this option" nag)
+                 (const :tag "require verification" t)
+                 (const :tag "don't require verification" nil)))
+
 (defun magit-push-read-args (&optional use-upstream use-current default-current)
   (let* ((current (magit-get-current-branch))
          (local (or (and use-current current)
@@ -218,9 +279,14 @@ Read the local and remote branch."
                     (user-error "Nothing selected")))
          (remote (and (magit-branch-p local)
                       (magit-get-remote-branch local))))
-    (unless (and use-upstream remote)
-      (setq remote (magit-read-remote-branch (format "Push %s to" local)
-                                             nil remote local 'confirm)))
+    (unless (and use-upstream remote (not magit-push-always-verify))
+      (setq remote (magit-read-remote-branch
+                    (concat
+                     (format "Push %s to" local)
+                     (and use-upstream remote
+                          (eq magit-push-always-verify 'nag)
+                          " [also see option magit-push-always-verify]"))
+                    nil remote local 'confirm)))
     (list local (car remote) (cdr remote) (magit-push-arguments))))
 
 ;;;###autoload
@@ -299,7 +365,11 @@ branch as default."
 
 ;;;###autoload
 (defun magit-format-patch (range args)
-  "Create patches for the commits in RANGE."
+  "Create patches for the commits in RANGE.
+When a single commit is given for RANGE, create a patch for the
+changes introduced by that commit (unlike 'git format-patch'
+which creates patches for all commits that are reachable from
+HEAD but not from the specified commit)."
   (interactive
    (list (-if-let (revs (magit-region-values 'commit))
              (concat (car (last revs)) "^.." (car revs))

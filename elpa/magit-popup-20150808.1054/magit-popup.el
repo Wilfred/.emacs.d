@@ -12,7 +12,7 @@
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Maintainer: Jonas Bernoulli <jonas@bernoul.li>
 
-;; Package-Requires: ((emacs "24.4") (dash "2.10.0"))
+;; Package-Requires: ((emacs "24.4") (async "20150807") (dash "2.11.0"))
 ;; Keywords: bindings
 ;; Homepage: https://github.com/magit/magit
 
@@ -52,6 +52,10 @@
 (require 'cl-lib)
 (require 'dash)
 (require 'format-spec)
+
+(and (require 'async-bytecomp nil t)
+     (fboundp 'async-bytecomp-package-mode)
+     (async-bytecomp-package-mode 1))
 
 (declare-function info 'info)
 (declare-function Man-find-section 'man)
@@ -442,7 +446,7 @@ usually specified in that order):
   Controls when to display the popup buffer and when to invoke
   the default action (if any) directly.  This overrides the
   global default set using `magit-popup-use-prefix-argument'.
-  The value, if specified, should be one of `default' or `prefix'.
+  The value, if specified, should be one of `default' or `popup'.
 
 `:max-action-columns'
   The maximum number of actions to display on a single line.
@@ -498,6 +502,13 @@ keywords are also meaningful:
          (magit-invoke-popup ',name ,mode arg))
        (defvar ,name
          (list :variable ',opt ,@args))
+       (cl-loop for args in (get ',name 'magit-popup-deferred)
+                do (condition-case err
+                       (apply #'magit-define-popup-key ',name args)
+                     ((debug error)
+                      (display-warning
+                       'magit (error-message-string err) :error)))
+                finally (put ',name 'magit-popup-deferred nil))
        ,@(when opt
            `((defcustom ,opt (plist-get ,name :default-arguments)
                ""
@@ -582,6 +593,15 @@ is then placed before or after AT, depending on PREPEND."
   (magit-define-popup-key popup :actions key
     (list desc command) at prepend))
 
+(defconst magit-popup-type-plural-alist
+  '((:switch . :switches)
+    (:option . :options)
+    (:action . :actions)))
+
+(defun magit-popup-pluralize-type (type)
+  (or (cdr (assq type magit-popup-type-plural-alist))
+      type))
+
 (defun magit-define-popup-key (popup type key def
                                      &optional at prepend)
   "In POPUP, define KEY as an action, switch, or option.
@@ -590,33 +610,37 @@ It's better to use one of the specialized functions
   `magit-define-popup-switch', or
   `magit-define-popup-option'."
   (declare (indent defun))
+  (setq type (magit-popup-pluralize-type type))
   (if (memq type '(:switches :options :actions))
-      (let* ((plist (symbol-value popup))
-             (value (plist-get plist type))
-             (elt   (assoc key value)))
-        (if elt
-            (setcdr elt def)
-          (setq elt (cons key def)))
-        (if at
-            (when (setq at (cl-member at value :key 'car :test 'equal))
-              (setq value (cl-delete key value :key 'car :test 'equal))
-              (if prepend
-                  (progn (push (car at) (cdr at))
-                         (setcar at elt))
-                (push elt (cdr at))))
-          (setq value (cl-delete key value :key 'car :test 'equal)))
-        (unless (assoc key value)
-          (setq value (if prepend
-                          (cons elt value)
-                        (append value (list elt)))))
-        (set popup (plist-put plist type value)))
+      (if (boundp popup)
+          (let* ((plist (symbol-value popup))
+                 (value (plist-get plist type))
+                 (elt   (assoc key value)))
+            (if elt
+                (setcdr elt def)
+              (setq elt (cons key def)))
+            (if at
+                (when (setq at (cl-member at value :key 'car-safe :test 'equal))
+                  (setq value (cl-delete key value :key 'car-safe :test 'equal))
+                  (if prepend
+                      (progn (push (car at) (cdr at))
+                             (setcar at elt))
+                    (push elt (cdr at))))
+              (setq value (cl-delete key value :key 'car-safe :test 'equal)))
+            (unless (assoc key value)
+              (setq value (if prepend
+                              (cons elt value)
+                            (append value (list elt)))))
+            (set popup (plist-put plist type value)))
+        (push (list type key def at prepend) (get popup 'magit-popup-deferred)))
     (error "Unknown popup event type: %s" type)))
 
 (defun magit-change-popup-key (popup type from to)
   "In POPUP, bind TO to what FROM was bound to.
 TYPE is one of `:action', `:switch', or `:option'.
 Bind TO and unbind FROM, both are characters."
-  (--if-let (assoc from (plist-get (symbol-value popup) type))
+  (--if-let (assoc from (plist-get (symbol-value popup)
+                                   (magit-popup-pluralize-type type)))
       (setcar it to)
     (message "magit-change-popup-key: FROM key %c is unbound" from)))
 
@@ -625,6 +649,7 @@ Bind TO and unbind FROM, both are characters."
 POPUP is a popup command defined using `magit-define-popup'.
 TYPE is one of `:action', `:switch', or `:option'.
 KEY is the character which is to be unbound."
+  (setq type (magit-popup-pluralize-type type))
   (let* ((plist (symbol-value popup))
          (alist (plist-get plist type))
          (value (assoc key alist)))
@@ -884,6 +909,7 @@ restored."
 
 (define-derived-mode magit-popup-sequence-mode magit-popup-mode "MagitPopup"
   "Major mode for infix argument popups, which are affected by state.
+
 Used for popups that display different actions depending on some
 external state.  Within Magit this is used for sequence commands
 such as rebase.  The function `:sequence-predicate', which takes
@@ -1019,7 +1045,11 @@ in the popup."
          (button-type-get type 'format)
          `((?k . ,(propertize (magit-popup-event-keydsc ev)
                               'face 'magit-popup-key))
-           (?d . ,(magit-popup-event-dsc ev))))
+           (?d . ,(magit-popup-event-dsc ev))
+           (?D . ,(if (eq (magit-popup-event-fun ev)
+                          (magit-popup-get :default-action))
+                      (propertize (magit-popup-event-dsc ev) 'face 'bold)
+                    (magit-popup-event-dsc ev)))))
         'type type 'event (magit-popup-event-key ev)))
 
 (defun magit-popup-insert-command-section (type spec)
@@ -1035,6 +1065,20 @@ in the popup."
           type (make-magit-popup-event :key (car  elt)
                                        :dsc (cadr elt)))
          (list 'function (lookup-key (current-local-map) (car elt)))))
+
+;;; Utilities
+
+(defun magit-popup-import-file-args (args files)
+  (if files
+      (cons (concat "-- " (mapconcat #'identity files ",")) args)
+    args))
+
+(defun magit-popup-export-file-args (args)
+  (let ((files (--first (string-prefix-p "-- " it) args)))
+    (when files
+      (setq args  (remove files args)
+            files (split-string (substring files 3) ",")))
+    (list args files)))
 
 ;;; magit-popup.el ends soon
 
