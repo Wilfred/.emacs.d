@@ -282,7 +282,8 @@ If COLLECTION is an `obarray', a TEST should be needed. See `obarray'."
                             hist-fc-transformer
                             marked-candidates
                             nomark
-                            (alistp t))
+                            (alistp t)
+                            (candidate-number-limit helm-candidate-number-limit))
   "Read a string in the minibuffer, with helm completion.
 
 It is helm `completing-read' equivalent.
@@ -419,6 +420,9 @@ that use `helm-comp-read' See `helm-M-x' for example."
                                                        "\\s\\" "" helm-pattern))
                                                      cands))
                                  (setq helm-cr-unknown-pattern-flag t))
+                               ;; When DEFAULT is initially a list, candidates
+                               ;; come already computed with DEFAULT list appended,
+                               ;; and DEFAULT is set to the car of this list.
                                (if (and default (not (string= default "")))
                                    (delq nil (cons default (delete default cands)))
                                  cands))))
@@ -492,6 +496,7 @@ that use `helm-comp-read' See `helm-M-x' for example."
                          :preselect preselect
                          :prompt prompt
                          :resume 'noresume
+                         :candidate-number-limit candidate-number-limit
                          :case-fold-search case-fold
                          :keymap loc-map
                          :history (and (symbolp input-history) input-history)
@@ -586,14 +591,14 @@ It should be used when candidate list don't need to rebuild dynamically."
     (when (and default (listp default))
       ;; When DEFAULT is a list move the list on head of COLLECTION
       ;; and set it to its car. #bugfix `grep-read-files'.
-      (setq collection (if (listp collection)
-                           (append default collection)
-                         ;; Else COLLECTION is maybe a function or a table.
-                         (prog1
-                             (append default (all-completions "" collection))
-                           ;; Ensure `all-completions' will not be used
-                           ;; a second time to recompute COLLECTION [1].
-                           (setq alistp t))))
+      (setq collection
+            ;; COLLECTION is maybe a function or a table.
+            (append default
+                    (helm-comp-read-get-candidates
+                     collection test nil (listp collection))))
+      ;; Ensure `all-completions' will not be used
+      ;; a second time to recompute COLLECTION [1].
+      (setq alistp t)
       (setq default (car default)))
     (helm-comp-read
      prompt collection
@@ -742,6 +747,7 @@ See documentation of `completing-read' and `all-completions' for details."
        must-match
        default
        marked-candidates
+       (candidate-number-limit helm-ff-candidate-number-limit)
        nomark
        (alistp t)
        (persistent-action 'helm-find-files-persistent-action)
@@ -858,7 +864,6 @@ Keys description:
              :filtered-candidate-transformer 'helm-ff-sort-candidates
              :filter-one-by-one 'helm-ff-filter-candidate-one-by-one
              :persistent-action persistent-action
-             :candidate-number-limit 9999
              :persistent-help persistent-help
              :volatile t
              :nomark nomark
@@ -869,6 +874,7 @@ Keys description:
                   :input (expand-file-name initial-input)
                   :prompt prompt
                   :keymap cmap
+                  :candidate-number-limit candidate-number-limit
                   :resume 'noresume
                   :case-fold-search case-fold
                   :default default

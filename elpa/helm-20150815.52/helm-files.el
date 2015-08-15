@@ -23,7 +23,6 @@
 (require 'helm-utils)
 (require 'helm-external)
 (require 'helm-grep)
-(require 'helm-match-plugin)
 (require 'helm-help)
 (require 'helm-locate)
 (require 'helm-bookmark)
@@ -203,6 +202,11 @@ This take effect in `helm-find-files' and file completion used by `helm-mode'
 i.e `helm-read-file-name'."
   :group 'helm-files
   :type  'boolean)
+
+(defcustom helm-ff-candidate-number-limit 5000
+  "The `helm-candidate-number-limit' for `helm-find-files', `read-file-name' and friends."
+  :group 'helm-files
+  :type 'integer)
 
 (defcustom helm-findutils-skip-boring-files t
   "Ignore files matching regexps in `completion-ignored-extensions'."
@@ -485,8 +489,7 @@ Should not be used among other sources.")
    (volatile :initform t)
    (nohighlight :initform t)
    (keymap :initform helm-find-files-map)
-   (candidate-number-limit
-    :initform 9999)
+   (candidate-number-limit :initform 'helm-ff-candidate-number-limit)
    (action-transformer
     :initform 'helm-find-files-action-transformer)
    (action :initform 'helm-find-files-actions)
@@ -632,10 +635,8 @@ ACTION must be an action supported by `helm-dired-action'."
 
 (defun helm-find-files-grep (_candidate)
   "Default action to grep files from `helm-find-files'."
-  (apply 'run-with-timer 0.01 nil
-         #'helm-do-grep-1
-         (helm-marked-candidates :with-wildcard t)
-         helm-current-prefix-arg))
+  (helm-do-grep-1 (helm-marked-candidates :with-wildcard t)
+                  helm-current-prefix-arg))
 
 (defun helm-ff-zgrep (_candidate)
   "Default action to zgrep files from `helm-find-files'."
