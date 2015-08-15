@@ -1160,7 +1160,6 @@ annoying to accidentally close Emacs, so warn first.
   (require 'git-customisations)
   (require 'git-flow-release)
   (require 'eshell-customisations)
-  (require 'swoop-customisations)
 
   (require 'compilation-customisations)
 

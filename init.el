@@ -1,4 +1,3 @@
-
 (defun wh/export-init ()
   "Generate init.html and init.html from the current init.org file."
   (interactive)
@@ -547,7 +546,6 @@ Visit the file after creation."
 (require 'git-customisations)
 (require 'git-flow-release)
 (require 'eshell-customisations)
-(require 'swoop-customisations)
 
 (require 'compilation-customisations)
 
