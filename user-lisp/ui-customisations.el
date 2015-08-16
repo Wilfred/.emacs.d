@@ -87,6 +87,10 @@ Assumes that the frame is only split into two."
 
 (global-set-key (kbd "C-x 5") 'toggle-frame-split)
 
+(defadvice split-window-right (after wh/switch-after-split activate)
+  "Switch to the right after splitting."
+  (other-window 1))
+
 (defun split-this-frame ()
   "Change this frame to be split vertically, with the current buffer in both.
 All other buffers are hidden.
