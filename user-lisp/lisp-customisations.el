@@ -4,8 +4,11 @@
   (paredit-mode 1))
 
 (dolist (hook
-         '(clojure-mode-hook emacs-lisp-mode-hook
-                             scheme-mode-hook lisp-mode-hook))
+         '(clojure-mode-hook
+           emacs-lisp-mode-hook
+           scheme-mode-hook
+           lisp-mode-hook
+           ielm-mode-hook))
   (add-hook hook 'switch-on-paredit))
 
 ;; Paredit's C-M-f and C-M-b are really handy but difficult to type.
