@@ -54,6 +54,9 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 (require 'company-dabbrev)
 (setq company-dabbrev-ignore-case nil)
 (setq company-dabbrev-downcase nil)
+(setq company-dabbrev-other-buffers t)
+(require 'company-dabbrev-code)
+(setq company-dabbrev-code-modes t)
 
 ;; force hippie-expand completions to be case-sensitive
 (defadvice hippie-expand (around hippie-expand-case-fold)
