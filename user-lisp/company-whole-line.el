@@ -23,15 +23,16 @@
   (with-current-buffer buffer
     (save-excursion
       (goto-char (point-min))
-      (cl-loop until (cwl--last-line-p)
-               do (forward-line)
-               if (looking-at
-                   ;; The current prefix followed some additional characters.
-                   (rx-to-string `(seq ,prefix (1+ not-newline))))
-               collect (propertize
-                        (cwl--current-line)
-                        'buffer buffer
-                        'line-number (line-number-at-pos))))))
+      (cl-loop
+       if (looking-at
+           ;; The current prefix followed some additional characters.
+           (rx-to-string `(seq ,prefix (1+ not-newline))))
+       collect (propertize
+                (cwl--current-line)
+                'buffer buffer
+                'line-number (line-number-at-pos))
+       until (cwl--last-line-p)
+       do (forward-line)))))
 
 (defun cwl--buffers-in-mode (mode)
   "Return a list of all the buffers with major mode MODE."
