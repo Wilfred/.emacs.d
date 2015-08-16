@@ -1,6 +1,7 @@
 ;;;; Editing customisations -- general text munging when typing.
 (require 's)
 (require 'dash)
+(require 'f)
 
 ;; highlight region whenever mark is active
 (transient-mark-mode t)
@@ -288,9 +289,20 @@ If the region is active, toggle commenting on the whole region."
 
 (global-set-key (kbd "M-;") #'wh/comment-dwim)
 
+;; TODO: write these insert commands as yasnippets, or send PRs to
+;; erefactor.
 (defun wh/insert-autoload-cookie ()
   (interactive)
   (insert ";;;###autoload"))
+
+(defun wh/insert-provide ()
+  (interactive)
+  (->>
+   (buffer-file-name)
+   (f-filename)
+   (f-no-ext)
+   (format "(provide '%s)")
+   (insert)))
 
 ;; Disable fringe now we're using diff-hl-mode. TODO: find a better file for this.
 (setq flycheck-indication-mode nil)
