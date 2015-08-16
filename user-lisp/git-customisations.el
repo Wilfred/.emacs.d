@@ -6,6 +6,9 @@
 ;; Don't prompt when first line of commit is over 50 chars.
 (setq git-commit-finish-query-functions '())
 
+;; Disabling magit nagging when pushing.
+(setq magit-push-always-verify nil)
+
 (setq magit-branch-arguments (remove "--track" magit-branch-arguments))
 
 ;; Highlight new/removed/changed lines relative to the last commit in VCS.
