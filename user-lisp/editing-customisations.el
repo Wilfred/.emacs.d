@@ -305,6 +305,9 @@ If the region is active, toggle commenting on the whole region."
    (insert)))
 
 ;; Disable fringe now we're using diff-hl-mode. TODO: find a better file for this.
+(require 'flycheck)
 (setq flycheck-indication-mode nil)
+(require 'flymake)
+(setq flymake-fringe-indicator-position nil)
 
 (provide 'editing-customisations)
