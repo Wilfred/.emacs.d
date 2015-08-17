@@ -22,6 +22,7 @@
         markdown-exdent-or-delete
         org-delete-char
         org-self-insert-command
+        paredit-forward
         python-indent-electric-colon
         sgml-slash
         sp--self-insert-command
