@@ -136,7 +136,7 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 (define-key company-active-map (kbd "C-n") #'company-select-next)
 (define-key company-active-map (kbd "C-p") #'company-select-previous)
 
-(define-key company-active-map (kbd "<tab>") #'company-complete-selection)
+(define-key company-active-map (kbd "<tab>") #'company-complete-common-or-cycle)
 
 (require 'company-jit)
 (require 'company-whole-line)
