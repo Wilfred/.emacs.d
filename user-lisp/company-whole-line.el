@@ -52,6 +52,7 @@
     (candidates
      (cl-loop for buffer in (cwl--buffers-in-mode major-mode)
               append (cwl--matching-lines arg buffer)))
+    (duplicates t)
     (meta
      (format "Line %d from %s"
              (get-text-property 0 'line-number arg)
