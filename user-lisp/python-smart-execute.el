@@ -191,7 +191,8 @@ Equivalent to `python-shell-send-region' but robust to single line regions
 This may be a line, a block of code, or a whole function.
 If the region is active, send that instead.
 
-See also `python-smart-execute-next-line'."
+See also `python-smart-execute-next-line'.  and
+`python-smart-execute-no-move'."
   (interactive)
   (pse--shell-send-dwim)
   (python-nav-forward-statement))
@@ -204,6 +205,12 @@ Handy for incrementally developing functions."
   (pse--shell-send-dwim)
   (forward-line)
   (python-nav-beginning-of-statement))
+
+;;;###autoload
+(defun python-smart-execute-no-move ()
+  "Execute, but don't move point."
+  (interactive)
+  (pse--shell-send-dwim))
 
 (provide 'python-smart-execute)
 ;;; python-smart-execute.el ends here

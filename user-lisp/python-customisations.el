@@ -95,6 +95,6 @@
 
 (require 'python-smart-execute)
 (define-key python-mode-map (kbd "<f1>") #'python-smart-execute)
-(define-key python-mode-map (kbd "<S-return>") #'python-smart-execute-next-line)
+(define-key python-mode-map (kbd "<S-f1>") #'python-smart-execute-no-move)
 
 (provide 'python-customisations)
