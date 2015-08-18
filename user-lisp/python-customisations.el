@@ -85,6 +85,13 @@
 (define-key python-mode-map (kbd "M-.") 'anaconda-mode-goto-definitions)
 (define-key python-mode-map (kbd "M-,") 'anaconda-nav-pop-marker)
 
+(require 'company)
+(defun wh/company-in-python-mode ()
+  (setq-local company-idle-delay 0.1)
+  (set (make-local-variable 'company-backends) (list #'company-anaconda #'company-dabbrev-code)))
+
+(add-hook 'python-mode-hook #'wh/company-in-python-mode)
+
 ;; Use ipython, if available.
 ;; from http://emacs.stackexchange.com/q/4161
 (cond
