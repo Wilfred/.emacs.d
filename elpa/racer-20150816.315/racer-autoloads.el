@@ -3,7 +3,7 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "racer" "racer.el" (21967 8668 500661 364000))
+;;;### (autoloads nil "racer" "racer.el" (21971 41650 739793 789000))
 ;;; Generated autoloads from racer.el
 
 (autoload 'racer-complete-or-indent "racer" "\
@@ -18,6 +18,16 @@ Run the racer find-definition command and process the results.
 
 (autoload 'racer-activate "racer" "\
 Add Racer as the completion backend for the current buffer.
+
+\(fn)" nil nil)
+
+(autoload 'racer-turn-on-eldoc "racer" "\
+Enable eldoc using Racer.
+
+\(fn)" nil nil)
+
+(autoload 'racer-turn-off-eldoc "racer" "\
+Disable eldoc using Racer.
 
 \(fn)" nil nil)
 
