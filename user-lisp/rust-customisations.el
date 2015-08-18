@@ -9,6 +9,7 @@
 
 (require 'rust-mode)
 (add-hook 'rust-mode-hook #'racer-activate)
+(add-hook 'rust-mode-hook #'racer-turn-on-eldoc)
 (define-key rust-mode-map (kbd "M-.") #'racer-find-definition)
 
 (provide 'rust-customisations)
