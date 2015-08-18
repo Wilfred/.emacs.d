@@ -2,4 +2,4 @@
 # name: println
 # key: pr
 # --
-println!("${}");
+println!("$1", $2);
