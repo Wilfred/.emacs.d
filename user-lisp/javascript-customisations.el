@@ -36,6 +36,12 @@
 (require 'company)
 (add-to-list 'company-backends 'company-tern)
 
+(defun wh/company-in-js2-mode ()
+  (set (make-local-variable 'company-backends)
+       (list #'company-tern #'company-dabbrev-code #'company-keywords )))
+
+(add-hook 'js2-mode-hook #'wh/company-in-js2-mode)
+
 (js2r-add-keybindings-with-prefix "C-c C-r")
 
 (provide 'javascript-customisations)
