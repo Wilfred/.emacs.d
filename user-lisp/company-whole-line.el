@@ -46,17 +46,32 @@
                 (eq major-mode mode))
            collect buffer))
 
+(defun cwl--candidates (prefix)
+  "Return all the lines in all buffers matching this major mode,
+where the line starts with PREFIX."
+  (cl-loop for buffer in (cwl--buffers-in-mode major-mode)
+           append (cwl--matching-lines (s-trim-left prefix) buffer)))
+
 (defun company-whole-line (command &optional arg &rest ignored)
+  "A company backend that finds lines in all buffers (in the same major mode)
+that start with the current line at point."
   (interactive (list 'interactive))
   ;; TODO: sort.
   (cl-case command
     (interactive (company-begin-backend 'company-whole-line))
     ;; We can complete if we're at the end of a non-empty line.
     (prefix (when (and (eolp) (not (cwl--empty-line-p)))
-              (cwl--current-line)))
+              ;; Hack: don't return a prefix if we don't have any
+              ;; candidates. This is because company tries other
+              ;; backends *with the same prefix* otherwise! See
+              ;; https://github.com/company-mode/company-mode/issues/47#issuecomment-33472005
+              ;; -- a better solution would be to write a
+              ;; company-try-hard backend that combines other
+              ;; backends.
+              (and (cwl--candidates (cwl--current-line))
+                   (cwl--current-line))))
     (candidates
-     (cl-loop for buffer in (cwl--buffers-in-mode major-mode)
-              append (cwl--matching-lines (s-trim-left arg) buffer)))
+     (cwl--candidates arg))
     (duplicates t)
     (meta
      (format "Line %d from %s"
