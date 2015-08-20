@@ -17,7 +17,7 @@
   (save-excursion
     (let ((line-start (progn (beginning-of-line) (point)))
           (line-end (progn (end-of-line) (point))))
-      (buffer-substring line-start line-end))))
+      (s-trim-left (buffer-substring line-start line-end)))))
 
 (defun cwl--matching-lines (prefix buffer)
   "Return all the lines in BUFFER that start with PREFIX."
@@ -25,9 +25,13 @@
     (save-excursion
       (goto-char (point-min))
       (cl-loop
-       if (looking-at
-           ;; The current prefix followed some additional characters.
-           (rx-to-string `(seq (0+ whitespace) ,prefix (1+ not-newline))))
+       if (and
+           (looking-at
+            ;; The current prefix followed some additional characters.
+            (rx-to-string `(seq (0+ whitespace) ,prefix (1+ not-newline))))
+           ;; The line is different to the prefix (so we don't offer
+           ;; the current prefix as an option).
+           (not (equal (cwl--current-line) prefix)))
        collect (propertize
                 (cwl--current-line)
                 'buffer buffer
@@ -52,7 +56,7 @@
               (cwl--current-line)))
     (candidates
      (cl-loop for buffer in (cwl--buffers-in-mode major-mode)
-              append (cwl--matching-lines (s-trim arg) buffer)))
+              append (cwl--matching-lines (s-trim-left arg) buffer)))
     (duplicates t)
     (meta
      (format "Line %d from %s"
