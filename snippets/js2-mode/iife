@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: iife
+# key: iife
+# --
+(function(exports) {
+    "use strict";
+    $1
+})(window);
