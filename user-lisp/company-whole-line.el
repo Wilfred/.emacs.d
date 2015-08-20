@@ -1,5 +1,6 @@
 (require 'cl-lib)
 (require 'company)
+(require 's)
 
 (defun cwl--empty-line-p ()
   "Return non-nil if the current line is empty."
@@ -26,7 +27,7 @@
       (cl-loop
        if (looking-at
            ;; The current prefix followed some additional characters.
-           (rx-to-string `(seq ,prefix (1+ not-newline))))
+           (rx-to-string `(seq (0+ whitespace) ,prefix (1+ not-newline))))
        collect (propertize
                 (cwl--current-line)
                 'buffer buffer
@@ -51,7 +52,7 @@
               (cwl--current-line)))
     (candidates
      (cl-loop for buffer in (cwl--buffers-in-mode major-mode)
-              append (cwl--matching-lines arg buffer)))
+              append (cwl--matching-lines (s-trim arg) buffer)))
     (duplicates t)
     (meta
      (format "Line %d from %s"
