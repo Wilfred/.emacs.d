@@ -167,6 +167,12 @@ Taken from http://stackoverflow.com/a/25532190/509706."
   :config
   ;; Use helm wherever possible, e.g. for C-h f.
   (helm-mode 1)
+  ;; Don't jump to the first definition when using helm-imenu.
+  ;; See https://github.com/emacs-helm/helm/issues/1134
+  ;; TODO: could we use `-remove-item' here? It's less verbose, but
+  ;; we'd need to ensure dash is loaded.
+  (setq helm-sources-using-default-as-input
+        (remove 'helm-source-imenu helm-sources-using-default-as-input))
   :bind
   ;; Ensure we show the shortest match when searching commands.
   ;; See http://emacs.stackexchange.com/q/10398/304
