@@ -69,6 +69,7 @@ that start with the current line at point."
               ;; company-try-hard backend that combines other
               ;; backends.
               (and (cwl--candidates (cwl--current-line))
+                   (>  (length (cwl--current-line)) 6)
                    (cwl--current-line))))
     (candidates
      (cwl--candidates arg))
