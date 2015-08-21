@@ -156,21 +156,22 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 ;; Always use 'y or n' for questions, since 'yes' is tedious to type over and over.
 (fset 'yes-or-no-p 'y-or-n-p)
 
-;; helm
-(require 'helm)
-(setq helm-autoresize-min-height 50
-      helm-autoresize-max-height 50
-      helm-split-window-default-side 'below
-      helm-split-window-in-side-p t)
-;; Use helm wherever possible, e.g. for C-h f.
-(helm-mode 1)
-
-;; Don't bother showing helm in the mode line.
-(diminish #'helm-mode)
-
-;; Ensure we show the shortest match when searching commands.
-;; See http://emacs.stackexchange.com/q/10398/304
-(global-set-key (kbd "M-x") #'helm-M-x)
+(use-package helm
+  ;; TODO: find out why lazy-loading doesn't work here.
+  :demand
+  :init
+  (setq helm-autoresize-min-height 50
+        helm-autoresize-max-height 50
+        helm-split-window-default-side 'below
+        helm-split-window-in-side-p t)
+  :config
+  ;; Use helm wherever possible, e.g. for C-h f.
+  (helm-mode 1)
+  :bind
+  ;; Ensure we show the shortest match when searching commands.
+  ;; See http://emacs.stackexchange.com/q/10398/304
+  ("M-x" . helm-M-x)
+  :diminish helm-mode)
 
 ;; Use helm for projectile features, primarily C-x C-g (finding
 ;; files) and C-c p p (switching projects).
