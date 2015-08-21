@@ -12,7 +12,7 @@
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Maintainer: Jonas Bernoulli <jonas@bernoul.li>
 
-;; Package-Requires: ((emacs "24.4") (async "20150807") (dash "2.11.0"))
+;; Package-Requires: ((emacs "24.4") (async "20150812") (dash "2.11.0"))
 ;; Keywords: bindings
 ;; Homepage: https://github.com/magit/magit
 
@@ -54,6 +54,7 @@
 (require 'format-spec)
 
 (and (require 'async-bytecomp nil t)
+     (memq 'magit (bound-and-true-p async-bytecomp-allowed-packages))
      (fboundp 'async-bytecomp-package-mode)
      (async-bytecomp-package-mode 1))
 
@@ -342,7 +343,7 @@ or `:only' which doesn't change the behaviour."
                     (magit-popup-get :options))))
 
 (defmacro magit-popup-convert-events (def form)
-  (declare (indent 1))
+  (declare (indent 1) (debug (form form)))
   `(--map (if (or (null it) (stringp it)) it ,form) ,def))
 
 (defun magit-popup-convert-switches (val def)
@@ -502,13 +503,7 @@ keywords are also meaningful:
          (magit-invoke-popup ',name ,mode arg))
        (defvar ,name
          (list :variable ',opt ,@args))
-       (cl-loop for args in (get ',name 'magit-popup-deferred)
-                do (condition-case err
-                       (apply #'magit-define-popup-key ',name args)
-                     ((debug error)
-                      (display-warning
-                       'magit (error-message-string err) :error)))
-                finally (put ',name 'magit-popup-deferred nil))
+       (magit-define-popup-keys-deferred ',name)
        ,@(when opt
            `((defcustom ,opt (plist-get ,name :default-arguments)
                ""
@@ -632,8 +627,17 @@ It's better to use one of the specialized functions
                               (cons elt value)
                             (append value (list elt)))))
             (set popup (plist-put plist type value)))
-        (push (list type key def at prepend) (get popup 'magit-popup-deferred)))
+        (push (list type key def at prepend)
+              (get popup 'magit-popup-deferred)))
     (error "Unknown popup event type: %s" type)))
+
+(defun magit-define-popup-keys-deferred (popup)
+  (dolist (args (get popup 'magit-popup-deferred))
+    (condition-case err
+        (apply #'magit-define-popup-key popup args)
+      ((debug error)
+       (display-warning 'magit (error-message-string err) :error))))
+  (put popup 'magit-popup-deferred nil))
 
 (defun magit-change-popup-key (popup type from to)
   "In POPUP, bind TO to what FROM was bound to.

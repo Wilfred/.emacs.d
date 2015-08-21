@@ -19,11 +19,18 @@ Maintainer
 
 - Jonas Bernoulli <jonas@bernoul.li>
 
-Retired Maintainers
--------------------
+Developers
+----------
+
+- Kyle Meyer <kyle@kyleam.com>
+- Noam Postavsky <npostavs@users.sourceforge.net>
+
+Retired Maintainers and Developers
+----------------------------------
 
 - Nicolas Dudebout <nicolas.dudebout@gatech.edu>
 - Peter J. Weisberg <pj@irregularexpressions.net>
+- Pieter Praet <pieter@praet.org>
 - Phil Jackson <phil@shellarchive.co.uk>
 - Rémi Vanicat <vanicat@debian.org>
 - Yann Hodique <yann.hodique@gmail.com>
@@ -146,6 +153,7 @@ Contributors
 - Nick Alcock <nick.alcock@oracle.com>
 - Nick Alexander <nalexander@mozilla.com>
 - Nick Dimiduk <ndimiduk@gmail.com>
+- Nicklas Lindgren <nili@gulmohar.se>
 - Nicolas Dudebout <nicolas.dudebout@gatech.edu>
 - Nicolas Richard <theonewiththeevillook@yahoo.fr>
 - Noam Postavsky <npostavs@users.sourceforge.net>

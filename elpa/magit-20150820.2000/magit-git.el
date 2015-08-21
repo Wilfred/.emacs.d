@@ -203,8 +203,8 @@ string \"false\", otherwise return nil."
 
 (defun magit-git-insert (&rest args)
   "Execute Git with ARGS, inserting its output at point.
-If Git exits with a non-zero exit status, then report show a
-message and add a section in the respective process buffer."
+If Git exits with a non-zero exit status, then show a message and
+add a section in the respective process buffer."
   (setq args (magit-process-git-arguments args))
   (if magit-git-debug
       (let (log)
@@ -287,7 +287,7 @@ call function WASHER with no argument."
 ;;; Files
 
 (defmacro magit--with-safe-default-directory (file &rest body)
-  (declare (indent 1))
+  (declare (indent 1) (debug (form body)))
   `(catch 'unsafe-default-dir
      (let ((default-directory
              (let ((file ,file))
@@ -323,7 +323,7 @@ GIT_DIR and its absolute path is returned."
             (file-name-directory (directory-file-name gitdir))))))))
 
 (defmacro magit-with-toplevel (&rest body)
-  (declare (indent defun))
+  (declare (indent defun) (debug (body)))
   (let ((toplevel (cl-gensym "toplevel")))
     `(let ((,toplevel (magit-toplevel)))
        (if ,toplevel
@@ -676,7 +676,7 @@ If no such tag can be found or if the distance is 0 (in which
 case it is the current tag, not the next) return nil instead.
 If optional WITH-DISTANCE is non-nil then return (TAG COMMITS)
 where COMMITS is the number of commits in TAG but not in REV."
-  (--when-let (magit-git-string "describe" "--contains" rev)
+  (--when-let (magit-git-string "describe" "--contains" (or rev "HEAD"))
     (save-match-data
       (when (string-match "^[^^~]+" it)
         (setq it (match-string 0 it))

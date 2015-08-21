@@ -14,7 +14,7 @@
 ;;	Rémi Vanicat      <vanicat@debian.org>
 ;;	Yann Hodique      <yann.hodique@gmail.com>
 
-;; Package-Requires: ((emacs "24.4") (async "20150807") (dash "2.11.0") (with-editor "20150808") (git-commit "20150808") (magit-popup "20150808"))
+;; Package-Requires: ((emacs "24.4") (async "20150812") (dash "2.11.0") (with-editor "20150816") (git-commit "20150816") (magit-popup "20150816"))
 ;; Keywords: git tools vc
 ;; Homepage: https://github.com/magit/magit
 
@@ -1987,20 +1987,23 @@ Currently this only adds the following key bindings.
 (magit-define-popup magit-run-popup
   "Popup console for running raw Git commands."
   'magit-commands nil nil
-  :actions '((?! "Git Subcommand (from root)" magit-git-command-topdir)
-             (?: "Git Subcommand (from pwd)" magit-git-command)
-             (?g "Git Gui" magit-run-git-gui)
-             (?k "Gitk" magit-run-gitk))
-  :default-action 'magit-git-command)
+  :actions '((?! "Git Subcommand (in topdir)" magit-git-command-topdir)
+             (?k "Gitk"                       magit-run-gitk)
+             (?p "Git Subcommand (in pwd)"    magit-git-command)
+             (?a "Gitk --all"                 magit-run-gitk-all)
+             (?s "Shell command (in topdir)"  magit-shell-command-topdir)
+             (?b "Gitk --branches"            magit-run-gitk-branches)
+             (?S "Shell command (in pwd)"     magit-shell-command)
+             (?g "Git Gui"                    magit-run-git-gui))
+  :default-action 'magit-git-command
+  :max-action-columns 2)
 
 ;;;###autoload
 (defun magit-git-command (args directory)
   "Execute a Git subcommand asynchronously, displaying the output.
 With a prefix argument run Git in the root of the current
-repository, otherwise in `default-directory'.
-
-Non-interactively run Git in DIRECTORY with ARGS."
-  (interactive (magit-git-command-read-args))
+repository, otherwise in `default-directory'."
+  (interactive (magit-read-shell-command "Git subcommand (pwd: %s)"))
   (require 'eshell)
   (with-temp-buffer
     (insert args)
@@ -2011,20 +2014,44 @@ Non-interactively run Git in DIRECTORY with ARGS."
   (magit-mode-display-buffer (magit-process-buffer directory t)
                              'magit-process-mode 'pop-to-buffer))
 
+;;;###autoload
 (defun magit-git-command-topdir (args directory)
   "Execute a Git subcommand asynchronously, displaying the output.
 Run Git in the top-level directory of the current repository.
 \n(fn)" ; arguments are for internal use
-  (interactive (magit-git-command-read-args t))
+  (interactive (magit-read-shell-command "Git subcommand (pwd: %s)" t))
   (magit-git-command args directory))
 
-(defun magit-git-command-read-args (&optional root)
+;;;###autoload
+(defun magit-shell-command (args directory)
+  "Execute a shell command asynchronously, displaying the output.
+With a prefix argument run the command in the root of the current
+repository, otherwise in `default-directory'."
+  (interactive (magit-read-shell-command "Shell command (pwd: %s)"))
+  (require 'eshell)
+  (with-temp-buffer
+    (insert args)
+    (setq args (mapcar 'eval (eshell-parse-arguments (point-min)
+                                                     (point-max))))
+    (setq default-directory directory)
+    (apply #'magit-start-process (car args) nil (cdr args)))
+  (magit-mode-display-buffer (magit-process-buffer directory t)
+                             'magit-process-mode 'pop-to-buffer))
+
+;;;###autoload
+(defun magit-shell-command-topdir (args directory)
+  "Execute a shell command asynchronously, displaying the output.
+Run the command in the top-level directory of the current repository.
+\n(fn)" ; arguments are for internal use
+  (interactive (magit-read-shell-command "Shell command (pwd: %s)" t))
+  (magit-shell-command args directory))
+
+(defun magit-read-shell-command (prompt &optional root)
   (let ((dir (if (or root current-prefix-arg)
                  (or (magit-toplevel)
                      (user-error "Not inside a Git repository"))
                (expand-file-name default-directory))))
-    (list (magit-read-string (format "Git subcommand (in %s)"
-                                     (abbreviate-file-name dir))
+    (list (magit-read-string (format prompt (abbreviate-file-name dir))
                              nil 'magit-git-command-history)
           dir)))
 
@@ -2099,20 +2126,19 @@ When the region is active, then behave like `kill-ring-save'."
   (interactive)
   (if (region-active-p)
       (copy-region-as-kill (mark) (point) 'region)
-    (-when-let (section (magit-current-section))
-      (let ((value (magit-section-value section)))
-        (magit-section-case
-          (branch (when current-prefix-arg
-                    (setq value (magit-rev-parse value))))
-          (commit (setq value (magit-rev-parse value)))
-          (module-commit (let ((default-directory
-                                 (file-name-as-directory
-                                  (expand-file-name
-                                   (magit-section-parent-value section)
-                                   (magit-toplevel)))))
-                           (setq value (magit-rev-parse value))))
-          (t value))
-        (kill-new (message "%s" value))))))
+    (-when-let* ((section (magit-current-section))
+                 (value (magit-section-value section)))
+      (magit-section-case
+        (branch (when current-prefix-arg
+                  (setq value (magit-rev-parse value))))
+        (commit (setq value (magit-rev-parse value)))
+        (module-commit (let ((default-directory
+                               (file-name-as-directory
+                                (expand-file-name
+                                 (magit-section-parent-value section)
+                                 (magit-toplevel)))))
+                         (setq value (magit-rev-parse value)))))
+      (kill-new (message "%s" value)))))
 
 (defun magit-copy-buffer-thing-as-kill ()
   "Save the thing displayed in the current buffer to the kill ring.

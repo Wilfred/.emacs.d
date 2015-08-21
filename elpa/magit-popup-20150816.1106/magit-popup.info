@@ -391,6 +391,10 @@ File: magit-popup.info,  Node: Other options,  Prev: Customizing existing popups
      The Emacs package used to display man-pages, one of ‘man’ or
      ‘woman’.
 
+   To emphasize the default action by making it bold use this:
+
+     (button-type-put 'magit-popup-action-button 'format " %k %D")
+
 
 File: magit-popup.info,  Node: Defining prefix and suffix commands,  Prev: Usage,  Up: Top
 
@@ -639,9 +643,9 @@ Node: Introduction2158
 Node: Usage4735
 Node: Customizing existing popups9392
 Node: Other options13512
-Node: Defining prefix and suffix commands15085
-Node: Defining prefix commands17237
-Node: Defining suffix commands23244
+Node: Defining prefix and suffix commands15217
+Node: Defining prefix commands17369
+Node: Defining suffix commands23376
 
 End Tag Table
 
