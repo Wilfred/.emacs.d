@@ -186,6 +186,10 @@ Taken from http://stackoverflow.com/a/25532190/509706."
   ;; Ensure we show the shortest match when searching commands.
   ;; See http://emacs.stackexchange.com/q/10398/304
   ("M-x" . helm-M-x)
+
+  ;; Prefer helm-mini over simple buffer switching. It shows more
+  ;; information and includes recent files too!
+  ("C-x b" . helm-mini)
   :diminish helm-mode)
 
 ;; Use helm for projectile features, primarily C-x C-g (finding
