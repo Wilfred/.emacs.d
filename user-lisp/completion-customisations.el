@@ -138,6 +138,10 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 ;; in the candidates.
 (setq company-require-match nil)
 
+;; Align annotations to they're not shown immediately next to the
+;; candidate. Otherwise, we end with a function foo shown as "foof".
+(setq company-tooltip-align-annotations t)
+
 ;; Bind `company-complete' next to hippie-expand, because they're both useful.
 (global-set-key (kbd "s-/") #'company-complete)
 
