@@ -173,6 +173,11 @@ Taken from http://stackoverflow.com/a/25532190/509706."
   ;; we'd need to ensure dash is loaded.
   (setq helm-sources-using-default-as-input
         (remove 'helm-source-imenu helm-sources-using-default-as-input))
+
+  ;; Don't use helm for C-x C-f. I prefer ido in this case (see
+  ;; discussion at http://emacs.stackexchange.com/q/3798/304 ).
+  (add-to-list 'helm-completing-read-handlers-alist '(find-file))
+
   ;; Helm increases the font size and uses a different font for its
   ;; header. Override that.
   (custom-set-variables
@@ -187,10 +192,6 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 ;; files) and C-c p p (switching projects).
 (require 'projectile)
 (setq projectile-completion-system 'helm)
-
-;; Don't use helm for C-x C-f. I prefer ido in this case (see
-;; discussion at http://emacs.stackexchange.com/q/3798/304 ).
-(add-to-list 'helm-completing-read-handlers-alist '(find-file))
 
 ;; TODO: Emacs is highlighting this incorrectly:
 'other
