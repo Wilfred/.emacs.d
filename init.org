@@ -1152,6 +1152,7 @@ annoying to accidentally close Emacs, so warn first.
   (require 'lisp-customisations)
   (require 'python-customisations)
   (require 'rust-customisations)
+  (require 'llvm-customisations)
   (require 'sh-customisations)
   (require 'xml-customisations)
 
