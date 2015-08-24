@@ -173,6 +173,10 @@ Taken from http://stackoverflow.com/a/25532190/509706."
   ;; we'd need to ensure dash is loaded.
   (setq helm-sources-using-default-as-input
         (remove 'helm-source-imenu helm-sources-using-default-as-input))
+  ;; Helm increases the font size and uses a different font for its
+  ;; header. Override that.
+  (custom-set-variables
+   '(helm-source-header ((t (:background "#22083397778B" :foreground "white")))))
   :bind
   ;; Ensure we show the shortest match when searching commands.
   ;; See http://emacs.stackexchange.com/q/10398/304
