@@ -6,6 +6,8 @@
 (define-key global-map (kbd "<f11>") #'avy-goto-word-or-subword-1)
 (global-set-key (kbd "<f10>") #'avy-goto-line)
 
+(global-set-key (kbd "<f7>") #'helm-imenu)
+
 ;; I use next/previous-line and forward/backward-char an awful lot
 ;; according to `keyfreq-show'. Allow these commands to be repeated,
 ;; so 'C-n n' is equivalent to 'C-n C-n' and so on.
