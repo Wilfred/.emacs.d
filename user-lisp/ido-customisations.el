@@ -47,4 +47,8 @@
       (unless (file-exists-p dir)
         (make-directory dir)))))
 
+;; ido is nicer for finding files, due to the configuration above for sorting by recency, and
+;; the ability to easily move into directories. See http://emacs.stackexchange.com/q/3798/304
+(ido-mode t)
+
 (provide 'ido-customisations)
