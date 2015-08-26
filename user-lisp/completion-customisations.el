@@ -185,7 +185,7 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 
   ;; Helm increases the font size and uses a different font for its
   ;; header. Override that.
-  (custom-set-variables
+  (custom-set-faces
    '(helm-source-header ((t (:background "#22083397778B" :foreground "white")))))
   :bind
   ;; Ensure we show the shortest match when searching commands.
