@@ -1,4 +1,4 @@
-;;; conflicts.el -- Conveniences for handling files with conflicts
+;;; conflicts-customisations.el -- Conveniences for handling files with conflicts
 
 ;; This is just a wrapper around smerge, but with more memorable
 ;; command names and more convenient key bindings.
@@ -27,4 +27,4 @@
 
 ;; TODO: SVN conflicts seem to enable smerge-mode, but not git conflicts
 
-(provide 'conflicts)
+(provide 'conflicts-customisations)

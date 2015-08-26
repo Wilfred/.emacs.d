@@ -541,6 +541,7 @@ Visit the file after creation."
 (require 'lisp-customisations)
 (require 'python-customisations)
 (require 'rust-customisations)
+(require 'llvm-customisations)
 (require 'sh-customisations)
 (require 'xml-customisations)
 
@@ -574,7 +575,7 @@ Visit the file after creation."
 (define-key dired-mode-map
   (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
 
-(require 'conflicts)
+(require 'conflicts-customisations)
 
 (require 'tags-utils)
 

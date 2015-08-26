@@ -1189,7 +1189,7 @@ annoying to accidentally close Emacs, so warn first.
   (define-key dired-mode-map
     (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
 
-  (require 'conflicts)
+  (require 'conflicts-customisations)
 
   (require 'tags-utils)
 
