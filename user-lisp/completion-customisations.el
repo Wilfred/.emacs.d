@@ -197,6 +197,17 @@ Taken from http://stackoverflow.com/a/25532190/509706."
   ("C-x b" . helm-buffers-list)
   :diminish helm-mode)
 
+;; Use psession to preserve Emacs variables between sessions. We do
+;; this so helm-M-x preserves command history between sessions. See
+;; https://github.com/emacs-helm/helm/issues/431
+(use-package psession
+  :init
+  ;; Don't bother preserving buffers.
+  (setq psession-save-buffers-unwanted-buffers-regexp ".*")
+
+  :config
+  (psession-mode 1))
+
 ;; Use helm for projectile features, primarily C-x C-g (finding
 ;; files) and C-c p p (switching projects).
 (require 'projectile)
