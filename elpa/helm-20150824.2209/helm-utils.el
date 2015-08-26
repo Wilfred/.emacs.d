@@ -212,7 +212,7 @@ If current selection is a buffer or a file, `helm-find-files'
 from its directory."
   (interactive)
   (require 'helm-grep)
-  (helm-run-after-quit
+  (helm-run-after-exit
    (lambda (f)
      (if (file-exists-p f)
          (helm-find-files-1 (file-name-directory f)
@@ -229,7 +229,8 @@ from its directory."
                           (not grep-line)
                           (replace-regexp-in-string "\\`\\*" "" sel)))
           (bmk       (and bmk-name (assoc bmk-name bookmark-alist)))
-          (buf       (helm-aif (get-buffer sel) (buffer-name it)))
+          (buf       (helm-aif (and (bufferp sel) (get-buffer sel))
+                         (buffer-name it)))
           (default-preselection (or (buffer-file-name helm-current-buffer)
                                     default-directory)))
      (cond
@@ -565,12 +566,6 @@ directory, open this directory."
 (defun helm-find-many-files (_ignore)
   (let ((helm--reading-passwd-or-string t))
     (mapc 'find-file (helm-marked-candidates))))
-
-(defun helm-quit-and-execute-action (action)
-  "Quit current helm session and execute ACTION."
-  (setq helm-saved-action action)
-  (setq helm-saved-selection (helm-get-selection))
-  (helm-exit-minibuffer))
 
 (defun helm-read-repeat-string (prompt &optional count)
   "Prompt as many time PROMPT is not empty.

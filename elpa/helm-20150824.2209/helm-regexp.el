@@ -23,6 +23,8 @@
 (require 'helm-utils)
 (require 'helm-plugin)
 
+(declare-function helm-mm-split-pattern "helm-multi-match")
+
 
 (defgroup helm-regexp nil
   "Regexp related Applications and libraries for Helm."
@@ -234,7 +236,7 @@ arg METHOD can be one of buffer, buffer-other-window, buffer-other-frame."
   (let* ((split (helm-grep-split-line candidate))
          (buf (car split))
          (lineno (string-to-number (nth 1 split)))
-         (split-pat (helm-mp-split-pattern helm-input)))
+         (split-pat (helm-mm-split-pattern helm-input)))
     (cl-case method
       (buffer              (switch-to-buffer buf))
       (buffer-other-window (switch-to-buffer-other-window buf))
@@ -282,18 +284,18 @@ Same as `helm-moccur-goto-line' but go in new frame."
   "Run goto line other window action from `helm-source-moccur'."
   (interactive)
   (with-helm-alive-p
-    (helm-quit-and-execute-action 'helm-moccur-goto-line-ow)))
+    (helm-exit-and-execute-action 'helm-moccur-goto-line-ow)))
 
 (defun helm-moccur-run-goto-line-of ()
   "Run goto line new frame action from `helm-source-moccur'."
   (interactive)
   (with-helm-alive-p
-    (helm-quit-and-execute-action 'helm-moccur-goto-line-of)))
+    (helm-exit-and-execute-action 'helm-moccur-goto-line-of)))
 
 (defun helm-moccur-run-default-action ()
   (interactive)
   (with-helm-alive-p
-    (helm-quit-and-execute-action 'helm-moccur-goto-line)))
+    (helm-exit-and-execute-action 'helm-moccur-goto-line)))
 
 (defvar helm-source-moccur nil)
 (defclass helm-source-multi-occur (helm-source-in-buffer)
@@ -407,7 +409,7 @@ Same as `helm-moccur-goto-line' but go in new frame."
   "Run moccur save results action from `helm-moccur'."
   (interactive)
   (with-helm-alive-p
-    (helm-quit-and-execute-action 'helm-moccur-save-results)))
+    (helm-exit-and-execute-action 'helm-moccur-save-results)))
 
 
 ;;; helm-moccur-mode

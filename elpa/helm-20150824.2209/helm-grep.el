@@ -28,6 +28,7 @@
 (declare-function helm-elscreen-find-file "helm-elscreen" (file))
 (declare-function View-quit "view")
 (declare-function doc-view-goto-page "doc-view" (page))
+(declare-function helm-mm-split-pattern "helm-multi-match")
 
 
 (defgroup helm-grep nil
@@ -623,25 +624,25 @@ If N is positive go forward otherwise go backward."
   "Run grep default action from `helm-do-grep-1'."
   (interactive)
   (with-helm-alive-p
-    (helm-quit-and-execute-action 'helm-grep-action)))
+    (helm-exit-and-execute-action 'helm-grep-action)))
 
 (defun helm-grep-run-other-window-action ()
   "Run grep goto other window action from `helm-do-grep-1'."
   (interactive)
   (with-helm-alive-p
-    (helm-quit-and-execute-action 'helm-grep-other-window)))
+    (helm-exit-and-execute-action 'helm-grep-other-window)))
 
 (defun helm-grep-run-other-frame-action ()
   "Run grep goto other frame action from `helm-do-grep-1'."
   (interactive)
   (with-helm-alive-p
-    (helm-quit-and-execute-action 'helm-grep-other-frame)))
+    (helm-exit-and-execute-action 'helm-grep-other-frame)))
 
 (defun helm-grep-run-save-buffer ()
   "Run grep save results action from `helm-do-grep-1'."
   (interactive)
   (with-helm-alive-p
-    (helm-quit-and-execute-action 'helm-grep-save-results)))
+    (helm-exit-and-execute-action 'helm-grep-save-results)))
 
 
 ;;; helm-grep-mode
@@ -1030,7 +1031,7 @@ in recurse, and ignoring EXTS, search being made on
           (goto-char (point-min))
           (cl-loop for reg in (if multi-match
                                   ;; (m)occur.
-                                  (cl-loop for r in (helm-mp-split-pattern
+                                  (cl-loop for r in (helm-mm-split-pattern
                                                      helm-pattern)
                                            unless (string-match "\\`!" r)
                                            collect r)

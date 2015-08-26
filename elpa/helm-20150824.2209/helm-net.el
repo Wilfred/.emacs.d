@@ -59,23 +59,14 @@ When nil, fallback to `browse-url-browser-function'."
   :type 'string
   :group 'helm-net)
 
-(defcustom helm-google-suggest-use-curl-p nil
-  "When non--nil use CURL to get info from `helm-google-suggest-url'.
+(defcustom helm-net-prefer-curl nil
+  "When non--nil use CURL external program to fetch data.
 Otherwise `url-retrieve-synchronously' is used."
   :type 'boolean
   :group 'helm-net)
 
-(defcustom helm-yahoo-suggest-url
-  "http://search.yahooapis.com/WebSearchService/V1/relatedSuggestion?appid=Generic&query="
-  "Url used for looking up Yahoo suggestions."
-  :type 'string
-  :group 'helm-net)
-
-(defcustom helm-yahoo-suggest-search-url
-  "http://search.yahoo.com/search?&ei=UTF-8&fr&h=c&p=%s"
-  "Url used for Yahoo searching."
-  :type 'string
-  :group 'helm-net)
+(defvaralias 'helm-google-suggest-use-curl-p 'helm-net-prefer-curl)
+(make-obsolete-variable 'helm-google-suggest-use-curl-p 'helm-net-prefer-curl "1.7.7")
 
 (defcustom helm-surfraw-duckduckgo-url
   "https://duckduckgo.com/lite/?q=%s&kp=1"
@@ -87,7 +78,7 @@ a personal url, see your settings on duckduckgo."
   :group 'helm-net)
 
 (defcustom helm-wikipedia-suggest-url
-  "http://en.wikipedia.org/w/api.php?action=opensearch&search="
+  "https://en.wikipedia.org/w/api.php?action=opensearch&search="
   "Url used for looking up Wikipedia suggestions."
   :type 'string
   :group 'helm-net)
@@ -138,18 +129,9 @@ This is a format string, don't forget the `%s'."
   :type 'string
   :group 'helm-net)
 
-
-;;; Additional actions for search suggestions
-;;
-;;
-;; Internal
-
-(defun helm-search-suggest-perform-additional-action (url query)
-  "Perform the search via URL using QUERY as input."
-  (browse-url (format url (url-hexify-string query))))
-
-(defvar helm-search-suggest-additional-actions
-  '(("Wikipedia" . (lambda (candidate)
+(defcustom helm-google-suggest-actions
+  '(("Google Search" . helm-google-suggest-action)
+    ("Wikipedia" . (lambda (candidate)
                      (helm-search-suggest-perform-additional-action
                       helm-search-suggest-action-wikipedia-url
                       candidate)))
@@ -169,31 +151,47 @@ This is a format string, don't forget the `%s'."
                        (helm-search-suggest-perform-additional-action
                         helm-search-suggest-action-google-news-url
                         candidate))))
-  "List of additional actions for suggest sources.")
+  "List of actions for google suggest sources."
+  :group 'helm-net
+  :type '(alist :key-type string :value-type function))
+
+
+;;; Additional actions for search suggestions
+;;
+;;
+;; Internal
+
+(defun helm-search-suggest-perform-additional-action (url query)
+  "Perform the search via URL using QUERY as input."
+  (browse-url (format url (url-hexify-string query))))
+
+(defun helm-net--url-retrieve-sync (request parser)
+  (if helm-net-prefer-curl
+      (with-temp-buffer
+        (call-process "curl" nil t nil request)
+        (funcall parser))
+      (with-current-buffer (url-retrieve-synchronously request)
+        (funcall parser))))
 
 
 ;;; Google Suggestions
 ;;
 ;;
+(defun helm-google-suggest-parser ()
+  (cl-loop
+   with result-alist = (xml-get-children
+                        (car (xml-parse-region
+                              (point-min) (point-max)))
+                        'CompleteSuggestion)
+   for i in result-alist collect
+   (cdr (cl-caadr (assoc 'suggestion i)))))
+
 (defun helm-google-suggest-fetch (input)
   "Fetch suggestions for INPUT from XML buffer."
   (let ((request (concat helm-google-suggest-url
-                         (url-hexify-string input)))
-        (fetch #'(lambda ()
-                   (cl-loop
-                    with result-alist = (xml-get-children
-                                         (car (xml-parse-region
-                                               (point-min) (point-max)))
-                                         'CompleteSuggestion)
-                    for i in result-alist collect
-                    (cdr (cl-caadr (assoc 'suggestion i)))))))
-    (if helm-google-suggest-use-curl-p
-        (with-temp-buffer
-          (call-process "curl" nil t nil request)
-          (funcall fetch))
-        (with-current-buffer
-            (url-retrieve-synchronously request)
-          (funcall fetch)))))
+                         (url-hexify-string input))))
+    (helm-net--url-retrieve-sync
+     request #'helm-google-suggest-parser)))
 
 (defun helm-google-suggest-set-candidates (&optional request-prefix)
   "Set candidates with result and number of google results found."
@@ -239,59 +237,17 @@ This is a format string, don't forget the `%s'."
   "Default function to use in helm google suggest.")
 
 (defvar helm-source-google-suggest
-  `((name . "Google Suggest")
-    (candidates . (lambda ()
-                    (funcall helm-google-suggest-default-function)))
-    (action . ,(cons '("Google Search" . helm-google-suggest-action)
-                     helm-search-suggest-additional-actions))
-    (volatile)
-    (keymap . ,helm-map)
-    (requires-pattern . 3)))
+  (helm-build-sync-source "Google Suggest"
+    :candidates (lambda ()
+                  (funcall helm-google-suggest-default-function))
+    :action 'helm-google-suggest-actions
+    :volatile t
+    :keymap helm-map
+    :requires-pattern 3))
 
 (defun helm-google-suggest-emacs-lisp ()
   "Try to emacs lisp complete with google suggestions."
   (helm-google-suggest-set-candidates "emacs lisp"))
-
-
-;;; Yahoo suggestions
-;;
-;;
-(defun helm-yahoo-suggest-fetch (input)
-  "Fetch Yahoo suggestions for INPUT from XML buffer.
-Return an alist with elements like (data . number_results)."
-  (let ((request (concat helm-yahoo-suggest-url
-                         (url-hexify-string input))))
-    (with-current-buffer
-        (url-retrieve-synchronously request)
-      (cl-loop with result-alist =
-            (xml-get-children
-             (car (xml-parse-region
-                   (point-min) (point-max)))
-             'Result)
-            for i in result-alist
-            collect (cl-caddr i)))))
-
-(defun helm-yahoo-suggest-set-candidates ()
-  "Set candidates with Yahoo results found."
-  (let ((suggestions (helm-yahoo-suggest-fetch helm-input)))
-    (or suggestions
-        (append
-         suggestions
-         (list (cons (concat "Search for " "'" helm-input "'" " on Yahoo")
-                     helm-input))))))
-
-(defun helm-yahoo-suggest-action (candidate)
-  "Default action to jump to a Yahoo suggested candidate."
-  (helm-browse-url (format helm-yahoo-suggest-search-url
-                           (url-hexify-string candidate))))
-
-(defvar helm-source-yahoo-suggest
-  `((name . "Yahoo Suggest")
-    (candidates . helm-yahoo-suggest-set-candidates)
-    (action . (("Yahoo Search" . helm-yahoo-suggest-action)))
-    (volatile)
-    (keymap . ,helm-map)
-    (requires-pattern . 3)))
 
 ;;; Wikipedia suggestions
 ;;
@@ -302,13 +258,8 @@ Return an alist with elements like (data . number_results)."
   (require 'json)
   (let ((request (concat helm-wikipedia-suggest-url
                          (url-hexify-string helm-pattern))))
-    (if helm-google-suggest-use-curl-p
-        (with-temp-buffer
-          (call-process "curl" nil t nil request)
-          (helm-wikipedia--parse-buffer))
-      (with-current-buffer
-          (url-retrieve-synchronously request)
-        (helm-wikipedia--parse-buffer)))))
+    (helm-net--url-retrieve-sync
+     request #'helm-wikipedia--parse-buffer)))
 
 (defun helm-wikipedia--parse-buffer ()
   (goto-char (point-min))
@@ -353,17 +304,11 @@ Return an alist with elements like (data . number_results)."
         (display-buffer buf)
         (message mess)))))
 
-
 (defun helm-wikipedia-fetch-summary (input)
-  (let* ((request (concat helm-wikipedia-summary-url (url-hexify-string input))))
-    (if helm-google-suggest-use-curl-p
-        (with-temp-buffer
-          (call-process "curl" nil t nil request)
-          (helm-wikipedia--parse-summary))
-      (with-current-buffer
-          (url-retrieve-synchronously request)
-        (helm-wikipedia--parse-summary)))))
-
+  (let* ((request (concat helm-wikipedia-summary-url
+                          (url-hexify-string input))))
+    (helm-net--url-retrieve-sync
+     request #'helm-wikipedia--parse-summary)))
 
 (defun helm-wikipedia--parse-summary ()
   (goto-char (point-min))
@@ -399,18 +344,18 @@ Return an alist with elements like (data . number_results)."
 
 
 (defvar helm-source-wikipedia-suggest
-  `((name . "Wikipedia Suggest")
-    (candidates . helm-wikipedia-suggest-fetch)
-    (action . (("Wikipedia" . (lambda (candidate)
-                                (helm-search-suggest-perform-additional-action
-                                 helm-search-suggest-action-wikipedia-url
-                                 candidate)))))
-    (persistent-action . helm-wikipedia-persistent-action)
-    (volatile)
-    (keymap . ,helm-map)
-    (follow . 1)
-    (follow-delay . ,helm-wikipedia-follow-delay)
-    (requires-pattern . 3)))
+  (helm-build-sync-source "Wikipedia Suggest"
+    :candidates #'helm-wikipedia-suggest-fetch
+    :action '(("Wikipedia" . (lambda (candidate)
+                               (helm-search-suggest-perform-additional-action
+                                helm-search-suggest-action-wikipedia-url
+                                candidate))))
+    :persistent-action #'helm-wikipedia-persistent-action
+    :volatile t
+    :keymap helm-map
+    :follow 1
+    :follow-delay helm-wikipedia-follow-delay
+    :requires-pattern 3))
 
 
 ;;; Web browser functions.
@@ -538,12 +483,6 @@ Return an alist with elements like (data . number_results)."
   "Preconfigured `helm' for google search with google suggest."
   (interactive)
   (helm-other-buffer 'helm-source-google-suggest "*helm google*"))
-
-;;;###autoload
-(defun helm-yahoo-suggest ()
-  "Preconfigured `helm' for Yahoo searching with Yahoo suggest."
-  (interactive)
-  (helm-other-buffer 'helm-source-yahoo-suggest "*helm yahoo*"))
 
 ;;;###autoload
 (defun helm-wikipedia-suggest ()
