@@ -124,10 +124,13 @@ Position the cursor at its beginning, according to the current mode."
 
 (defun smart-open-line-above ()
   "Insert an empty line above the current line.
-Position the cursor at it's beginning, according to the current mode."
+Position the cursor at its beginning, according to the current mode."
   (interactive)
   (move-beginning-of-line nil)
-  (newline-and-indent)
+  ;; TODO: edebug doesn't handle this error, suggesting that the
+  ;; previous line throws the error. File a bug and/or find out why.
+  (ignore-errors ; If we're at the beginning of the buffer.
+    (newline-and-indent))
   (forward-line -1)
   (indent-according-to-mode))
 

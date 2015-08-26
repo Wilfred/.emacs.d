@@ -337,7 +337,7 @@ or different keybindings for common commands.
 ** Inserting
 
 It's often useful to start a new line of code that's above or below
-the current line. This code is taken from
+the current line. This code is based on
 http://emacsredux.com/blog/2013/03/26/smarter-open-line/ .
 
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -347,18 +347,21 @@ http://emacsredux.com/blog/2013/03/26/smarter-open-line/ .
     (interactive)
     (move-end-of-line nil)
     (newline-and-indent))
-  
+
   (global-set-key (kbd "M-o") 'smart-open-line)
-  
+
   (defun smart-open-line-above ()
     "Insert an empty line above the current line.
-  Position the cursor at it's beginning, according to the current mode."
+  Position the cursor at its beginning, according to the current mode."
     (interactive)
     (move-beginning-of-line nil)
-    (newline-and-indent)
+    ;; TODO: edebug doesn't handle this error, suggesting that the
+    ;; previous line throws the error. File a bug and/or find out why.
+    (ignore-errors ; If we're at the beginning of the buffer.
+      (newline-and-indent))
     (forward-line -1)
     (indent-according-to-mode))
-  
+
   (global-set-key (kbd "M-O") 'smart-open-line-above)
 #+END_SRC
 
