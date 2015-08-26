@@ -45,6 +45,7 @@ We just use symbols and lines from any open buffers in the current mode."
 (yas-global-mode 1)
 
 ;; bind yas-expand to SPC and not TAB.
+;; TODO: this is still leaving TAB bound.
 (define-key yas-minor-mode-map (kbd "TAB") nil)
 (define-key yas-minor-mode-map (kbd "SPC") 'yas-expand)
 
