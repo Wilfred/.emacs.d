@@ -52,5 +52,9 @@ This is useful when followed by an immediate kill."
 (define-key isearch-mode-map [(control return)] 'isearch-exit-other-end)
 
 (global-set-key (kbd "<f12>") #'swiper)
+;; Show the index of the current match in addition to the total
+;; matches with ivy (used by swiper). Anzu style.
+(require 'ivy)
+(setq ivy-count-format "(%d/%d) ")
 
 (provide 'isearch-customisations)
