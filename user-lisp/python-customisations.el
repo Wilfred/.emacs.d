@@ -95,11 +95,8 @@
 
 ;; Use ipython, if available.
 ;; from http://emacs.stackexchange.com/q/4161
-(cond
- ((executable-find "ipython2")
-  (setq python-shell-interpreter "ipython2"))
- ((executable-find "ipython")
-  (setq python-shell-interpreter "ipython")))
+(when (executable-find "ipython")
+  (setq python-shell-interpreter "ipython"))
 
 (require 'python-smart-execute)
 (define-key python-mode-map (kbd "<f1>") #'python-smart-execute)
