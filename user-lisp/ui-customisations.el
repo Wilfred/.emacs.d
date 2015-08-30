@@ -33,9 +33,8 @@ Defaults to `t'.")
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'post-forward-angle-brackets)
 
-; highlight TODO, FIXME and BUG
-(font-lock-add-keywords nil
-                        '(("\\(FIXME\\|TODO\\|BUG\\):" 1 font-lock-warning-face t)))
+;; Highlight TODO, FIXME and BUG.
+(add-hook 'prog-mode-hook #'turn-on-fic-mode)
 
 ;;; ibuffer
 
