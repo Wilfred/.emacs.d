@@ -125,7 +125,12 @@ it to open related buffers easily and discard other buffers (commonly magit)."
 ;; wherever possible. E.g. distinguishing major from minor mode (as
 ;; the major mode name can, but should not, include spaces).
 ;;
-;; I don't think smart-mode-line will meet this need, but it's at
-;; least worth stealing ideas from.
+;; I've played with `smart-mode-line` but I found the UI hard to
+;; grok. It does have some great ideas that I should investigate.
+;;
+;; Powerline doesn't offer significantly more features than the
+;; default Emacs modeline, but it's prettier. It also provides a cute
+;; scrollbar on the far right.
+(powerline-default-theme)
 
 (provide 'ui-customisations)
