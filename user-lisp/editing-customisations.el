@@ -289,12 +289,7 @@ If the region is active, toggle commenting on the whole region."
 
 (global-set-key (kbd "M-;") #'wh/comment-dwim)
 
-;; TODO: write these insert commands as yasnippets, or send PRs to
-;; erefactor.
-(defun wh/insert-autoload-cookie ()
-  (interactive)
-  (insert ";;;###autoload"))
-
+;; TODO: write this as a command in erefactor.
 (defun wh/insert-provide ()
   (interactive)
   (->>
