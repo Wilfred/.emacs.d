@@ -35,6 +35,7 @@ Defaults to `t'.")
 
 ;; Highlight TODO, FIXME and BUG.
 (add-hook 'prog-mode-hook #'turn-on-fic-mode)
+(diminish 'fic-mode)
 
 ;;; ibuffer
 
