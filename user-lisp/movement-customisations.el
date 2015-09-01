@@ -8,6 +8,13 @@
 
 (global-set-key (kbd "<f7>") #'helm-imenu)
 
+;; Use `n' and `p' as movement keys in *compilation* buffers.
+;; M-n and M-p are already bound, but n/p are less typing and ag.el
+;; has trained me to expect those bindings.
+(require 'compile)
+(define-key compilation-mode-map (kbd "n") #'compilation-next-error)
+(define-key compilation-mode-map (kbd "p") #'compilation-previous-error)
+
 ;; I use next/previous-line and forward/backward-char an awful lot
 ;; according to `keyfreq-show'. Allow these commands to be repeated,
 ;; so 'C-n n' is equivalent to 'C-n C-n' and so on.
