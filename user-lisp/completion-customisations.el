@@ -34,8 +34,6 @@ We just use symbols and lines from any open buffers in the current mode."
   (let ((company-backends '((company-whole-line company-dabbrev-code))))
     (company-complete)))
 
-(global-set-key (kbd "M-/") #'wh/company-code)
-
 ;; yasnippet, clever abbreviation expansion
 (require 'yasnippet)
 (diminish 'yas-minor-mode)
