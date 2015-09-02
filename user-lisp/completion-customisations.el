@@ -229,6 +229,14 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 (require 'projectile)
 (setq projectile-completion-system 'helm)
 
+;; I'm seeing flickering/delayed drawing with `find-library' when
+;; typing 'customisations'.
+;;
+;; I think the relevant commits may be
+;; https://github.com/emacs-helm/helm/commit/9fe06d040ccd5234a9dae6b0d790c98e2ebedeee and
+;; https://github.com/emacs-helm/helm/commit/7d107471406858f9ac3b17fd5eddf39accf193bf
+;; relevant bug: https://github.com/emacs-helm/helm/issues/380
+
 ;; TODO: Emacs is highlighting this incorrectly:
 'other
 
