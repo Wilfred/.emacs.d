@@ -6,9 +6,8 @@
 
 ;; TODO: this doesn't belong here.
 (require 'which-func)
-(setq which-func-modes (list #'c-mode #'python-mode))
-
-(add-hook 'c-mode-hook #'which-function-mode)
+(setq which-func-modes (list #'c-mode))
+(which-function-mode)
 
 ;; C++
 (add-hook
