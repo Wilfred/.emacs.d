@@ -14,6 +14,11 @@
 ;; Highlight new/removed/changed lines relative to the last commit in VCS.
 (global-diff-hl-mode)
 
+;; Include 'x' in the magit popup.
+;; From https://github.com/magit/magit/issues/2141
+(magit-define-popup-action 'magit-dispatch-popup
+  ?x "Reset" 'magit-reset ?!)
+
 ;; Default colours are too subtle, make them obvious.
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
