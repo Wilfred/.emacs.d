@@ -83,11 +83,6 @@
 (require 'company)
 (require 'company-elisp)
 
-(defun wh/company-in-elisp-mode ()
-  (set (make-local-variable 'company-backends) (list #'company-elisp)))
-
-(add-hook 'emacs-lisp-mode-hook #'wh/company-in-elisp-mode)
-
 ;; Use hungry-delete in elisp too.  There is also
 ;; `turn-on-hungry-delete-mode', but it seems that paredit's mode map
 ;; is coming first.
