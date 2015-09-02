@@ -34,6 +34,7 @@ Defaults to `t'.")
 (setq uniquify-buffer-name-style 'post-forward-angle-brackets)
 
 ;; Highlight TODO, FIXME and BUG.
+(require 'fic-mode) ;; required to diminish fic-mode
 (add-hook 'prog-mode-hook #'turn-on-fic-mode)
 (diminish 'fic-mode)
 
