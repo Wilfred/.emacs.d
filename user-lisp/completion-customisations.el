@@ -66,6 +66,11 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 (setq company-dabbrev-other-buffers t)
 (require 'company-dabbrev-code)
 (setq company-dabbrev-code-modes t)
+;; Don't bother with company-dabbrev when we have company-dabbrev-code
+;; already. It's a little too aggressive at suggesting words,
+;; especially when writing comments.
+(setq company-backends
+      (remove 'company-dabbrev company-backends))
 
 (global-set-key (kbd "C-z") #'company-try-hard)
 (define-key company-active-map (kbd "C-z") #'company-try-hard)
