@@ -56,5 +56,6 @@ This is useful when followed by an immediate kill."
 ;; matches with ivy (used by swiper). Anzu style.
 (require 'ivy)
 (setq ivy-count-format "(%d/%d) ")
+(setq ivy-display-style 'fancy)
 
 (provide 'isearch-customisations)
