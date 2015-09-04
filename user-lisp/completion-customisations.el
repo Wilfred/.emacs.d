@@ -136,9 +136,9 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 
 (diminish 'company-mode)
 
-;; Offer completion for as little as two characters (I've tried
-;; setting this to one, but it's a bit noisy).
-(setq company-minimum-prefix-length 2)
+;; Offer idle completion for three characters or more. (1 is very
+;; noisy, and 2 hurts typing performance a little.)
+(setq company-minimum-prefix-length 3)
 
 ;; Show a list of numbers next to completion options, where M-1
 ;; selects the first option and so on.
