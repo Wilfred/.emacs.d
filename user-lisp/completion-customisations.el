@@ -65,7 +65,14 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 (setq company-dabbrev-downcase nil)
 (setq company-dabbrev-other-buffers t)
 (require 'company-dabbrev-code)
+
+;; Use company-dabbrev-code in all modes.
 (setq company-dabbrev-code-modes t)
+
+;; Although we only candidates to be taken from actual code, it's nice
+;; to offer completion inside comments too.
+(setq company-dabbrev-code-everywhere t)
+
 ;; Don't bother with company-dabbrev when we have company-dabbrev-code
 ;; already. It's a little too aggressive at suggesting words,
 ;; especially when writing comments.
