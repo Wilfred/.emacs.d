@@ -11,8 +11,9 @@
 
 (setq magit-branch-arguments (remove "--track" magit-branch-arguments))
 
-;; Highlight new/removed/changed lines relative to the last commit in VCS.
-(global-diff-hl-mode)
+;; Highlight new/removed/changed lines relative to the last commit in
+;; VCS.
+(diff-hl-flydiff-mode)
 
 ;; Include 'x' in the magit popup.
 ;; From https://github.com/magit/magit/issues/2141
