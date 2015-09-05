@@ -38,6 +38,11 @@ Defaults to `t'.")
 (add-hook 'prog-mode-hook #'turn-on-fic-mode)
 (diminish 'fic-mode)
 
+;; TODO: work out why this highlighting doesn't work when the current
+;; sexp/line is highlighted.
+(custom-set-faces
+ '(font-lock-fic-face ((t (:foreground "Red"))) t))
+
 ;;; ibuffer
 
 ;; use ibuffer to group buffers
