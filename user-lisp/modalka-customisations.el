@@ -77,19 +77,25 @@
 ;; Pretty much the standard configuration taken from the modalka
 ;; README.md:
 
+;; kill ring
 (modalka-define-kbd "W" "M-w")
 (modalka-define-kbd "Y" "M-y")
+(modalka-define-kbd "w" "C-w")
+(modalka-define-kbd "y" "C-y")
+
+;; movement
 (modalka-define-kbd "a" "C-a")
 (modalka-define-kbd "b" "C-b")
 (modalka-define-kbd "e" "C-e")
 (modalka-define-kbd "f" "C-f")
-(modalka-define-kbd "g" "C-g")
 (modalka-define-kbd "n" "C-n")
 (modalka-define-kbd "p" "C-p")
 (modalka-define-kbd "<" "M-<")
 (modalka-define-kbd ">" "M->")
-(modalka-define-kbd "w" "C-w")
-(modalka-define-kbd "y" "C-y")
+(modalka-define-kbd "l" "C-l")
+
+(modalka-define-kbd "g" "C-g")
+
 (modalka-define-kbd "SPC" "C-SPC")
 
 (provide 'modalka-customisations)
