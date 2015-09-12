@@ -15,4 +15,6 @@
 (define-key compilation-mode-map (kbd "n") #'compilation-next-error)
 (define-key compilation-mode-map (kbd "p") #'compilation-previous-error)
 
+(require 'modalka-customisations)
+
 (provide 'movement-customisations)
