@@ -305,4 +305,13 @@ If the region is active, toggle commenting on the whole region."
 (require 'flymake)
 (setq flymake-fringe-indicator-position nil)
 
+(require 'backup-each-save)
+(defun wh/show-backups ()
+  "Show the directory containing all the backups of the current buffer."
+  (interactive)
+  (let* ((backup-name
+          (backup-each-save-compute-location (buffer-file-name)))
+         (directory (f-dirname backup-name)))
+    (dired directory)))
+
 (provide 'editing-customisations)
