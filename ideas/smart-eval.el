@@ -36,6 +36,7 @@
 ;;
 ;; TODO: uneval / forget the bindings created in the current buffer or
 ;; with a given prefix.
+;; TODO: it would also be nice to re-evaluate functions when macros change.
 
 ;;; License:
 
