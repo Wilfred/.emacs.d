@@ -175,59 +175,6 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 ;; Always use 'y or n' for questions, since 'yes' is tedious to type over and over.
 (fset 'yes-or-no-p 'y-or-n-p)
 
-(use-package helm
-  ;; TODO: find out why lazy-loading doesn't work here.
-  :demand
-  :init
-  (setq helm-autoresize-min-height 50
-        helm-autoresize-max-height 50
-        helm-split-window-default-side 'below
-        helm-split-window-in-side-p t)
-  ;; Don't jump to the first definition when using helm-imenu.
-  ;; See https://github.com/emacs-helm/helm/issues/1134
-  ;; TODO: could we use `-remove-item' here? It's less verbose, but
-  ;; we'd need to ensure dash is loaded.
-  (setq helm-sources-using-default-as-input
-        (remove 'helm-source-imenu helm-sources-using-default-as-input))
-
-  ;; Don't use helm for C-x C-f. I prefer ido in this case (see
-  ;; discussion at http://emacs.stackexchange.com/q/3798/304 ).
-  (add-to-list 'helm-completing-read-handlers-alist '(find-file))
-
-  ;; Helm increases the font size and uses a different font for its
-  ;; header. Override that.
-  (custom-set-faces
-   '(helm-source-header ((t (:background "#22083397778B" :foreground "white")))))
-  :bind
-  ;; Ensure we show the shortest match when searching commands.
-  ;; See http://emacs.stackexchange.com/q/10398/304
-  ("M-x" . helm-M-x)
-  :diminish helm-mode)
-
-;; Buffer switching. I've experimented with `helm-mini' is nice, but
-;; it doesn't sort buffers by recency. `helm-buffers-list' does sort
-;; by recency, but sorts again as soon as you filter. See
-;; https://github.com/emacs-helm/helm/issues/763 .
-
-;; Use psession to preserve Emacs variables between sessions. We do
-;; this so helm-M-x preserves command history between sessions. See
-;; https://github.com/emacs-helm/helm/issues/431
-(use-package psession
-  :init
-  ;; Don't bother preserving buffers.
-  (setq psession-save-buffers-unwanted-buffers-regexp ".*")
-
-  :config
-  (psession-mode 1))
-
-;; I'm seeing flickering/delayed drawing with `find-library' when
-;; typing 'customisations'.
-;;
-;; I think the relevant commits may be
-;; https://github.com/emacs-helm/helm/commit/9fe06d040ccd5234a9dae6b0d790c98e2ebedeee and
-;; https://github.com/emacs-helm/helm/commit/7d107471406858f9ac3b17fd5eddf39accf193bf
-;; relevant bug: https://github.com/emacs-helm/helm/issues/380
-
 ;; TODO: Emacs is highlighting this incorrectly:
 'other
 

@@ -522,7 +522,7 @@ Visit the file after creation."
 (if (eq system-type 'darwin)
     (require 'os-x-fixes))
 
-(require 'ido-customisations)
+(require 'minibuffer-completion-customisations)
 
 ;; make re-builder use the same regexp format as regexp-replace (no double escaping)
 (setq reb-re-syntax 'string)

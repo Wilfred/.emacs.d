@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- 2015-08-16 Sun 00:41 -->
+<!-- 2015-09-13 Sun 15:58 -->
 <meta  charset="utf-8">
 <meta  name="viewport" content="width=device-width, initial-scale=1">
 <title></title>
@@ -745,7 +745,7 @@ or different keybindings for common commands.
 <div class="outline-text-3" id="text-3-6">
 <p>
 It's often useful to start a new line of code that's above or below
-the current line. This code is taken from
+the current line. This code is based on
 <a href="http://emacsredux.com/blog/2013/03/26/smarter-open-line/">http://emacsredux.com/blog/2013/03/26/smarter-open-line/</a> .
 </p>
 
@@ -762,10 +762,13 @@ the current line. This code is taken from
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">smart-open-line-above</span> <span class="org-rainbow-delimiters-depth-2">()</span>
   <span class="org-doc">"Insert an empty line above the current line.</span>
-<span class="org-doc">Position the cursor at it's beginning, according to the current mode."</span>
+<span class="org-doc">Position the cursor at its beginning, according to the current mode."</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>interactive<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>move-beginning-of-line nil<span class="org-rainbow-delimiters-depth-2">)</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>newline-and-indent<span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-comment-delimiter">;; </span><span class="org-fic">TODO</span><span class="org-comment">: edebug doesn't handle this error, suggesting that the</span>
+  <span class="org-comment-delimiter">;; </span><span class="org-comment">previous line throws the error. File a bug and/or find out why.</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">ignore-errors</span> <span class="org-comment-delimiter">; </span><span class="org-comment">If we're at the beginning of the buffer.</span>
+    <span class="org-rainbow-delimiters-depth-3">(</span>newline-and-indent<span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>forward-line -1<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>indent-according-to-mode<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
@@ -1702,7 +1705,7 @@ TODO: document the rest of our HTML configuration.
       <span class="org-rainbow-delimiters-depth-4">(</span>setq template-name <span class="org-rainbow-delimiters-depth-5">(</span>buffer-substring-no-properties start-pos end-pos<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span>
 
     <span class="org-comment-delimiter">;; </span><span class="org-comment">Open this file, assuming it's in the same directory.</span>
-    <span class="org-comment-delimiter">;; </span><span class="org-comment">TODO: Search the current VCS checkout for it.</span>
+    <span class="org-comment-delimiter">;; </span><span class="org-fic">TODO</span><span class="org-comment">: Search the current VCS checkout for it.</span>
     <span class="org-rainbow-delimiters-depth-3">(</span>find-file template-name<span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">html-linkify-region</span> <span class="org-rainbow-delimiters-depth-2">(</span>url<span class="org-rainbow-delimiters-depth-2">)</span>
@@ -1879,7 +1882,7 @@ annoying to accidentally close Emacs, so warn first.
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">if</span> <span class="org-rainbow-delimiters-depth-2">(</span>eq system-type <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">darwin</span><span class="org-rainbow-delimiters-depth-2">)</span>
     <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">os-x-fixes</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
-<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">ido-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">minibuffer-completion-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-comment-delimiter">;; </span><span class="org-comment">make re-builder use the same regexp format as regexp-replace (no double escaping)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>setq reb-re-syntax <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">string</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -1898,6 +1901,7 @@ annoying to accidentally close Emacs, so warn first.
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">lisp-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">python-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">rust-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">llvm-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">sh-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">xml-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
@@ -1931,7 +1935,7 @@ annoying to accidentally close Emacs, so warn first.
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key dired-mode-map
   <span class="org-rainbow-delimiters-depth-2">(</span>vector <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">remap</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">end-of-buffer</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">dired-jump-to-bottom</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
-<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">conflicts</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">conflicts-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">tags-utils</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
@@ -2025,7 +2029,7 @@ annoying to accidentally close Emacs, so warn first.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2015-08-16 Sun 00:41</p>
+<p class="date">Created: 2015-09-13 Sun 15:58</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

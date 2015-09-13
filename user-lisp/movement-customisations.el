@@ -6,8 +6,6 @@
 (define-key global-map (kbd "<f11>") #'avy-goto-word-or-subword-1)
 (global-set-key (kbd "<f10>") #'avy-goto-line)
 
-(global-set-key (kbd "<f7>") #'helm-imenu)
-
 ;; Use `n' and `p' as movement keys in *compilation* buffers.
 ;; M-n and M-p are already bound, but n/p are less typing and ag.el
 ;; has trained me to expect those bindings.
