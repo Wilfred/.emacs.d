@@ -106,8 +106,7 @@
         helm-split-window-in-side-p t)
   ;; Don't jump to the first definition when using helm-imenu.
   ;; See https://github.com/emacs-helm/helm/issues/1134
-  ;; TODO: could we use `-remove-item' here? It's less verbose, but
-  ;; we'd need to ensure dash is loaded.
+  (require 'helm)
   (setq helm-sources-using-default-as-input
         (remove 'helm-source-imenu helm-sources-using-default-as-input))
 
@@ -119,8 +118,7 @@
   ;; Note `helm-M-x' is smarter than the default M-x command, even
   ;; with `helm-mode' enabled. See
   ;; http://emacs.stackexchange.com/q/10398/304
-  ("M-x" . helm-M-x)
-  :diminish helm-mode)
+  ("M-x" . helm-M-x))
 
 ;; Use psession to preserve Emacs variables between sessions. We do
 ;; this so helm-M-x preserves command history between sessions. See
