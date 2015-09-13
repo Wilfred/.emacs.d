@@ -183,9 +183,6 @@ Taken from http://stackoverflow.com/a/25532190/509706."
         helm-autoresize-max-height 50
         helm-split-window-default-side 'below
         helm-split-window-in-side-p t)
-  :config
-  ;; Use helm wherever possible, e.g. for C-h f.
-  (helm-mode 1)
   ;; Don't jump to the first definition when using helm-imenu.
   ;; See https://github.com/emacs-helm/helm/issues/1134
   ;; TODO: could we use `-remove-item' here? It's less verbose, but
@@ -211,17 +208,6 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 ;; it doesn't sort buffers by recency. `helm-buffers-list' does sort
 ;; by recency, but sorts again as soon as you filter. See
 ;; https://github.com/emacs-helm/helm/issues/763 .
-;;
-;; The GitHub issue suggests leaving 'C-x b' at the default, but that
-;; ends up using ido. We bind it explicitly.
-(defun wh/helm-switch-to-buffer ()
-  "Switch buffer using helm, even if ido-mode is active."
-  (interactive)
-  (let (ido-mode)
-    (call-interactively #'switch-to-buffer)))
-
-;; Breaks buffer switching horribly due to advice somewhere.
-;; (global-set-key (kbd "C-x b") #'wh/helm-switch-to-buffer)
 
 ;; Use psession to preserve Emacs variables between sessions. We do
 ;; this so helm-M-x preserves command history between sessions. See
@@ -233,11 +219,6 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 
   :config
   (psession-mode 1))
-
-;; Use helm for projectile features, primarily C-x C-g (finding
-;; files) and C-c p p (switching projects).
-(require 'projectile)
-(setq projectile-completion-system 'helm)
 
 ;; I'm seeing flickering/delayed drawing with `find-library' when
 ;; typing 'customisations'.

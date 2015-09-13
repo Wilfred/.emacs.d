@@ -51,4 +51,19 @@
 ;; the ability to easily move into directories. See http://emacs.stackexchange.com/q/3798/304
 (ido-mode t)
 
+;; Use a vertical display for ido candidates. This shows more results,
+;; and it's more attractive too.
+(require 'ido-vertical-mode)
+(ido-vertical-mode 1)
+(setq ido-vertical-define-keys 'C-n-and-C-p-only)
+(setq ido-vertical-show-count nil)
+
+;; Use ido wherever we can.
+(ido-ubiquitous-mode t)
+
+;; Use ido for projectile features, primarily C-x C-g (finding
+;; files) and C-c p p (switching projects).
+(require 'projectile)
+(setq projectile-completion-system 'ido)
+
 (provide 'ido-customisations)
