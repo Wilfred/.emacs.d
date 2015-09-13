@@ -4,7 +4,7 @@
 ;;
 ;; Author: Mark Karpov <markkarpov@openmailbox.org>
 ;; URL: https://github.com/mrkkrp/modalka
-;; Package-Version: 20150911.808
+;; Package-Version: 20150913.132
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "24.4"))
 ;; Keywords: modal editing
@@ -50,18 +50,26 @@
 See description of `cursor-type' for mode information, this
 variable should follow the same conventions."
   :tag "Cursor Type"
-  :type '(or (const :tag "use the cursor specified for the frame" t)
-             (const :tag "don't display a cursor"                 nil)
-             (const :tag "display a filled box cursor"            box)
-             (const :tag "display a hollow box cursor"            hollow)
-             (const :tag "display a vertical bar cursor with default width"
-                    bar)
-             (cons  :tag "display a vertical bar cursor with given width"
-                    (const bar) (integer :tag "width of cursor"))
-             (const :tag "display a horizontal bar cursor with default height"
-                    hbar)
-             (cons  :tag "display a horizontal bar cursor with given height"
-                    (const hbar (integer :tag "height of cursor")))))
+  :type '(choice
+          (const :tag "use the cursor specified for the frame" t)
+          (const :tag "don't display a cursor" nil)
+          (const :tag "display a filled box cursor" box)
+          (const :tag "display a hollow box cursor" hollow)
+          (const :tag "display a vertical bar cursor with default width" bar)
+          (cons  :tag "display a vertical bar cursor with given width"
+                 (const bar) (integer :tag "width of cursor"))
+          (const :tag "display a horizontal bar cursor with default height" hbar)
+          (cons  :tag "display a horizontal bar cursor with given height"
+                 (const hbar (integer :tag "height of cursor")))))
+
+;;;###autoload
+(defcustom modalka-excluded-modes nil
+  "List of major modes for which `modalka-mode' should not be activated.
+
+This variable is considered when Modalka is enabled globally via
+`modalka-global-mode'."
+  :tag  "Excluded Modes"
+  :type '(repeat :tag "Major modes to exclude" symbol))
 
 (defvar modalka-mode-map (make-sparse-keymap)
   "This is Modalka mode map, used to translate your keys.")
@@ -88,30 +96,6 @@ macros (see `edmacro-mode')."
   (modalka-define-key (kbd actual-kbd) (kbd target-kbd)))
 
 ;;;###autoload
-(defun modalka-define-keys (&rest pairs)
-  "Register many translations described by PAIRS.
-
-Every pair should be of this form:
-
-  (ACTUAL-KEY TARGET-KEY)"
-  (dolist (args pairs)
-    (apply #'modalka-define-key args)))
-
-;;;###autoload
-(defun modalka-define-kbds (&rest pairs)
-  "Rester many translation described by PAIRS.
-
-Every pair should be of this form:
-
-  (ACTUAL-KEY TARGET-KEY)
-
-Arguments are accepted in in the format used for saving keyboard
-macros (see `edmacro-mode')."
-  (dolist (args pairs)
-    (cl-destructuring-bind (actual . target) args
-      (modalka-define-key (kbd actual) (kbd target)))))
-
-;;;###autoload
 (defun modalka-remove-key (key)
   "Unregister translation from KEY."
   (define-key modalka-mode-map key nil))
@@ -123,19 +107,6 @@ macros (see `edmacro-mode')."
 Arguments are accepted in in the format used for saving keyboard
 macros (see `edmacro-mode')."
   (modalka-remove-kbd (kbd kbd)))
-
-;;;###autoload
-(defun modalka-remove-keys (&rest keys)
-  "Unregister translation for KEYS."
-  (mapc #'modalka-remove-key keys))
-
-;;;###autoload
-(defun modalka-remove-kbds (&rest kbds)
-  "Unregister translation for KBDS.
-
-Arguments are accepted in in the format used for saving keyboard
-macros (see `edmacro-mode')."
-  (apply #'modalka-remove-keys (mapcar #'kbd kbds)))
 
 ;;;###autoload
 (define-minor-mode modalka-mode
@@ -155,8 +126,18 @@ configuration created previously with `modalka-define-key' and
                   modalka-cursor-type
                 (default-value 'cursor-type))))
 
+(defun modalka--maybe-activate ()
+  "Activate `modalka-mode' if current buffer is not minibuffer or blacklisted.
+
+This is used by `modalka-global-mode'."
+  (unless (or (minibufferp)
+              (member major-mode modalka-excluded-modes))
+    (modalka-mode 1)))
+
+;;;###autoload
 (define-globalized-minor-mode modalka-global-mode
-  modalka-mode modalka-mode)
+  modalka-mode
+  modalka--maybe-activate)
 
 (provide 'modalka)
 
