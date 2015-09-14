@@ -122,7 +122,7 @@ This variant of `rx' supports common Python named REGEXPS."
 (defun pse--shell-send-region (start end &rest unused)
   "Send the region delimited by START and END to inferior Python process.
 Equivalent to `python-shell-send-region' but robust to single line regions
-(see comment in code)."
+\(see comment in code\)."
   (interactive "r")
   (python-shell-send-string
    (buffer-substring start end)))
