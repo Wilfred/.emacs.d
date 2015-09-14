@@ -113,30 +113,72 @@ This variant of `rx' supports common Python named REGEXPS."
               (t
                (rx-to-string (car regexps) t)))))))
 
-;; `python-shell-send-region' has a number of issues when sending
-;; single-line regions that are indented. We end up sending just "if
-;; True:", which is a syntax error. This is fixed in Emacs 25, as of
-;; commit 1fcc552ac27503c.
-;;
-;; We define our own implementation to work around this.
+(defun pse--start-indent-at-0 (string)
+  "Given python code STRING, unindent it so the minimum indent is zero."
+  (with-temp-buffer
+    (insert string)
+    (goto-char (point-min))
+    (forward-to-indentation 0)
+    (when (> (current-column) 0)
+      (indent-rigidly (point-min) (point-max) (- (current-column))))
+    (buffer-substring (point-min) (point-max))))
+
 (defun pse--shell-send-region (start end &rest unused)
   "Send the region delimited by START and END to inferior Python process.
-Equivalent to `python-shell-send-region' but robust to single line regions
-\(see comment in code\)."
+Equivalent to `python-shell-send-region' but robustly handles
+single line regions, and a regions including multiple
+blocks (e.g. if block followed by else block).
+
+`python-shell-send-region' has a number of issues when sending
+single-line regions that are indented. We end up sending just
+\"if True:\", which is a syntax error. This is fixed in Emacs 25,
+as of commit 1fcc552ac27503c."
   (interactive "r")
   (python-shell-send-string
-   (buffer-substring-no-properties start end)))
+   (pse--start-indent-at-0
+    (buffer-substring-no-properties start end))))
 
+(defun pse--related-block-p ()
+  "Return non-nil if the current block is a related block.
+These are blocks that can only occur after another block, such as
+an elif after an if."
+  (save-excursion
+    (python-nav-beginning-of-statement)
+    (looking-at (rx symbol-start
+                    (or "elif" "else" "except" "finally")
+                    symbol-end))))
+
+(defun pse--nav-end-of-related-blocks ()
+  "Move to end of current block.
+If there are related blocks, move to the end of them instead."
+  (interactive "^")
+  (when (python-nav-beginning-of-block)
+    (let ((block-indentation (current-indentation)))
+      (python-nav-end-of-statement)
+      (while (and (forward-line 1)
+                  (not (eobp))
+                  (or (and (> (current-indentation) block-indentation)
+                           (or (python-nav-end-of-statement) t))
+                      (pse--related-block-p)
+                      (python-info-current-line-comment-p)
+                      (python-info-current-line-empty-p))))
+      (python-util-forward-comment -1)
+      (point-marker))))
 
 (defun pse--shell-send-block ()
-  "Send current block to interpreter"
+  "Send the current block to the interpreter.
+If the current block has relevant blocks afterwards (e.g. else,
+except), then send that too."
   (interactive)
   (save-excursion
     (let (beg end)
       (python-nav-beginning-of-block)
+      (beginning-of-line)
       (setq beg (point-marker))
-      (python-nav-end-of-block)
+
+      (pse--nav-end-of-related-blocks)
       (setq end (point-marker))
+
       (pse--shell-send-region beg end))))
 
 (defun pse--statement-starts-defun-p ()
@@ -177,10 +219,11 @@ Equivalent to `python-shell-send-region' but robust to single line regions
     (python-shell-send-defun nil)
     (python-nav-end-of-defun)
     (backward-char))
-   ;; If we're on a block (for, while, if etc), send that whole block.
+   ;; If we're on a block (for, while, if etc), send that whole block
+   ;; and relevant blocks after (elif, finally etc).
    ((python-info-statement-starts-block-p)
     (pse--shell-send-block)
-    (python-nav-end-of-block))
+    (pse--nav-end-of-related-blocks))
    ;; Otherwise, send the current statement.
    (t
     (pse--shell-send-statement)
