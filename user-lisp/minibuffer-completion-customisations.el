@@ -150,4 +150,9 @@
 ;; helm takes a different approach that takes some getting used
 ;; to. See the discussion in http://emacs.stackexchange.com/q/3798 .
 
+;;; Known ido-ubiquitous issues:
+;; etags-select-* and elisp-slime-nav-* commands do not use ido.
+;;
+;; Helm's imenu and M-x are way superior.
+
 (provide 'minibuffer-completion-customisations)
