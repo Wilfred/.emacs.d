@@ -114,7 +114,7 @@ This variant of `rx' supports common Python named REGEXPS."
                (rx-to-string (car regexps) t)))))))
 
 ;; `python-shell-send-region' has a number of issues when sending
-;; single-line regions that are indented. We end sending just "if
+;; single-line regions that are indented. We end up sending just "if
 ;; True:", which is a syntax error. This is fixed in Emacs 25, as of
 ;; commit 1fcc552ac27503c.
 ;;
