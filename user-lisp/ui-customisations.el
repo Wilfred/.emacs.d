@@ -140,6 +140,5 @@ it to open related buffers easily and discard other buffers (commonly magit)."
 ;; Powerline doesn't offer significantly more features than the
 ;; default Emacs modeline, but it's prettier. It also provides a cute
 ;; scrollbar on the far right.
-(powerline-default-theme)
 
 (provide 'ui-customisations)
