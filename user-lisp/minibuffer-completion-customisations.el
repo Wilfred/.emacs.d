@@ -76,7 +76,12 @@
 (setq ido-vertical-show-count nil)
 
 ;; Use ido wherever we can.
+(ido-everywhere t)
 (ido-ubiquitous-mode t)
+
+;; Enable ido completion for etags.
+(add-to-list 'ido-ubiquitous-command-overrides
+             '(enable prefix "etags-select"))
 
 ;; Use ido for projectile features, primarily C-x C-g (finding
 ;; files) and C-c p p (switching projects).
