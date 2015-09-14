@@ -125,7 +125,8 @@ Equivalent to `python-shell-send-region' but robust to single line regions
 \(see comment in code\)."
   (interactive "r")
   (python-shell-send-string
-   (buffer-substring start end)))
+   (buffer-substring-no-properties start end)))
+
 
 (defun pse--shell-send-block ()
   "Send current block to interpreter"
