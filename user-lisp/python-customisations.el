@@ -106,6 +106,8 @@
 ;; all the highlighting is broken from then onwards.
 (setq python-shell-enable-font-lock nil)
 
+(define-key python-mode-map (kbd "C-t") #'pytest-one)
+
 (require 'python-smart-execute)
 (define-key python-mode-map (kbd "<f1>") #'python-smart-execute)
 (define-key python-mode-map (kbd "<S-f1>") #'python-smart-execute-no-move)
