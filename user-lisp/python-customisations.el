@@ -98,6 +98,11 @@
 (when (executable-find "ipython")
   (setq python-shell-interpreter "ipython"))
 
+;; Don't font lock in an inferior python shell. It's too easy for a
+;; docstring (when using foo? in ipython) to contain doublequotes and
+;; all the highlighting is broken from then onwards.
+(setq python-shell-enable-font-lock nil)
+
 (require 'python-smart-execute)
 (define-key python-mode-map (kbd "<f1>") #'python-smart-execute)
 (define-key python-mode-map (kbd "<S-f1>") #'python-smart-execute-no-move)
