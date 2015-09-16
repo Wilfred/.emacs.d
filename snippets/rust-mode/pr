@@ -2,4 +2,4 @@
 # name: println
 # key: pr
 # --
-println!("{}", $0);
+println!("{:?}", $0);
