@@ -30,6 +30,7 @@
         sp-slurp-hybrid-sexp
         wh/decrement-number-decimal
         wh/increment-number-decimal
+        wh/kill-symbol
         yaml-electric-backspace
         yaml-electric-dash-and-dot
         yas-expand
