@@ -141,4 +141,8 @@ it to open related buffers easily and discard other buffers (commonly magit)."
 ;; default Emacs modeline, but it's prettier. It also provides a cute
 ;; scrollbar on the far right.
 
+;; Seems to prevent showing recursive editing/debugging, and the
+;; colours on the inactive window in the frame are indistguishable
+;; from my background color. The little scrollbar is cute though.
+
 (provide 'ui-customisations)
