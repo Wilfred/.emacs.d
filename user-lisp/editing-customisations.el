@@ -261,6 +261,15 @@ Handy when editing markdown."
 (use-package change-inner
   :bind ("M-i" . change-inner))
 
+;; TODO: send a PR to change-inner to add this behaviour.
+(defadvice change-inner (around change-inner-delete activate)
+  "Don't add the removed text to the kill ring.
+I'm frequently removing text between double-quotes so I can
+replace it with a value from the clipboard. Thus it's annoying if
+the kill-ring gets modified by `change-inner'."
+  (let (kill-ring)
+    ad-do-it))
+
 (use-package goto-chg
   :bind (("C-." . goto-last-change)
          ("C-," . goto-last-change-reverse)))
