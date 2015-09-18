@@ -28,4 +28,16 @@
 
 (define-key rust-mode-map (kbd "C-c v") #'wh/rust-toggle-visibility)
 
+(require 'projectile)
+(require 'which-func)
+
+(defun wh/rust-run-test ()
+  "Run the test at point."
+  (interactive)
+  (let ((defualt-directory (projectile-project-root)))
+    (compilation-start
+     (format "cargo test %s" (which-function)))))
+
+(define-key rust-mode-map (kbd "C-c t") #'wh/rust-run-test)
+
 (provide 'rust-customisations)
