@@ -90,7 +90,7 @@
 
 (require 'company)
 (defun wh/company-in-python-mode ()
-  (setq-local company-idle-delay 0.1)
+  (setq-local company-idle-delay 0.3)
   (set (make-local-variable 'company-backends)
        (list #'company-whole-line #'company-anaconda #'company-dabbrev-code)))
 
