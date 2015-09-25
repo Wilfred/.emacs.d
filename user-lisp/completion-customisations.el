@@ -164,7 +164,7 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 (define-key company-active-map (kbd "C-n") #'company-select-next)
 (define-key company-active-map (kbd "C-p") #'company-select-previous)
 
-(define-key company-active-map (kbd "<tab>") #'company-complete-common-or-cycle)
+(define-key company-active-map (kbd "SPC") #'company-complete-selection)
 
 (require 'company-jit)
 (require 'company-whole-line)
