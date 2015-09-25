@@ -56,6 +56,10 @@ Taken from http://stackoverflow.com/a/25532190/509706."
            t)))
 (add-hook 'prog-mode-hook #'wh-yas-no-expand-in-comment/string)
 
+;; auto-yasnippet is great for throwaway operations with redundant code.
+(global-set-key (kbd "s-w") #'aya-create)
+(global-set-key (kbd "s-y") #'aya-expand)
+
 ;; dabbrev-expand should match case
 (require 'dabbrev)
 (setq dabbrev-case-fold-search nil)
