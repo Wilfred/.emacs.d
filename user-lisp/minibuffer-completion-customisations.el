@@ -118,23 +118,9 @@
   ;; Helm increases the font size and uses a different font for its
   ;; header. Override that.
   (custom-set-faces
-   '(helm-source-header ((t (:background "#22083397778B" :foreground "white")))))
-  :bind
-  ;; Note `helm-M-x' is smarter than the default M-x command, even
-  ;; with `helm-mode' enabled. See
-  ;; http://emacs.stackexchange.com/q/10398/304
-  ("M-x" . helm-M-x))
+   '(helm-source-header ((t (:background "#22083397778B" :foreground "white"))))))
 
-;; Use psession to preserve Emacs variables between sessions. We do
-;; this so helm-M-x preserves command history between sessions. See
-;; https://github.com/emacs-helm/helm/issues/431
-(use-package psession
-  :init
-  ;; Don't bother preserving buffers.
-  (setq psession-save-buffers-unwanted-buffers-regexp ".*")
-
-  :config
-  (psession-mode 1))
+(global-set-key (kbd "M-x") #'smex)
 
 (global-set-key (kbd "<f7>") #'helm-imenu)
 
@@ -154,6 +140,11 @@
 ;; Opening files. Ido is extremely efficient for opening files, and
 ;; helm takes a different approach that takes some getting used
 ;; to. See the discussion in http://emacs.stackexchange.com/q/3798 .
+;;
+;; You're forced to use psession with helm to remember history for
+;; `helm-M-x'. https://github.com/emacs-helm/helm/issues/431 I found
+;; psession to interfere with my startup code (e.g. the startup quote) and didn't investigate
+;; further.
 
 ;;; Helm features I love:
 ;; `helm-M-x' shows both matching commands and matching commands in
@@ -168,6 +159,8 @@
 ;; etags-select-* and elisp-slime-nav-* commands do not use ido. Nor
 ;; do magit commands (e.g. choose which branch to push to).
 ;;
-;; Helm's imenu and M-x are way superior.
+;; Helm's imenu and M-x are way superior, but ensure you're using
+;; helm-M-x for M-x:
+;; http://emacs.stackexchange.com/questions/10398/getting-helm-to-default-to-the-shortest-match
 
 (provide 'minibuffer-completion-customisations)
