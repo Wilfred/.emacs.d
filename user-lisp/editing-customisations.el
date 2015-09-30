@@ -258,6 +258,11 @@ Handy when editing markdown."
   (let ((text (delete-and-extract-region beg end)))
     (insert (apply func (list text)))))
 
+(defun wh/kill-buffer-file-name ()
+  "Add the file name of the current buffer to the kill ring."
+  (interactive)
+  (kill-new (buffer-file-name)))
+
 (use-package change-inner
   :bind ("M-i" . change-inner))
 
