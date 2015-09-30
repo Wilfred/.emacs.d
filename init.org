@@ -243,6 +243,12 @@ of the same symbol.
   ;; Java-mode has the same problem.
   (define-key java-mode-map (kbd "M-n") #'highlight-symbol-next)
   (define-key java-mode-map (kbd "M-p") #'highlight-symbol-prev)
+
+  ;; Whilst YAML isn't a programming language, it's useful to move by
+  ;; symbol here too.
+  (require 'yaml)
+  (define-key yaml-mode-map (kbd "M-n") #'highlight-symbol-next)
+  (define-key yaml-mode-map (kbd "M-p") #'highlight-symbol-prev)
 #+END_SRC
 
 Jumping to the first occurrence of the symbol is handy for finding
