@@ -83,6 +83,9 @@
 (add-to-list 'ido-ubiquitous-command-overrides
              '(enable prefix "etags-select"))
 
+(setq magit-completing-read-function 'magit-ido-completing-read)
+(setq org-completion-use-ido t)
+
 ;; Use ido for projectile features, primarily C-x C-g (finding
 ;; files) and C-c p p (switching projects).
 (require 'projectile)
