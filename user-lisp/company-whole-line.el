@@ -59,18 +59,22 @@ that start with the current line at point."
   ;; TODO: sort.
   (cl-case command
     (interactive (company-begin-backend 'company-whole-line))
-    ;; We can complete if we're at the end of a non-empty line.
-    (prefix (when (and (eolp) (not (cwl--empty-line-p)))
-              ;; Hack: don't return a prefix if we don't have any
-              ;; candidates. This is because company tries other
-              ;; backends *with the same prefix* otherwise! See
-              ;; https://github.com/company-mode/company-mode/issues/47#issuecomment-33472005
-              ;; -- a better solution would be to write a
-              ;; company-try-hard backend that combines other
-              ;; backends.
-              (and (cwl--candidates (cwl--current-line))
-                   (>  (length (cwl--current-line)) 6)
-                   (cwl--current-line))))
+    ;; We can complete if:
+    (prefix (and
+             ;; we're at the end of a non-empty line,
+             (eolp) (not (cwl--empty-line-p))
+             ;; we're not on a comment,
+             (not (nth 4 (syntax-ppss)))
+             ;; and we don't have any candidates.
+             ;; Hack: This is because company only tries other
+             ;; backends *with the same prefix* otherwise! See
+             ;; https://github.com/company-mode/company-mode/issues/47#issuecomment-33472005
+             ;; -- a better solution would be to write a
+             ;; company-try-hard backend that combines other
+             ;; backends.
+             (cwl--candidates (cwl--current-line))
+             (>  (length (cwl--current-line)) 6)
+             (cwl--current-line)))
     (candidates
      (cwl--candidates arg))
     (duplicates t)
