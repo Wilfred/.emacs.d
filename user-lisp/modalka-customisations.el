@@ -96,7 +96,8 @@
 (modalka-define-kbd ">" "M->")
 (modalka-define-kbd "l" "C-l")
 
-(modalka-define-kbd "g" "C-g")
+;; Open files
+(modalka-define-kbd "g" "C-x C-g")
 
 (modalka-define-kbd "SPC" "C-SPC")
 
