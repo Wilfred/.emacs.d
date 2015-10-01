@@ -148,22 +148,15 @@
 ;; `helm-M-x'. https://github.com/emacs-helm/helm/issues/431 I found
 ;; psession to interfere with my startup code (e.g. the startup quote) and didn't investigate
 ;; further.
+;;
+;; When helm-mode is active, M-x isn't bound to helm-M-x. You get helm
+;; completion, but it's not as good:
+;; http://emacs.stackexchange.com/questions/10398/getting-helm-to-default-to-the-shortest-match
 
 ;;; Helm features I love:
 ;; `helm-M-x' shows both matching commands and matching commands in
 ;; history. It also shows the keybindings for commands.
 ;;
-;; Pushing in magit works really well with a choice between branches
-;; (not sure why ido doesn't do anything).
-;;
 ;; `helm-imenu' shows additional information and is more attractive.
-
-;;; Known ido-ubiquitous issues:
-;; etags-select-* and elisp-slime-nav-* commands do not use ido. Nor
-;; do magit commands (e.g. choose which branch to push to).
-;;
-;; Helm's imenu and M-x are way superior, but ensure you're using
-;; helm-M-x for M-x:
-;; http://emacs.stackexchange.com/questions/10398/getting-helm-to-default-to-the-shortest-match
 
 (provide 'minibuffer-completion-customisations)
