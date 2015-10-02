@@ -261,7 +261,9 @@ Handy when editing markdown."
 (defun wh/kill-buffer-file-name ()
   "Add the file name of the current buffer to the kill ring."
   (interactive)
-  (kill-new (buffer-file-name)))
+  (kill-new
+   ;; Handle both opened files and dired buffers.
+   (or (buffer-file-name) default-directory)))
 
 (use-package change-inner
   :bind ("M-i" . change-inner))
