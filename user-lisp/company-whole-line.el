@@ -59,22 +59,17 @@ that start with the current line at point."
   ;; TODO: sort.
   (cl-case command
     (interactive (company-begin-backend 'company-whole-line))
-    ;; We can complete if:
-    (prefix (and
-             ;; we're at the end of a non-empty line,
-             (eolp) (not (cwl--empty-line-p))
-             ;; we're not on a comment,
-             (not (nth 4 (syntax-ppss)))
-             ;; and we don't have any candidates.
-             ;; Hack: This is because company only tries other
-             ;; backends *with the same prefix* otherwise! See
-             ;; https://github.com/company-mode/company-mode/issues/47#issuecomment-33472005
-             ;; -- a better solution would be to write a
-             ;; company-try-hard backend that combines other
-             ;; backends.
-             (cwl--candidates (cwl--current-line))
-             (>  (length (cwl--current-line)) 6)
-             (cwl--current-line)))
+    (prefix
+     ;; We can complete if we're at the end of a non-empty line,
+     (when (and (eolp) (not (cwl--empty-line-p))
+                ;; and we're not on a comment.
+                (not (nth 4 (syntax-ppss))))
+       ;; Note that company only searches other completion backends
+       ;; using the prefix found by the first backend.
+       ;; https://github.com/company-mode/company-mode/issues/47#issuecomment-33472005
+       ;; You should ensure `company-whole-line' is near the end of
+       ;; `company-backends' or use the package company-try-harder.
+       (cwl--current-line)))
     (candidates
      (cwl--candidates arg))
     (duplicates t)
