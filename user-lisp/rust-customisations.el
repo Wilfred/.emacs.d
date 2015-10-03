@@ -40,4 +40,8 @@
 
 (define-key rust-mode-map (kbd "C-c t") #'wh/rust-run-test)
 
+;; Use 'cargo check' as a build command, as it's much faster.
+(projectile-register-project-type 'rust-cargo '("Cargo.toml") "cargo check" "cargo test")
+
+
 (provide 'rust-customisations)
