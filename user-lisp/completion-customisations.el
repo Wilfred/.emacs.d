@@ -87,11 +87,10 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 (define-key company-active-map (kbd "C-z") #'company-try-hard)
 
 ;; force hippie-expand completions to be case-sensitive
-(defadvice hippie-expand (around hippie-expand-case-fold)
+(defadvice hippie-expand (around hippie-expand-case-fold activate)
   "Try to do case-sensitive matching (not effective with all functions)."
   (let ((case-fold-search nil))
     ad-do-it))
-(ad-activate 'hippie-expand)
 
 (require 'dash)
 (require 'hippie-exp)
