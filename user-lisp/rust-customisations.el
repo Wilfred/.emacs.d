@@ -28,6 +28,19 @@
 
 (define-key rust-mode-map (kbd "C-c v") #'wh/rust-toggle-visibility)
 
+(defun wh/rust-toggle-mutability ()
+  "Toggle the mutability of the variable at point."
+  (interactive)
+  (save-excursion
+    (racer-find-definition)
+    (back-to-indentation)
+    (forward-char 4)
+    (if (looking-at "mut ")
+        (delete-char 4)
+      (insert "mut "))))
+
+(define-key rust-mode-map (kbd "C-c m") #'wh/rust-toggle-mutability)
+
 (require 'projectile)
 (require 'which-func)
 
