@@ -13,6 +13,7 @@
 
 ;; Highlight new/removed/changed lines relative to the last commit in
 ;; VCS.
+(diff-hl-mode)
 (diff-hl-flydiff-mode)
 
 ;; Include 'x' in the magit popup.
