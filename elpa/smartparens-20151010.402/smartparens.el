@@ -895,6 +895,19 @@ variable `sp-wrap-entire-symbol'."
   :type 'boolean
   :group 'smartparens)
 
+(defcustom sp-wrap-respect-direction nil
+  "When non-nil respect the wrap direction.
+
+When non-nil, wrapping with opening pair always jumps to the
+beginning of the region and wrapping with closing pair always
+jumps to the end of the region.
+
+When nil, closing pair places the point at the end of the region
+and the opening pair leaves the point at its original
+position (before or after the region)."
+  :type 'boolean
+  :group 'smartparens)
+
 ;; escaping custom
 (defcustom sp-autoescape-string-quote t
   "If non-nil, autoescape string quotes if typed inside string."
@@ -1392,6 +1405,13 @@ of pairs and wraps.")
   '(
     TeX-insert-dollar
     TeX-insert-quote
+    quack-insert-opening-paren
+    quack-insert-closing-paren
+    quack-insert-opening-bracket
+    quack-insert-closing-bracket
+    racket-insert-closing-paren
+    racket-insert-closing-bracket
+    racket-insert-closing-brace
     )
    "List of commands which are handled as if they were `self-insert-command's.
 
@@ -1923,7 +1943,7 @@ needs.
 
 A special syntax for conditional execution of hooks is also
 supported.  If the added item is a list (function command1
-command2...), where funciton is a 3 argument function described
+command2...), where function is a 3 argument function described
 above and command(s) can be either name of a command or a string
 representing an event.  If the last command or event as described
 by `single-key-description' matches any on the list, the hook
@@ -2925,8 +2945,10 @@ OPEN and CLOSE are the delimiters."
            open close))
     (cond
      ((eq wrapping-end :open)
-      (when (> sp-wrap-point sp-wrap-mark)
-        (goto-char (overlay-end oend))))
+      (if sp-wrap-respect-direction
+          (goto-char (overlay-start obeg))
+        (when (> sp-wrap-point sp-wrap-mark)
+          (goto-char (overlay-end oend)))))
      ((eq wrapping-end :close)
       (goto-char (overlay-end oend))))
     (sp-wrap--clean-overlays)
@@ -3583,7 +3605,8 @@ If the point is not inside a quoted string, return nil."
      (when ,res
        (setq ,beg (match-beginning 0))
        (setq ,end (match-end 0))
-       (setq ,str (match-string 0)))))
+       (setq ,str (match-string 0)))
+     ,res))
 
 (cl-defun sp--skip-match-p (ms mb me
                                &key
@@ -3658,38 +3681,70 @@ The expressions considered are those delimited by pairs on
            ;; one point backward, then test the comment/string thing,
            ;; then compute the correct bounds, and then restore the
            ;; point so the search will pick up the )
+
+           ;; However, we need to distinguish the cases where we are
+           ;; in comment and trying to get out, and when we are in any
+           ;; context and we jump into string (in that case, we should
+           ;; report code context!).  For example:
+           ;;   "foo"|;bar
+           ;; or
+           ;;   "foo"|bar
+           ;; should both report code context
+           ;; and "|(foo)" should report string context.
+
+           ;; Beware the case when we have a string inside a comment, like
+           ;;   (foo) ;; bar "baz"| qux
+           ;; In this case we want to report comment context even when
+           ;; backing into the "" (which however is commented)
+
+           ;; Yet another case is when we are not in a comment but
+           ;; directly after one and we search backwards, consider:
+           ;;   /* foo bar */|
+           ;; in C-like language.  In this case, we want to report the
+           ;; context as comment.
+
+           ;; Thanks for being consistent at handling syntax bounds Emacs!
            (in-string-or-comment (if back
-                                     (save-excursion
-                                       (backward-char)
-                                       (sp-point-in-string-or-comment))
+                                     (let ((in-comment (sp-point-in-comment))
+                                           (in-string (sp-point-in-string)))
+                                       (save-excursion
+                                         (backward-char)
+                                         (cond
+                                          (in-comment (and in-comment (sp-point-in-comment)))
+                                          ((and (not in-comment) (sp-point-in-comment)) t)
+                                          ((or in-comment in-string)))))
                                    (sp-point-in-string-or-comment)))
            (string-bounds (and in-string-or-comment (sp--get-string-or-comment-bounds)))
            (fw-bound (if in-string-or-comment (cdr string-bounds) (point-max)))
            (bw-bound (if in-string-or-comment (car string-bounds) (point-min)))
            s e active-pair forward mb me ms r done
            possible-pairs possible-interfering-pairs possible-ops possible-cls)
-      (while (not done)
+      (while (and (not done)
+                  (sp--search-and-save-match
+                   search-fn
+                   (sp--get-allowed-regexp)
+                   (if back bw-bound fw-bound)
+                   r mb me ms))
         ;; search for the first opening pair.  Here, only consider tags
         ;; that are allowed in the current context.
-        (sp--search-and-save-match search-fn
-                                   (sp--get-allowed-regexp)
-                                   (if back bw-bound fw-bound)
-                                   r mb me ms)
         (unless (sp--skip-match-p ms mb me :global-skip global-skip-fn)
-          (when (not (if (not back)
-                         (sp-point-in-string-or-comment (1- (point)))
-                       (sp-point-in-string-or-comment)))
-            (setq in-string-or-comment nil))
           ;; if the point originally wasn't inside of a string or comment
           ;; but now is, jump out of the string/comment and only search
           ;; the code.  This ensures that the comments and strings are
           ;; skipped if we search inside code.
           (if (and (not in-string-or-comment)
-                   (if (not back)
-                       (sp-point-in-string-or-comment (1- (point)))
-                     (sp-point-in-string-or-comment)))
+                   (if back
+                       ;; When searching back, the point lands on the
+                       ;; first character of whatever pair we've found
+                       ;; and it is in the proper context, for example
+                       ;; "|(foo)"
+                       (sp-point-in-string-or-comment)
+                     ;; However, when searching forward, the point
+                     ;; lands after the last char of the pair so to get
+                     ;; its context we must back up one character
+                     (sp-point-in-string-or-comment (1- (point)))))
               (-if-let (bounds (sp--get-string-or-comment-bounds))
-                  (let ((jump-to (if back (1- (car bounds)) (1+ (cdr bounds)))))
+                  (let ((jump-to (if back (car bounds) (cdr bounds))))
                     (goto-char jump-to)
                     ;; Can't move out of comment because eob, #427
                     (when (eobp)
@@ -4209,7 +4264,7 @@ enclosing list boundaries or line boundaries."
 (defun sp-get-enclosing-sexp (&optional arg)
   "Return the balanced expression that wraps point at the same level.
 
-With ARG, ascend that many times.  This funciton expect positive
+With ARG, ascend that many times.  This function expect positive
 argument."
   (setq arg (or arg 1))
   (save-excursion
@@ -4290,6 +4345,9 @@ Prefix is any continuous sequence of characters in \"expression
 prefix\" syntax class.  You can also specify a set of syntax code
 characters or a regexp for a specific major mode.  See
 `sp-sexp-prefix'.
+
+The point is expected to be at the opening delimiter of the sexp
+and the prefix is searched backwards.
 
 If the prefix property is defined for OP, the associated regexp
 is used to retrieve the prefix instead of the global setting."
@@ -4394,7 +4452,7 @@ This function simply transforms BOUNDS, which is a cons (BEG
 
 This also means if the point is inside a string, this string is
 returned.  If there are another symbols between point and the
-string, nil is returned.  That means that this funciton only
+string, nil is returned.  That means that this function only
 return non-nil if the string is the very next meaningful
 expression.
 
@@ -4736,16 +4794,27 @@ expressions are considered."
              ;; sexp.  We should skip a symbol forward and check if it
              ;; is a sexp, and then maybe readjust the output.
              (t (let* ((sym (sp-get-symbol nil))
-                       (sym-string (and sym (sp-get sym (buffer-substring-no-properties :beg :end)))))
+                       (sym-string (and sym (sp-get sym (buffer-substring-no-properties :beg :end))))
+                       (point-before-prefix (point)))
                   (when sym-string
-                    (goto-char (sp-get sym :end))
-                    (if (sp--looking-at (sp--get-opening-regexp))
+                    (if (sp--valid-initial-delimiter-p (sp--search-forward-regexp (sp--get-opening-regexp (sp--get-allowed-pair-list)) nil t))
                         (let* ((ms (match-string 0))
-                               (pref (sp--get-prefix (point) ms)))
+                               (pref (progn
+                                       ;; need to move before the
+                                       ;; opening, so (point) evals
+                                       ;; there.
+                                       (backward-char (length ms))
+                                       (sp--get-prefix (point) ms))))
+                          ;; We use >= because the first skip to
+                          ;; symbol might have skipped some prefix
+                          ;; chars which make prefix of the symbol
+                          ;; which together make prefix of a sexp.
+                          ;; For example \foo{} in latex, where \ is
+                          ;; prefix of symbol foo and \foo is prefix
+                          ;; of {
                           (if (and pref
-                                   (string-prefix-p
-                                    (sp--reverse-string sym-string)
-                                    (sp--reverse-string pref)))
+                                   (not (equal pref ""))
+                                   (>= point-before-prefix (- (point) (length pref))))
                               (sp-get-sexp nil)
                             sym))
                       sym)))))))))))))
@@ -6682,6 +6751,7 @@ Examples:
                      (when (and (> num-arg 0)
                                 (sp-point-in-comment)
                                 (goto-char (car (sp-get-comment-bounds)))
+                                (> (point) (sp-get ok :beg))
                                 (save-excursion
                                   (skip-chars-backward "\t ")
                                   (looking-back "^")))
@@ -7092,13 +7162,17 @@ not necessarily represent a valid balanced expression!"
                 (sp-get ok
                   (setq end :end)
                   (setq cl :cl)
-                  (setq suffix :suffix))))))
-        (unless point
-          (-when-let (ok (sp-get-thing))
-            (sp-get ok
-              (setq beg :beg)
-              (setq op :op)
-              (setq prefix :prefix)))))
+                  (setq suffix :suffix)))))
+          (unless point
+            (-when-let (ok (sp-get-thing))
+              (if (sp-compare-sexps ok enc)
+                  (progn
+                    (setq beg end)
+                    (setq end (sp-get enc :end-in)))
+                (sp-get ok
+                  (setq beg :beg)
+                  (setq op :op)
+                  (setq prefix :prefix)))))))
        ;; select up until beg of list
        ((and raw (= arg -4))
         (let ((enc (sp-get-enclosing-sexp)))
