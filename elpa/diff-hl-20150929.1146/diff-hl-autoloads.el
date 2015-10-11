@@ -3,8 +3,7 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "diff-hl" "diff-hl.el" (21995 25958 870823
-;;;;;;  619000))
+;;;### (autoloads nil "diff-hl" "diff-hl.el" (22036 5318 987032 606000))
 ;;; Generated autoloads from diff-hl.el
 
 (autoload 'diff-hl-mode "diff-hl" "\
@@ -40,8 +39,8 @@ See `diff-hl-mode' for more information on Diff-Hl mode.
 
 ;;;***
 
-;;;### (autoloads nil "diff-hl-amend" "diff-hl-amend.el" (21995 25958
-;;;;;;  910822 116000))
+;;;### (autoloads nil "diff-hl-amend" "diff-hl-amend.el" (22036 5319
+;;;;;;  37030 819000))
 ;;; Generated autoloads from diff-hl-amend.el
 
 (autoload 'diff-hl-amend-mode "diff-hl-amend" "\
@@ -75,8 +74,8 @@ See `diff-hl-amend-mode' for more information on Diff-Hl-Amend mode.
 
 ;;;***
 
-;;;### (autoloads nil "diff-hl-dired" "diff-hl-dired.el" (21995 25959
-;;;;;;  818 712000))
+;;;### (autoloads nil "diff-hl-dired" "diff-hl-dired.el" (22036 5319
+;;;;;;  127027 600000))
 ;;; Generated autoloads from diff-hl-dired.el
 
 (autoload 'diff-hl-dired-mode "diff-hl-dired" "\
@@ -91,8 +90,8 @@ Toggle VC diff highlighting on the side of a Dired window.
 
 ;;;***
 
-;;;### (autoloads nil "diff-hl-flydiff" "diff-hl-flydiff.el" (21995
-;;;;;;  25958 840824 754000))
+;;;### (autoloads nil "diff-hl-flydiff" "diff-hl-flydiff.el" (22036
+;;;;;;  5318 947034 36000))
 ;;; Generated autoloads from diff-hl-flydiff.el
 
 (defvar diff-hl-flydiff-mode nil "\
@@ -111,8 +110,8 @@ Highlight diffs on-the-fly
 
 ;;;***
 
-;;;### (autoloads nil "diff-hl-margin" "diff-hl-margin.el" (21995
-;;;;;;  25958 790826 640000))
+;;;### (autoloads nil "diff-hl-margin" "diff-hl-margin.el" (22036
+;;;;;;  5318 897035 824000))
 ;;; Generated autoloads from diff-hl-margin.el
 
 (defvar diff-hl-margin-mode nil "\
@@ -131,8 +130,7 @@ Toggle displaying `diff-hl-mode' highlights on the margin.
 
 ;;;***
 
-;;;### (autoloads nil nil ("diff-hl-pkg.el") (21995 25959 150104
-;;;;;;  831000))
+;;;### (autoloads nil nil ("diff-hl-pkg.el") (22036 5319 287854 426000))
 
 ;;;***
 
