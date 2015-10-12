@@ -72,5 +72,7 @@ opening another window so the call site is still visible."
 ;; finding tags should be case sensitive
 (setq tags-case-fold-search nil)
 
+;; Always append tags to the tags table without prompting.
+(setq tags-add-tables t)
 
 (provide 'tags-utils)
