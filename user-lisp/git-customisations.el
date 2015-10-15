@@ -9,6 +9,8 @@
 ;; Disabling magit nagging when pushing.
 (setq magit-push-always-verify nil)
 
+;; When creating a new branch B from branch A, we don't want B to
+;; track origin/A.
 (setq magit-branch-arguments (remove "--track" magit-branch-arguments))
 
 ;; Highlight new/removed/changed lines relative to the last commit in
