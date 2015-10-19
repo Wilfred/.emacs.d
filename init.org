@@ -463,7 +463,8 @@ the mode line.
 
 *** Opening
 
-It's useful to be able to quickly open files that we've opened recently.
+It's useful to be able to quickly open files that we opened before. We
+define a function for this:
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (require 'recentf)
@@ -473,16 +474,22 @@ It's useful to be able to quickly open files that we've opened recently.
 
   ;; remember this many files
   (setq recentf-max-saved-items 500)
+
+  ;; from http://www.masteringemacs.org/article/find-files-faster-recent-files-package
+  (defun ido-recentf-open ()
+    "Use `ido-completing-read' to \\[find-file] a recent file"
+    (interactive)
+    (if (find-file (ido-completing-read "Find recent file: " recentf-list))
+        (message "Opening file...")
+      (message "Aborting")))
 #+END_SRC
 
-We bind a find command to `C-x C-r' (mnemonic: recent), as proprosed by
-https://www.masteringemacs.org/article/find-files-faster-recent-files-package. By
-default, `C-x C-r' is bound to `find-file-read-only', which isn't very
-useful. (You can set any file as read only with `read-only-mode',
-mapped to `C-x C-q'.)
+We bind this to `C-x C-r' (mnemonic: recent). By default, `C-x C-r' is bound to
+`find-file-read-only', which isn't very useful. (You can set any file
+as read only with `read-only-mode', mapped to `C-x C-q'.)
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (global-set-key (kbd "C-x C-r") #'helm-recentf)
+  (global-set-key (kbd "C-x C-r") 'ido-recentf-open)
 #+END_SRC
 
 Most of the time though, it's helpful to be able to pick a file in the
