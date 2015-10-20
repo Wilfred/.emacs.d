@@ -18,11 +18,6 @@
   "Does the text before point match PREFIX?"
   (looking-back prefix))
 
-(defun company-jit-should-complete-p ()
-  "Return nil if point is in a comment or string."
-  (-let [(_ _ _ in-string in-comment &rest _) (syntax-ppss)]
-    (and (not in-string) (not in-comment))))
-
 (defun company-jit-post-self-insert ()
   "Open company in situations where the user probably wants completions."
   (catch 'break
@@ -30,8 +25,8 @@
       (-let [(mode prefixes backend) it]
         ;; If we're in the mode listed in `company-jit-prefixes'
         (when (and (eq mode major-mode)
-                   ;; and we're not in a string or comment
-                   (company-jit-should-complete-p)
+                   ;; and we're in code
+                   (not (company-in-string-or-comment))
                    ;; and we're looking at one of the prefixes mentioned
                    (--any-p (company-jit-match-p it) prefixes))
           (company-begin-backend backend)
