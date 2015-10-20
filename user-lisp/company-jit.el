@@ -2,18 +2,21 @@
 (require 'dash)
 
 (defvar company-jit-prefixes
-  '(
-    (python-mode ("import " "from ") company-anaconda)
-    (rust-mode ("::" ".") racer-company-complete)
-    (css-mode (": ") company-css))
+  `(
+    (python-mode
+     (,(rx symbol-start "import ") ,(rx symbol-start "from "))
+     company-anaconda)
+    (rust-mode
+     (,(rx "::") ,(rx "."))
+     racer-company-complete)
+    (css-mode
+     (,(rx ": "))
+     company-css))
   "Prefix strings that trigger company completion.")
 
 (defun company-jit-match-p (prefix)
   "Does the text before point match PREFIX?"
-  (save-excursion
-    (save-match-data
-      (backward-char (length prefix))
-      (looking-at (regexp-quote prefix)))))
+  (looking-back prefix))
 
 (defun company-jit-should-complete-p ()
   "Return nil if point is in a comment or string."
