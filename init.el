@@ -60,9 +60,17 @@
 (require 'cc-mode)
 (define-key c++-mode-map (kbd "M-n") #'highlight-symbol-next)
 (define-key c++-mode-map (kbd "M-p") #'highlight-symbol-prev)
+(define-key c-mode-map (kbd "M-n") #'highlight-symbol-next)
+(define-key c-mode-map (kbd "M-p") #'highlight-symbol-prev)
 ;; Java-mode has the same problem.
 (define-key java-mode-map (kbd "M-n") #'highlight-symbol-next)
 (define-key java-mode-map (kbd "M-p") #'highlight-symbol-prev)
+
+;; Whilst YAML isn't a programming language, it's useful to move by
+;; symbol here too.
+(require 'yaml)
+(define-key yaml-mode-map (kbd "M-n") #'highlight-symbol-next)
+(define-key yaml-mode-map (kbd "M-p") #'highlight-symbol-prev)
 
 (defun highlight-symbol-first ()
   "Jump to the first location of symbol at point."
