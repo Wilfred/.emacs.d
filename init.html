@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- 2015-09-13 Sun 15:58 -->
+<!-- 2015-10-21 Wed 23:09 -->
 <meta  charset="utf-8">
 <meta  name="viewport" content="width=device-width, initial-scale=1">
 <title></title>
@@ -609,9 +609,17 @@ of the same symbol.
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">cc-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key c++-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-n"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-next</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key c++-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-p"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-prev</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span>define-key c-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-n"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-next</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span>define-key c-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-p"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-prev</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-comment-delimiter">;; </span><span class="org-comment">Java-mode has the same problem.</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key java-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-n"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-next</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key java-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-p"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-prev</span><span class="org-rainbow-delimiters-depth-1">)</span>
+
+<span class="org-comment-delimiter">;; </span><span class="org-comment">Whilst YAML isn't a programming language, it's useful to move by</span>
+<span class="org-comment-delimiter">;; </span><span class="org-comment">symbol here too.</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">yaml</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span>define-key yaml-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-n"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-next</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span>define-key yaml-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-p"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-prev</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 
@@ -876,7 +884,8 @@ I like to use smartparens in all programming modes.
 
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">smartparens-config</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">smartparens-html</span><span class="org-rainbow-delimiters-depth-1">)</span>
-<span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">prog-mode-hook</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">smartparens-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">smartparens-html</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">prog-mode-hook</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">smartparens-strict-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">yaml-mode-hook</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">smartparens-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -903,7 +912,8 @@ the mode line.
 <h4 id="orgheadline27"><span class="section-number-4">3.9.1</span> Opening</h4>
 <div class="outline-text-4" id="text-3-9-1">
 <p>
-It's useful to be able to quickly open files that we've opened recently.
+It's useful to be able to quickly open files that we opened before. We
+define a function for this:
 </p>
 
 <div class="org-src-container">
@@ -915,20 +925,26 @@ It's useful to be able to quickly open files that we've opened recently.
 
 <span class="org-comment-delimiter">;; </span><span class="org-comment">remember this many files</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>setq recentf-max-saved-items 500<span class="org-rainbow-delimiters-depth-1">)</span>
+
+<span class="org-comment-delimiter">;; </span><span class="org-comment">from http://www.masteringemacs.org/article/find-files-faster-recent-files-package</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">ido-recentf-open</span> <span class="org-rainbow-delimiters-depth-2">()</span>
+  <span class="org-doc">"Use `</span><span class="org-doc"><span class="org-constant">ido-completing-read</span></span><span class="org-doc">' to \\[</span><span class="org-doc"><span class="org-constant">find-file</span></span><span class="org-doc">] a recent file"</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span>interactive<span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">if</span> <span class="org-rainbow-delimiters-depth-3">(</span>find-file <span class="org-rainbow-delimiters-depth-4">(</span>ido-completing-read <span class="org-string">"Find recent file: "</span> recentf-list<span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span>
+      <span class="org-rainbow-delimiters-depth-3">(</span>message <span class="org-string">"Opening file..."</span><span class="org-rainbow-delimiters-depth-3">)</span>
+    <span class="org-rainbow-delimiters-depth-3">(</span>message <span class="org-string">"Aborting"</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 
 <p>
-We bind a find command to `C-x C-r' (mnemonic: recent), as proprosed by
-<a href="https://www.masteringemacs.org/article/find-files-faster-recent-files-package">https://www.masteringemacs.org/article/find-files-faster-recent-files-package</a>. By
-default, `C-x C-r' is bound to `find-file-read-only', which isn't very
-useful. (You can set any file as read only with `read-only-mode',
-mapped to `C-x C-q'.)
+We bind this to `C-x C-r' (mnemonic: recent). By default, `C-x C-r' is bound to
+`find-file-read-only', which isn't very useful. (You can set any file
+as read only with `read-only-mode', mapped to `C-x C-q'.)
 </p>
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>global-set-key <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"C-x C-r"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">helm-recentf</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>global-set-key <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"C-x C-r"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">ido-recentf-open</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 
@@ -2029,7 +2045,7 @@ annoying to accidentally close Emacs, so warn first.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2015-09-13 Sun 15:58</p>
+<p class="date">Created: 2015-10-21 Wed 23:09</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

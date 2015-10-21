@@ -185,7 +185,8 @@ If a prefix argument is given, don't change the kill-ring."
 
 (require 'smartparens-config)
 (require 'smartparens-html)
-(add-hook 'prog-mode-hook #'smartparens-mode)
+(require 'smartparens-html)
+(add-hook 'prog-mode-hook #'smartparens-strict-mode)
 (add-hook 'yaml-mode-hook #'smartparens-mode)
 
 (require 'diminish)
