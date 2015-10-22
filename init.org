@@ -246,7 +246,7 @@ of the same symbol.
 
   ;; Whilst YAML isn't a programming language, it's useful to move by
   ;; symbol here too.
-  (require 'yaml)
+  (require 'yaml-mode)
   (define-key yaml-mode-map (kbd "M-n") #'highlight-symbol-next)
   (define-key yaml-mode-map (kbd "M-p") #'highlight-symbol-prev)
 #+END_SRC
