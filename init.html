@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- 2015-10-21 Wed 23:09 -->
+<!-- 2015-10-25 Sun 19:20 -->
 <meta  charset="utf-8">
 <meta  name="viewport" content="width=device-width, initial-scale=1">
 <title></title>
@@ -617,7 +617,7 @@ of the same symbol.
 
 <span class="org-comment-delimiter">;; </span><span class="org-comment">Whilst YAML isn't a programming language, it's useful to move by</span>
 <span class="org-comment-delimiter">;; </span><span class="org-comment">symbol here too.</span>
-<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">yaml</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">yaml-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key yaml-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-n"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-next</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key yaml-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-p"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-prev</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -877,16 +877,28 @@ commands with the command `sp-cheat-sheet'.
 </div>
 
 <p>
-I like to use smartparens in all programming modes.
+I like to use smartparens in all programming modes. Smartparens strict
+mode ensures parens always stay balanced when editing. For example,
+given code of the form <code>foo(1, |bar())</code>, C-k produces <code>foo(1, |)</code>.
 </p>
 
 <div class="org-src-container">
 
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">smartparens-config</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">smartparens-html</span><span class="org-rainbow-delimiters-depth-1">)</span>
-<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">smartparens-html</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">prog-mode-hook</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">smartparens-strict-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">yaml-mode-hook</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">smartparens-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
+</pre>
+</div>
+
+<p>
+However, C-k outside of smartparens also removes whitespace. We want
+smarparens do the same, otherwise C-k does nothing on an empty line.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>setq sp-hybrid-kill-excessive-whitespace t<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 
@@ -2045,7 +2057,7 @@ annoying to accidentally close Emacs, so warn first.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2015-10-21 Wed 23:09</p>
+<p class="date">Created: 2015-10-25 Sun 19:20</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

@@ -442,14 +442,22 @@ commands with the command `sp-cheat-sheet'.
   (define-key smartparens-mode-map (kbd "M-'") #'wh/smartparens-wrap-singlequote)
 #+END_SRC
 
-I like to use smartparens in all programming modes.
+I like to use smartparens in all programming modes. Smartparens strict
+mode ensures parens always stay balanced when editing. For example,
+given code of the form =foo(1, |bar())=, C-k produces =foo(1, |)=.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (require 'smartparens-config)
   (require 'smartparens-html)
-  (require 'smartparens-html)
   (add-hook 'prog-mode-hook #'smartparens-strict-mode)
   (add-hook 'yaml-mode-hook #'smartparens-mode)
+#+END_SRC
+
+However, C-k outside of smartparens also removes whitespace. We want
+smarparens do the same, otherwise C-k does nothing on an empty line.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq sp-hybrid-kill-excessive-whitespace t)
 #+END_SRC
 
 Since we're using it the whole time, there's no point in showing it in
