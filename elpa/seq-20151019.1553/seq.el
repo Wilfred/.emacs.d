@@ -4,8 +4,8 @@
 
 ;; Author: Nicolas Petton <nicolas@petton.fr>
 ;; Keywords: sequences
-;; Package-Version: 20150709.1040
-;; Version: 1.8
+;; Package-Version: 20151019.1553
+;; Version: 1.11
 ;; Package: seq
 
 ;; Maintainer: emacs-devel@gnu.org
@@ -165,13 +165,27 @@ If SEQ is empty, return INITIAL-VALUE and FUNCTION is not called."
         (setq acc (funcall function acc elt)))
       acc)))
 
-(defun seq-some-p (pred seq)
-  "Return any element for which (PRED element) is non-nil in SEQ, nil otherwise."
+(defun seq-some (pred seq)
+  "Return the first value for which if (PRED element) is non-nil for in SEQ."
+  (catch 'seq--break
+    (seq-doseq (elt seq)
+      (let ((result (funcall pred elt)))
+        (when result
+          (throw 'seq--break result))))
+    nil))
+
+(defun seq-find (pred seq &optional default)
+  "Return the first element for which (PRED element) is non-nil in SEQ.
+If no element is found, return DEFAULT.
+
+Note that `seq-find' has an ambiguity if the found element is
+identical to DEFAULT, as it cannot be known if an element was
+found or not."
   (catch 'seq--break
     (seq-doseq (elt seq)
       (when (funcall pred elt)
         (throw 'seq--break elt)))
-    nil))
+    default))
 
 (defun seq-every-p (pred seq)
   "Return non-nil if (PRED element) is non-nil for all elements of the sequence SEQ."
@@ -203,19 +217,30 @@ The result is a sequence of the same type as SEQ."
     (let ((result (seq-sort pred (append seq nil))))
       (seq-into result (type-of seq)))))
 
-(defun seq-contains-p (seq elt &optional testfn)
+(defun seq-contains (seq elt &optional testfn)
   "Return the first element in SEQ that equals to ELT.
 Equality is defined by TESTFN if non-nil or by `equal' if nil."
-  (seq-some-p (lambda (e)
+  (seq-some (lambda (e)
                 (funcall (or testfn #'equal) elt e))
               seq))
+
+(defun seq-position (seq elt &optional testfn)
+  "Return the index of the first element in SEQ that is equal to ELT.
+Equality is defined by TESTFN if non-nil or by `equal' if nil."
+  (let ((index 0))
+    (catch 'seq--break
+      (seq-doseq (e seq)
+        (when (funcall (or testfn #'equal) e elt)
+          (throw 'seq--break index))
+        (setq index (1+ index)))
+      nil)))
 
 (defun seq-uniq (seq &optional testfn)
   "Return a list of the elements of SEQ with duplicates removed.
 TESTFN is used to compare elements, or `equal' if TESTFN is nil."
   (let ((result '()))
     (seq-doseq (elt seq)
-      (unless (seq-contains-p result elt testfn)
+      (unless (seq-contains result elt testfn)
         (setq result (cons elt result))))
     (nreverse result)))
 
@@ -273,7 +298,7 @@ negative integer or 0, nil is returned."
   "Return a list of the elements that appear in both SEQ1 and SEQ2.
 Equality is defined by TESTFN if non-nil or by `equal' if nil."
   (seq-reduce (lambda (acc elt)
-                (if (seq-contains-p seq2 elt testfn)
+                (if (seq-contains seq2 elt testfn)
                     (cons elt acc)
                   acc))
               (seq-reverse seq1)
@@ -283,7 +308,7 @@ Equality is defined by TESTFN if non-nil or by `equal' if nil."
   "Return a list of the elements that appear in SEQ1 but not in SEQ2.
 Equality is defined by TESTFN if non-nil or by `equal' if nil."
   (seq-reduce (lambda (acc elt)
-                (if (not (seq-contains-p seq2 elt testfn))
+                (if (not (seq-contains seq2 elt testfn))
                     (cons elt acc)
                   acc))
               (seq-reverse seq1)
