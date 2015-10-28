@@ -5,9 +5,10 @@
 ;; Licensed under the same terms as Emacs.
 
 ;; Version: 0.2.1
-;; Package-Version: 20150824.900
+;; Package-Version: 20151027.1945
 ;; Keywords: pytest python testing
-;; URL: http://bitbucket.org/elarson/pytest.el
+;; URL: https://github.com/ionrock/pytest-el
+;; Package-Requires: ((s "1.9.0"))
 ;; Created: 07 Oct 2011
 
 ;; This file is NOT part of GNU Emacs.
@@ -63,6 +64,13 @@
 ;;             (local-set-key "\C-cp." 'pytest-pdb-one)))
 
 ;;; Code:
+(require 's)
+(require 'cl)
+(require 'python)
+
+(defgroup pytest nil
+  "Easy Python test running in Emacs"
+  :group 'python)
 
 (defcustom pytest-project-names '("runtests")
   "The name of the script that starts the tests.")
@@ -94,9 +102,9 @@ Optional argument FLAGS py.test command line flags."
 				(split-string tests) " ") ""))
          (cmd-flags (if flags flags pytest-cmd-flags))
 	 (use-comint (s-contains? "pdb" cmd-flags)))
-    (funcall '(lambda (command)
-                (compilation-start command use-comint
-                                   (lambda (mode) (concat "*pytest*"))))
+    (funcall #'(lambda (command)
+                 (compilation-start command use-comint
+                                    (lambda (mode) (concat "*pytest*"))))
              (format "cd %s && %s %s %s"
                      where (pytest-find-test-runner) cmd-flags tnames))
     (if use-comint
@@ -104,29 +112,34 @@ Optional argument FLAGS py.test command line flags."
 	  (inferior-python-mode)))))
 
 ;;; Run entire test suite
+;;;###autoload
 (defun pytest-all (&optional flags)
   "Run all tests.
 Optional argument FLAGS py.test command line flags."
   (interactive)
   (pytest-run nil flags))
 
+;;;###autoload
 (defun pytest-failed ()
   "Quit test suite on first failed test."
   (interactive)
   (pytest-all "-x "))
 
+;;;###autoload
 (defun pytest-pdb-all ()
   "Start pdb on error."
   (interactive)
   (pytest-all "--pdb -x"))
 
 ;;; Run all the tests in a directory (and its child directories)
+;;;###autoload
 (defun pytest-directory (&optional flags)
   "Run pytest on all the files in the current buffer.
 Optional argument FLAGS py.test command line flags."
   (interactive)
   (pytest-run (file-name-directory buffer-file-name) flags))
 
+;;;###autoload
 (defun pytest-pdb-directory (&optional flags)
   "Run pytest on all the files in the current buffer.
 Optional argument FLAGS py.test command line flags."
@@ -134,24 +147,28 @@ Optional argument FLAGS py.test command line flags."
   (pytest-directory "--pdb -x "))
 
 ;;; Run all the tests in a file
+;;;###autoload
 (defun pytest-module (&optional flags)
   "Run pytest (via eggs/bin/test) on current buffer.
 Optional argument FLAGS py.test command line flags."
   (interactive)
   (pytest-run buffer-file-name flags))
 
+;;;###autoload
 (defun pytest-pdb-module ()
   "Run pytest on a module, enter debugger on error."
   (interactive)
   (pytest-module "--pdb -x"))
 
 ;;; Run the test surrounding the current point
+;;;###autoload
 (defun pytest-one (&optional flags)
   "Run pytest (via eggs/bin/test) on testable thing at point in current buffer.
 Optional argument FLAGS py.test command line flags."
   (interactive)
   (pytest-run (format (concat flags "%s") (pytest-py-testable))))
 
+;;;###autoload
 (defun pytest-pdb-one ()
   "Run pytest on testable thing at point, enter debugger on error."
   (interactive)
