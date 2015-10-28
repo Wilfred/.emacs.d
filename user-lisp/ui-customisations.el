@@ -122,6 +122,7 @@ it to open related buffers easily and discard other buffers (commonly magit)."
 ;; switch between splits in a frame. This is really useful when you
 ;; have lots of splits.
 (beacon-mode 1)
+(diminish 'beacon-mode)
 
 ;;; Mode-line.
 
