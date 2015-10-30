@@ -144,6 +144,21 @@ are interchanged."
 (require 'move-text)
 (move-text-default-bindings)
 
+(defun wh/open-line-duplicate ()
+  "Duplicate the current line below."
+  (interactive)
+  (let* ((initial-column (current-column))
+         (line-start (progn (beginning-of-line) (point)))
+         (line-end (progn (end-of-line) (point)))
+         (line-contents (buffer-substring line-start line-end)))
+    (forward-line)
+    (insert line-contents)
+    (insert "\n")
+    (goto-char (1+ line-end))
+    (forward-char initial-column)))
+
+(global-set-key (kbd "C-c o") #'wh/open-line-duplicate)
+
 ;; Fastest load, according to https://github.com/jwiegley/use-package#use-packageel-is-no-longer-needed-at-runtime
 (eval-when-compile
   (require 'use-package))
