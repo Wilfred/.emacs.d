@@ -1,38 +1,21 @@
 ;;; Commentary
-;; Completion is hard to get right. I'm gradually moving to company,
-;; but this is everything I expect from completion:
+;; There are two types of completion: precise, and greedy.
 ;;
-;; DUMB COMPLETION: This is often sufficient. Just complete the
-;; current substring based on other strings in the buffer. If no
-;; matches are present, try other buffers with the same mode. It must
-;; be case sensitive.
+;; Precise completion offers things like methods on classes, library
+;; imports and CSS values. These are values that are always valid at
+;; the current position.
 ;;
-;; FULL LINE COMPLETION: It's often handy for imports if we can expand
-;; the whole current line to match lines from other buffers (of the
-;; same mode).
+;; Greedy completion is the opposite: it offers variable names (even
+;; in other scopes or files), filenames, anything that looks like it
+;; might match the current prefix.
 ;;
-;; FILENAME COMPLETION: If the current substring matches a filename of
-;; a file at point, expand it to the full path. Occasionally useful.
-;;
-;; SYMBOL COMPLETION: In elisp or other languages with an inferior
-;; process attached, complete symbols based on what is currently
-;; defined. This should not affect buffers in other modes (a current
-;; bug).
-;;
-;; LANGUAGE COMPLETION: Complete substrings that are known to exist in
-;; a language. In the current configuration, I'm only doing this with
-;; CSS.
-;;
-;; STATIC ANALYSIS COMPLETION: Complete methods and attributes on
-;; classes. The current configuration only does this for Java with
-;; eclim.
+;; Company excels at precise completion, but hippie-expand still has
+;; the edge on greedy completion. Precise completion with company
+;; requires language specific support, whereas hippie-expand works
+;; very well with dabbrev in pretty much any language.
 
-(defun wh/company-code ()
-  "Generic completion in programming language buffers.
-We just use symbols and lines from any open buffers in the current mode."
-  (interactive)
-  (let ((company-backends '((company-whole-line company-dabbrev-code))))
-    (company-complete)))
+;; TODO: snippet expansion isn't really completion as we've defined
+;; it, so move to a separate file.
 
 ;; yasnippet, clever abbreviation expansion
 (require 'yasnippet)
@@ -60,6 +43,8 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 (global-set-key (kbd "s-w") #'aya-create)
 (global-set-key (kbd "s-y") #'aya-expand)
 
+;; Greedy completion.
+
 ;; dabbrev-expand should match case
 (require 'dabbrev)
 (setq dabbrev-case-fold-search nil)
@@ -77,11 +62,9 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 ;; to offer completion inside comments too.
 (setq company-dabbrev-code-everywhere t)
 
-;; Don't bother with company-dabbrev when we have company-dabbrev-code
-;; already. It's a little too aggressive at suggesting words,
-;; especially when writing comments.
-(setq company-backends
-      (remove 'company-dabbrev company-backends))
+(global-set-key (kbd "s-/") #'company-dabbrev)
+
+;; Precise completion.
 
 (global-set-key (kbd "C-z") #'company-try-hard)
 (define-key company-active-map (kbd "C-z") #'company-try-hard)
@@ -159,9 +142,6 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 ;; Align annotations to they're not shown immediately next to the
 ;; candidate. Otherwise, we end with a function foo shown as "foof".
 (setq company-tooltip-align-annotations t)
-
-;; Bind `company-complete' next to hippie-expand, because they're both useful.
-(global-set-key (kbd "s-/") #'company-complete)
 
 ;; Use C-n and C-p when company is active (for consistency with helm).
 (define-key company-active-map (kbd "C-n") #'company-select-next)
