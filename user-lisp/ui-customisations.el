@@ -118,12 +118,6 @@ it to open related buffers easily and discard other buffers (commonly magit)."
 (require 'projectile)
 (diminish 'projectile-mode)
 
-;; `beacon-mode' animates the current position of point when you
-;; switch between splits in a frame. This is really useful when you
-;; have lots of splits.
-(beacon-mode 1)
-(diminish 'beacon-mode)
-
 ;;; Mode-line.
 
 ;; I want a minimalistic mode line. It should only have:
