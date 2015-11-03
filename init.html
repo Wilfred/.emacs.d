@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- 2015-10-25 Sun 19:20 -->
+<!-- 2015-11-03 Tue 16:10 -->
 <meta  charset="utf-8">
 <meta  name="viewport" content="width=device-width, initial-scale=1">
 <title></title>
 <meta  name="generator" content="Org-mode">
+<meta  name="author" content="Hughes">
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   .title  { text-align: center;
@@ -1220,6 +1221,17 @@ We use the same movement keys for flycheck as we do for flymake.
 </div>
 
 <p>
+flycheck also provides a great overview buffer, but it's usually bound
+to <code>C-c ! f</code>. This is tricky to type, so we use our own keybinding.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>define-key flycheck-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"C-c f"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">flycheck-list-errors</span><span class="org-rainbow-delimiters-depth-1">)</span>
+</pre>
+</div>
+
+<p>
 flycheck-next-error doesn't push the mark, so we can't use pop-mark to
 go back to our previous position. We define and activate advice to fix
 that.
@@ -2057,7 +2069,8 @@ annoying to accidentally close Emacs, so warn first.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2015-10-25 Sun 19:20</p>
+<p class="author">Author: Hughes</p>
+<p class="date">Created: 2015-11-03 Tue 16:10</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

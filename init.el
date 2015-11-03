@@ -295,6 +295,8 @@ Visit the file after creation."
 (define-key flycheck-mode-map (kbd "<f8>") 'flycheck-previous-error)
 (define-key flycheck-mode-map (kbd "<f9>") 'flycheck-next-error)
 
+(define-key flycheck-mode-map (kbd "C-c f") #'flycheck-list-errors)
+
 (defadvice flycheck-next-error (around wh/flycheck-next-error-push-mark activate)
   (push-mark)
   ad-do-it)
