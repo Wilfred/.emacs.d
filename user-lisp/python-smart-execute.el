@@ -238,6 +238,8 @@ If the region is active, send that instead.
 See also `python-smart-execute-next-line'.  and
 `python-smart-execute-no-move'."
   (interactive)
+  (unless (python-shell-get-process)
+    (user-error "You need a Python session to send code to, try M-x run-python"))
   (pse--shell-send-dwim)
   (python-nav-forward-statement))
 
