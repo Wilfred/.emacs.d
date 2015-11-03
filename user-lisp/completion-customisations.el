@@ -60,6 +60,7 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 
 ;; Although we only candidates to be taken from actual code, it's nice
 ;; to offer completion inside comments too.
+;; TODO: company-dabbrev seems to be taking candidates *from* inside strings too!
 (setq company-dabbrev-code-everywhere t)
 
 (global-set-key (kbd "s-/") #'company-dabbrev)
