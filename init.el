@@ -576,7 +576,7 @@ Visit the file after creation."
 (ignore-errors (require 'site-customisations))
 
 (setq ag-highlight-search 't)
-(global-set-key (kbd "<f5>") 'ag-project-at-point)
+(global-set-key (kbd "<f5>") #'ag-project)
 
 ;; stolen from http://whattheemacsd.com/setup-dired.el-02.html
 (defun dired-back-to-top ()
