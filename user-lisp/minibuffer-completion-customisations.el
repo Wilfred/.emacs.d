@@ -159,4 +159,7 @@
 ;;
 ;; `helm-imenu' shows additional information and is more attractive.
 
+;; Always use 'y or n' for questions, since 'yes' is tedious to type over and over.
+(fset 'yes-or-no-p 'y-or-n-p)
+
 (provide 'minibuffer-completion-customisations)

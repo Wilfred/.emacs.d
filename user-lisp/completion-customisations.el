@@ -127,9 +127,6 @@
 ;; always spaces, never tabs
 (setq-default indent-tabs-mode nil)
 
-;; Always use 'y or n' for questions, since 'yes' is tedious to type over and over.
-(fset 'yes-or-no-p 'y-or-n-p)
-
 ;; TODO: Emacs is highlighting this incorrectly:
 'other
 
