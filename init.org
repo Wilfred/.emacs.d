@@ -1194,7 +1194,6 @@ annoying to accidentally close Emacs, so warn first.
   (require 'startup-customisations)
 
   (require 'git-customisations)
-  (require 'git-flow-release)
   (require 'eshell-customisations)
 
   (require 'compilation-customisations)

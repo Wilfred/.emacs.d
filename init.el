@@ -569,7 +569,6 @@ Visit the file after creation."
 (require 'startup-customisations)
 
 (require 'git-customisations)
-(require 'git-flow-release)
 (require 'eshell-customisations)
 
 (require 'compilation-customisations)
