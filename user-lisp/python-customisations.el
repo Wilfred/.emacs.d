@@ -118,6 +118,7 @@
 
 (define-key python-mode-map (kbd "C-c C-t") #'pytest-one)
 
+(setq pytest-cmd-flags "-x --tb=native")
 
 (require 'python-smart-execute)
 (define-key python-mode-map (kbd "<f1>") #'python-smart-execute)
