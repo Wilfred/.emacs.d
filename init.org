@@ -1176,6 +1176,7 @@ annoying to accidentally close Emacs, so warn first.
   (setq search-whitespace-regexp nil)
 
   (require 'completion-customisations)
+  (require 'snippet-customisations)
   (require 'structured-text-customisations)
   (require 'isearch-customisations)
 

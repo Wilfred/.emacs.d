@@ -551,6 +551,7 @@ Visit the file after creation."
 (setq search-whitespace-regexp nil)
 
 (require 'completion-customisations)
+(require 'snippet-customisations)
 (require 'structured-text-customisations)
 (require 'isearch-customisations)
 
