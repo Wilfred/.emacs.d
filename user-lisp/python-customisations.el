@@ -90,9 +90,19 @@
 
 (require 'company)
 (defun wh/company-in-python-mode ()
-  (setq-local company-idle-delay 0.3)
+  (setq-local company-idle-delay 0.2)
+  (setq-local company-minimum-prefix-length 2)
   (set (make-local-variable 'company-backends)
-       (list #'company-whole-line #'company-anaconda #'company-dabbrev-code)))
+       (list
+        ;; It's rare for company-files to fire, but it's great
+        ;; when we want it. Low noise, so put it first.
+        #'company-files
+        ;; anaconda is able to do smarter Python analysis, so it's
+        ;; particularly useful with built-ins like IndexError and
+        ;; packages like 'from foo import bar'.
+        #'company-anaconda
+        ;; This is a noisy backend, so we try it last.
+        #'company-whole-line)))
 
 (add-hook 'python-mode-hook #'wh/company-in-python-mode)
 
