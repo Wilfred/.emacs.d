@@ -43,6 +43,7 @@
       '(
         ag-project-at-point
         comment-dwim
+        flycheck-previous-error
         helm-M-x
         iedit-mode
         mouse-set-region
