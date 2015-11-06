@@ -4,7 +4,7 @@
 ;; Show a scrollbar when moving.
 (global-yascroll-bar-mode)
 
-; always highlight matching parentheses
+;; always highlight matching parentheses
 (show-paren-mode 1)
 
 ;; always highlight line that cursor is on, unless a mode has set d
