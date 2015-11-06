@@ -1,8 +1,8 @@
-;;; smartparens-haskell.el --- Additional configuration for Haskell based modes.
+;;; smartparens-rust.el --- Additional configuration for Haskell based modes.
 
 ;; Copyright (C) 2015 Wilfred Hughes
 
-;; Created: 22 August 2015
+;; Created: 3 November 2015
 ;; Keywords: abbrev convenience editing
 ;; URL: https://github.com/Fuco1/smartparens
 
@@ -27,8 +27,8 @@
 
 ;;; Commentary:
 
-;; This file provides some additional configuration for Haskell based
-;; modes.  To use it, simply add:
+;; This file provides some additional configuration for Rust.  To use
+;; it, simply add:
 ;;
 ;; (require 'smartparens-config)
 ;;
@@ -44,18 +44,23 @@
 ;;; Code:
 (require 'smartparens)
 
-(sp-pair "'" nil :actions :rem)
+(defun sp-in-rust-lifetime-context (&rest args)
+  "Return t if point is in a Rust context where ' represents a lifetime.
+If we return nil, ' should be used for character literals."
+  (or
+   ;; If point is just after a &', it's probably a &'foo.
+   (save-excursion
+     (backward-char 2)
+     (looking-at "&"))
+   ;; If point is inside < > it's probably a parameterised function.
+   (let ((paren-pos (nth 1 (syntax-ppss))))
+     (and paren-pos
+          (save-excursion
+            (goto-char paren-pos)
+            (looking-at "<"))))))
 
-(defun always-true ()
-  ""
-  t)
-
-;; repeatedly evaluating with different arguments does not actually
-;; change `sp-local-pairs'!
 (sp-with-modes '(rust-mode)
-  (sp-local-pair
-   "'" "'")
-  )
+  (sp-local-pair "'" "'" :unless '(sp-in-rust-lifetime-context)))
 
 (provide 'smartparens-rust)
 
