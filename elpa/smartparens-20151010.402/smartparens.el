@@ -712,8 +712,9 @@ in mode's startup-hook etc.) by calling `smartparens-mode'."
 
 ;;;###autoload
 (defun turn-off-smartparens-mode ()
-  "Turn off `smartparens-mode'."
+  "Turn off `smartparens-mode' and `smartparens-strict-mode'."
   (interactive)
+  (smartparens-strict-mode -1)
   (smartparens-mode -1))
 
 ;; insert custom
