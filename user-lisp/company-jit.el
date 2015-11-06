@@ -4,7 +4,8 @@
 (defvar company-jit-prefixes
   `(
     (python-mode
-     (,(rx symbol-start "import ") ,(rx symbol-start "from "))
+     (,(rx symbol-start "import ") ,(rx symbol-start "from ")
+      ,(rx symbol-end "."))
      company-anaconda)
     (rust-mode
      (,(rx "::") ,(rx "."))
