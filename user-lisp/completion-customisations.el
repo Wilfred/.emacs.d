@@ -84,7 +84,6 @@
 (require 'company)
 (require 'company-elisp)
 (require 'company-files)
-(require 'company-keywords) ;; might be annoying as many are short.
 (require 'company-css)
 (require 'company-clang)
 (require 'company-tern)
