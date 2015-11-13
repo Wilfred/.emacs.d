@@ -1,6 +1,7 @@
 ;; Use paredit for all the lisp modes I use.
 (defun switch-on-paredit ()
   (turn-off-smartparens-mode)
+  (smartparens-strict-mode -1)
   (paredit-mode 1))
 
 (dolist (hook
