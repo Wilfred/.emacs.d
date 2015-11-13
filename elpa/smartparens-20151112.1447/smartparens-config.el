@@ -53,20 +53,23 @@
 
 (defun sp-lisp-invalid-hyperlink-p (_1 action _2)
   (when (eq action 'navigate)
-    (or (and (looking-at "\\sw\\|\\s_")
-             (save-excursion
-               (backward-char 2)
-               (looking-at "\\sw\\|\\s_")))
-        (and (save-excursion
-               (backward-char 1)
-               (looking-at "\\sw\\|\\s_"))
-             (save-excursion
-               (forward-char 1)
-               (looking-at "\\sw\\|\\s_"))))))
+    ;; Ignore errors due to us being at the start or end of the
+    ;; buffer.
+    (ignore-errors
+      (or (and (looking-at "\\sw\\|\\s_")
+               (save-excursion
+                 (backward-char 2)
+                 (looking-at "\\sw\\|\\s_")))
+          (and (save-excursion
+                 (backward-char 1)
+                 (looking-at "\\sw\\|\\s_"))
+               (save-excursion
+                 (forward-char 1)
+                 (looking-at "\\sw\\|\\s_")))))))
 
 ;; emacs is lisp hacking enviroment, so we set up some most common
 ;; lisp modes too
-(sp-with-modes sp--lisp-modes
+(sp-with-modes sp-lisp-modes
   ;; disable ', it's the quote character!
   (sp-local-pair "'" nil :actions nil)
   ;; also only use the pseudo-quote inside strings where it serve as
@@ -106,12 +109,13 @@
 (eval-after-load "lua-mode"      '(require 'smartparens-lua))
 (eval-after-load "ruby-mode"     '(require 'smartparens-ruby))
 (eval-after-load "enh-ruby-mode" '(require 'smartparens-ruby))
+(eval-after-load "rust-mode"     '(require 'smartparens-rust))
 (eval-after-load "haskell-mode"     '(require 'smartparens-haskell))
 (eval-after-load "haskell-interactive-mode"     '(require 'smartparens-haskell))
 (--each '("python-mode" "python")
   (eval-after-load it '(require 'smartparens-python)))
 (eval-after-load "scala-mode" '(require 'smartparens-scala))
-(eval-after-load "rust-mode" '(require 'smartparens-rust))
+(eval-after-load "racket-mode" '(require 'smartparens-racket))
 
 (provide 'smartparens-config)
 
