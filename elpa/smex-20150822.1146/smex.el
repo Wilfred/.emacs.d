@@ -246,7 +246,7 @@ Uses the currently active keymap."
 
 (defun smex-auto-update (&optional idle-time)
   "Update Smex when Emacs has been idle for IDLE-TIME."
-  (unless idle-time (setq idle-time 60))
+  (unless idle-time (setq idle-time 300))
   (run-with-idle-timer idle-time t
                        '(lambda () (if (smex-detect-new-commands) (smex-update)))))
 
