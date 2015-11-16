@@ -462,14 +462,6 @@ smarparens do the same, otherwise C-k does nothing on an empty line.
   (setq sp-hybrid-kill-excessive-whitespace t)
 #+END_SRC
 
-Since we're using it the whole time, there's no point in showing it in
-the mode line.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (require 'diminish)
-  (diminish #'smartparens-mode)
-#+END_SRC
-
 ** Files
 
 *** Opening

@@ -192,9 +192,6 @@ If a prefix argument is given, don't change the kill-ring."
 
 (setq sp-hybrid-kill-excessive-whitespace t)
 
-(require 'diminish)
-(diminish #'smartparens-mode)
-
 (require 'recentf)
 
 ;; offer recently accessed files from the menu
