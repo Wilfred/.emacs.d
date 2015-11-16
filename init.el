@@ -168,8 +168,11 @@ If a prefix argument is given, don't change the kill-ring."
 ;; (foo bar) -> [foo bar]
 (define-key smartparens-mode-map (kbd "M-S") 'sp-rewrap-sexp)
 
-;; (foo) bar -> (foo bar)
+;; (|foo) bar -> (|foo bar)
 (define-key smartparens-mode-map (kbd "<C-right>") 'sp-slurp-hybrid-sexp)
+
+;; (|foo bar) -> (|foo) bar
+(define-key smartparens-mode-map (kbd "<C-left>") #'sp-forward-barf-sexp)
 
 (defun wh/smartparens-wrap-round (arg)
   "Smartparens equivalent of `paredit-wrap-round'."
