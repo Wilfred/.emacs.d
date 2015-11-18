@@ -1,3 +1,6 @@
+;; To be consistent with our paredit keybindings, use super for syntatic movement.
+(global-set-key (kbd "s-a") #'beginning-of-defun)
+
 ;; avy -- quickly jump to an arbitrary word or line
 (require 'avy)
 (setq avy-case-fold-search nil)
