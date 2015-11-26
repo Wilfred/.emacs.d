@@ -19,10 +19,6 @@
 (setq avy-zap-forward-only t)
 (global-set-key (kbd "M-z") #'avy-zap-up-to-char-dwim)
 
-;; kill-word is less useful than kill-symbol
-(global-set-key (kbd "M-d") #'sp-kill-symbol)
-(global-set-key (kbd "C-<backspace>") #'sp-backward-kill-symbol)
-
 ;; to be consistent with C-M-f as forward-sexp, bind C-M-backspace to backward-kill-sexp
 ;; and C-M-d to forward-kill-sexp
 (global-set-key (kbd "C-M-<backspace>") 'backward-kill-sexp)
