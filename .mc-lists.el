@@ -27,6 +27,7 @@
         python-indent-electric-colon
         sgml-slash
         sp--self-insert-command
+        sp-backward-kill-word
         sp-remove-active-pair-overlay
         sp-slurp-hybrid-sexp
         wh/decrement-number-decimal
