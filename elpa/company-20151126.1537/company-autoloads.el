@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "company" "company.el" (21958 24687 283648
-;;;;;;  232000))
+;;;### (autoloads nil "company" "company.el" (22106 64403 578742
+;;;;;;  723000))
 ;;; Generated autoloads from company.el
 
 (autoload 'company-mode "company" "\
@@ -22,7 +22,7 @@ Completions can be searched with `company-search-candidates' or
 inactive, as well.
 
 The completion data is retrieved using `company-backends' and displayed
-using `company-frontends'.  If you want to start a specific back-end, call
+using `company-frontends'.  If you want to start a specific backend, call
 it interactively or use `company-begin-backend'.
 
 By default, the completions list is sorted alphabetically, unless the
@@ -60,91 +60,91 @@ See `company-mode' for more information on Company mode.
 
 ;;;***
 
-;;;### (autoloads nil "company-abbrev" "company-abbrev.el" (21958
-;;;;;;  24687 833627 521000))
+;;;### (autoloads nil "company-abbrev" "company-abbrev.el" (22106
+;;;;;;  64404 188720 234000))
 ;;; Generated autoloads from company-abbrev.el
 
 (autoload 'company-abbrev "company-abbrev" "\
-`company-mode' completion back-end for abbrev.
+`company-mode' completion backend for abbrev.
 
 \(fn COMMAND &optional ARG &rest IGNORED)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil "company-bbdb" "company-bbdb.el" (21958 24687
-;;;;;;  683633 166000))
+;;;### (autoloads nil "company-bbdb" "company-bbdb.el" (22106 64404
+;;;;;;  18726 502000))
 ;;; Generated autoloads from company-bbdb.el
 
 (autoload 'company-bbdb "company-bbdb" "\
-`company-mode' completion back-end for BBDB.
+`company-mode' completion backend for BBDB.
 
 \(fn COMMAND &optional ARG &rest IGNORE)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil "company-css" "company-css.el" (21958 24687
-;;;;;;  243649 739000))
+;;;### (autoloads nil "company-css" "company-css.el" (22106 64403
+;;;;;;  528744 567000))
 ;;; Generated autoloads from company-css.el
 
 (autoload 'company-css "company-css" "\
-`company-mode' completion back-end for `css-mode'.
+`company-mode' completion backend for `css-mode'.
 
 \(fn COMMAND &optional ARG &rest IGNORED)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil "company-dabbrev" "company-dabbrev.el" (21958
-;;;;;;  24687 463641 454000))
+;;;### (autoloads nil "company-dabbrev" "company-dabbrev.el" (22106
+;;;;;;  64403 798734 613000))
 ;;; Generated autoloads from company-dabbrev.el
 
 (autoload 'company-dabbrev "company-dabbrev" "\
-dabbrev-like `company-mode' completion back-end.
+dabbrev-like `company-mode' completion backend.
 
 \(fn COMMAND &optional ARG &rest IGNORED)" t nil)
 
 ;;;***
 
 ;;;### (autoloads nil "company-dabbrev-code" "company-dabbrev-code.el"
-;;;;;;  (21958 24687 393644 87000))
+;;;;;;  (22106 64403 708737 931000))
 ;;; Generated autoloads from company-dabbrev-code.el
 
 (autoload 'company-dabbrev-code "company-dabbrev-code" "\
-dabbrev-like `company-mode' back-end for code.
-The back-end looks for all symbols in the current buffer that aren't in
+dabbrev-like `company-mode' backend for code.
+The backend looks for all symbols in the current buffer that aren't in
 comments or strings.
 
 \(fn COMMAND &optional ARG &rest IGNORED)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil "company-elisp" "company-elisp.el" (21958 24687
-;;;;;;  913624 507000))
+;;;### (autoloads nil "company-elisp" "company-elisp.el" (22106 64404
+;;;;;;  278716 916000))
 ;;; Generated autoloads from company-elisp.el
 
 (autoload 'company-elisp "company-elisp" "\
-`company-mode' completion back-end for Emacs Lisp.
+`company-mode' completion backend for Emacs Lisp.
 
 \(fn COMMAND &optional ARG &rest IGNORED)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil "company-etags" "company-etags.el" (21958 24687
-;;;;;;  333646 343000))
+;;;### (autoloads nil "company-etags" "company-etags.el" (22106 64403
+;;;;;;  618741 249000))
 ;;; Generated autoloads from company-etags.el
 
 (autoload 'company-etags "company-etags" "\
-`company-mode' completion back-end for etags.
+`company-mode' completion backend for etags.
 
 \(fn COMMAND &optional ARG &rest IGNORED)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil "company-files" "company-files.el" (21958 24687
-;;;;;;  503639 948000))
+;;;### (autoloads nil "company-files" "company-files.el" (22106 64403
+;;;;;;  848732 769000))
 ;;; Generated autoloads from company-files.el
 
 (autoload 'company-files "company-files" "\
-`company-mode' completion back-end existing file names.
+`company-mode' completion backend existing file names.
 Completions works for proper absolute and relative files paths.
 File paths with spaces are only supported inside strings.
 
@@ -152,106 +152,106 @@ File paths with spaces are only supported inside strings.
 
 ;;;***
 
-;;;### (autoloads nil "company-gtags" "company-gtags.el" (21958 24687
-;;;;;;  13658 402000))
+;;;### (autoloads nil "company-gtags" "company-gtags.el" (22106 64403
+;;;;;;  308752 678000))
 ;;; Generated autoloads from company-gtags.el
 
 (autoload 'company-gtags "company-gtags" "\
-`company-mode' completion back-end for GNU Global.
+`company-mode' completion backend for GNU Global.
 
 \(fn COMMAND &optional ARG &rest IGNORED)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil "company-ispell" "company-ispell.el" (21958
-;;;;;;  24687 873626 10000))
+;;;### (autoloads nil "company-ispell" "company-ispell.el" (22106
+;;;;;;  64404 228718 759000))
 ;;; Generated autoloads from company-ispell.el
 
 (autoload 'company-ispell "company-ispell" "\
-`company-mode' completion back-end using Ispell.
+`company-mode' completion backend using Ispell.
 
 \(fn COMMAND &optional ARG &rest IGNORED)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil "company-keywords" "company-keywords.el" (21958
-;;;;;;  24687 593636 555000))
+;;;### (autoloads nil "company-keywords" "company-keywords.el" (22106
+;;;;;;  64403 938729 451000))
 ;;; Generated autoloads from company-keywords.el
 
 (autoload 'company-keywords "company-keywords" "\
-`company-mode' back-end for programming language keywords.
+`company-mode' backend for programming language keywords.
 
 \(fn COMMAND &optional ARG &rest IGNORED)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil "company-nxml" "company-nxml.el" (21958 24687
-;;;;;;  713632 40000))
+;;;### (autoloads nil "company-nxml" "company-nxml.el" (22106 64404
+;;;;;;  58725 27000))
 ;;; Generated autoloads from company-nxml.el
 
 (autoload 'company-nxml "company-nxml" "\
-`company-mode' completion back-end for `nxml-mode'.
+`company-mode' completion backend for `nxml-mode'.
 
 \(fn COMMAND &optional ARG &rest IGNORED)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil "company-oddmuse" "company-oddmuse.el" (21958
-;;;;;;  24687 153653 130000))
+;;;### (autoloads nil "company-oddmuse" "company-oddmuse.el" (22106
+;;;;;;  64403 438747 885000))
 ;;; Generated autoloads from company-oddmuse.el
 
 (autoload 'company-oddmuse "company-oddmuse" "\
-`company-mode' completion back-end for `oddmuse-mode'.
+`company-mode' completion backend for `oddmuse-mode'.
 
 \(fn COMMAND &optional ARG &rest IGNORED)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil "company-semantic" "company-semantic.el" (21958
-;;;;;;  24687 63656 513000))
+;;;### (autoloads nil "company-semantic" "company-semantic.el" (22106
+;;;;;;  64403 348751 203000))
 ;;; Generated autoloads from company-semantic.el
 
 (autoload 'company-semantic "company-semantic" "\
-`company-mode' completion back-end using CEDET Semantic.
+`company-mode' completion backend using CEDET Semantic.
 
 \(fn COMMAND &optional ARG &rest IGNORED)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil "company-tempo" "company-tempo.el" (21958 24687
-;;;;;;  433642 581000))
+;;;### (autoloads nil "company-tempo" "company-tempo.el" (22106 64403
+;;;;;;  758736 87000))
 ;;; Generated autoloads from company-tempo.el
 
 (autoload 'company-tempo "company-tempo" "\
-`company-mode' completion back-end for tempo.
+`company-mode' completion backend for tempo.
 
 \(fn COMMAND &optional ARG &rest IGNORED)" t nil)
 
 ;;;***
 
-;;;### (autoloads nil "company-xcode" "company-xcode.el" (21958 24687
-;;;;;;  803628 652000))
+;;;### (autoloads nil "company-xcode" "company-xcode.el" (22106 64404
+;;;;;;  138722 78000))
 ;;; Generated autoloads from company-xcode.el
 
 (autoload 'company-xcode "company-xcode" "\
-`company-mode' completion back-end for Xcode projects.
+`company-mode' completion backend for Xcode projects.
 
 \(fn COMMAND &optional ARG &rest IGNORED)" t nil)
 
 ;;;***
 
 ;;;### (autoloads nil "company-yasnippet" "company-yasnippet.el"
-;;;;;;  (21958 24687 763630 158000))
+;;;;;;  (22106 64404 98723 552000))
 ;;; Generated autoloads from company-yasnippet.el
 
 (autoload 'company-yasnippet "company-yasnippet" "\
-`company-mode' back-end for `yasnippet'.
+`company-mode' backend for `yasnippet'.
 
-This back-end should be used with care, because as long as there are
-snippets defined for the current major mode, this back-end will always
-shadow back-ends that come after it.  Recommended usages:
+This backend should be used with care, because as long as there are
+snippets defined for the current major mode, this backend will always
+shadow backends that come after it.  Recommended usages:
 
-* In a buffer-local value of `company-backends', grouped with a back-end or
+* In a buffer-local value of `company-backends', grouped with a backend or
   several that provide actual text completions.
 
   (add-hook 'js-mode-hook
@@ -259,7 +259,7 @@ shadow back-ends that come after it.  Recommended usages:
               (set (make-local-variable 'company-backends)
                    '((company-dabbrev-code company-yasnippet)))))
 
-* After keyword `:with', grouped with other back-ends.
+* After keyword `:with', grouped with other backends.
 
   (push '(company-semantic :with company-yasnippet) company-backends)
 
@@ -273,7 +273,7 @@ shadow back-ends that come after it.  Recommended usages:
 
 ;;;### (autoloads nil nil ("company-capf.el" "company-clang.el" "company-cmake.el"
 ;;;;;;  "company-eclim.el" "company-pkg.el" "company-template.el")
-;;;;;;  (21958 24688 76980 157000))
+;;;;;;  (22106 64404 378982 946000))
 
 ;;;***
 
