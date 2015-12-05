@@ -8,8 +8,7 @@
   (interactive "P")
   (if (and arg (not (numberp arg)))
       ;; Non-numeric prefix arg given, change the eshell buffer name.
-      (let* ((current-dir (f-parent (buffer-file-name)))
-             (eshell-buffer-name (format "*eshell*<%s>" current-dir)))
+      (let* ((eshell-buffer-name (format "*eshell*<%s>" default-directory)))
         ad-do-it)
     ;; Otherwise, continue as normal
     ad-do-it))
