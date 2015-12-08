@@ -19,6 +19,7 @@
         jump-char-forward
         jump-char-process-char
         kill-or-delete-region
+        kill-visual-line
         markdown-exdent-or-delete
         org-delete-char
         org-self-insert-command
