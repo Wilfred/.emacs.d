@@ -160,15 +160,6 @@ The absolute file name of RESOURCE-FILE is determined with
        (flycheck-ert-resource-filename ,resource-file)
      ,@body))
 
-(defun flycheck-ert-locate-config-file (filename _checker)
-  "Find a configuration FILENAME within unit tests.
-
-_CHECKER is ignored."
-  (let* ((directory (flycheck-ert-resource-filename "config-files"))
-         (filepath (expand-file-name filename directory)))
-    (when (file-exists-p filepath)
-      filepath)))
-
 
 ;;; Test suite initialization
 
@@ -197,34 +188,9 @@ should use to lookup resource files."
 
 
 ;;; Environment and version information
-
-(defconst flycheck-ert-user-error-type
-  (if (version< emacs-version "24.2")
-      'error
-    'user-error)
-  "The `user-error' type used by Flycheck.")
-
-(defun flycheck-ert-travis-ci-p ()
-  "Determine whether we are running on Travis CI."
-  (string= (getenv "TRAVIS") "true"))
-
 (defun flycheck-ert-check-gpg ()
   "Check whether GPG is available."
   (or (epg-check-configuration (epg-configuration)) t))
-
-(defun flycheck-ert-extract-version-command (re executable &rest args)
-  "Use RE to extract the version from EXECUTABLE with ARGS.
-
-Run EXECUTABLE with ARGS, catch the output, and apply RE to find
-the version number.  Return the text captured by the first group
-in RE, or nil, if EXECUTABLE is missing, or if RE failed to
-match."
-  (-when-let (executable (executable-find executable))
-    (with-temp-buffer
-      (apply #'call-process executable nil t nil args)
-      (goto-char (point-min))
-      (when (re-search-forward re nil 'no-error)
-        (match-string 1)))))
 
 
 ;;; Test case definitions
@@ -253,7 +219,7 @@ The remaining forms denote the body of the test case, including
 assertions and setup code."
   (declare (indent 3))
   (unless checker
-    (error "No syntax checkers specified."))
+    (error "No syntax checkers specified"))
   (unless language
     (error "No languages specified"))
   (let* ((checkers (if (symbolp checker) (list checker) checker))
@@ -359,7 +325,6 @@ ERROR is a Flycheck error object."
                                               error))
                           (flycheck-overlays-in 0 (+ 1 (buffer-size)))))
          (region (flycheck-error-region-for-mode error 'symbols))
-         (message (flycheck-error-message error))
          (level (flycheck-error-level error))
          (category (flycheck-error-level-overlay-category level))
          (face (get category 'face))
@@ -375,8 +340,7 @@ ERROR is a Flycheck error object."
                                       (overlay-get overlay 'before-string))
                    fringe-icon))
     (should (eq (overlay-get overlay 'category) category))
-    (should (equal (overlay-get overlay 'flycheck-error) error))
-    (should (string= (overlay-get overlay 'help-echo) message))))
+    (should (equal (overlay-get overlay 'flycheck-error) error))))
 
 (defun flycheck-ert-should-errors (&rest errors)
   "Test that the current buffers has ERRORS.
@@ -428,9 +392,6 @@ resource directory."
     (flycheck-ert-with-resource-buffer resource-file
       (funcall mode)
       ;; Configure config file locating for unit tests
-      (dolist (fn '(flycheck-locate-config-file-by-path
-                    flycheck-ert-locate-config-file))
-        (add-hook 'flycheck-locate-config-file-functions fn 'append 'local))
       (let ((process-hook-called 0))
         (add-hook 'flycheck-process-error-functions
                   (lambda (_err)
@@ -454,6 +415,7 @@ current buffer.  Otherwise return nil."
          (= (point) (car region)))))
 
 (defun flycheck-ert-explain--at-nth-error (n)
+  "Explain a failed at-nth-error predicate."
   (let ((errors (flycheck-overlay-errors-at (point))))
     (if (null errors)
         (format "Expected to be at error %s, but no error at point %s"
