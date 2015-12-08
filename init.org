@@ -414,7 +414,7 @@ etc. It's similar to paredit, but can be used in lisp, other
 programming languages and even HTML.
 
 Currently, I only use a few smartparens commands, using the same
-keybindings as the equivalent paredit command. You can view a list of all smartparens
+keybindings as the equivalent paredit commands. You can view a list of all smartparens
 commands with the command `sp-cheat-sheet'.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
