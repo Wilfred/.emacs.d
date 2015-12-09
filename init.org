@@ -462,13 +462,6 @@ given code of the form =foo(1, |bar())=, C-k produces =foo(1, |)=.
   (add-hook 'yaml-mode-hook #'smartparens-mode)
 #+END_SRC
 
-However, C-k outside of smartparens also removes whitespace. We want
-smarparens do the same, otherwise C-k does nothing on an empty line.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (setq sp-hybrid-kill-excessive-whitespace t)
-#+END_SRC
-
 ** Files
 
 *** Opening

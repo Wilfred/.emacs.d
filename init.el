@@ -174,6 +174,10 @@ If a prefix argument is given, don't change the kill-ring."
 ;; (|foo bar) -> (|foo) bar
 (define-key smartparens-mode-map (kbd "<C-left>") #'sp-forward-barf-sexp)
 
+;; foo(1, |[2, 3], 4) -> foo(1, |, 2)
+(define-key smartparens-mode-map (kbd "C-M-k") #'sp-kill-sexp)
+(define-key smartparens-mode-map (kbd "s-k") #'sp-kill-sexp)
+
 (defun wh/smartparens-wrap-round (arg)
   "Smartparens equivalent of `paredit-wrap-round'."
   (interactive "P")
@@ -192,8 +196,6 @@ If a prefix argument is given, don't change the kill-ring."
 (require 'smartparens-html)
 (add-hook 'prog-mode-hook #'smartparens-strict-mode)
 (add-hook 'yaml-mode-hook #'smartparens-mode)
-
-(setq sp-hybrid-kill-excessive-whitespace t)
 
 (require 'recentf)
 
