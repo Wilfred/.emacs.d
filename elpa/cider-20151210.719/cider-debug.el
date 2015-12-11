@@ -27,9 +27,14 @@
 
 (require 'nrepl-client)
 (require 'cider-interaction)
+(require 'cider-client)
+(require 'cider-util)
 (require 'cider-inspector)
 (require 'cider-browse-ns)
-(require 'dash)
+(require 'cider-common)
+(require 'cider-compat)
+(require 'seq)
+(require 'spinner)
 
 
 ;;; Customization
@@ -101,32 +106,11 @@ This variable must be set before starting the repl connection."
 
 
 ;;; Implementation
-(defun cider--update-instrumented-defs (defs)
-  "Update which DEFS in current buffer are instrumented."
-  (remove-overlays nil nil 'cider-type 'instrumented-defs)
-  (save-excursion
-    (dolist (name defs)
-      (goto-char (point-min))
-      (when (search-forward-regexp
-             (format "(def.*\\s-\\(%s\\)" (regexp-quote name))
-             nil 'noerror)
-        (cider--make-overlay
-         (match-beginning 1) (match-end 1) 'instrumented-defs
-         'face 'cider-instrumented-face)))))
-
-(defun cider--debug-handle-instrumented-defs (defs ns)
-  "Update display of NS according to instrumented DEFS."
-  (-when-let (buf (-first (lambda (b) (with-current-buffer b
-                                   (string= ns (cider-current-ns))))
-                          (buffer-list)))
-    (with-current-buffer buf
-      (cider--update-instrumented-defs defs))))
-
 (defun cider-browse-instrumented-defs ()
   "List all instrumented definitions."
   (interactive)
-  (-if-let (all (-> (nrepl-send-sync-request (list "op" "debug-instrumented-defs"))
-                    (nrepl-dict-get "list")))
+  (if-let ((all (thread-first (cider-nrepl-send-sync-request (list "op" "debug-instrumented-defs"))
+                  (nrepl-dict-get "list"))))
       (with-current-buffer (cider-popup-buffer cider-browse-ns-buffer t)
         (let ((inhibit-read-only t))
           (erase-buffer)
@@ -142,21 +126,17 @@ This variable must be set before starting the repl connection."
 
 (defun cider--debug-response-handler (response)
   "Handle responses from the cider.debug middleware."
-  (nrepl-dbind-response response (status id instrumented-defs ns causes)
-    (when (member "instrumented-defs" status)
-      (cider--debug-handle-instrumented-defs instrumented-defs ns))
+  (nrepl-dbind-response response (status id causes)
     (when (member "eval-error" status)
       (cider--render-stacktrace-causes causes))
     (when (member "need-debug-input" status)
       (cider--handle-debug response))
     (when (member "done" status)
-      (puthash id (gethash id nrepl-pending-requests)
-               nrepl-completed-requests)
-      (remhash id nrepl-pending-requests))))
+      (nrepl--mark-id-completed id))))
 
 (defun cider--debug-init-connection ()
   "Initialize a connection with the cider.debug middleware."
-  (nrepl-send-request
+  (cider-nrepl-send-request
    (append '("op" "init-debugger")
            (when cider-debug-print-level
              (list "print-level" cider-debug-print-level))
@@ -176,8 +156,10 @@ This variable must be set before starting the repl connection."
     ;; This is cosmetic, let's ensure it doesn't break the session no matter what.
     (ignore-errors
       ;; Result
-      (cider--make-result-overlay (cider-font-lock-as-clojure value) (point) nil
-                                  'before-string cider--fringe-arrow-string)
+      (cider--make-result-overlay (cider-font-lock-as-clojure value)
+        :where (point-marker)
+        :type 'debug-result
+        'before-string cider--fringe-arrow-string)
       ;; Code
       (cider--make-overlay (save-excursion (clojure-backward-logical-sexp 1) (point))
                            (point) 'debug-code
@@ -211,8 +193,8 @@ Each element of LOCALS should be a list of at least two elements."
              (apply #'max (mapcar (lambda (l) (string-width (car l))) locals))))
         ;; A format string to build a format string. :-P
         (mapconcat (lambda (l) (format (format " %%%ds: %%s\n" left-col-width)
-                            (propertize (car l) 'face 'font-lock-variable-name-face)
-                            (cider-font-lock-as-clojure (cadr l))))
+                                       (propertize (car l) 'face 'font-lock-variable-name-face)
+                                       (cider-font-lock-as-clojure (cadr l))))
                    locals ""))
     ""))
 
@@ -223,7 +205,7 @@ Each element of LOCALS should be a list of at least two elements."
               ;; `eval' is now integrated with things like `C-x C-e' and `C-c M-:'
               ;; so we don't advertise this key to reduce clutter.
               ;; `inspect' would conflict with `inject'.
-              (-difference command-list '("eval" "inspect")) " ")
+              (seq-difference command-list '("eval" "inspect")) " ")
    "\n"))
 
 (defvar-local cider--debug-prompt-overlay nil)
@@ -297,6 +279,9 @@ In order to work properly, this mode must be activated by
   (if cider--debug-mode
       (if cider--debug-mode-response
           (nrepl-dbind-response cider--debug-mode-response (input-type)
+            ;; A debug session is an ongoing eval, but it's annoying to have the
+            ;; spinner spinning while you debug.
+            (when spinner-current (spinner-stop))
             (setq-local tool-bar-map cider--debug-mode-tool-bar-map)
             (add-hook 'kill-buffer-hook #'cider--debug-quit nil 'local)
             (add-hook 'before-revert-hook #'cider--debug-quit nil 'local)
@@ -308,7 +293,7 @@ In order to work properly, this mode must be activated by
                                    (nrepl-dict-get cider--debug-mode-response "key")))
             ;; Set the keymap.
             (let ((alist (mapcar (lambda (k) (cons (string-to-char k) (concat ":" k)))
-                                 (-difference input-type '("inspect")))))
+                                 (seq-difference input-type '("inspect")))))
               (setq cider--debug-mode-commands-alist alist)
               (dolist (it alist)
                 (define-key cider--debug-mode-map (vector (car it)) #'cider-debug-mode-send-reply)))
@@ -328,12 +313,9 @@ In order to work properly, this mode must be activated by
     ;; We wait a moment before clearing overlays and the read-onlyness, so that
     ;; cider-nrepl has a chance to send the next message, and so that the user
     ;; doesn't accidentally hit `n' between two messages (thus editing the code).
-    (-when-let (proc (unless nrepl-ongoing-sync-request
-                       (get-buffer-process (nrepl-default-connection-buffer))))
-      ;; This is for the `:done' sent in reply to the debug-input we provided.
-      (when (accept-process-output proc 0.2)
-        ;; This is for actually waiting for the next message.
-        (accept-process-output proc 1)))
+    (when-let ((proc (unless nrepl-ongoing-sync-request
+                       (get-buffer-process (cider-current-connection)))))
+      (accept-process-output proc 0.5))
     (unless cider--debug-mode
       (setq buffer-read-only nil)
       (cider--debug-remove-overlays (current-buffer)))
@@ -346,7 +328,7 @@ In order to work properly, this mode must be activated by
     (with-current-buffer (or buffer (current-buffer))
       (unless cider--debug-mode
         (kill-local-variable 'tool-bar-map)
-        (remove-overlays nil nil 'cider-type 'result)
+        (remove-overlays nil nil 'cider-type 'debug-result)
         (remove-overlays nil nil 'cider-type 'debug-code)
         (setq cider--debug-prompt-overlay nil)
         (remove-overlays nil nil 'cider-type 'debug-prompt)))))
@@ -387,14 +369,13 @@ specific message."
                     (symbol-name last-command-event)
                   (cdr (assq last-command-event cider--debug-mode-commands-alist)))
                 nil))
-  (nrepl-send-request
+  (cider-nrepl-send-unhandled-request
    (list "op" "debug-input" "input" (or command ":quit")
-         "key" (or key (nrepl-dict-get cider--debug-mode-response "key")))
-   #'ignore)
+         "key" (or key (nrepl-dict-get cider--debug-mode-response "key"))))
   (ignore-errors (cider--debug-mode -1)))
 
 (defun cider--debug-quit ()
-  "Send a :quit reply to the debugger. Used in hooks."
+  "Send a :quit reply to the debugger.  Used in hooks."
   (when cider--debug-mode
     (cider-debug-mode-send-reply ":quit")
     (message "Quitting debug session")))
@@ -406,43 +387,64 @@ specific message."
 (defun cider--debug-trim-code (code)
   (replace-regexp-in-string "\\`#\\(dbg\\|break\\) ?" "" code))
 
-(defun cider--initialize-debug-buffer (code ns id)
+(declare-function cider-set-buffer-ns "cider-mode")
+(defun cider--initialize-debug-buffer (code ns id &optional reason)
   "Create a new debugging buffer with CODE and namespace NS.
-ID is the id of the message that instrumented CODE."
+ID is the id of the message that instrumented CODE.
+REASON is a keyword describing why this buffer was necessary."
   (let ((buffer-name (format cider--debug-buffer-format id)))
-    (-if-let (buffer (get-buffer buffer-name))
+    (if-let ((buffer (get-buffer buffer-name)))
         (cider-popup-buffer-display buffer 'select)
       (with-current-buffer (cider-popup-buffer buffer-name 'select
                                                #'clojure-mode 'ancillary)
-        (setq cider-buffer-ns ns)
+        (cider-set-buffer-ns ns)
         (setq buffer-undo-list nil)
         (let ((inhibit-read-only t)
               (buffer-undo-list t))
           (erase-buffer)
-          (insert
-           (format "%s" (cider--debug-trim-code code)))
-          (font-lock-fontify-buffer)
+          (insert (format "%s" (cider--debug-trim-code code)))
+          (when code
+            (insert "\n\n\n;; We had to create this temporary buffer because we couldn't find the original definition. That probably happened because "
+                    reason
+                    ".")
+            (fill-paragraph))
+          (cider--font-lock-ensure)
           (set-buffer-modified-p nil))))
     (switch-to-buffer buffer-name)
     (goto-char (point-min))))
 
 (defun cider--debug-goto-keyval (key)
   "Find KEY in current sexp or return nil."
-  (-when-let (limit (ignore-errors (save-excursion (up-list) (point))))
+  (when-let ((limit (ignore-errors (save-excursion (up-list) (point)))))
     (search-forward-regexp (concat "\\_<" (regexp-quote key) "\\_>")
                            limit 'noerror)))
 
 (defun cider--debug-move-point (coordinates)
   "Place point on POS in FILE, then navigate into the next sexp.
 COORDINATES is a list of integers that specify how to navigate into the
-sexp."
-  (condition-case nil
+sexp.
+
+As an example, a COORDINATES list of '(1 0 2) means:
+  - enter this sexp and move forward once,
+  - enter this sexp,
+  - enter this sexp and move forward twice.
+
+In the following snippet, this takes us to the (* x 2) sexp (point is left
+at the end of the given sexp).
+
+    (letfn [(twice [x]
+              (* x 2))]
+      (twice 15))
+
+In addition to numbers, a coordinate can be a string. This string names the
+key of a map, and it means \"go to the value associated with this key\". "
+  (condition-case-unless-debug nil
       ;; Navigate through sexps inside the sexp.
       (let ((in-syntax-quote nil))
         (while coordinates
           (down-list)
           ;; Are we entering a syntax-quote?
-          (when (looking-back "`\\(#{\\|[{[(]\\)")
+          (when (looking-back "`\\(#{\\|[{[(]\\)" (line-beginning-position))
             ;; If we are, this affects all nested structures until the next `~',
             ;; so we set this variable for all following steps in the loop.
             (setq in-syntax-quote t))
@@ -455,7 +457,7 @@ sexp."
             (unless (eq ?\( (char-before))
               (pop coordinates)))
           ;; #(...) is read as (fn* ([] ...)), so we patch that here.
-          (when (looking-back "#(")
+          (when (looking-back "#(" (line-beginning-position))
             (pop coordinates))
           (if coordinates
               (let ((next (pop coordinates)))
@@ -471,15 +473,17 @@ sexp."
                     (clojure-forward-logical-sexp 1)
                     (forward-sexp -1)
                     ;; Here a syntax-quote is ending.
-                    (when (looking-at "~@?")
-                      (setq in-syntax-quote nil))
-                    ;; A `~@' is read as the object itself, so we don't pop
-                    ;; anything.
-                    (unless (equal "~@" (match-string 0))
-                      ;; Anything else (including a `~') is read as a `list'
-                      ;; form inside the `concat', so we need to pop the list
-                      ;; from the coordinates.
-                      (pop coordinates)))))
+                    (let ((match (when (looking-at "~@?")
+                                   (match-string 0))))
+                      (when match
+                        (setq in-syntax-quote nil))
+                      ;; A `~@' is read as the object itself, so we don't pop
+                      ;; anything.
+                      (unless (equal "~@" match)
+                        ;; Anything else (including a `~') is read as a `list'
+                        ;; form inside the `concat', so we need to pop the list
+                        ;; from the coordinates.
+                        (pop coordinates))))))
             ;; If that extra pop was the last coordinate, this represents the
             ;; entire #(...), so we should move back out.
             (backward-up-list)))
@@ -491,9 +495,9 @@ sexp."
 (defun cider--handle-debug (response)
   "Handle debugging notification.
 RESPONSE is a message received from the nrepl describing the input
-needed. It is expected to contain at least \"key\", \"input-type\", and
+needed.  It is expected to contain at least \"key\", \"input-type\", and
 \"prompt\", and possibly other entries depending on the input-type."
-  (nrepl-dbind-response response (debug-value key coor code file point ns original-id
+  (nrepl-dbind-response response (debug-value key coor code file line column ns original-id
                                               input-type prompt inspect)
     (condition-case-unless-debug e
         (progn
@@ -502,19 +506,25 @@ needed. It is expected to contain at least \"key\", \"input-type\", and
                                                         (or prompt "Expression: "))
                                                        key))
             ((pred sequencep)
-             (when (or code (and file point))
+             (when (or code (and file line column))
                ;; We prefer in-source debugging.
-               (when (and file point)
-                 (-if-let (buf (find-buffer-visiting file))
-                     (-if-let (win (get-buffer-window buf))
+               (when (and file line column)
+                 (if-let ((buf (find-buffer-visiting file)))
+                     (if-let ((win (get-buffer-window buf)))
                          (select-window win)
                        (pop-to-buffer buf))
                    (find-file file))
-                 (goto-char point))
+                 ;; Get to the proper line & column in the file
+                 (forward-line (- line (line-number-at-pos)))
+                 (move-to-column column))
                ;; But we can create a temp buffer if that fails.
                (unless (or (looking-at-p (regexp-quote code))
                            (looking-at-p (regexp-quote (cider--debug-trim-code code))))
-                 (cider--initialize-debug-buffer code ns original-id))
+                 (cider--initialize-debug-buffer
+                  code ns original-id
+                  (if (and line column)
+                      "you edited the code"
+                    "your tools.nrepl version is older than 0.2.11")))
                (cider--debug-move-point coor))
              ;; The overlay code relies on window boundaries, but point could have been
              ;; moved outside the window by some other code. Redisplay here to ensure the
@@ -536,7 +546,7 @@ needed. It is expected to contain at least \"key\", \"input-type\", and
 ;;; User commands
 ;;;###autoload
 (defun cider-debug-defun-at-point ()
-  "Instrument the top-level expression at point.
+  "Instrument the \"top-level\" expression at point.
 If it is a defn, dispatch the instrumented definition.  Otherwise,
 immediately evaluate the instrumented expression.
 

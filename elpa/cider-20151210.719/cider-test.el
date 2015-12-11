@@ -28,10 +28,13 @@
 
 ;;; Code:
 
-(require 'cider-util)
+(require 'cider-common)
+(require 'cider-client)
+(require 'cider-popup)
 (require 'cider-stacktrace)
+(require 'cider-compat)
+
 (require 'button)
-(require 'dash)
 (require 'easymenu)
 
 ;;; Variables
@@ -61,10 +64,10 @@
 
 (defconst cider-test-report-buffer "*cider-test-report*"
   "Buffer name in which to display test reports.")
+(add-to-list 'cider-ancillary-buffers cider-test-report-buffer)
 
 
 ;;; Faces
-;; These are as defined in clojure-test-mode.
 
 (defface cider-test-failure-face
   '((((class color) (background light))
@@ -144,7 +147,7 @@
 (defun cider-test-show-report ()
   "Show the test report buffer, if one exists."
   (interactive)
-  (-if-let (report-buffer (get-buffer cider-test-report-buffer))
+  (if-let ((report-buffer (get-buffer cider-test-report-buffer)))
       (switch-to-buffer report-buffer)
     (message "No test report buffer")))
 
@@ -152,14 +155,14 @@
   "Move point to the previous test result, if one exists."
   (interactive)
   (with-current-buffer (get-buffer cider-test-report-buffer)
-    (-when-let (pos (previous-single-property-change (point) 'type))
+    (when-let ((pos (previous-single-property-change (point) 'type)))
       (goto-char pos))))
 
 (defun cider-test-next-result ()
   "Move point to the next test result, if one exists."
   (interactive)
   (with-current-buffer (get-buffer cider-test-report-buffer)
-    (-when-let (pos (next-single-property-change (point) 'type))
+    (when-let ((pos (next-single-property-change (point) 'type)))
       (goto-char pos))))
 
 (defun cider-test-jump (&optional arg)
@@ -174,12 +177,14 @@
 
 ;;; Error stacktraces
 
+(defvar cider-auto-select-error-buffer)
+
 (defun cider-test-stacktrace-for (ns var index)
   "Display stacktrace for the erring NS VAR test with the assertion INDEX."
   (let (causes)
-    (nrepl-send-request
+    (cider-nrepl-send-request
      (append
-      (list "op" "test-stacktrace" "session" (nrepl-current-session)
+      (list "op" "test-stacktrace" "session" (cider-current-session)
             "ns" ns "var" var "index" index)
       (when cider-stacktrace-print-length
         (list "print-length" cider-stacktrace-print-length))
@@ -271,8 +276,7 @@ With the actual value, the outermost '(not ...)' s-expression is removed."
         (cider-insert (format "%d errors" error) 'cider-test-error-face t))
       (when (zerop (+ fail error))
         (cider-insert (format "%d passed" pass) 'cider-test-success-face t))
-      (newline)
-      (newline))))
+      (insert "\n\n"))))
 
 (defun cider-test-render-assertion (buffer test)
   "Emit into BUFFER report detail for the TEST assertion."
@@ -292,9 +296,9 @@ With the actual value, the outermost '(not ...)' s-expression is removed."
                           'follow-link t
                           'action '(lambda (_button) (cider-test-stacktrace))
                           'help-echo "View causes and stacktrace")
-                         (newline))
+                         (insert "\n"))
                 (insert (cider-font-lock-as-clojure actual)))))
-      (newline))))
+      (insert "\n"))))
 
 (defun cider-test-render-report (buffer ns summary results)
   "Emit into BUFFER the report for the NS, SUMMARY, and test RESULTS."
@@ -302,7 +306,7 @@ With the actual value, the outermost '(not ...)' s-expression is removed."
     (let ((inhibit-read-only t))
       (cider-test-report-mode)
       (cider-insert "Test Summary" 'bold t)
-      (cider-insert ns 'font-lock-function-name-face t "\n")
+      (cider-insert ns 'font-lock-type-face t "\n")
       (cider-test-render-summary buffer summary)
       (nrepl-dbind-response summary (fail error)
         (unless (zerop (+ fail error))
@@ -320,16 +324,17 @@ With the actual value, the outermost '(not ...)' s-expression is removed."
 
 ;;; Summary echo
 
-(defun cider-test-echo-summary (summary)
-  "Echo SUMMARY statistics for a test run."
+(defun cider-test-echo-summary (summary ns)
+  "Echo SUMMARY statistics for a test run of tests in NS."
   (nrepl-dbind-response summary (test fail error)
-    (message
-     (propertize
-      (format "Ran %s tests. %s failures, %s errors." test fail error)
-      'face (cond ((not (zerop error)) 'cider-test-error-face)
-                  ((not (zerop fail))  'cider-test-failure-face)
-                  (t                   'cider-test-success-face))))))
-
+    (message (propertize
+              "%sRan %d tests. %d failures, %d errors."
+              'face (cond ((not (zerop error)) 'cider-test-error-face)
+                          ((not (zerop fail))  'cider-test-failure-face)
+                          (t                   'cider-test-success-face)))
+             (concat (cider-propertize-ns ns)
+                     (propertize ": " 'face 'default))
+             test fail error)))
 
 ;;; Test definition highlighting
 ;; On receipt of test results, failing/erring test definitions are highlighted.
@@ -351,25 +356,33 @@ With the actual value, the outermost '(not ...)' s-expression is removed."
       ;; TODO: Figure out what to do when the metadata is missing
       (when (and file line (not (cider--tooling-file-p file)))
         (save-excursion
-         (goto-char (point-min))
-         (forward-line (1- line))
-         (forward-whitespace 1)
-         (forward-char)
-         (let ((beg (point)))
-           (forward-sexp)
-           (let ((overlay (make-overlay beg (point))))
-             (overlay-put overlay 'font-lock-face (cider-test-type-face type))
-             (overlay-put overlay 'type type)
-             (overlay-put overlay 'help-echo message)
-             (overlay-put overlay 'message message)
-             (overlay-put overlay 'expected expected)
-             (overlay-put overlay 'actual actual))))))))
+          (goto-char (point-min))
+          (forward-line (1- line))
+          (forward-whitespace 1)
+          (forward-char)
+          (let ((beg (point)))
+            (forward-sexp)
+            (let ((overlay (make-overlay beg (point))))
+              (overlay-put overlay 'font-lock-face (cider-test-type-face type))
+              (overlay-put overlay 'type type)
+              (overlay-put overlay 'help-echo message)
+              (overlay-put overlay 'message message)
+              (overlay-put overlay 'expected expected)
+              (overlay-put overlay 'actual actual))))))))
+
+(defun cider-find-var-file (var)
+  "Return the buffer visiting the file in which VAR is defined, or nil if
+not found."
+  (cider-ensure-op-supported "info")
+  (when-let ((info (cider-var-info var))
+             (file (nrepl-dict-get info "file")))
+    (cider-find-file file)))
 
 (defun cider-test-highlight-problems (ns results)
   "Highlight all non-passing tests in the NS test RESULTS."
   (nrepl-dict-map
    (lambda (var tests)
-     (-when-let (buffer (cider-find-var-file (concat ns "/" var)))
+     (when-let ((buffer (cider-find-var-file (concat ns "/" var))))
        (dolist (test tests)
          (nrepl-dbind-response test (type)
            (unless (equal "pass" type)
@@ -379,9 +392,9 @@ With the actual value, the outermost '(not ...)' s-expression is removed."
 (defun cider-test-clear-highlights ()
   "Clear highlighting of non-passing tests from the last test run."
   (interactive)
-  (-when-let (ns cider-test-last-test-ns)
+  (when-let ((ns cider-test-last-test-ns))
     (dolist (var (nrepl-dict-keys cider-test-last-results))
-      (-when-let (buffer (cider-find-var-file (concat ns "/" var)))
+      (when-let ((buffer (cider-find-var-file (concat ns "/" var))))
         (with-current-buffer buffer
           (remove-overlays))))))
 
@@ -413,19 +426,22 @@ This uses the Leiningen convention of appending '-test' to the namespace name."
 
 ;;; Test execution
 
+(declare-function cider-emit-interactive-eval-output "cider-interaction")
+(declare-function cider-emit-interactive-eval-err-output "cider-interaction")
+
 (defun cider-test-execute (ns &optional retest tests)
   "Run tests for NS; optionally RETEST failures or run only specified TESTS.
 Upon test completion, results are echoed and a test report is optionally
 displayed. When test failures/errors occur, their sources are highlighted."
   (cider-test-clear-highlights)
-  (message "Testing...")
-  (nrepl-send-request
+  (message "Running tests in %s..." (cider-propertize-ns ns))
+  (cider-nrepl-send-request
    (list "ns" ns "op" (if retest "retest" "test")
-         "tests" tests "session" (nrepl-current-session))
+         "tests" tests "session" (cider-current-session))
    (lambda (response)
      (nrepl-dbind-response response (summary results status out err)
        (cond ((member "namespace-not-found" status)
-              (message "No tests namespace: %s" ns))
+              (message "No tests namespace: %s" (cider-propertize-ns ns)))
              (out (cider-emit-interactive-eval-output out))
              (err (cider-emit-interactive-eval-err-output err))
              (results
@@ -433,18 +449,25 @@ displayed. When test failures/errors occur, their sources are highlighted."
                 (setq cider-test-last-test-ns ns)
                 (setq cider-test-last-results results)
                 (cider-test-highlight-problems ns results)
-                (cider-test-echo-summary summary)
-                (when (or (not (zerop (+ error fail)))
-                          cider-test-show-report-on-success)
-                  (cider-test-render-report
-                   (cider-popup-buffer cider-test-report-buffer
-                                       cider-auto-select-test-report-buffer)
-                   ns summary results)))))))))
+                (cider-test-echo-summary summary ns)
+                (if (or (not (zerop (+ error fail)))
+                        cider-test-show-report-on-success)
+                    (cider-test-render-report
+                     (cider-popup-buffer cider-test-report-buffer
+                                         cider-auto-select-test-report-buffer)
+                     ns summary results)
+                  (when (get-buffer cider-test-report-buffer)
+                    (with-current-buffer cider-test-report-buffer
+                      (let ((inhibit-read-only t))
+                        (erase-buffer)))
+                    (cider-test-render-report
+                     cider-test-report-buffer
+                     ns summary results))))))))))
 
 (defun cider-test-rerun-tests ()
   "Rerun failed and erring tests from the last tested namespace."
   (interactive)
-  (-if-let (ns cider-test-last-test-ns)
+  (if-let ((ns cider-test-last-test-ns))
       (cider-test-execute ns t)
     (message "No namespace to retest")))
 
@@ -454,11 +477,11 @@ displayed. When test failures/errors occur, their sources are highlighted."
 With a prefix arg SUPPRESS-INFERENCE it will try to run the tests in the
 current ns."
   (interactive "P")
-  (-if-let (ns (if suppress-inference
+  (if-let ((ns (if suppress-inference
                    (clojure-find-ns)
                  (or (funcall cider-test-infer-test-ns (clojure-find-ns))
                      (when (eq major-mode 'cider-test-report-mode)
-                       cider-test-last-test-ns))))
+                       cider-test-last-test-ns)))))
       (cider-test-execute ns nil)
     (message "No namespace to test in current context")))
 
@@ -475,7 +498,7 @@ is searched."
       (let ((ns  (clojure-find-ns))
             (def (clojure-find-def)))
         (if (and ns (member (car def) '("deftest" "defspec")))
-            (cider-test-execute ns nil (rest def))
+            (cider-test-execute ns nil (cdr def))
           (message "No test at point"))))))
 
 (provide 'cider-test)

@@ -3,7 +3,7 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "cider" "cider.el" (21967 8759 207263 588000))
+;;;### (autoloads nil "cider" "cider.el" (22122 45903 255921 267000))
 ;;; Generated autoloads from cider.el
 
 (autoload 'cider-version "cider" "\
@@ -31,14 +31,17 @@ start the server.
 Connect to an nREPL server identified by HOST and PORT.
 Create REPL buffer and start an nREPL client connection.
 
-\(fn HOST PORT)" t nil)
+When the optional param PROJECT-DIR is present, the connection
+gets associated with it.
 
-(eval-after-load 'clojure-mode '(progn (define-key clojure-mode-map (kbd "C-c M-j") #'cider-jack-in) (define-key clojure-mode-map (kbd "C-c M-c") #'cider-connect)))
+\(fn HOST PORT &optional PROJECT-DIR)" t nil)
+
+(eval-after-load 'clojure-mode '(progn (define-key clojure-mode-map (kbd "C-c M-j") #'cider-jack-in) (define-key clojure-mode-map (kbd "C-c M-J") #'cider-jack-in-clojurescript) (define-key clojure-mode-map (kbd "C-c M-c") #'cider-connect)))
 
 ;;;***
 
-;;;### (autoloads nil "cider-apropos" "cider-apropos.el" (21967 8758
-;;;;;;  677283 420000))
+;;;### (autoloads nil "cider-apropos" "cider-apropos.el" (22122 45902
+;;;;;;  135963 672000))
 ;;; Generated autoloads from cider-apropos.el
 
 (autoload 'cider-apropos "cider-apropos" "\
@@ -55,8 +58,8 @@ Shortcut for (cider-apropos <query> nil t).
 
 ;;;***
 
-;;;### (autoloads nil "cider-browse-ns" "cider-browse-ns.el" (21967
-;;;;;;  8758 587286 788000))
+;;;### (autoloads nil "cider-browse-ns" "cider-browse-ns.el" (22122
+;;;;;;  45902 45967 79000))
 ;;; Generated autoloads from cider-browse-ns.el
 
 (autoload 'cider-browse-ns "cider-browse-ns" "\
@@ -71,8 +74,8 @@ List all loaded namespaces in BUFFER.
 
 ;;;***
 
-;;;### (autoloads nil "cider-classpath" "cider-classpath.el" (21967
-;;;;;;  8759 297260 213000))
+;;;### (autoloads nil "cider-classpath" "cider-classpath.el" (22122
+;;;;;;  45903 345917 859000))
 ;;; Generated autoloads from cider-classpath.el
 
 (autoload 'cider-classpath "cider-classpath" "\
@@ -87,12 +90,12 @@ Open a classpath entry.
 
 ;;;***
 
-;;;### (autoloads nil "cider-debug" "cider-debug.el" (21967 8758
-;;;;;;  627285 290000))
+;;;### (autoloads nil "cider-debug" "cider-debug.el" (22122 45902
+;;;;;;  95965 186000))
 ;;; Generated autoloads from cider-debug.el
 
 (autoload 'cider-debug-defun-at-point "cider-debug" "\
-Instrument the top-level expression at point.
+Instrument the \"top-level\" expression at point.
 If it is a defn, dispatch the instrumented definition.  Otherwise,
 immediately evaluate the instrumented expression.
 
@@ -104,8 +107,8 @@ a number of keys will be prompted to the user.
 
 ;;;***
 
-;;;### (autoloads nil "cider-grimoire" "cider-grimoire.el" (21967
-;;;;;;  8758 977272 193000))
+;;;### (autoloads nil "cider-grimoire" "cider-grimoire.el" (22122
+;;;;;;  45902 905934 518000))
 ;;; Generated autoloads from cider-grimoire.el
 
 (autoload 'cider-grimoire-web "cider-grimoire" "\
@@ -128,19 +131,32 @@ opposite of what that option dictates.
 
 ;;;***
 
-;;;### (autoloads nil "cider-inspector" "cider-inspector.el" (21967
-;;;;;;  8758 937273 689000))
+;;;### (autoloads nil "cider-inspector" "cider-inspector.el" (22122
+;;;;;;  45902 755940 197000))
 ;;; Generated autoloads from cider-inspector.el
 
-(autoload 'cider-inspect "cider-inspector" "\
-Eval the string EXPRESSION and inspect the result.
+(autoload 'cider-inspect-last-sexp "cider-inspector" "\
+Inspect the result of the the expression preceding point.
 
-\(fn EXPRESSION)" t nil)
+\(fn)" t nil)
+
+(autoload 'cider-inspect-defun-at-point "cider-inspector" "\
+Inspect the result of the \"top-level\" expression at point.
+
+\(fn)" t nil)
+
+(autoload 'cider-inspect "cider-inspector" "\
+Inspect the result of the preceding sexp.
+
+With a prefix argument ARG it inspects the result of the \"top-level\" form.
+With a second prefix argument it prompts for an expression to eval and inspect.
+
+\(fn &optional ARG)" t nil)
 
 ;;;***
 
 ;;;### (autoloads nil "cider-macroexpansion" "cider-macroexpansion.el"
-;;;;;;  (21967 8759 117266 949000))
+;;;;;;  (22122 45903 165924 674000))
 ;;; Generated autoloads from cider-macroexpansion.el
 
 (autoload 'cider-macroexpand-1 "cider-macroexpansion" "\
@@ -157,8 +173,8 @@ Invoke 'clojure.walk/macroexpand-all' on the expression preceding point.
 
 ;;;***
 
-;;;### (autoloads nil "cider-mode" "cider-mode.el" (21967 8758 767280
-;;;;;;  60000))
+;;;### (autoloads nil "cider-mode" "cider-mode.el" (22122 45902 225960
+;;;;;;  264000))
 ;;; Generated autoloads from cider-mode.el
 
 (defvar cider-mode-line '(:eval (format " cider[%s]" (cider--modeline-info))) "\
@@ -184,8 +200,8 @@ Minor mode for REPL interaction from a Clojure buffer.
 
 ;;;***
 
-;;;### (autoloads nil "cider-scratch" "cider-scratch.el" (21967 8758
-;;;;;;  807278 563000))
+;;;### (autoloads nil "cider-scratch" "cider-scratch.el" (22122 45902
+;;;;;;  315956 857000))
 ;;; Generated autoloads from cider-scratch.el
 
 (autoload 'cider-scratch "cider-scratch" "\
@@ -195,8 +211,8 @@ Create a scratch buffer.
 
 ;;;***
 
-;;;### (autoloads nil "cider-selector" "cider-selector.el" (21967
-;;;;;;  8759 247262 88000))
+;;;### (autoloads nil "cider-selector" "cider-selector.el" (22122
+;;;;;;  45903 295919 752000))
 ;;; Generated autoloads from cider-selector.el
 
 (autoload 'cider-selector "cider-selector" "\
@@ -211,10 +227,11 @@ See `def-cider-selector-method' for defining new methods.
 
 ;;;***
 
-;;;### (autoloads nil nil ("cider-client.el" "cider-doc.el" "cider-eldoc.el"
-;;;;;;  "cider-interaction.el" "cider-overlays.el" "cider-pkg.el"
-;;;;;;  "cider-repl.el" "cider-stacktrace.el" "cider-test.el" "cider-util.el"
-;;;;;;  "nrepl-client.el") (21967 8759 430017 809000))
+;;;### (autoloads nil nil ("cider-client.el" "cider-common.el" "cider-compat.el"
+;;;;;;  "cider-doc.el" "cider-eldoc.el" "cider-interaction.el" "cider-overlays.el"
+;;;;;;  "cider-pkg.el" "cider-popup.el" "cider-repl.el" "cider-resolve.el"
+;;;;;;  "cider-stacktrace.el" "cider-test.el" "cider-util.el" "nrepl-client.el")
+;;;;;;  (22122 45903 490596 699000))
 
 ;;;***
 

@@ -24,7 +24,8 @@
 ;;; Code:
 
 (require 'cider-client)
-(require 'cider-interaction)
+(require 'cider-popup)
+(require 'cider-compat)
 
 (defvar cider-classpath-buffer "*Classpath*")
 
@@ -56,8 +57,7 @@
     (let ((inhibit-read-only t))
       (erase-buffer)
       (dolist (item items)
-        (insert item)
-        (newline))
+        (insert item "\n"))
       (goto-char (point-min)))))
 
 (defun cider-classpath-properties (text)
@@ -98,7 +98,7 @@
 (defun cider-open-classpath-entry ()
   "Open a classpath entry."
   (interactive)
-  (-when-let (entry (completing-read "Classpath entries: " (cider-sync-request:classpath)))
+  (when-let ((entry (completing-read "Classpath entries: " (cider-sync-request:classpath))))
     (find-file-other-window entry)))
 
 (provide 'cider-classpath)

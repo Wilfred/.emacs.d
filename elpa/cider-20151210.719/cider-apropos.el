@@ -25,7 +25,15 @@
 
 ;;; Code:
 
-(require 'cider-interaction)
+(require 'cider-doc)
+(require 'cider-util)
+(require 'cider-compat)
+
+(require 'cider-client)
+(require 'cider-popup)
+(require 'nrepl-client)
+
+(require 'clojure-mode)
 (require 'apropos)
 (require 'button)
 
@@ -71,11 +79,12 @@
         (insert ": ")
         (let ((beg (point)))
           (if docs-p
-              (progn (insert (cider-apropos-highlight doc query))
-                     (newline))
-            (progn (insert doc)
-                   (fill-region beg (point)))))
-        (newline)))))
+              (insert (cider-apropos-highlight doc query) "\n")
+            (insert doc)
+            (fill-region beg (point))))
+        (insert "\n")))))
+
+(declare-function cider-mode "cider-mode")
 
 (defun cider-show-apropos (summary results query docs-p)
   "Show SUMMARY and RESULTS for QUERY in a pop-up buffer, formatted for DOCS-P."
@@ -106,9 +115,9 @@ strings, include private vars, and be case sensitive."
              (y-or-n-p "Case-sensitive? "))
      (list (read-string "Clojure Apropos: "))))
   (cider-ensure-op-supported "apropos")
-  (-if-let* ((summary (cider-apropos-summary
-                       query ns docs-p privates-p case-sensitive-p))
-             (results (cider-sync-request:apropos query ns docs-p privates-p case-sensitive-p)))
+  (if-let ((summary (cider-apropos-summary
+                     query ns docs-p privates-p case-sensitive-p))
+           (results (cider-sync-request:apropos query ns docs-p privates-p case-sensitive-p)))
       (cider-show-apropos summary results query docs-p)
     (message "No apropos matches for %S" query)))
 

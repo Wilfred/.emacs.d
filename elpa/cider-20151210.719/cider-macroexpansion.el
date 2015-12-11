@@ -31,6 +31,7 @@
 ;;; Code:
 
 (require 'cider-mode)
+(require 'cider-compat)
 
 (defconst cider-macroexpansion-buffer "*cider-macroexpansion*")
 
@@ -63,17 +64,17 @@ Possible values are:
 The default for DISPLAY-NAMESPACES is taken from
 `cider-macroexpansion-display-namespaces'."
   (cider-ensure-op-supported "macroexpand")
-  (-> (list "op" "macroexpand"
-            "expander" expander
-            "code" expr
-            "ns" (cider-current-ns)
-            "display-namespaces"
-            (or display-namespaces
-                (symbol-name cider-macroexpansion-display-namespaces)))
-      (append (when cider-macroexpansion-print-metadata
-                (list "print-meta" "true")))
-      (nrepl-send-sync-request)
-      (nrepl-dict-get "expansion")))
+  (thread-first (list "op" "macroexpand"
+                      "expander" expander
+                      "code" expr
+                      "ns" (cider-current-ns)
+                      "display-namespaces"
+                      (or display-namespaces
+                          (symbol-name cider-macroexpansion-display-namespaces)))
+    (append (when cider-macroexpansion-print-metadata
+              (list "print-meta" "true")))
+    (cider-nrepl-send-sync-request)
+    (nrepl-dict-get "expansion")))
 
 (defun cider-macroexpand-undo (&optional arg)
   "Undo the last macroexpansion, using `undo-only'.
@@ -88,7 +89,7 @@ This variable specifies both what was expanded and the expander.")
 
 (defun cider-macroexpand-expr (expander expr)
   "Macroexpand, use EXPANDER, the given EXPR."
-  (let* ((expansion (cider-sync-request:macroexpand expander expr)))
+  (when-let ((expansion (cider-sync-request:macroexpand expander expr)))
     (setq cider-last-macroexpand-expression expr)
     (cider-initialize-macroexpansion-buffer expansion (cider-current-ns))))
 
@@ -143,7 +144,7 @@ If invoked with a PREFIX argument, use 'macroexpand' instead of
     (erase-buffer)
     (insert (format "%s" expansion))
     (goto-char (point-max))
-    (font-lock-fontify-buffer)))
+    (cider--font-lock-ensure)))
 
 (defun cider-redraw-macroexpansion-buffer (expansion buffer start end)
   "Redraw the macroexpansion with new EXPANSION.
@@ -157,6 +158,8 @@ and point is placed after the expanded form."
       (goto-char start)
       (indent-sexp)
       (forward-sexp))))
+
+(declare-function cider-mode "cider-mode")
 
 (defun cider-create-macroexpansion-buffer ()
   "Create a new macroexpansion buffer."
