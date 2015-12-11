@@ -5,7 +5,7 @@
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 11 January 2013
 ;; Version: 0.47
-;; Package-Version: 20150814.1655
+;; Package-Version: 20151209.1550
 ;; Package-Requires: ((dash "2.8.0") (s "1.9.0") (cl-lib "0.5"))
 ;;; Commentary:
 
@@ -33,8 +33,7 @@
 ;; Boston, MA 02110-1301, USA.
 
 ;;; Code:
-(eval-when-compile (require 'cl)) ;; dolist, defun*, flet
-(require 'cl-lib) ;; cl-letf
+(require 'cl-lib) ;; cl-letf, cl-defun
 (require 'dired) ;; dired-sort-inhibit
 (require 'dash)
 (require 's)
@@ -53,7 +52,7 @@
 Ag.el requires --nogroup and --column, so we recommend you add any
 additional arguments to the start of this list.
 
---line-number is required on Window, as otherwise ag will not
+--line-number is required on Windows, as otherwise ag will not
 print line numbers when the input is a stream."
   :type '(repeat (string))
   :group 'ag)
@@ -174,8 +173,8 @@ different window, according to `ag-reuse-window'."
   (apply #'append
          (mapcar (lambda (item) (list "--ignore" item)) ignores)))
 
-(defun* ag/search (string directory
-                          &key (regexp nil) (file-regex nil) (file-type nil))
+(cl-defun ag/search (string directory
+                            &key (regexp nil) (file-regex nil) (file-type nil))
   "Run ag searching for the STRING given in DIRECTORY.
 If REGEXP is non-nil, treat STRING as a regular expression."
   (let ((default-directory (file-name-as-directory directory))
