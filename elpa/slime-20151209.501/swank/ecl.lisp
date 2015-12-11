@@ -1,6 +1,6 @@
 ;;;; -*- indent-tabs-mode: nil -*-
 ;;;
-;;; swank-clasp.lisp --- SLIME backend for CLASP.
+;;; swank-ecl.lisp --- SLIME backend for ECL.
 ;;;
 ;;; This code has been placed in the Public Domain.  All warranties
 ;;; are disclaimed.
@@ -8,14 +8,23 @@
 
 ;;; Administrivia
 
-(defpackage swank/clasp
+(defpackage swank/ecl
   (:use cl swank/backend))
 
-(in-package swank/clasp)
+(in-package swank/ecl)
 
-
-(defmacro cslime-log (fmt &rest fmt-args)
-  `(format t ,fmt ,@fmt-args))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun ecl-version ()
+    (let ((version (find-symbol "+ECL-VERSION-NUMBER+" :EXT)))
+      (if version
+          (symbol-value version)
+          0)))
+  (when (< (ecl-version) 100301)
+    (error "~&IMPORTANT:~%  ~
+              The version of ECL you're using (~A) is too old.~%  ~
+              Please upgrade to at least 10.3.1.~%  ~
+              Sorry for the inconvenience.~%~%"
+           (lisp-implementation-version))))
 
 ;; Hard dependencies.
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -26,7 +35,7 @@
   (when (probe-file "sys:profile.fas")
     (require :profile)
     (pushnew :profile *features*))
-  (when (probe-file "sys:serve-event")
+  (when (probe-file "sys:serve-event.fas")
     (require :serve-event)
     (pushnew :serve-event *features*)))
 
@@ -37,12 +46,13 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (import-swank-mop-symbols
    :clos
-   `(:eql-specializer
-     :eql-specializer-object
-     :generic-function-declarations
-     :specializer-direct-methods
-     ,@(unless (fboundp 'clos:compute-applicable-methods-using-classes)
-               '(:compute-applicable-methods-using-classes)))))
+   (and (< (ecl-version) 121201)
+        `(:eql-specializer
+          :eql-specializer-object
+          :generic-function-declarations
+          :specializer-direct-methods
+          ,@(unless (fboundp 'clos:compute-applicable-methods-using-classes)
+              '(:compute-applicable-methods-using-classes))))))
 
 (defimplementation gray-package-name ()
   "GRAY")
@@ -51,10 +61,12 @@
 ;;;; TCP Server
 
 (defimplementation preferred-communication-style ()
-  ;; CLASP does not provide threads yet.
-  ;; ECLs swank implementation says that CLOS is not thread safe and
-  ;; I use ECLs CLOS implementation - this is a worry for the future.
+  ;; While ECL does provide threads, some parts of it are not
+  ;; thread-safe (2010-02-23), including the compiler and CLOS.
   nil
+  ;; ECL on Windows does not provide condition-variables
+  ;; (or #+(and threads (not windows)) :spawn
+  ;;     nil)
   )
 
 (defun resolve-hostname (name)
@@ -117,7 +129,7 @@
 
 (defimplementation find-external-format (coding-system)
   #+unicode (external-format coding-system)
-  ;; Without unicode support, CLASP uses the one-byte encoding of the
+  ;; Without unicode support, ECL uses the one-byte encoding of the
   ;; underlying OS, and will barf on anything except :DEFAULT.  We
   ;; return NIL here for known multibyte encodings, so
   ;; SWANK:CREATE-SERVER will barf.
@@ -129,13 +141,12 @@
 
 ;;;; Unix Integration
 
-;;; If CLASP is built with thread support, it'll spawn a helper thread
+;;; If ECL is built with thread support, it'll spawn a helper thread
 ;;; executing the SIGINT handler. We do not want to BREAK into that
 ;;; helper but into the main thread, though. This is coupled with the
-;;; current choice of NIL as communication-style in so far as CLASP's
+;;; current choice of NIL as communication-style in so far as ECL's
 ;;; main-thread is also the Slime's REPL thread.
 
-#+clasp-working
 (defimplementation call-with-user-break-handler (real-handler function)
   (let ((old-handler #'si:terminal-interrupt))
     (setf (symbol-function 'si:terminal-interrupt)
@@ -169,7 +180,7 @@
   (namestring (ext:getcwd)))
 
 (defimplementation quit-lisp ()
-  (core:quit))
+  (ext:quit))
 
 
 
@@ -194,11 +205,11 @@
   (defimplementation wait-for-input (streams &optional timeout)
     (assert (member timeout '(nil t)))
     (loop
-       (cond ((check-slime-interrupts) (return :interrupt))
-             (timeout (return (poll-streams streams 0)))
-             (t
-              (when-let (ready (poll-streams streams 0.2))
-                        (return ready))))))  
+      (cond ((check-slime-interrupts) (return :interrupt))
+            (timeout (return (poll-streams streams 0)))
+            (t
+             (when-let (ready (poll-streams streams 0.2))
+               (return ready))))))  
 
 ) ; #+serve-event (progn ...
 
@@ -222,26 +233,26 @@
 (defun signal-compiler-condition (&rest args)
   (apply #'signal 'compiler-condition args))
 
-#-clasp-bytecmp
+#-ecl-bytecmp
 (defun handle-compiler-message (condition)
-  ;; CLASP emits lots of noise in compiler-notes, like "Invoking
+  ;; ECL emits lots of noise in compiler-notes, like "Invoking
   ;; external command".
   (unless (typep condition 'c::compiler-note)
     (signal-compiler-condition
      :original-condition condition
      :message (princ-to-string condition)
      :severity (etypecase condition
-                 (cmp:compiler-fatal-error :error)
-                 (cmp:compiler-error       :error)
+                 (c:compiler-fatal-error :error)
+                 (c:compiler-error       :error)
                  (error                  :error)
                  (style-warning          :style-warning)
                  (warning                :warning))
      :location (condition-location condition))))
 
-#-clasp-bytecmp
+#-ecl-bytecmp
 (defun condition-location (condition)
-  (let ((file     (cmp:compiler-message-file condition))
-        (position (cmp:compiler-message-file-position condition)))
+  (let ((file     (c:compiler-message-file condition))
+        (position (c:compiler-message-file-position condition)))
     (if (and position (not (minusp position)))
         (if *buffer-name*
             (make-buffer-location *buffer-name*
@@ -251,29 +262,20 @@
         (make-error-location "No location found."))))
 
 (defimplementation call-with-compilation-hooks (function)
-  (funcall function))
-#||  #-clasp-bytecmp
+  #+ecl-bytecmp
+  (funcall function)
+  #-ecl-bytecmp
   (handler-bind ((c:compiler-message #'handle-compiler-message))
     (funcall function)))
-||#
-
 
 (defimplementation swank-compile-file (input-file output-file
                                        load-p external-format
                                        &key policy)
   (declare (ignore policy))
-  (format t "Compiling file input-file = ~a   output-file = ~a~%" input-file output-file)
-  ;; Ignore the output-file and generate our own
-  (let ((tmp-output-file (compile-file-pathname (si:mkstemp "TMP:clasp-swank-compile-file-"))))
-    (format t "Using tmp-output-file: ~a~%" tmp-output-file)
-    (multiple-value-bind (fasl warnings-p failure-p)
-        (with-compilation-hooks ()
-          (compile-file input-file :output-file tmp-output-file
-                        :external-format external-format))
-      (values fasl warnings-p
-              (or failure-p
-                  (when load-p
-                    (not (load fasl))))))))
+  (with-compilation-hooks ()
+    (compile-file input-file :output-file output-file
+                  :load load-p
+                  :external-format external-format)))
 
 (defvar *tmpfile-map* (make-hash-table :test #'equal))
 
@@ -286,12 +288,13 @@
 (defun tmpfile-to-buffer (tmp-file)
   (gethash tmp-file *tmpfile-map*))
 
-(defimplementation swank-compile-string (string &key buffer position filename policy)
+(defimplementation swank-compile-string (string &key buffer position filename
+                                                policy)
   (declare (ignore policy))
   (with-compilation-hooks ()
     (let ((*buffer-name* buffer)        ; for compilation hooks
           (*buffer-start-position* position))
-      (let ((tmp-file (si:mkstemp "TMP:clasp-swank-tmpfile-"))
+      (let ((tmp-file (si:mkstemp "TMP:ecl-swank-tmpfile-"))
             (fasl-file)
             (warnings-p)
             (failure-p))
@@ -301,11 +304,11 @@
                (write-string string tmp-stream)
                (finish-output tmp-stream)
                (multiple-value-setq (fasl-file warnings-p failure-p)
-                 (let ((truename (or filename (note-buffer-tmpfile tmp-file buffer))))
-                   (compile-file tmp-file
-                                 :source-debug-namestring truename
-                                 :source-debug-offset (1- position)))))
-          (when fasl-file (load fasl-file))
+                 (compile-file tmp-file
+                   :load t
+                   :source-truename (or filename
+                                        (note-buffer-tmpfile tmp-file buffer))
+                   :source-offset (1- position))))
           (when (probe-file tmp-file)
             (delete-file tmp-file))
           (when fasl-file
@@ -316,17 +319,16 @@
 
 (defimplementation arglist (name)
   (multiple-value-bind (arglist foundp)
-      (core:function-lambda-list name)     ;; Uses bc-split
+      (ext:function-lambda-list name)
     (if foundp arglist :not-available)))
 
 (defimplementation function-name (f)
   (typecase f
-    (generic-function (clos::generic-function-name f))
-    (function (ext:compiled-function-name f))))
+    (generic-function (clos:generic-function-name f))
+    (function (si:compiled-function-name f))))
 
 ;; FIXME
-(defimplementation macroexpand-all (form)
-  (macroexpand form))
+;; (defimplementation macroexpand-all (form))
 
 (defimplementation describe-symbol-for-emacs (symbol)
   (let ((result '()))
@@ -359,15 +361,15 @@
      si::*ihs-top*
      si::*ihs-current*
      si::*ihs-base*
-#+frs     si::*frs-base*
-#+frs     si::*frs-top*
+     si::*frs-base*
+     si::*frs-top*
      si::*tpl-commands*
      si::*tpl-level*
-#+frs     si::frs-top
+     si::frs-top
      si::ihs-top
      si::ihs-fun
      si::ihs-env
-#+frs     si::sch-frs-base
+     si::sch-frs-base
      si::set-break-env
      si::set-current-ihs
      si::tpl-commands)))
@@ -382,20 +384,18 @@
 
 (defimplementation install-debugger-globally (function)
   (setq *debugger-hook* function)
-  (setq ext:*invoke-debugger-hook* (make-invoke-debugger-hook function))
-  )
+  (setq ext:*invoke-debugger-hook* (make-invoke-debugger-hook function)))
 
 (defimplementation call-with-debugger-hook (hook fun)
   (let ((*debugger-hook* hook)
         (ext:*invoke-debugger-hook* (make-invoke-debugger-hook hook)))
-    (funcall fun))
-  )
+    (funcall fun)))
 
 (defvar *backtrace* '())
 
 ;;; Commented out; it's not clear this is a good way of doing it. In
 ;;; particular because it makes errors stemming from this file harder
-;;; to debug, and given the "young" age of CLASP's swank backend, that's
+;;; to debug, and given the "young" age of ECL's swank backend, that's
 ;;; a bad idea.
 
 ;; (defun in-swank-package-p (x)
@@ -429,15 +429,15 @@
   (declare (type function debugger-loop-fn))
   (let* ((*ihs-top* (ihs-top))
          (*ihs-current* *ihs-top*)
-#+frs         (*frs-base* (or (sch-frs-base *frs-top* *ihs-base*) (1+ (frs-top))))
-#+frs         (*frs-top* (frs-top))
+         (*frs-base* (or (sch-frs-base *frs-top* *ihs-base*) (1+ (frs-top))))
+         (*frs-top* (frs-top))
          (*tpl-level* (1+ *tpl-level*))
          (*backtrace* (loop for ihs from 0 below *ihs-top*
                             collect (list (si::ihs-fun ihs)
                                           (si::ihs-env ihs)
                                           nil))))
     (declare (special *ihs-current*))
-#+frs    (loop for f from *frs-base* until *frs-top*
+    (loop for f from *frs-base* until *frs-top*
           do (let ((i (- (si::frs-ihs f) *ihs-base* 1)))
                (when (plusp i)
                  (let* ((x (elt *backtrace* i))
@@ -450,30 +450,22 @@
     (let ((*ihs-base* *ihs-top*))
       (funcall debugger-loop-fn))))
 
-
-
 (defimplementation compute-backtrace (start end)
-  (when (numberp end)
-    (setf end (min end (length *backtrace*))))
-  (loop for f in (subseq *backtrace* start end)
-        collect f))
+  (subseq *backtrace* start
+          (and (numberp end)
+               (min end (length *backtrace*)))))
 
 (defun frame-name (frame)
   (let ((x (first frame)))
     (if (symbolp x)
-      x
-      (function-name x))))
+        x
+        (function-name x))))
 
 (defun function-position (fun)
-  (let* ((source-pos-info (core:function-source-pos-info fun)))
-    (when source-pos-info
-      (let* ((real-position (core:source-pos-info-filepos source-pos-info))
-             (sfi (core:source-file-info source-pos-info))
-             (real-pathname (core:source-file-info-pathname sfi))
-             (spoofed-namestring (core:source-file-info-source-debug-namestring sfi))
-             (spoofed-offset (core:source-file-info-source-debug-offset sfi))
-             (position (+ real-position spoofed-offset)))
-        (make-file-location spoofed-namestring position)))))
+  (multiple-value-bind (file position)
+      (si::bc-file fun)
+    (when file
+      (make-file-location file position))))
 
 (defun frame-function (frame)
   (let* ((x (first frame))
@@ -485,58 +477,59 @@
       (function (setf fun x position (function-position x))))
     (values fun position)))
 
+(defun frame-decode-env (frame)
+  (let ((functions '())
+        (blocks '())
+        (variables '()))
+    (setf frame (si::decode-ihs-env (second frame)))
+    (dolist (record (remove-if-not #'consp frame))
+      (let* ((record0 (car record))
+	     (record1 (cdr record)))
+	(cond ((or (symbolp record0) (stringp record0))
+	       (setq variables (acons record0 record1 variables)))
+	      ((not (si::fixnump record0))
+	       (push record1 functions))
+	      ((symbolp record1)
+	       (push record1 blocks))
+	      (t
+	       ))))
+    (values functions blocks variables)))
+
 (defimplementation print-frame (frame stream)
-  (format stream "(~s ...)" (function-name (first frame))))
+  (format stream "~A" (first frame)))
 
 (defimplementation frame-source-location (frame-number)
   (nth-value 1 (frame-function (elt *backtrace* frame-number))))
 
-#+clasp-working
 (defimplementation frame-catch-tags (frame-number)
   (third (elt *backtrace* frame-number)))
 
-(defun ihs-frame-id (frame-number)
-  (- (core:ihs-top) frame-number))
-
 (defimplementation frame-locals (frame-number)
-  (let ((env (cadr (elt *backtrace* frame-number))))
-    (loop for x = env then (core:get-parent-environment x)
-       with id = 0
-       until (null x)
-       append (loop for name across (core:environment-debug-names x)
-                 for value across (core:environment-debug-values x)
-                 do (setq id (1+ id))
-                 collect (list :name name :id id :value value)))))
+  (loop for (name . value) in (nth-value 2 (frame-decode-env
+                                            (elt *backtrace* frame-number)))
+        collect (list :name name :id 0 :value value)))
 
 (defimplementation frame-var-value (frame-number var-number)
-  (let ((env (cadr (elt *backtrace* frame-number))))
-    (block gotit
-      (loop for x = env then (core:get-parent-environment x)
-         with id = -1
-         until (null x)
-         do (loop for name across (core:environment-debug-names x)
-               for value across (core:environment-debug-values x)
-               do (setq id (1+ id))
-               do (when (eql id var-number)
-                    (return-from gotit value)))))))
+  (destructuring-bind (name . value)
+      (elt
+       (nth-value 2 (frame-decode-env (elt *backtrace* frame-number)))
+       var-number)
+    (declare (ignore name))
+    value))
 
-
-#+clasp-working
 (defimplementation disassemble-frame (frame-number)
   (let ((fun (frame-function (elt *backtrace* frame-number))))
     (disassemble fun)))
 
 (defimplementation eval-in-frame (form frame-number)
   (let ((env (second (elt *backtrace* frame-number))))
-    (core:compile-form-and-eval-with-env form env)))
+    (si:eval-with-env form env)))
 
-#+clasp-working
 (defimplementation gdb-initial-commands ()
   ;; These signals are used by the GC.
   #+linux '("handle SIGPWR  noprint nostop"
             "handle SIGXCPU noprint nostop"))
 
-#+clasp-working
 (defimplementation command-line-args ()
   (loop for n from 0 below (si:argc) collect (si:argv n)))
 
@@ -555,7 +548,7 @@
 (defun make-file-location (file file-position)
   ;; File positions in CL start at 0, but Emacs' buffer positions
   ;; start at 1. We specify (:ALIGN T) because the positions comming
-  ;; from CLASP point at right after the toplevel form appearing before
+  ;; from ECL point at right after the toplevel form appearing before
   ;; the actual target toplevel form; (:ALIGN T) will DTRT in that case.
   (make-location `(:file ,(namestring (translate-logical-pathname file)))
                  `(:position ,(1+ file-position))
@@ -570,10 +563,8 @@
   (make-location `(:etags-file ,+TAGS+)
                  `(:tag ,@tags)))
 
-
-
 (defimplementation find-definitions (name)
-  (let ((annotations (core:get-annotation name 'si::location :all)))
+  (let ((annotations (ext:get-annotation name 'si::location :all)))
     (cond (annotations
            (loop for annotation in annotations
                  collect (destructuring-bind (dspec file . pos) annotation
@@ -640,15 +631,15 @@
   `(satisfies c-function-p))
 
 (defun assert-source-directory ()
-  (unless (probe-file #P"SYS:")
-    (error "CLASP's source directory ~A does not exist. ~
+  (unless (probe-file #P"SRC:")
+    (error "ECL's source directory ~A does not exist. ~
             You can specify a different location via the environment ~
-            variable `CLASPSRCDIR'."
+            variable `ECLSRCDIR'."
            (namestring (translate-logical-pathname #P"SYS:"))))) 
 
 (defun assert-TAGS-file ()
   (unless (probe-file +TAGS+)
-    (error "No TAGS file ~A found. It should have been installed with CLASP."
+    (error "No TAGS file ~A found. It should have been installed with ECL."
            +TAGS+)))
 
 (defun package-names (package)
@@ -664,8 +655,8 @@
         (assert lisp-name)
         (multiple-value-bind (flag c-name) (si:mangle-name lisp-name t)
           (assert flag)
-          ;; In CLASP's code base sometimes the mangled name is used
-          ;; directly, sometimes CLASP's DPP magic of @SI::SYMBOL or
+          ;; In ECL's code base sometimes the mangled name is used
+          ;; directly, sometimes ECL's DPP magic of @SI::SYMBOL or
           ;; @EXT::SYMBOL is used. We cannot predict here, so we just
           ;; provide several candidates.
           (apply #'make-TAGS-location
@@ -685,7 +676,7 @@
                (assert (not (minusp pos)))
                (make-file-location file pos)))))
      (method
-      ;; FIXME: This will always return NIL at the moment; CLASP does not
+      ;; FIXME: This will always return NIL at the moment; ECL does not
       ;; store debug information for methods yet.
       (source-location (clos:method-function object)))
      ((member nil t)
