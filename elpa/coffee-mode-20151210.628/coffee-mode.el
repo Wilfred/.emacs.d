@@ -2,8 +2,8 @@
 
 ;; Copyright (C) 2010 Chris Wanstrath
 
-;; Version: 0.6.0
-;; Package-Version: 20150602.2205
+;; Version: 0.6.2
+;; Package-Version: 20151210.628
 ;; Keywords: CoffeeScript major mode
 ;; Author: Chris Wanstrath <chris@ozmm.org>
 ;; URL: http://github.com/defunkt/coffee-mode
@@ -43,7 +43,7 @@
 ;; Customizable Variables
 ;;
 
-(defconst coffee-mode-version "0.6.0"
+(defconst coffee-mode-version "0.6.2"
   "The version of `coffee-mode'.")
 
 (defgroup coffee nil
@@ -127,6 +127,11 @@ with CoffeeScript."
   :type 'hook
   :group 'coffee)
 
+(defcustom coffee-indent-like-python-mode nil
+  "Indent like python-mode."
+  :type 'boolean
+  :group 'coffee)
+
 (defvar coffee-mode-map
   (let ((map (make-sparse-keymap)))
     ;; key bindings
@@ -156,11 +161,11 @@ with CoffeeScript."
 ;; Commands
 ;;
 
-(defvar coffee--repl-multiline-initialized nil)
-
 (defun coffee-comint-filter (string)
   (ansi-color-apply
-   (replace-regexp-in-string "\x1b\\[.[GJK]" "" string)))
+   (replace-regexp-in-string
+    "\uFF00" "\n"
+    (replace-regexp-in-string "\x1b\\[.[GJK]" "" string))))
 
 (defun coffee-repl ()
   "Launch a CoffeeScript REPL using `coffee-command' as an inferior mode."
@@ -174,7 +179,6 @@ with CoffeeScript."
             "NODE_NO_READLINE=1"
             coffee-command
             coffee-args-repl))
-    (make-local-variable 'coffee--repl-multiline-initialized)
     ;; Workaround for ansi colors
     (add-hook 'comint-preoutput-filter-functions 'coffee-comint-filter nil t))
 
@@ -249,11 +253,11 @@ called `coffee-compiled-buffer-name'."
     (goto-char (point-min))
     (let ((line (buffer-substring-no-properties (point) (line-end-position))))
       (when (string-match "[0-9.]+\\'" line)
-        (string-to-number (match-string-no-properties 0 line))))))
+        (match-string-no-properties 0 line)))))
 
 (defun coffee--map-file-name (coffee-file)
   (let* ((version (coffee--coffeescript-version))
-         (extension (if (>= version 1.8) ".js.map" ".map")))
+         (extension (if (version<= "1.8" version) ".js.map" ".map")))
     ;; foo.js: foo.js.map(>= 1.8), foo.map(< 1.8)
     (concat (file-name-sans-extension coffee-file) extension)))
 
@@ -336,20 +340,11 @@ called `coffee-compiled-buffer-name'."
   "Send the current region to the inferior Coffee process."
   (interactive "r")
   (deactivate-mark t)
-  (let ((string (buffer-substring-no-properties start end))
-        (multiline-p (> (count-lines start end) 1)))
-    (let ((proc (coffee-get-repl-proc)))
-      (if (not multiline-p)
-          (comint-simple-send proc string)
-        ;; Swith to multiline mode
-        (with-current-buffer (process-buffer proc)
-          (let ((multiline-code (if coffee--repl-multiline-initialized "\026" "\026\026")))
-            (comint-send-string proc multiline-code)
-            (comint-simple-send proc string)
-            (unless (string-match-p "\n\\'" string)
-              (comint-send-string proc "\n"))
-            (comint-send-string proc multiline-code))))
-      (setq coffee--repl-multiline-initialized t))))
+  (let* ((string (buffer-substring-no-properties start end))
+         (proc (coffee-get-repl-proc))
+         (multiline-escaped-string
+          (replace-regexp-in-string "\n" "\uFF00" string)))
+    (comint-simple-send proc multiline-escaped-string)))
 
 (defun coffee-send-buffer ()
   "Send the current buffer to the inferior Coffee process."
@@ -409,7 +404,7 @@ called `coffee-compiled-buffer-name'."
 (defvar coffee-assign-regexp "\\(@?[_[:word:].$]+?\\)\\s-*:")
 
 ;; Local Assignment
-(defvar coffee-local-assign-regexp "\\s-*\\([_[:word:].$]+\\)\\s-*=\\(?:[^>=]\\|$\\)")
+(defvar coffee-local-assign-regexp "\\s-*\\([_[:word:].$]+\\)\\s-*\\??=\\(?:[^>=]\\|$\\)")
 
 ;; Lambda
 (defvar coffee-lambda-regexp "\\(?:(.*)\\)?\\s-*\\(->\\|=>\\)")
@@ -534,6 +529,14 @@ output in a compilation buffer."
          (lambda (_this-mode)
            (generate-new-buffer-name coffee-compiled-buffer-name))))
     (compile (concat coffee-command " " args))))
+
+(defun coffee-toggle-fatness ()
+  "Toggle fatness of a coffee function arrow."
+  (interactive)
+  (save-excursion
+    (when (re-search-backward "[-=]>" nil t)
+      (cond ((looking-at "=") (replace-match "-"))
+            ((looking-at "-") (replace-match "="))))))
 
 ;;
 ;; imenu support
@@ -681,6 +684,15 @@ output in a compilation buffer."
   (when (< (current-column) (current-indentation))
     (back-to-indentation)))
 
+(defun coffee--indent-line-like-python-mode (prev-indent repeated)
+  (let ((next-indent (- (current-indentation) coffee-tab-width))
+        (indent-p (coffee-line-wants-indent)))
+    (if repeated
+        (if (< next-indent 0)
+            (+ prev-indent (if indent-p coffee-tab-width 0))
+          next-indent)
+      (+ prev-indent (if indent-p coffee-tab-width 0)))))
+
 (defun coffee-indent-line ()
   "Indent current line as CoffeeScript."
   (interactive)
@@ -691,11 +703,15 @@ output in a compilation buffer."
          begin-indents)
     (if (and type (setq begin-indents (coffee--find-indents type limit '<)))
         (setq indent-size (coffee--decide-indent curindent begin-indents '>))
-      (let ((prev-indent (coffee-previous-indent))
-            (next-indent-size (+ curindent coffee-tab-width)))
-        (if (> (- next-indent-size prev-indent) coffee-tab-width)
-            (setq indent-size 0)
-          (setq indent-size (+ curindent coffee-tab-width)))))
+      (if coffee-indent-like-python-mode
+          (setq indent-size
+                (coffee--indent-line-like-python-mode
+                 (coffee-previous-indent) (eq last-command this-command)))
+        (let ((prev-indent (coffee-previous-indent))
+              (next-indent-size (+ curindent coffee-tab-width)))
+          (if (> (- next-indent-size prev-indent) coffee-tab-width)
+              (setq indent-size 0)
+            (setq indent-size (+ curindent coffee-tab-width))))))
     (coffee--indent-insert-spaces indent-size)))
 
 (defun coffee-previous-indent ()
