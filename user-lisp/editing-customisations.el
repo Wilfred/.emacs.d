@@ -17,6 +17,7 @@
 ;; zap up to.
 (require 'avy-zap)
 (setq avy-zap-forward-only t)
+(setq avy-zap-dwim-prefer-avy nil) ;; https://github.com/cute-jumper/avy-zap/issues/3
 (global-set-key (kbd "M-z") #'avy-zap-up-to-char-dwim)
 
 ;; to be consistent with C-M-f as forward-sexp, bind C-M-backspace to backward-kill-sexp
