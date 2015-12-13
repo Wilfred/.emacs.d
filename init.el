@@ -313,6 +313,7 @@ Visit the file after creation."
 (require 'diminish)
 (diminish 'undo-tree-mode)
 
+(require 'edebug)
 (define-key emacs-lisp-mode-map (kbd "C-c e") #'edebug-eval-defun)
 
 (define-key emacs-lisp-mode-map (kbd "C-c d") 'toggle-debug-on-error)

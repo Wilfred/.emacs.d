@@ -720,12 +720,17 @@ it on the mode line. Hide it.
 
 *** Shortcuts
 
-eval-defun is bound to `C-M-x', but Gnome doesn't allow Emacs to
-receive that key sequence. It's very useful command when developing,
-especially since giving a prefix argument switches on edebug for that
-function.
+=eval-defun= is bound to `C-M-x', but Gnome doesn't allow Emacs to
+receive that key sequence. When writing elisp, it's very useful, so we
+bind it to a convenient keybinding.
+
+=edebug-eval-defun= is even more powerful. It ensures that =defvar=
+and =defcustom= are re-evaluated, so they're reset to their initial
+values. It can even mark a function for edebug, if it's called with a
+prefix.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'edebug)
   (define-key emacs-lisp-mode-map (kbd "C-c e") #'edebug-eval-defun)
 #+END_SRC
 

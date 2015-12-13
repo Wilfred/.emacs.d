@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- 2015-11-16 Mon 09:51 -->
+<!-- 2015-12-13 Sun 16:09 -->
 <meta  charset="utf-8">
 <meta  name="viewport" content="width=device-width, initial-scale=1">
 <title></title>
 <meta  name="generator" content="Org-mode">
-<meta  name="author" content="Hughes">
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   .title  { text-align: center;
@@ -846,7 +845,7 @@ programming languages and even HTML.
 
 <p>
 Currently, I only use a few smartparens commands, using the same
-keybindings as the equivalent paredit command. You can view a list of all smartparens
+keybindings as the equivalent paredit commands. You can view a list of all smartparens
 commands with the command `sp-cheat-sheet'.
 </p>
 
@@ -860,8 +859,15 @@ commands with the command `sp-cheat-sheet'.
 <span class="org-comment-delimiter">;; </span><span class="org-comment">(foo bar) -&gt; [foo bar]</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key smartparens-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-S"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">sp-rewrap-sexp</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">(foo) bar -&gt; (foo bar)</span>
+<span class="org-comment-delimiter">;; </span><span class="org-comment">(|foo) bar -&gt; (|foo bar)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key smartparens-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"&lt;C-right&gt;"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">sp-slurp-hybrid-sexp</span><span class="org-rainbow-delimiters-depth-1">)</span>
+
+<span class="org-comment-delimiter">;; </span><span class="org-comment">(|foo bar) -&gt; (|foo) bar</span>
+<span class="org-rainbow-delimiters-depth-1">(</span>define-key smartparens-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"&lt;C-left&gt;"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">sp-forward-barf-sexp</span><span class="org-rainbow-delimiters-depth-1">)</span>
+
+<span class="org-comment-delimiter">;; </span><span class="org-comment">foo(1, |[2, 3], 4) -&gt; foo(1, |, 2)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span>define-key smartparens-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"C-M-k"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">sp-kill-sexp</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span>define-key smartparens-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"s-k"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">sp-kill-sexp</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">wh/smartparens-wrap-round</span> <span class="org-rainbow-delimiters-depth-2">(</span>arg<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-doc">"Smartparens equivalent of `</span><span class="org-doc"><span class="org-constant">paredit-wrap-round</span></span><span class="org-doc">'."</span>
@@ -891,17 +897,6 @@ given code of the form <code>foo(1, |bar())</code>, C-k produces <code>foo(1, |)
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">smartparens-html</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">prog-mode-hook</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">smartparens-strict-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">yaml-mode-hook</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">smartparens-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
-</pre>
-</div>
-
-<p>
-However, C-k outside of smartparens also removes whitespace. We want
-smarparens do the same, otherwise C-k does nothing on an empty line.
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>setq sp-hybrid-kill-excessive-whitespace t<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
@@ -1284,15 +1279,22 @@ it on the mode line. Hide it.
 <h4 id="orgheadline36"><span class="section-number-4">3.12.1</span> Shortcuts</h4>
 <div class="outline-text-4" id="text-3-12-1">
 <p>
-eval-defun is bound to `C-M-x', but Gnome doesn't allow Emacs to
-receive that key sequence. It's very useful command when developing,
-especially since giving a prefix argument switches on edebug for that
-function.
+<code>eval-defun</code> is bound to `C-M-x', but Gnome doesn't allow Emacs to
+receive that key sequence. When writing elisp, it's very useful, so we
+bind it to a convenient keybinding.
+</p>
+
+<p>
+<code>edebug-eval-defun</code> is even more powerful. It ensures that <code>defvar</code>
+and <code>defcustom</code> are re-evaluated, so they're reset to their initial
+values. It can even mark a function for edebug, if it's called with a
+prefix.
 </p>
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>define-key emacs-lisp-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"C-c e"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">edebug-eval-defun</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">edebug</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span>define-key emacs-lisp-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"C-c e"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">edebug-eval-defun</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 
@@ -1990,11 +1992,24 @@ annoying to accidentally close Emacs, so warn first.
   <span class="org-rainbow-delimiters-depth-2">(</span>windmove-default-keybindings<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span>custom-set-variables
-  <span class="org-comment-delimiter">;; </span><span class="org-comment">custom-set-variables was added by Custom.</span>
-  <span class="org-comment-delimiter">;; </span><span class="org-comment">If you edit it by hand, you could mess it up, so be careful.</span>
-  <span class="org-comment-delimiter">;; </span><span class="org-comment">Your init file should contain only one such instance.</span>
-  <span class="org-comment-delimiter">;; </span><span class="org-comment">If there is more than one, they won't work right.</span>
- <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span>frame-background-mode <span class="org-rainbow-delimiters-depth-3">(</span>quote dark<span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
+ <span class="org-comment-delimiter">;; </span><span class="org-comment">custom-set-variables was added by Custom.</span>
+ <span class="org-comment-delimiter">;; </span><span class="org-comment">If you edit it by hand, you could mess it up, so be careful.</span>
+ <span class="org-comment-delimiter">;; </span><span class="org-comment">Your init file should contain only one such instance.</span>
+ <span class="org-comment-delimiter">;; </span><span class="org-comment">If there is more than one, they won't work right.</span>
+ <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span>frame-background-mode <span class="org-rainbow-delimiters-depth-3">(</span>quote dark<span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span>
+ <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span>safe-local-variable-values
+   <span class="org-rainbow-delimiters-depth-3">(</span>quote
+    <span class="org-rainbow-delimiters-depth-4">(</span><span class="org-rainbow-delimiters-depth-5">(</span>eval font-lock-add-keywords nil
+           <span class="org-rainbow-delimiters-depth-6">(</span>\<span class="org-highlight-quoted-quote">`</span>
+            <span class="org-rainbow-delimiters-depth-7">(</span><span class="org-rainbow-delimiters-depth-8">(</span><span class="org-rainbow-delimiters-depth-9">(</span>\,
+               <span class="org-rainbow-delimiters-depth-1">(</span>concat <span class="org-string">"("</span>
+                       <span class="org-rainbow-delimiters-depth-2">(</span>regexp-opt
+                        <span class="org-rainbow-delimiters-depth-3">(</span>quote
+                         <span class="org-rainbow-delimiters-depth-4">(</span><span class="org-string">"sp-do-move-op"</span> <span class="org-string">"sp-do-move-cl"</span> <span class="org-string">"sp-do-put-op"</span> <span class="org-string">"sp-do-put-cl"</span> <span class="org-string">"sp-do-del-op"</span> <span class="org-string">"sp-do-del-cl"</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span>
+                        t<span class="org-rainbow-delimiters-depth-2">)</span>
+                       <span class="org-string">"\\_&gt;"</span><span class="org-rainbow-delimiters-depth-1">)</span><span class="org-rainbow-delimiters-depth-9">)</span>
+              1
+              <span class="org-rainbow-delimiters-depth-9">(</span>quote font-lock-variable-name-face<span class="org-rainbow-delimiters-depth-9">)</span><span class="org-rainbow-delimiters-depth-8">)</span><span class="org-rainbow-delimiters-depth-7">)</span><span class="org-rainbow-delimiters-depth-6">)</span><span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>custom-set-faces
  <span class="org-comment-delimiter">;; </span><span class="org-comment">custom-set-faces was added by Custom.</span>
  <span class="org-comment-delimiter">;; </span><span class="org-comment">If you edit it by hand, you could mess it up, so be careful.</span>
@@ -2059,8 +2074,7 @@ annoying to accidentally close Emacs, so warn first.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="author">Author: Hughes</p>
-<p class="date">Created: 2015-11-16 Mon 09:51</p>
+<p class="date">Created: 2015-12-13 Sun 16:09</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
