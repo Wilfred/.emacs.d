@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "c-eldoc" "c-eldoc.el" (21581 38757 418711
-;;;;;;  222000))
+;;;### (autoloads nil "c-eldoc" "c-eldoc.el" (22122 45909 925669
+;;;;;;  649000))
 ;;; Generated autoloads from c-eldoc.el
 
 (autoload 'c-turn-on-eldoc-mode "c-eldoc" "\

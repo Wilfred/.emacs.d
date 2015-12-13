@@ -6,8 +6,8 @@
 
 ;; Author: Nathaniel Flath <flat0103@gmail.com>
 ;; URL: http://github.com/nflath/c-eldoc
-;; Version: 20140728.1452
-;; X-Original-Version: 0.7
+;; Package-Version: 20150904.132
+;; Version: 0.7
 
 ;; This file is NOT a part of GNU Emacs
 
@@ -257,7 +257,7 @@ T1 and T2 are time values (as returned by `current-time' for example)."
   "Returns documentation string for the current symbol."
   (let* ((current-function-cons (c-eldoc-function-and-argument (- (point) 1000)))
          (current-function (car current-function-cons))
-         (current-function-regexp (concat "[ \t\n]*[0-9a-zA-Z]+[ \t\n*]+" current-function "[ \t\n]*("))
+         (current-function-regexp (concat "[[:alnum:]_()[:space:]]+[[:space:]]+" current-function "[[:space:]]*("))
          (current-macro-regexp (concat "#define[ \t\n]+" current-function "[ \t\n]*("))
          (current-buffer (current-buffer))
          (tag-buffer)
