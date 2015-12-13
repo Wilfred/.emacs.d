@@ -1,3 +1,9 @@
+;; Generating This Document
+
+;; init.org is the source file that I edit, and init.el and init.html are
+;; generated from it. We define a convenience function to generate these files.
+
+
 (defun wh/export-init ()
   "Generate init.html and init.html from the current init.org file."
   (interactive)
@@ -8,9 +14,33 @@
         (org-html-htmlize-output-type 'css))
     (call-interactively #'org-html-export-to-html)))
 
+;; Folder Structure
+
+;; Code I've written lives in user-lisp. This includes packages that I
+;; haven't polished enough to release yet, small convenience functions,
+;; and package customisations.
+
+;; Interactive commands, configuration and keybindings are kept in files
+;; named `FOO-customisations.el'. Elisp convenience functions are kept in
+;; files named `FOO-utils.el'.
+
+
 (add-to-list 'load-path "~/.emacs.d/user-lisp/")
 
+
+
+;; Code that I haven't written lives in third-party-lisp. This directory
+;; should ultimately disappear once all these packages live in [[http://melpa.milkbox.net/][MELPA]].
+
+
 (add-to-list 'load-path "~/.emacs.d/third-party-lisp/")
+
+;; Packages
+
+;; I use ELPA packages heavily for functionality, primarily the MELPA
+;; repository. We initalize all the packages here, so we can use them
+;; later.
+  
 
 (require 'package)
 (setq package-archives
@@ -18,6 +48,19 @@
         ("melpa" . "https://melpa.org/packages/")))
 
 (package-initialize)
+
+
+
+;; When a package is installed, it's byte-compiled. However, git is set
+;; up to ignore .elc files (see the .gitignore file). The system that
+;; installs the file therefore has .elc files, but other systems need to
+;; byte-compile those directories.
+
+;; To make matters worse, we can't just compile on startup any package
+;; files that aren't compiled already, since some files fail compilation
+;; every time. Instead, we compile directories that don't contain any
+;; .elc files.
+
 
 (require 'dash)
 (require 'f)
@@ -36,10 +79,34 @@
 
 ;; todo: clean up orphaned .elc files
 
+;; Paths
+
+;; We set up Emacs' exec-path based on PATH in a shell. This is primarily
+;; for OS X, where starting Emacs in GUI mode doesn't inherit the shell's
+;; environment. This ensures that any command we can call from a shell,
+;; we can call inside Emacs.
+
+;; Note this function comes from the package `exec-path-from-shell.el'.
+  
+
 ;; set exec-path according to the system's PATH
 (exec-path-from-shell-initialize)
 
+;; Theme
+
+;; I like the tangotango theme. It has very contrasting colours and uses
+;; bold faces for definitions. It also has good support for a range of
+;; popular packages.
+
+;; TODO: I don't like the large font sizes in org-mode. I would also
+;; prefer zig-zag underlines for flycheck. There's also an issue with
+;; hl-line or hl-sexp in the minibuffer with ido.
+
+
 (load-theme 'tangotango t)
+
+;; Visibility of UI Elements
+
 
 ;; hide toolbar and scrollbar
 (tool-bar-mode 0)
@@ -48,11 +115,36 @@
 ;; show x-position (ie column number) for point in buffer
 (column-number-mode 1)
 
+;; Recursive Editing
+
+;; We can make the minibuffer much more useful by enabling recursive
+;; usage. This means that when the minibuffer is active we can still call
+;; commands that require the minibuffer.
+
+
 (setq enable-recursive-minibuffers t)
+
+
+    
+;; It's easy to lose track of whether we're in a recursive minibuffer or
+;; not. We display the recursion level in the minibuffer to avoid confusion.
+
 
 (minibuffer-depth-indicate-mode 1)
 
+;; Moving Around
+
+;; C-v and M-v don't undo each other, because the point position isn't
+;; preservered. Fix that.
+
+
 (setq scroll-preserve-screen-position 'always)
+
+;; By Symbol
+
+;; It's extremely useful to be able to move between different occurrences
+;; of the same symbol.
+
 
 (define-key prog-mode-map (kbd "M-n") #'highlight-symbol-next)
 (define-key prog-mode-map (kbd "M-p") #'highlight-symbol-prev)
@@ -74,6 +166,12 @@
 (define-key yaml-mode-map (kbd "M-n") #'highlight-symbol-next)
 (define-key yaml-mode-map (kbd "M-p") #'highlight-symbol-prev)
 
+
+
+;; Jumping to the first occurrence of the symbol is handy for finding
+;; where a symbol was imported.
+
+
 (defun highlight-symbol-first ()
   "Jump to the first location of symbol at point."
   (interactive)
@@ -88,6 +186,12 @@
 
 (define-key prog-mode-map (kbd "M-P") #'highlight-symbol-first)
 
+
+
+;; More rarely, it's useful to be able to jump to the last occurrence of
+;; a symbol.
+
+
 (defun highlight-symbol-last ()
   "Jump to the last location of symbol at point."
   (interactive)
@@ -100,6 +204,15 @@
        nil t))))
 
 (global-set-key (kbd "M-N") 'highlight-symbol-last)
+
+;; By indentation
+
+;; [[elisp:(describe-key%20(kbd%20"C-a"))][C-a]] normally moves us to the beginning of the line unconditionally
+;; with [[elisp:(describe-function%20#'move-beginning-of-line)][move-beginning-of-line]]. This version is more useful, as it moves
+;; to the first non-whitespace character if we're already at the
+;; beginning of the line. Repeated use of `C-a' toggles between these two
+;; positions.
+
 
 (defun beginning-of-line-dwim ()
   "Toggles between moving point to the first non-whitespace character, and
@@ -115,13 +228,40 @@ the start of the line."
 
 (global-set-key (kbd "C-a") 'beginning-of-line-dwim)
 
+;; By Character
+
+;; Vim has a handy command where you can type `f' to jump to the next
+;; occurrence of a character on a line.
+
+;; We can do this with `jump-char' without the constraint that the
+;; character must be on the current line. This command needs to be
+;; accessible with a short shortcut, so we use `M-m'. `M-m' is bound to
+;; `back-to-indentation' by default, but our `C-a' behaviour makes it
+;; redundant.
+
+
 (require 'jump-char)
 
 (global-set-key (kbd "M-m") #'jump-char-forward)
 (global-set-key (kbd "M-M") #'jump-char-backward)
 
+;; Measuring Movement
+
+;; Since movement commands tend to be used more than any others, it's
+;; useful to measure how much we use each command. This enables us to
+;; look at frequent commands to see if we need to create custom commands
+;; or different keybindings for common commands.
+
+
 (keyfreq-mode 1)
 (keyfreq-autosave-mode 1)
+
+;; Inserting
+
+;; It's often useful to start a new line of code that's above or below
+;; the current line. This code is based on
+;; http://emacsredux.com/blog/2013/03/26/smarter-open-line/ .
+
 
 (defun smart-open-line ()
   "Insert an empty line after the current line.
@@ -146,9 +286,21 @@ Position the cursor at its beginning, according to the current mode."
 
 (global-set-key (kbd "M-O") 'smart-open-line-above)
 
+;; Killing
+
+;; It's handy to also delete the trailing newline when using [[elisp:(describe-key%20(kbd%20"C-k"))][C-k]].
+
+
 (defadvice kill-line (around kill-line-remove-newline activate)
   (let ((kill-whole-line t))
     ad-do-it))
+
+
+
+;; I sometimes want to simply delete a region, rather than
+;; saving it to the kill-ring. I've added a function that allows me to
+;; type `C-u C-w' to delete the region, whilst `C-w' works as normal.
+
 
 (defun kill-or-delete-region (beg end prefix)
   "Delete the region, storing it in the kill-ring.
@@ -159,6 +311,17 @@ If a prefix argument is given, don't change the kill-ring."
     (kill-region beg end)))
 
 (global-set-key (kbd "C-w") 'kill-or-delete-region)
+
+;; Matched Pairs
+
+;; Smartparens is an excellent way of editing pairs of brackets, quotes
+;; etc. It's similar to paredit, but can be used in lisp, other
+;; programming languages and even HTML.
+
+;; Currently, I only use a few smartparens commands, using the same
+;; keybindings as the equivalent paredit commands. You can view a list of all smartparens
+;; commands with the command `sp-cheat-sheet'.
+
 
 (require 'smartparens)
 
@@ -192,10 +355,23 @@ If a prefix argument is given, don't change the kill-ring."
 
 (define-key smartparens-mode-map (kbd "M-'") #'wh/smartparens-wrap-singlequote)
 
+
+
+;; I like to use smartparens in all programming modes. Smartparens strict
+;; mode ensures parens always stay balanced when editing. For example,
+;; given code of the form =foo(1, |bar())=, C-k produces =foo(1, |)=.
+
+
 (require 'smartparens-config)
 (require 'smartparens-html)
 (add-hook 'prog-mode-hook #'smartparens-strict-mode)
 (add-hook 'yaml-mode-hook #'smartparens-mode)
+
+;; Opening
+
+;; It's useful to be able to quickly open files that we opened before. We
+;; define a function for this:
+
 
 (require 'recentf)
 
@@ -213,17 +389,62 @@ If a prefix argument is given, don't change the kill-ring."
       (message "Opening file...")
     (message "Aborting")))
 
+
+
+;; We bind this to `C-x C-r' (mnemonic: recent). By default, `C-x C-r' is bound to
+;; `find-file-read-only', which isn't very useful. (You can set any file
+;; as read only with `read-only-mode', mapped to `C-x C-q'.)
+
+
 (global-set-key (kbd "C-x C-r") 'ido-recentf-open)
+
+
+
+;; Most of the time though, it's helpful to be able to pick a file in the
+;; same source code repository as the current buffer. There are several
+;; tools to do this. I've played with `find-file-in-repository',
+;; `projectile' and `find-file-in-project'.
+
+;; `find-file-in-project' seems unmaintained. `find-file-in-repository'
+;; is fast and works well, but is only lightly maintained and doesn't
+;; support some version control systems. `projectile' is fast enough,
+;; actively maintained and featureful.
+
 
 (require 'projectile)
 (projectile-global-mode)
 
+
+
+;; We bind `projectile-find-file' to `C-x C-g', as we use it
+;; a lot and it's right next to `C-x C-f'.
+
+
 (global-set-key (kbd "C-x C-g") 'projectile-find-file)
+
+;; Dired
+
+;; Dired isn't very colourful by default, but `dired+' has helpful
+;; highlighting.
+
 
 (setq diredp-hide-details-initially-flag nil)
 (require 'dired+)
 
+;; Deleting and Backups
+
+;; When we delete a file, it should go to the recycle bin rather than
+;; just acting like shell:rm.
+
+
 (setq delete-by-moving-to-trash t)
+
+
+
+;; Emacs' backup behaviour is helpful, so we increase the number of
+;; backups. However, rather than writing foo~1~ files everywhere, we
+;; store all our backups in `~/.saves`.
+
 
 (setq
    backup-by-copying t      ; don't clobber symlinks
@@ -234,8 +455,21 @@ If a prefix argument is given, don't change the kill-ring."
    kept-old-versions 2
    version-control t)       ; use versioned backups
 
+
+
+;; However, Emacs isn't aggressive enough with backups. We use
+;; backup-each-save to ensure we have a copy of state of every file we've
+;; modified.
+
+
 (require 'backup-each-save)
 (add-hook 'after-save-hook 'backup-each-save)
+
+;; Scratch Files
+
+;; It's often useful to create a throwaway file to write a minimal
+;; testcase for some language or library feature.
+
 
 (defun start--file (path)
   "Create a file at PATH, creating any containing directories as necessary.
@@ -252,6 +486,11 @@ Visit the file after creation."
   "Create a file in /tmp for the given file name."
   (interactive "sName of temporary file: ")
   (start--file (expand-file-name (format "/tmp/%s" file-name))))
+
+
+
+;; It's also useful to quickly generate a minimal HTML page to play with.
+
 
 (defun start-scratch-html-file (file-name)
   "Create a test HTML file in ~/scratch to play around with."
@@ -273,9 +512,24 @@ Visit the file after creation."
   (forward-line -2)
   (move-end-of-line nil))
 
+;; Flymake
+
+;; (Note that there's language-specific flymake configuration too.)
+
+;; It's really useful to be able to move between flymake errors, so we
+;; bind F8 and F9 for this. Since there's a gap between these two keys,
+;; they're easy to find.
+
+
 (require 'flymake)
 (global-set-key (kbd "<f8>") 'flymake-goto-prev-error)
 (global-set-key (kbd "<f9>") 'flymake-goto-next-error)
+
+
+
+;; When the cursor (point) is on a line, we want to show the error on
+;; that line in the minibuffer.
+
 
 (defun flymake-error-at-point ()
   "Show the flymake error in the minibuffer when point is on an invalid line."
@@ -285,45 +539,149 @@ Visit the file after creation."
 
 (add-hook 'post-command-hook 'flymake-error-at-point)
 
+
+
+;; I prefer my errors underlined.
+
+
 (custom-set-faces
  '(flymake-errline ((((class color)) (:underline "Red"))))
  '(flymake-warnline ((((class color)) (:underline "Orange")))))
 
+;; Flycheck
+
+;; Flycheck is an excellent on-the-fly checker that provides many
+;; additional features and languages. Flymake is part of stock Emacs,
+;; flychcks is third-party.
+
+;; Flycheck can be quite slow with a large number of errors. We reduce
+;; how often we run it. We also change the highlighting to simply
+;; highlight the whole line, as it's much faster. See
+;; https://github.com/lunaryorn/flycheck/issues/153#issuecomment-19450255
+
+
 (setq flycheck-highlighting-mode 'lines)
+
+
+
+;; Style flycheck errors consistently with flymake.
+
 
 (custom-set-faces
  '(flycheck-error ((((class color)) (:underline "Red"))))
  '(flycheck-warning ((((class color)) (:underline "Orange")))))
 
+
+
+;; We use the same movement keys for flycheck as we do for flymake.
+
+
 (require 'flycheck)
 (define-key flycheck-mode-map (kbd "<f8>") 'flycheck-previous-error)
 (define-key flycheck-mode-map (kbd "<f9>") 'flycheck-next-error)
 
+
+
+;; flycheck also provides a great overview buffer, but it's usually bound
+;; to =C-c ! f=. This is tricky to type, so we use our own keybinding.
+
+
 (define-key flycheck-mode-map (kbd "C-c f") #'flycheck-list-errors)
+
+
+
+;; flycheck-next-error doesn't push the mark, so we can't use pop-mark to
+;; go back to our previous position. We define and activate advice to fix
+;; that.
+
 
 (defadvice flycheck-next-error (around wh/flycheck-next-error-push-mark activate)
   (push-mark)
   ad-do-it)
 
+;; Undoing
+
+;; Emacs' undo facility is excellent, but undo-tree is even better.
+
+
 (require 'undo-tree)
 (global-undo-tree-mode)
 
+
+
+;; Rather than just showing 'o' for edits, show a relative timestamp for
+;; when the edit occurred.
+
+
 (setq undo-tree-visualizer-timestamps t)
+
+
+
+;; Since we're using it the whole time, it's not very informative to show
+;; it on the mode line. Hide it.
+
 
 (require 'diminish)
 (diminish 'undo-tree-mode)
 
+;; Shortcuts
+
+;; =eval-defun= is bound to `C-M-x', but Gnome doesn't allow Emacs to
+;; receive that key sequence. When writing elisp, it's very useful, so we
+;; bind it to a convenient keybinding.
+
+;; =edebug-eval-defun= is even more powerful. It ensures that =defvar=
+;; and =defcustom= are re-evaluated, so they're reset to their initial
+;; values. It can even mark a function for edebug, if it's called with a
+;; prefix.
+
+
 (require 'edebug)
 (define-key emacs-lisp-mode-map (kbd "C-c e") #'edebug-eval-defun)
 
+
+
+;; Similarly, toggle-debug-on-error is something I call a lot when
+;; developing, and it doesn't have have any keybinding.
+
+
 (define-key emacs-lisp-mode-map (kbd "C-c d") 'toggle-debug-on-error)
 
+
+
+;; When writing and debugging macros, it's really important to be able
+;; to see what they expand to. Macrostep allows us to incrementally
+;; expand the macros in our elisp file.
+
+
 (define-key emacs-lisp-mode-map (kbd "C-c m") 'macrostep-expand)
+
+;; Editing Parentheses
+
+;; Paredit make editing code with parentheses wonderful and has been the
+;; gold standard for lisp coding for some time. Smartparens has recently
+;; gained popularity as an paredit alternative, but I haven't invested
+;; the time to set it up for lisp yet.
+
 
 (add-hook 'emacs-lisp-mode-hook
           (lambda () (paredit-mode 1)))
 
+;; Highlighting Parentheses
+
+;; We colour each pair of parentheses according to their depth. This is
+;; useful for seeing similarly nested lines, such as conditions in a
+;; cond expression.
+
+
 (add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
+
+
+
+;; Our theme (tangotango) only provides colours for the first few nesting
+;; levels before repeating. We override the face colours so we have
+;; unique colours until we're seven levels deep.
+
 
 (require 'rainbow-delimiters)
 (set-face-foreground 'rainbow-delimiters-depth-1-face "white")
@@ -337,18 +695,55 @@ Visit the file after creation."
 (set-face-foreground 'rainbow-delimiters-depth-9-face "yellow")
 (set-face-foreground 'rainbow-delimiters-unmatched-face "red")
 
+;; Function Signatures
+
+;; We use eldoc to show the signature of the function at point in the
+;; minibuffer.
+
+
 (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
+
+
+
+;; We don't want this minor mode to be shown in the minibuffer, however.
+
 
 (require 'diminish)
 (require 'eldoc)
 (diminish 'eldoc-mode)
 
+;; On-the-fly Checking
+
+;; It's really useful to use flycheck when coding elisp. It detects
+;; mistyped variables, deprecated functions (everything that
+;; byte-compilation checks).
+
+
 (add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
+
+
+
+;; By default, flycheck also runs checkdoc on elisp code. This gets in
+;; the way for quick throwaway elisp scripts, so we switch off checkdoc.
+
 
 (require 'flycheck)
 (setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers))
 
+;; Highlighting
+
+;; Emacs lisp highlighting works pretty well out of the box. However,
+;; dash.el provides addition highlighting for its functions and variables
+;; used in its anaphoric macros (e.g. `it').
+
+
 (eval-after-load "dash" '(dash-enable-font-lock))
+
+;; Python
+
+;; We use pyflakes with flycheck to check for coding errors. Flycheck
+;; includes other Python checkers so we also disable those.
+
 
 (require 'flycheck-pyflakes)
 (add-hook 'python-mode-hook 'flycheck-mode)
@@ -358,7 +753,19 @@ Visit the file after creation."
             (add-to-list 'flycheck-disabled-checkers 'python-flake8)
             (add-to-list 'flycheck-disabled-checkers 'python-pylint)))
 
+
+
+;; I like to write docstrings with example usage. These examples aren't
+;; always valid doctests, so we switch off doctest checks.
+
+
 (setenv "PYFLAKES_NODOCTEST" "y")
+
+
+
+;; I often write triple-quoted docstrings, so it's convenient to have a
+;; shortcut for inserting them.
+
 
 (require 'python)
 
@@ -369,18 +776,57 @@ Visit the file after creation."
 
 (define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
 
+;; Haskell
+
+;; Flycheck supports Haskell well, so we switch it on inside Haskell
+;; buffers.
+
+
 (add-hook 'haskell-mode-hook 'flycheck-mode)
+
+
+
+;; Tab doesn't indent in haskell-mode by default, so we enable
+;; indentation.
+
 
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 
+;; Ruby
+
+;; Vagrant files are Ruby, so use Ruby syntax highlighting for them.
+
+
 (add-to-list 'auto-mode-alist '("Vagrantfile" . ruby-mode))
 
+;; C/C++
+
+;; Flycheck supports C, so we switch it on.
+
+
 (add-hook 'c-mode-common-hook #'flycheck-mode)
+
+
+
+;; Always indent with 4 spaces, in the Linux kernel style.
+
 
 (setq-default c-default-style "linux"
               c-basic-offset 4)
 
+
+
+;; Hungry delete is useful in C (i.e. remove up to the next
+;; non-whitespace character on C-d) when removing indentation.
+
+
 (setq-default c-hungry-delete-key t)
+
+;; HTML
+
+;; I like to indent my HTML with tabs (company policy at the first web
+;; shop I worked at).
+
 
 (require 'sgml-mode)
 
@@ -392,10 +838,27 @@ Visit the file after creation."
        (setq indent-tabs-mode nil)
        (setq sgml-basic-offset 4)))))
 
+
+
+;; Automatically close < and " character inside HTML using smartparens.
+
+
 (require 'smartparens-config)
 (add-hook 'html-mode-hook 'smartparens-mode)
 
+
+
+;; Much of my HTML is for Django templates. These sometimes have .dtml
+;; filenames, so use html-mode for those files.
+
+
 (add-to-list 'auto-mode-alist '("\\.dtml$" . html-mode))
+
+
+
+;; We want syntax highlighting for Django template syntax, so add extra
+;; font faces and use them if we see Django syntax.
+
 
 ;; Define coloured faces for Django syntax.
 (defvar django-tag-face (make-face 'django-tag-face))
@@ -417,6 +880,11 @@ Visit the file after creation."
    ("\\({% comment %}\\(.\\|
 \\)*{% endcomment %}\\)" 1 django-comment-face prepend)
    ))
+
+
+
+;; TODO: document the rest of our HTML configuration.
+
 
 ; skeletons for Django template tags
 (define-skeleton template-tag-skeleton
@@ -513,6 +981,11 @@ Visit the file after creation."
 (require 'zencoding-mode)
 (add-hook 'sgml-mode-hook 'zencoding-mode) ;; Auto-start on any markup modes
 
+;; CSS
+
+;; Typically I work on projects that use 4 spaces for CSS indenetation.
+
+
 (add-hook 'css-mode-hook
           (function
            (lambda ()
@@ -520,22 +993,73 @@ Visit the file after creation."
                (setq css-indent-offset 4)
                (setq indent-tabs-mode nil)))))
 
+
+   
+;; It's really handy to highlight CSS colour values to show the colour
+;; they represent.
+
+
 (add-hook 'css-mode-hook 'rainbow-mode)
+
+
+
+;; Smartparens is well suited to CSS too, to automatically pair up curly
+;; brackets.
+
 
 (add-hook 'css-mode-hook 'smartparens-mode)
 
+
+
+;; Company does a great job with completion for CSS, so use it here.
+
+
 (add-hook 'css-mode-hook #'company-mode)
+
+;; Less (CSS)
+
+;; The less compiler doesn't give much feedback, but it does gives us a
+;; syntax check.
+
 
 (require 'less-css-mode)
 (add-hook 'less-css-mode-hook 'flymake-mode)
 
+;; Org-mode
+
+;; We often use code snippets in org-mode files, so syntax highlight
+;; them.
+
+
 (setq org-src-fontify-natively t)
+
+;; Markdown
+
+;; Markdown is essentially prose, so it's nice to automatically line-wrap
+;; (by inserting newlines) as we type.
+
 
 (add-hook 'markdown-mode-hook 'auto-fill-mode)
 
+;; Performance
+
+;; Emacs will run garbage collection after `gc-cons-threshold' bytes of
+;; consing. The default value is 800,000 bytes, or ~ 0.7 MiB. By
+;; increasing to 10 MiB we reduce the number of pauses due to garbage collection.
+
+
 (setq gc-cons-threshold (* 10 1024 1024))
 
+;; Shut Down
+
+;; I rarely close Emacs, but using Zile means I use `C-x C-c' a lot. It's
+;; annoying to accidentally close Emacs, so warn first.
+
+
 (setq confirm-kill-emacs #'y-or-n-p)
+
+;; Undocumented
+
 
 (require 'ui-customisations)
 

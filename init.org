@@ -23,7 +23,7 @@ pressing `C-c '' (press `C-c '' again to escape).
 init.org is the source file that I edit, and init.el and init.html are
 generated from it. We define a convenience function to generate these files.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (defun wh/export-init ()
     "Generate init.html and init.html from the current init.org file."
     (interactive)
@@ -100,14 +100,14 @@ Interactive commands, configuration and keybindings are kept in files
 named `FOO-customisations.el'. Elisp convenience functions are kept in
 files named `FOO-utils.el'.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (add-to-list 'load-path "~/.emacs.d/user-lisp/")
 #+END_SRC
 
 Code that I haven't written lives in third-party-lisp. This directory
 should ultimately disappear once all these packages live in [[http://melpa.milkbox.net/][MELPA]].
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (add-to-list 'load-path "~/.emacs.d/third-party-lisp/")
 #+END_SRC
 
@@ -117,7 +117,7 @@ I use ELPA packages heavily for functionality, primarily the MELPA
 repository. We initalize all the packages here, so we can use them
 later.
   
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'package)
   (setq package-archives
         `(("gnu" . "https://elpa.gnu.org/packages/")
@@ -136,7 +136,7 @@ files that aren't compiled already, since some files fail compilation
 every time. Instead, we compile directories that don't contain any
 .elc files.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'dash)
   (require 'f)
   
@@ -164,7 +164,7 @@ we can call inside Emacs.
 
 Note this function comes from the package `exec-path-from-shell.el'.
   
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   ;; set exec-path according to the system's PATH
   (exec-path-from-shell-initialize)
   
@@ -182,13 +182,13 @@ TODO: I don't like the large font sizes in org-mode. I would also
 prefer zig-zag underlines for flycheck. There's also an issue with
 hl-line or hl-sexp in the minibuffer with ido.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (load-theme 'tangotango t)
 #+END_SRC
 
 *** Visibility of UI Elements
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   ;; hide toolbar and scrollbar
   (tool-bar-mode 0)
   (scroll-bar-mode 0)
@@ -203,14 +203,14 @@ We can make the minibuffer much more useful by enabling recursive
 usage. This means that when the minibuffer is active we can still call
 commands that require the minibuffer.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (setq enable-recursive-minibuffers t)
 #+END_SRC
     
 It's easy to lose track of whether we're in a recursive minibuffer or
 not. We display the recursion level in the minibuffer to avoid confusion.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (minibuffer-depth-indicate-mode 1)
 #+END_SRC
 
@@ -222,7 +222,7 @@ want. ESC ESC ESC will close the minibuffer.
 C-v and M-v don't undo each other, because the point position isn't
 preservered. Fix that.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (setq scroll-preserve-screen-position 'always)
 #+END_SRC
 
@@ -231,7 +231,7 @@ preservered. Fix that.
 It's extremely useful to be able to move between different occurrences
 of the same symbol.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (define-key prog-mode-map (kbd "M-n") #'highlight-symbol-next)
   (define-key prog-mode-map (kbd "M-p") #'highlight-symbol-prev)
 
@@ -256,7 +256,7 @@ of the same symbol.
 Jumping to the first occurrence of the symbol is handy for finding
 where a symbol was imported.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (defun highlight-symbol-first ()
     "Jump to the first location of symbol at point."
     (interactive)
@@ -275,7 +275,7 @@ where a symbol was imported.
 More rarely, it's useful to be able to jump to the last occurrence of
 a symbol.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (defun highlight-symbol-last ()
     "Jump to the last location of symbol at point."
     (interactive)
@@ -298,7 +298,7 @@ to the first non-whitespace character if we're already at the
 beginning of the line. Repeated use of `C-a' toggles between these two
 positions.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (defun beginning-of-line-dwim ()
     "Toggles between moving point to the first non-whitespace character, and
   the start of the line."
@@ -325,7 +325,7 @@ accessible with a short shortcut, so we use `M-m'. `M-m' is bound to
 `back-to-indentation' by default, but our `C-a' behaviour makes it
 redundant.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'jump-char)
 
   (global-set-key (kbd "M-m") #'jump-char-forward)
@@ -339,7 +339,7 @@ useful to measure how much we use each command. This enables us to
 look at frequent commands to see if we need to create custom commands
 or different keybindings for common commands.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (keyfreq-mode 1)
   (keyfreq-autosave-mode 1)
 #+END_SRC
@@ -350,7 +350,7 @@ It's often useful to start a new line of code that's above or below
 the current line. This code is based on
 http://emacsredux.com/blog/2013/03/26/smarter-open-line/ .
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (defun smart-open-line ()
     "Insert an empty line after the current line.
   Position the cursor at its beginning, according to the current mode."
@@ -379,7 +379,7 @@ http://emacsredux.com/blog/2013/03/26/smarter-open-line/ .
 
 It's handy to also delete the trailing newline when using [[elisp:(describe-key%20(kbd%20"C-k"))][C-k]].
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (defadvice kill-line (around kill-line-remove-newline activate)
     (let ((kill-whole-line t))
       ad-do-it))
@@ -389,7 +389,7 @@ I sometimes want to simply delete a region, rather than
 saving it to the kill-ring. I've added a function that allows me to
 type `C-u C-w' to delete the region, whilst `C-w' works as normal.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (defun kill-or-delete-region (beg end prefix)
     "Delete the region, storing it in the kill-ring.
   If a prefix argument is given, don't change the kill-ring."
@@ -417,7 +417,7 @@ Currently, I only use a few smartparens commands, using the same
 keybindings as the equivalent paredit commands. You can view a list of all smartparens
 commands with the command `sp-cheat-sheet'.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'smartparens)
 
   ;; (foo bar) -> foo bar
@@ -455,7 +455,7 @@ I like to use smartparens in all programming modes. Smartparens strict
 mode ensures parens always stay balanced when editing. For example,
 given code of the form =foo(1, |bar())=, C-k produces =foo(1, |)=.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'smartparens-config)
   (require 'smartparens-html)
   (add-hook 'prog-mode-hook #'smartparens-strict-mode)
@@ -469,7 +469,7 @@ given code of the form =foo(1, |bar())=, C-k produces =foo(1, |)=.
 It's useful to be able to quickly open files that we opened before. We
 define a function for this:
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'recentf)
 
   ;; offer recently accessed files from the menu
@@ -491,7 +491,7 @@ We bind this to `C-x C-r' (mnemonic: recent). By default, `C-x C-r' is bound to
 `find-file-read-only', which isn't very useful. (You can set any file
 as read only with `read-only-mode', mapped to `C-x C-q'.)
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (global-set-key (kbd "C-x C-r") 'ido-recentf-open)
 #+END_SRC
 
@@ -505,7 +505,7 @@ is fast and works well, but is only lightly maintained and doesn't
 support some version control systems. `projectile' is fast enough,
 actively maintained and featureful.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'projectile)
   (projectile-global-mode)
 #+END_SRC
@@ -513,7 +513,7 @@ actively maintained and featureful.
 We bind `projectile-find-file' to `C-x C-g', as we use it
 a lot and it's right next to `C-x C-f'.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (global-set-key (kbd "C-x C-g") 'projectile-find-file)
 #+END_SRC
 
@@ -522,7 +522,7 @@ a lot and it's right next to `C-x C-f'.
 Dired isn't very colourful by default, but `dired+' has helpful
 highlighting.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (setq diredp-hide-details-initially-flag nil)
   (require 'dired+)
 #+END_SRC
@@ -532,7 +532,7 @@ highlighting.
 When we delete a file, it should go to the recycle bin rather than
 just acting like shell:rm.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (setq delete-by-moving-to-trash t)
 #+END_SRC
 
@@ -540,7 +540,7 @@ Emacs' backup behaviour is helpful, so we increase the number of
 backups. However, rather than writing foo~1~ files everywhere, we
 store all our backups in `~/.saves`.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (setq
      backup-by-copying t      ; don't clobber symlinks
      backup-directory-alist
@@ -555,7 +555,7 @@ However, Emacs isn't aggressive enough with backups. We use
 backup-each-save to ensure we have a copy of state of every file we've
 modified.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'backup-each-save)
   (add-hook 'after-save-hook 'backup-each-save)
 #+END_SRC
@@ -565,7 +565,7 @@ modified.
 It's often useful to create a throwaway file to write a minimal
 testcase for some language or library feature.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (defun start--file (path)
     "Create a file at PATH, creating any containing directories as necessary.
   Visit the file after creation."
@@ -585,7 +585,7 @@ testcase for some language or library feature.
 
 It's also useful to quickly generate a minimal HTML page to play with.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (defun start-scratch-html-file (file-name)
     "Create a test HTML file in ~/scratch to play around with."
     (interactive "sName of scratch HTML file: ")
@@ -617,7 +617,7 @@ It's really useful to be able to move between flymake errors, so we
 bind F8 and F9 for this. Since there's a gap between these two keys,
 they're easy to find.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'flymake)
   (global-set-key (kbd "<f8>") 'flymake-goto-prev-error)
   (global-set-key (kbd "<f9>") 'flymake-goto-next-error)
@@ -626,7 +626,7 @@ they're easy to find.
 When the cursor (point) is on a line, we want to show the error on
 that line in the minibuffer.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (defun flymake-error-at-point ()
     "Show the flymake error in the minibuffer when point is on an invalid line."
     (when (get-char-property (point) 'flymake-overlay)
@@ -638,7 +638,7 @@ that line in the minibuffer.
 
 I prefer my errors underlined.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (custom-set-faces
    '(flymake-errline ((((class color)) (:underline "Red"))))
    '(flymake-warnline ((((class color)) (:underline "Orange")))))
@@ -655,13 +655,13 @@ how often we run it. We also change the highlighting to simply
 highlight the whole line, as it's much faster. See
 https://github.com/lunaryorn/flycheck/issues/153#issuecomment-19450255
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (setq flycheck-highlighting-mode 'lines)
 #+END_SRC
 
 Style flycheck errors consistently with flymake.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (custom-set-faces
    '(flycheck-error ((((class color)) (:underline "Red"))))
    '(flycheck-warning ((((class color)) (:underline "Orange")))))
@@ -669,7 +669,7 @@ Style flycheck errors consistently with flymake.
 
 We use the same movement keys for flycheck as we do for flymake.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'flycheck)
   (define-key flycheck-mode-map (kbd "<f8>") 'flycheck-previous-error)
   (define-key flycheck-mode-map (kbd "<f9>") 'flycheck-next-error)
@@ -678,7 +678,7 @@ We use the same movement keys for flycheck as we do for flymake.
 flycheck also provides a great overview buffer, but it's usually bound
 to =C-c ! f=. This is tricky to type, so we use our own keybinding.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (define-key flycheck-mode-map (kbd "C-c f") #'flycheck-list-errors)
 #+END_SRC
 
@@ -686,7 +686,7 @@ flycheck-next-error doesn't push the mark, so we can't use pop-mark to
 go back to our previous position. We define and activate advice to fix
 that.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (defadvice flycheck-next-error (around wh/flycheck-next-error-push-mark activate)
     (push-mark)
     ad-do-it)
@@ -696,7 +696,7 @@ that.
 
 Emacs' undo facility is excellent, but undo-tree is even better.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'undo-tree)
   (global-undo-tree-mode)
 #+END_SRC
@@ -704,14 +704,14 @@ Emacs' undo facility is excellent, but undo-tree is even better.
 Rather than just showing 'o' for edits, show a relative timestamp for
 when the edit occurred.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (setq undo-tree-visualizer-timestamps t)
 #+END_SRC
 
 Since we're using it the whole time, it's not very informative to show
 it on the mode line. Hide it.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'diminish)
   (diminish 'undo-tree-mode)
 #+END_SRC
@@ -729,7 +729,7 @@ and =defcustom= are re-evaluated, so they're reset to their initial
 values. It can even mark a function for edebug, if it's called with a
 prefix.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'edebug)
   (define-key emacs-lisp-mode-map (kbd "C-c e") #'edebug-eval-defun)
 #+END_SRC
@@ -737,7 +737,7 @@ prefix.
 Similarly, toggle-debug-on-error is something I call a lot when
 developing, and it doesn't have have any keybinding.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (define-key emacs-lisp-mode-map (kbd "C-c d") 'toggle-debug-on-error)
 #+END_SRC
 
@@ -745,7 +745,7 @@ When writing and debugging macros, it's really important to be able
 to see what they expand to. Macrostep allows us to incrementally
 expand the macros in our elisp file.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (define-key emacs-lisp-mode-map (kbd "C-c m") 'macrostep-expand)
 #+END_SRC
 
@@ -756,7 +756,7 @@ gold standard for lisp coding for some time. Smartparens has recently
 gained popularity as an paredit alternative, but I haven't invested
 the time to set it up for lisp yet.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (add-hook 'emacs-lisp-mode-hook
             (lambda () (paredit-mode 1)))
 #+END_SRC
@@ -767,7 +767,7 @@ We colour each pair of parentheses according to their depth. This is
 useful for seeing similarly nested lines, such as conditions in a
 cond expression.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
 #+END_SRC
 
@@ -775,7 +775,7 @@ Our theme (tangotango) only provides colours for the first few nesting
 levels before repeating. We override the face colours so we have
 unique colours until we're seven levels deep.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'rainbow-delimiters)
   (set-face-foreground 'rainbow-delimiters-depth-1-face "white")
   (set-face-foreground 'rainbow-delimiters-depth-2-face "cyan")
@@ -794,13 +794,13 @@ unique colours until we're seven levels deep.
 We use eldoc to show the signature of the function at point in the
 minibuffer.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
 #+END_SRC
 
 We don't want this minor mode to be shown in the minibuffer, however.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'diminish)
   (require 'eldoc)
   (diminish 'eldoc-mode)
@@ -812,14 +812,14 @@ It's really useful to use flycheck when coding elisp. It detects
 mistyped variables, deprecated functions (everything that
 byte-compilation checks).
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
 (add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
 #+END_SRC
 
 By default, flycheck also runs checkdoc on elisp code. This gets in
 the way for quick throwaway elisp scripts, so we switch off checkdoc.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'flycheck)
   (setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers))
 #+END_SRC
@@ -830,7 +830,7 @@ Emacs lisp highlighting works pretty well out of the box. However,
 dash.el provides addition highlighting for its functions and variables
 used in its anaphoric macros (e.g. `it').
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (eval-after-load "dash" '(dash-enable-font-lock))
 #+END_SRC
 
@@ -839,7 +839,7 @@ used in its anaphoric macros (e.g. `it').
 We use pyflakes with flycheck to check for coding errors. Flycheck
 includes other Python checkers so we also disable those.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'flycheck-pyflakes)
   (add-hook 'python-mode-hook 'flycheck-mode)
 
@@ -852,14 +852,14 @@ includes other Python checkers so we also disable those.
 I like to write docstrings with example usage. These examples aren't
 always valid doctests, so we switch off doctest checks.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (setenv "PYFLAKES_NODOCTEST" "y")
 #+END_SRC
 
 I often write triple-quoted docstrings, so it's convenient to have a
 shortcut for inserting them.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'python)
   
   (define-skeleton python-insert-docstring
@@ -875,14 +875,14 @@ shortcut for inserting them.
 Flycheck supports Haskell well, so we switch it on inside Haskell
 buffers.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (add-hook 'haskell-mode-hook 'flycheck-mode)
 #+END_SRC
 
 Tab doesn't indent in haskell-mode by default, so we enable
 indentation.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 #+END_SRC
 
@@ -890,7 +890,7 @@ indentation.
 
 Vagrant files are Ruby, so use Ruby syntax highlighting for them.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (add-to-list 'auto-mode-alist '("Vagrantfile" . ruby-mode))
 #+END_SRC
 
@@ -898,13 +898,13 @@ Vagrant files are Ruby, so use Ruby syntax highlighting for them.
 
 Flycheck supports C, so we switch it on.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (add-hook 'c-mode-common-hook #'flycheck-mode)
 #+END_SRC
 
 Always indent with 4 spaces, in the Linux kernel style.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (setq-default c-default-style "linux"
                 c-basic-offset 4)
 #+END_SRC
@@ -912,7 +912,7 @@ Always indent with 4 spaces, in the Linux kernel style.
 Hungry delete is useful in C (i.e. remove up to the next
 non-whitespace character on C-d) when removing indentation.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (setq-default c-hungry-delete-key t)
 #+END_SRC
 
@@ -921,7 +921,7 @@ non-whitespace character on C-d) when removing indentation.
 I like to indent my HTML with tabs (company policy at the first web
 shop I worked at).
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'sgml-mode)
   
   ; indent html with tabs only
@@ -935,7 +935,7 @@ shop I worked at).
 
 Automatically close < and " character inside HTML using smartparens.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'smartparens-config)
   (add-hook 'html-mode-hook 'smartparens-mode)
 #+END_SRC
@@ -943,14 +943,14 @@ Automatically close < and " character inside HTML using smartparens.
 Much of my HTML is for Django templates. These sometimes have .dtml
 filenames, so use html-mode for those files.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (add-to-list 'auto-mode-alist '("\\.dtml$" . html-mode))
 #+END_SRC
 
 We want syntax highlighting for Django template syntax, so add extra
 font faces and use them if we see Django syntax.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   ;; Define coloured faces for Django syntax.
   (defvar django-tag-face (make-face 'django-tag-face))
   (set-face-foreground 'django-tag-face "Orange")
@@ -975,7 +975,7 @@ font faces and use them if we see Django syntax.
 
 TODO: document the rest of our HTML configuration.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   ; skeletons for Django template tags
   (define-skeleton template-tag-skeleton
     "Insert a {% foo %} template tag"
@@ -1077,7 +1077,7 @@ TODO: document the rest of our HTML configuration.
 
 Typically I work on projects that use 4 spaces for CSS indenetation.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (add-hook 'css-mode-hook
             (function
              (lambda ()
@@ -1089,20 +1089,20 @@ Typically I work on projects that use 4 spaces for CSS indenetation.
 It's really handy to highlight CSS colour values to show the colour
 they represent.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (add-hook 'css-mode-hook 'rainbow-mode)
 #+END_SRC
 
 Smartparens is well suited to CSS too, to automatically pair up curly
 brackets.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (add-hook 'css-mode-hook 'smartparens-mode)
 #+END_SRC
 
 Company does a great job with completion for CSS, so use it here.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (add-hook 'css-mode-hook #'company-mode)
 #+END_SRC
 
@@ -1111,7 +1111,7 @@ Company does a great job with completion for CSS, so use it here.
 The less compiler doesn't give much feedback, but it does gives us a
 syntax check.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'less-css-mode)
   (add-hook 'less-css-mode-hook 'flymake-mode)
 #+END_SRC
@@ -1121,7 +1121,7 @@ syntax check.
 We often use code snippets in org-mode files, so syntax highlight
 them.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (setq org-src-fontify-natively t)
 #+END_SRC
 
@@ -1130,7 +1130,7 @@ them.
 Markdown is essentially prose, so it's nice to automatically line-wrap
 (by inserting newlines) as we type.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (add-hook 'markdown-mode-hook 'auto-fill-mode)
 #+END_SRC
    
@@ -1140,7 +1140,7 @@ Emacs will run garbage collection after `gc-cons-threshold' bytes of
 consing. The default value is 800,000 bytes, or ~ 0.7 MiB. By
 increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (setq gc-cons-threshold (* 10 1024 1024))
 #+END_SRC
 
@@ -1149,13 +1149,13 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 I rarely close Emacs, but using Zile means I use `C-x C-c' a lot. It's
 annoying to accidentally close Emacs, so warn first.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (setq confirm-kill-emacs #'y-or-n-p)
 #+END_SRC
 
 ** Undocumented
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'ui-customisations)
 
   (require 'file-customisations)
