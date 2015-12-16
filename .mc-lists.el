@@ -14,6 +14,7 @@
         end-of-visual-line
         forward-sexp
         helm-confirm-and-exit-minibuffer
+        hungry-delete-backward
         hungry-delete-forward
         isearch-abort
         jump-char-forward
