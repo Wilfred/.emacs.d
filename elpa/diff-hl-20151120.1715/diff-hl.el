@@ -5,7 +5,7 @@
 ;; Author:   Dmitry Gutov <dgutov@yandex.ru>
 ;; URL:      https://github.com/dgutov/diff-hl
 ;; Keywords: vc, diff
-;; Version:  1.8.0
+;; Version:  1.8.1
 ;; Package-Requires: ((cl-lib "0.2"))
 
 ;; This file is part of GNU Emacs.
@@ -417,7 +417,7 @@ in the source file, or the last line of the hunk above it."
               (with-current-buffer ,buffer
                 (save-buffer))
               (message "Hunk reverted"))))
-      (quit-windows-on diff-buffer))))
+      (quit-windows-on diff-buffer t))))
 
 (defun diff-hl-hunk-overlay-at (pos)
   (cl-loop for o in (overlays-in pos (1+ pos))

@@ -3,7 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "diff-hl" "diff-hl.el" (22036 5318 987032 606000))
+;;;### (autoloads nil "diff-hl" "diff-hl.el" (22122 45889 786431
+;;;;;;  401000))
 ;;; Generated autoloads from diff-hl.el
 
 (autoload 'diff-hl-mode "diff-hl" "\
@@ -39,8 +40,8 @@ See `diff-hl-mode' for more information on Diff-Hl mode.
 
 ;;;***
 
-;;;### (autoloads nil "diff-hl-amend" "diff-hl-amend.el" (22036 5319
-;;;;;;  37030 819000))
+;;;### (autoloads nil "diff-hl-amend" "diff-hl-amend.el" (22122 45889
+;;;;;;  826429 886000))
 ;;; Generated autoloads from diff-hl-amend.el
 
 (autoload 'diff-hl-amend-mode "diff-hl-amend" "\
@@ -74,8 +75,8 @@ See `diff-hl-amend-mode' for more information on Diff-Hl-Amend mode.
 
 ;;;***
 
-;;;### (autoloads nil "diff-hl-dired" "diff-hl-dired.el" (22036 5319
-;;;;;;  127027 600000))
+;;;### (autoloads nil "diff-hl-dired" "diff-hl-dired.el" (22122 45889
+;;;;;;  896427 234000))
 ;;; Generated autoloads from diff-hl-dired.el
 
 (autoload 'diff-hl-dired-mode "diff-hl-dired" "\
@@ -90,8 +91,8 @@ Toggle VC diff highlighting on the side of a Dired window.
 
 ;;;***
 
-;;;### (autoloads nil "diff-hl-flydiff" "diff-hl-flydiff.el" (22036
-;;;;;;  5318 947034 36000))
+;;;### (autoloads nil "diff-hl-flydiff" "diff-hl-flydiff.el" (22122
+;;;;;;  45889 736433 295000))
 ;;; Generated autoloads from diff-hl-flydiff.el
 
 (defvar diff-hl-flydiff-mode nil "\
@@ -110,8 +111,8 @@ Highlight diffs on-the-fly
 
 ;;;***
 
-;;;### (autoloads nil "diff-hl-margin" "diff-hl-margin.el" (22036
-;;;;;;  5318 897035 824000))
+;;;### (autoloads nil "diff-hl-margin" "diff-hl-margin.el" (22122
+;;;;;;  45889 696434 810000))
 ;;; Generated autoloads from diff-hl-margin.el
 
 (defvar diff-hl-margin-mode nil "\
@@ -130,7 +131,8 @@ Toggle displaying `diff-hl-mode' highlights on the margin.
 
 ;;;***
 
-;;;### (autoloads nil nil ("diff-hl-pkg.el") (22036 5319 287854 426000))
+;;;### (autoloads nil nil ("diff-hl-pkg.el") (22122 45889 999332
+;;;;;;  570000))
 
 ;;;***
 
