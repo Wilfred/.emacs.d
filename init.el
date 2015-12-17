@@ -1136,7 +1136,7 @@ Visit the file after creation."
 
 (setq ring-bell-function 'ignore)
 
-; suspend seems to crash on Gnome 3, and I don't use it anyway, so just disable it
+;; suspend seems to crash on Gnome 3, and I don't use it anyway, so just disable it
 (setq cannot-suspend t)
 (defun suspend-emacs (&rest)
   (interactive))
