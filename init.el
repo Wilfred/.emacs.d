@@ -1176,6 +1176,7 @@ Visit the file after creation."
  '(ethan-wspace-face ((t (:background "#2e3434"))))
  '(flymake-errline ((((class color)) (:underline "Red"))))
  '(flymake-warnline ((((class color)) (:underline "Orange"))))
+ '(highlight-symbol-face ((t (:underline t))))
  '(hl-line ((t (:background "gray14"))))
  '(hl-sexp-face ((t (:background "gray14"))))
  '(js2-function-param-face ((((class color)) (:foreground "Green"))))
