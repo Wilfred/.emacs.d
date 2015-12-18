@@ -21,6 +21,7 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 (add-hook 'prog-mode-hook #'wh-yas-no-expand-in-comment/string)
 
 ;; auto-yasnippet is great for throwaway operations with redundant code.
+(require 'auto-yasnippet)
 (global-set-key (kbd "s-w") #'aya-create)
 (global-set-key (kbd "s-y") #'aya-expand)
 
