@@ -492,7 +492,7 @@ Visit the file after creation."
 ;; It's also useful to quickly generate a minimal HTML page to play with.
 
 
-(defun start-scratch-html-file (file-name)
+(defun wh/start-scratch-html-file (file-name)
   "Create a test HTML file in ~/scratch to play around with."
   (interactive "sName of scratch HTML file: ")
   (start-scratch-file file-name)
@@ -500,13 +500,14 @@ Visit the file after creation."
   (insert "<!DOCTYPE html>
 <html>
     <head>
+        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">
         <title>
         </title>
         <style type=\"text/css\">
         </style>
     </head>
     <body>
-        
+    
     </body>
 </html>")
   (forward-line -2)
