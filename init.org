@@ -1101,6 +1101,12 @@ brackets.
   (add-hook 'css-mode-hook 'smartparens-mode)
 #+END_SRC
 
+Highlight symbols, so we can see repeated tag names and classes.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-hook 'css-mode-hook #'highlight-symbol-mode)
+#+END_SRC
+
 Company does a great job with completion for CSS, so use it here.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org

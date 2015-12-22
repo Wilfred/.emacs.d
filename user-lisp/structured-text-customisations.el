@@ -9,6 +9,8 @@
 	  '(lambda ()
 	     (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
 
+(add-hook 'yaml-mode-hook #'highlight-symbol-mode)
+
 ; markdown mode
 (autoload 'markdown-mode "markdown-mode"
    "Major mode for editing Markdown files" t)

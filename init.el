@@ -1010,6 +1010,8 @@ Visit the file after creation."
 
 (add-hook 'css-mode-hook 'smartparens-mode)
 
+(add-hook 'css-mode-hook #'highlight-symbol-mode)
+
 
 
 ;; Company does a great job with completion for CSS, so use it here.
