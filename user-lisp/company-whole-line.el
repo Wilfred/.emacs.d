@@ -1,3 +1,5 @@
+;; TODO: proper header.
+
 (require 'cl-lib)
 (require 'company)
 (require 's)
@@ -77,8 +79,6 @@ that start with the current line at point."
      (format "Line %d from %s"
              (get-text-property 0 'line-number arg)
              (get-text-property 0 'buffer arg)))))
-
-(add-to-list 'company-backends 'company-whole-line)
 
 (provide 'company-whole-line)
    
