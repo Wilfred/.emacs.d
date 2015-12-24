@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "mc-edit-lines" "mc-edit-lines.el" (21967 8696
-;;;;;;  369617 55000))
+;;;### (autoloads nil "mc-edit-lines" "mc-edit-lines.el" (22122 45807
+;;;;;;  709546 725000))
 ;;; Generated autoloads from mc-edit-lines.el
 
 (autoload 'mc/edit-lines "mc-edit-lines" "\
@@ -34,7 +34,7 @@ Add one cursor to the beginning of each line in the active region.
 ;;;***
 
 ;;;### (autoloads nil "mc-hide-unmatched-lines-mode" "mc-hide-unmatched-lines-mode.el"
-;;;;;;  (21967 8696 539610 681000))
+;;;;;;  (22122 45807 889539 879000))
 ;;; Generated autoloads from mc-hide-unmatched-lines-mode.el
 
 (autoload 'mc-hide-unmatched-lines-mode "mc-hide-unmatched-lines-mode" "\
@@ -48,12 +48,21 @@ mode. To leave this mode press <return> or \"C-g\"
 
 ;;;***
 
-;;;### (autoloads nil "mc-mark-more" "mc-mark-more.el" (21967 8696
-;;;;;;  669605 816000))
+;;;### (autoloads nil "mc-mark-more" "mc-mark-more.el" (22122 45807
+;;;;;;  989536 76000))
 ;;; Generated autoloads from mc-mark-more.el
 
 (autoload 'mc/mark-next-like-this "mc-mark-more" "\
 Find and mark the next part of the buffer matching the currently active region
+If no region is active add a cursor on the next line
+With negative ARG, delete the last one instead.
+With zero ARG, skip the last one and mark next.
+
+\(fn ARG)" t nil)
+
+(autoload 'mc/mark-next-like-this-word "mc-mark-more" "\
+Find and mark the next part of the buffer matching the currently active region
+If no region is active, mark the word at the point and find the next match
 With negative ARG, delete the last one instead.
 With zero ARG, skip the last one and mark next.
 
@@ -177,7 +186,7 @@ If the region is active and spans multiple lines, it will behave
 as if `mc/mark-all-in-region'. With the prefix ARG, it will call
 `mc/edit-lines' instead.
 
-If the region is inactive or on a single line, it will behave like 
+If the region is inactive or on a single line, it will behave like
 `mc/mark-all-like-this-dwim'.
 
 \(fn ARG)" t nil)
@@ -209,8 +218,8 @@ Mark the tag we're in and its pair for renaming.
 
 ;;;***
 
-;;;### (autoloads nil "mc-mark-pop" "mc-mark-pop.el" (21967 8696
-;;;;;;  509611 799000))
+;;;### (autoloads nil "mc-mark-pop" "mc-mark-pop.el" (22122 45807
+;;;;;;  839541 781000))
 ;;; Generated autoloads from mc-mark-pop.el
 
 (autoload 'mc/mark-pop "mc-mark-pop" "\
@@ -222,11 +231,17 @@ to the popped mark.
 ;;;***
 
 ;;;### (autoloads nil "mc-separate-operations" "mc-separate-operations.el"
-;;;;;;  (21967 8696 579609 181000))
+;;;;;;  (22122 45807 919538 738000))
 ;;; Generated autoloads from mc-separate-operations.el
 
 (autoload 'mc/insert-numbers "mc-separate-operations" "\
 Insert increasing numbers for each cursor, starting at 0 or ARG.
+
+\(fn ARG)" t nil)
+
+(autoload 'mc/insert-letters "mc-separate-operations" "\
+Insert increasing letters for each cursor, starting at 0 or ARG.
+     Where letter[0]=a letter[2]=c letter[26]=aa
 
 \(fn ARG)" t nil)
 
@@ -255,7 +270,7 @@ Aligns all cursors with whitespace like `mc/vertical-align' does
 ;;;***
 
 ;;;### (autoloads nil "multiple-cursors-core" "multiple-cursors-core.el"
-;;;;;;  (21967 8696 329618 556000))
+;;;;;;  (22122 45807 669548 246000))
 ;;; Generated autoloads from multiple-cursors-core.el
 
 (autoload 'multiple-cursors-mode "multiple-cursors-core" "\
@@ -266,7 +281,7 @@ Mode while multiple cursors are active.
 ;;;***
 
 ;;;### (autoloads nil "rectangular-region-mode" "rectangular-region-mode.el"
-;;;;;;  (21967 8696 469613 303000))
+;;;;;;  (22122 45807 799543 302000))
 ;;; Generated autoloads from rectangular-region-mode.el
 
 (autoload 'set-rectangular-region-anchor "rectangular-region-mode" "\
@@ -285,7 +300,7 @@ A mode for creating a rectangular region to edit
 ;;;***
 
 ;;;### (autoloads nil nil ("mc-cycle-cursors.el" "multiple-cursors-pkg.el"
-;;;;;;  "multiple-cursors.el") (21967 8696 856343 585000))
+;;;;;;  "multiple-cursors.el") (22122 45808 133755 145000))
 
 ;;;***
 
