@@ -246,8 +246,12 @@ Handy when editing markdown."
   
   (set-file-modes (buffer-file-name)
                   (file-modes-symbolic-to-number "u+rwx" (file-modes (buffer-file-name))))
-  (insert (ido-completing-read "Interpreter: " (list "#!/bin/bash" "#!/usr/bin/env python")))
-  (insert "\n\n"))
+  (let ((interpreter (ido-completing-read "Interpreter: " (list "#!/bin/bash" "#!/usr/bin/env python"))))
+    (insert interpreter)
+    (insert "\n\n")
+    (cond
+     ((s-ends-with-p "bash" interpreter) (sh-mode))
+     ((s-ends-with-p "python" interpreter) (python-mode)))))
 
 (defun wh/apply-on-region (beg end func)
   "Apply FUNC to the active region, replacing it with the result."
