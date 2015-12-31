@@ -56,12 +56,11 @@
               (lambda (x) (if (string-equal (substring x 0 1) ".") x))
               ido-temp-list))))
 
-;; When opening files, create their parent directories if they don't exist.
 (defadvice find-file (before make-directory-maybe (filename &optional wildcards) activate)
-  "Create parent directory if not exists while visiting file."
-  (unless (file-exists-p filename)
-    (let ((dir (file-name-directory filename)))
-      (unless (file-exists-p dir)
+  "When opening files, create their parent directories if they don't exist."
+  (unless (f-exists? filename)
+    (let ((dir (f-dirname filename)))
+      (unless (f-exists? dir)
         (make-directory dir)))))
 
 ;; ido is nicer for finding files, due to the configuration above for sorting by recency, and
