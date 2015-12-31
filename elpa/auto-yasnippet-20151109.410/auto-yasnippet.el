@@ -2,7 +2,7 @@
 
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 ;; URL: https://github.com/abo-abo/auto-yasnippet
-;; Package-Version: 20150717.451
+;; Package-Version: 20151109.410
 ;; Version: 0.3
 ;; Package-Requires: ((yasnippet "0.8.0"))
 
@@ -34,70 +34,60 @@
 ;;
 ;; 3. In your .emacs file:
 ;;     (require 'auto-yasnippet)
-;;     (global-set-key (kbd "H-w") 'aya-create)
-;;     (global-set-key (kbd "H-y") 'aya-expand)
+;;     (global-set-key (kbd "H-w") #'aya-create)
+;;     (global-set-key (kbd "H-y") #'aya-expand)
 
-;; Usage:
-;; e.g. in JavaScript write:
+;;; Usage:
+;; auto-yasnippet allows you to quickly write verbose code using an
+;; example as a template.
 ;;
-;; field~1 = document.getElementById("field~1");
+;; (1) A basic example
 ;;
-;; Since this just one line,
-;; just call `aya-create' (from anywhere on this line).
-;; The ~ chars disappear, yielding valid code.
-;; `aya-current' becomes:
-;; "field$1 = document.getElementById(\"field$1\");"
-;; Now by calling `aya-expand' multiple times, you get:
+;; Suppose we want to write:
 ;;
-;; field1 = document.getElementById("field1");
-;; field2 = document.getElementById("field2");
-;; field3 = document.getElementById("field3");
-;; fieldFinal = document.getElementById("fieldFinal");
+;; count_of_red = get_total("red");
+;; count_of_blue = get_total("blue");
+;; count_of_green = get_total("green");
 ;;
-;; e.g. in Java write:
+;; We write a template, using ~ to represent variables that we want to
+;; replace:
 ;;
-;; class Light~On implements Runnable {
-;;   public Light~On() {}
-;;   public void run() {
-;;     System.out.println("Turning ~on lights");
-;;     light = ~true;
-;;   }
+;; count_of_~red = get_total("~red");
+;;
+;; Call `aya-create' with point on this line, and the template is
+;; converted to a value we want:
+;;
+;; count_of_red = get_total("red");
+;;
+;; Then call `aya-expand' and you can 'paste' additional instances of
+;; the template. Yasnippet is active, so you can tab between
+;; placeholders as usual.
+;;
+;; count_of_red = get_total("red");
+;; count_of_ = get_total("");
+;;
+;; (2) Inline text
+;;
+;; ~ replaces the symbol after it. If you want to replace arbitrary
+;; text, use Emacs-style backticks:
+;;
+;; `red'_total = get_total("`red'_values");
+;;
+;; (3) Multiple placeholders
+;;
+;; You can replace multiple values in a template, just like normal
+;; yasnippet.
+;;
+;; In this example, our template has multiple lines, so we need to
+;; select the relevant lines before calling `aya-create'.
+;;
+;; ~FooType get~Foo() {
+;;     // Get the ~foo attribute on this.
+;;     return this.~foo;
 ;; }
 ;;
-;; This differs from the code that you wanted to write only by 4 ~ chars.
-;; Since it's more than one line, select the region and call `aya-create'.
-;; Again, the ~ chars disappear, yielding valid code.
-;; `aya-current' becomes:
-;; "class Light$1 implements Runnable {
-;;   public Light$1() {}
-;;   public void run() {
-;;     System.out.println(\"Turning $2 lights\");
-;;     light = $3;
-;;   }
-;; }"
-;;
-;; Now by calling `aya-expand', you can quickly fill in:
-;; class LightOff implements Runnable {
-;;   public LightOff() {}
-;;   public void run() {
-;;     System.out.println("Turning off lights");
-;;     light = false;
-;;   }
-;; }
-;;
-;; e.g. in C++ write:
-;; const Point<3> curl(grad[~2][~1] - grad[~1][~2],
-;;
-;; select the region between the paren and the comma and call `aya-create'.
-;;
-;; You can easily obtain the final code:
-
-;; const Point<3> curl(grad[2][1] - grad[1][2],
-;;                     grad[0][2] - grad[2][0],
-;;                     grad[1][0] - grad[0][1]);
-;;
-;; Note how annoying it would be to triple check that the indices match.
-;; Now you just have to check for one line.
+;; We only fill in three placeholders in this example (the fourth is
+;; the same as the third).
 
 ;;; Code:
 (require 'yasnippet nil t)
@@ -110,6 +100,10 @@
   "~/.emacs.d/snippets"
   "Directory to save auto yasnippets."
   :type 'directory)
+
+(defcustom aya-create-with-newline nil
+  "If non-nil `aya-create' creates snippet with trailing newline."
+  :type 'boolean)
 
 (defvar aya-current ""
   "Used as snippet body, when `aya-expand' is called.")
@@ -133,6 +127,13 @@ But if you set [A-Za-z0-9-_], Foo_bar will expand to $1.")
   "Function to call if no snippet markers were on line / in region.")
 (make-variable-buffer-local 'aya-default-function)
 
+(defun aya--maybe-append-newline (str)
+  "Append newline to STR if `aya-create-with-newline' is non-nil."
+  (if (and aya-create-with-newline
+           (not (string= "\n" (substring str -1))))
+      (concat str "\n")
+    str))
+
 ;;;###autoload
 (defun aya-create-one-line ()
   "A simplistic `aya-create' to create only one mirror.
@@ -142,18 +143,23 @@ It uses a different marker, which is `aya-marker-one-line'.
 You can use it to quickly generate one-liners such as
 menu.add_item(spamspamspam, \"spamspamspam\")"
   (interactive)
-  (let* ((beg (line-beginning-position))
-         (end (line-end-position))
-         (line (buffer-substring-no-properties beg (point))))
-    (when (string-match "\\$" line)
-      (setq line
-            (concat
-             (replace-regexp-in-string "\\$" "$1" line)
-             "$1"
-             (buffer-substring-no-properties (point) end)))
-      (delete-region beg end)
-      (setq aya-current line)
-      (yas-expand-snippet line))))
+  (when aya-marker-one-line
+    (let* ((beg (line-beginning-position))
+           (end (line-end-position))
+           (line (buffer-substring-no-properties beg (point)))
+           (re (regexp-quote aya-marker-one-line)))
+      (when (and (not (string-match (regexp-quote aya-marker) line))
+                 (string-match re line))
+        (setq line
+              (aya--maybe-append-newline
+               (concat
+                (replace-regexp-in-string re "$1" line)
+                (if (= (point) end) "" "$1")
+                (buffer-substring-no-properties (point) end))))
+        (delete-region beg end)
+        (when aya-create-with-newline (delete-char 1))
+        (setq aya-current line)
+        (yas-expand-snippet line)))))
 
 (defun aya--parse (str)
   "Parse STR."
@@ -201,9 +207,10 @@ with words prefixed by `aya-marker' as fields, and mirrors properly set up."
                  (lambda (x) (if (consp x) (cdr x) x))
                  res ""))
         (setq aya-current
-              (mapconcat
-               (lambda (x) (if (consp x) (format "$%d" (car x)) x))
-               res ""))
+              (aya--maybe-append-newline
+               (mapconcat
+                (lambda (x) (if (consp x) (format "$%d" (car x)) x))
+                res "")))
         ;; try some other useful action if it's defined for current buffer
         (and (functionp aya-default-function)
              (funcall aya-default-function))))))
