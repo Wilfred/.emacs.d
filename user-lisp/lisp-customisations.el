@@ -19,6 +19,7 @@
 (global-set-key (kbd "s-u") #'paredit-backward-up)
 (global-set-key (kbd "s-d") #'paredit-forward-down)
 (global-set-key (kbd "<s-backspace>") #'backward-kill-sexp)
+(global-set-key (kbd "s-k") #'kill-sexp)
 
 (require 'highlight-quoted)
 ;; Highlight the ' character itself in the same colour
