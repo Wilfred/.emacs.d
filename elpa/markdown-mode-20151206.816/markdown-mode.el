@@ -31,7 +31,7 @@
 ;; Maintainer: Jason R. Blevins <jrblevin@sdf.org>
 ;; Created: May 24, 2007
 ;; Version: 2.0
-;; Package-Version: 20151108.735
+;; Package-Version: 20151206.816
 ;; Keywords: Markdown, GitHub Flavored Markdown, itex
 ;; URL: http://jblevins.org/projects/markdown-mode/
 
@@ -819,6 +819,9 @@
 
 (defvar markdown-reference-label-history nil
   "History of used reference labels.")
+
+(defvar markdown-live-preview-mode nil
+  "Sentinel variable for `markdown-live-preview-mode'.")
 
 
 ;;; Customizable Variables ====================================================
