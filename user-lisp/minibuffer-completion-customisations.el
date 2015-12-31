@@ -37,20 +37,20 @@
                 (cond ((and (string-match "[:\\*]$" a) (not (string-match "[:\\*]$" b)))
                        nil)
                       ((and (string-match "[:\\*]$" b) (not (string-match "[:\\*]$" a)))
-                         t)
+                       t)
                       ((and (string-match "[:\\*]$" a) (string-match "[:\\*]$" b))
                        nil)
                       (t
-                         (let ((ta (nth 5 (file-attributes
-                                           (concat ido-current-directory a))))
-                               (tb (nth 5 (file-attributes
-                                           (concat ido-current-directory b)))))
-                           (cond ((and (null ta) tb) nil) ; avoid temporary buffers
-                                 ((and ta (null tb)) t)
-                                 ((and (null ta) (null tb)) nil)
-                                 (t (if (= (nth 0 ta) (nth 0 tb))
-                                        (> (nth 1 ta) (nth 1 tb))
-                                      (> (nth 0 ta) (nth 0 tb)))))))))))
+                       (let ((ta (nth 5 (file-attributes
+                                         (concat ido-current-directory a))))
+                             (tb (nth 5 (file-attributes
+                                         (concat ido-current-directory b)))))
+                         (cond ((and (null ta) tb) nil) ; avoid temporary buffers
+                               ((and ta (null tb)) t)
+                               ((and (null ta) (null tb)) nil)
+                               (t (if (= (nth 0 ta) (nth 0 tb))
+                                      (> (nth 1 ta) (nth 1 tb))
+                                    (> (nth 0 ta) (nth 0 tb)))))))))))
   (ido-to-end  ;; move . files to end (again)
    (delq nil (mapcar
               (lambda (x) (if (string-equal (substring x 0 1) ".") x))
