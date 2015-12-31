@@ -6,6 +6,10 @@
 ;; use highlight-symbol-mode in all programming modes
 (add-hook 'prog-mode-hook '(lambda () (highlight-symbol-mode 1)))
 
+;; but don't highlight anything if there's only one occurrence of this
+;; symbol.
+(setq highlight-symbol-highlight-single-occurrence nil)
+
 (require 'diminish)
 (diminish 'highlight-symbol-mode)
 
