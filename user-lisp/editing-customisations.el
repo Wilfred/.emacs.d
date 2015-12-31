@@ -327,4 +327,9 @@ If the region is active, toggle commenting on the whole region."
          (directory (f-dirname backup-name)))
     (dired directory)))
 
+;; Automatically save when tabbing out of a buffer.
+;; Inspired by http://ngnghm.github.io/blog/2015/08/03/chapter-2-save-our-souls/
+(require 'super-save) ;; TODO: send autoload patch upstream.
+(super-save-initialize)
+
 (provide 'editing-customisations)
