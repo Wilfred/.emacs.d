@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "js2-imenu-extras" "js2-imenu-extras.el" (21967
-;;;;;;  8711 599046 505000))
+;;;### (autoloads nil "js2-imenu-extras" "js2-imenu-extras.el" (22122
+;;;;;;  45831 938625 808000))
 ;;; Generated autoloads from js2-imenu-extras.el
 
 (autoload 'js2-imenu-extras-setup "js2-imenu-extras" "\
@@ -19,8 +19,8 @@ Toggle Imenu support for frameworks and structural patterns.
 
 ;;;***
 
-;;;### (autoloads nil "js2-mode" "js2-mode.el" (21967 8711 749040
-;;;;;;  891000))
+;;;### (autoloads nil "js2-mode" "js2-mode.el" (22122 45832 78620
+;;;;;;  490000))
 ;;; Generated autoloads from js2-mode.el
 
 (autoload 'js2-highlight-unused-variables-mode "js2-mode" "\
@@ -41,10 +41,22 @@ Major mode for editing JavaScript code.
 
 \(fn)" t nil)
 
+(autoload 'js2-jsx-mode "js2-mode" "\
+Major mode for editing JSX code.
+
+To customize the indentation for this mode, set the SGML offset
+variables (`sgml-basic-offset' et al) locally, like so:
+
+  (defun set-jsx-indentation ()
+    (setq-local sgml-basic-offset js2-basic-offset))
+  (add-hook 'js2-jsx-mode-hook #'set-jsx-indentation)
+
+\(fn)" t nil)
+
 ;;;***
 
 ;;;### (autoloads nil nil ("js2-mode-pkg.el" "js2-old-indent.el")
-;;;;;;  (21967 8711 860788 743000))
+;;;;;;  (22122 45832 182674 939000))
 
 ;;;***
 
