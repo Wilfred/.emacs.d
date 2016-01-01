@@ -1,10 +1,10 @@
 ;;; nginx-mode-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (nginx-mode) "nginx-mode" "nginx-mode.el" (21423
-;;;;;;  59464 156316 906000))
+;;;### (autoloads nil "nginx-mode" "nginx-mode.el" (22122 45805 359636
+;;;;;;  102000))
 ;;; Generated autoloads from nginx-mode.el
 
 (autoload 'nginx-mode "nginx-mode" "\
@@ -15,20 +15,15 @@ The variable nginx-indent-level controls the amount of indentation.
 
 \(fn)" t nil)
 
-(add-to-list 'auto-mode-alist '("nginx.conf$" . nginx-mode) '("/etc/nginx/.*" . nginx-mode))
+(add-to-list 'auto-mode-alist '("nginx\\.conf\\'" . nginx-mode))
+
+(add-to-list 'auto-mode-alist '("/nginx/.+\\.conf\\'" . nginx-mode))
 
 ;;;***
 
-;;;### (autoloads nil nil ("nginx-mode-pkg.el") (21423 59464 211876
-;;;;;;  724000))
-
-;;;***
-
-(provide 'nginx-mode-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; nginx-mode-autoloads.el ends here
