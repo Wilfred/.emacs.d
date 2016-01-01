@@ -4,7 +4,7 @@
 
 ;; Author: Nathaniel Flath <flat0103@gmail.com>
 ;; URL: http://github.com/nflath/hungry-delete
-;; Package-Version: 20141207.2125
+;; Package-Version: 20151203.1314
 ;; Version: 1.1.2
 
 ;; This file is not part of GNU Emacs.
@@ -207,7 +207,8 @@ or -1 by default)."
 whitespace after or before point when the deletion command is
 executed."
   :init-value nil
-  :group 'hungry-delete)
+  :group 'hungry-delete
+  :lighter " h")
 
 ;;;###autoload
 (defun turn-on-hungry-delete-mode ()
