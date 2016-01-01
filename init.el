@@ -477,12 +477,12 @@ Visit the file after creation."
   (make-directory (file-name-directory path) t)
   (find-file path))
 
-(defun start-scratch-file (file-name)
+(defun wh/start-scratch-file (file-name)
   "Create a file in ~/scratch for the given file name."
   (interactive "sName of scratch file: ")
   (start--file (expand-file-name (format "~/scratch/%s" file-name))))
 
-(defun start-tmp-file (file-name)
+(defun wh/start-tmp-file (file-name)
   "Create a file in /tmp for the given file name."
   (interactive "sName of temporary file: ")
   (start--file (expand-file-name (format "/tmp/%s" file-name))))
