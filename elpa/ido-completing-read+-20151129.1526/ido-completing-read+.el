@@ -5,9 +5,9 @@
 ;; Filename: ido-completing-read+.el
 ;; Author: Ryan Thompson
 ;; Created: Sat Apr  4 13:41:20 2015 (-0700)
-;; Version: 3.6
-;; Package-Version: 20150630.926
-;; Package-Requires: ((emacs "24.1"))
+;; Version: 3.9
+;; Package-Version: 20151129.1526
+;; Package-Requires: ((emacs "24.1") (cl-lib "0.5"))
 ;; URL: https://github.com/DarwinAwardWinner/ido-ubiquitous
 ;; Keywords: ido, completion, convenience
 
@@ -17,7 +17,7 @@
 ;;
 ;;; Commentary:
 
-;; This package implments the `ido-completing-read+' function, which
+;; This package implements the `ido-completing-read+' function, which
 ;; is a wrapper for `ido-completing-read'. Importantly, it detects
 ;; edge cases that ordinary ido cannot handle and either adjusts them
 ;; so ido *can* handle them, or else simply falls back to Emacs'
@@ -42,18 +42,24 @@
 ;;
 ;;; Code:
 
-(defconst ido-completing-read+-version "3.6"
+(defconst ido-completing-read+-version "3.9"
   "Currently running version of ido-ubiquitous.
 
 Note that when you update ido-completing-read+, this variable may
 not be updated until you restart Emacs.")
 
 (require 'ido)
-(require 'cl-macs)
+(require 'cl-lib)
 
 ;;; Debug messages
 
-(defvar ido-cr+-debug-mode)
+(define-minor-mode ido-cr+-debug-mode
+  "If non-nil, ido-cr+ will print debug info.
+
+Debug info is printed to the *Messages* buffer."
+  nil
+  :global t
+  :group 'ido-completing-read-plus)
 
 ;; Defined as a macro for efficiency (args are not evaluated unless
 ;; debug mode is on)
@@ -88,7 +94,7 @@ not be updated until you restart Emacs.")
     completing-read-function)
   "Alternate completing-read function to use when ido is not wanted.
 
-This will be used for functions that are incompatibile with ido
+This will be used for functions that are incompatible with ido
 or if ido cannot handle the completion arguments. It will also be
 used when the user requests non-ido completion manually via C-f
 or C-b."
@@ -122,7 +128,7 @@ disable fallback based on collection size, set this to nil."
 
 Enabling this may interfere with or cause errors in other
 packages that use `ido-completing-read'. If you discover any such
-incompatibilites, please file a bug report at
+incompatibilities, please file a bug report at
 https://github.com/DarwinAwardWinner/ido-ubiquitous/issues"
   :type 'boolean)
 
@@ -271,17 +277,31 @@ shouldn't matter.")
     ;; point.
     (setq ido-context-switch-command #'ido-fallback-command)))
 
-;;; Debug mode
+;;; Workaround for https://github.com/DarwinAwardWinner/ido-ubiquitous/issues/93
 
-;; This is defined at the end so it goes at the bottom of the
-;; customization group
-(define-minor-mode ido-cr+-debug-mode
-  "If non-nil, ido-cr+ will print debug info.
+(defadvice ido-select-text (around fix-require-match-behavior activate)
+  "Fix ido behavior when `require-match' is non-nil.
 
-Debug info is printed to the *Messages* buffer."
-  nil
-  :global t
-  :group 'ido-cr+)
+Standard ido will allow C-j to exit with an incomplete completion
+even when `require-match' is non-nil. Ordinary completion does
+not allow this. In ordinary completion, RET on an incomplete
+match is equivalent to TAB, and C-j selects the first match.
+Since RET in ido already selects the first match, this advice
+sets up C-j to be equivalent to TAB in the same situation."
+  (if (and
+       ;; Only if using ico-cr+
+       ido-cr+-enable-this-call
+       ;; Only if require-match is non-nil
+       (with-no-warnings ido-require-match)
+       ;; Only if current text is non-empty
+       (not (string= ido-text ""))
+       ;; Only if current text is not a complete choice
+       (not (member ido-text (with-no-warnings ido-cur-list))))
+      (progn
+        (ido-cr+--debug-message
+         "Overriding C-j behavior for require-match: performing completion instead of exiting.")
+        (ido-complete))
+    ad-do-it))
 
 (provide 'ido-completing-read+)
 
