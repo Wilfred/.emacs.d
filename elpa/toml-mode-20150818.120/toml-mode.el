@@ -4,7 +4,7 @@
 
 ;; Author: Felix Chern <idryman@gmail.com>
 ;; Keywords: data toml
-;; Package-Version: 20150702.2125
+;; Package-Version: 20150818.120
 ;; Version: 0.1.3
 ;; URL: https://github.com/dryman/toml-mode.el
 
@@ -40,7 +40,7 @@
         syn-table))
 
 (defvar toml-keywords
-  '(("\\[[a-zA-Z][^ \n\t\r]+\\]" . font-lock-keyword-face)
+  '(("\\[\\{1,2\\}[a-zA-Z][^ \n\t\r]+\\]\\{1,2\\}" . font-lock-keyword-face)
     ("[0-9]\\{4\\}-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9][Zz]"
      . font-lock-variable-name-face)
     ("\\b[-+]?\\(?:[0-9]*\\.[0-9]+|[0-9]+\\)\\b" . font-lock-variable-name-face))
