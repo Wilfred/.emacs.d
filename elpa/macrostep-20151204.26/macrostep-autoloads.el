@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "macrostep" "macrostep.el" (21967 8700 129476
-;;;;;;  191000))
+;;;### (autoloads nil "macrostep" "macrostep.el" (22122 45816 619207
+;;;;;;  950000))
 ;;; Generated autoloads from macrostep.el
 
 (autoload 'macrostep-mode "macrostep" "\
@@ -27,7 +27,30 @@ buffer temporarily read-only. If macrostep-mode is active and the
 form following point is not a macro form, search forward in the
 buffer and expand the next macro form found, if any.
 
-\(fn)" t nil)
+With a prefix argument, the expansion is displayed in a separate
+buffer instead of inline in the current buffer.  Setting
+`macrostep-expand-in-separate-buffer' to non-nil swaps these two
+behaviors.
+
+\(fn &optional TOGGLE-SEPARATE-BUFFER)" t nil)
+
+;;;***
+
+;;;### (autoloads nil "macrostep-c" "macrostep-c.el" (22122 45816
+;;;;;;  579209 470000))
+;;; Generated autoloads from macrostep-c.el
+
+(autoload 'macrostep-c-mode-hook "macrostep-c" "\
+
+
+\(fn)" nil nil)
+
+(add-hook 'c-mode-hook #'macrostep-c-mode-hook)
+
+;;;***
+
+;;;### (autoloads nil nil ("macrostep-pkg.el") (22122 45816 717304
+;;;;;;  401000))
 
 ;;;***
 
