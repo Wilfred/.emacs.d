@@ -1,4 +1,4 @@
-(define-package "emacs-eclim" "20150815.237" "An interface to the Eclipse IDE."
+(define-package "emacs-eclim" "20150816.220" "An interface to the Eclipse IDE."
   '((dash "2.11.0")
     (json "1.2")
     (popup "0.5.2")
