@@ -2730,31 +2730,32 @@ see `sp-pair' for description."
 ;; figure out how to detect the argument to self-insert-command that
 ;; resulted to this insertion
 (defun sp--post-self-insert-hook-handler ()
-  (when smartparens-mode
-    (let (op action)
-      (setq op sp-last-operation)
-      (when (region-active-p)
-        (sp-wrap--initialize))
-      (cond
-       (sp-wrap-overlays
-        (sp-wrap))
-       (t
-        ;; TODO: this does not pick correct pair!! it uses insert and not wrapping code
-        (sp--setaction action (-when-let ((_ . open-pairs) (sp--all-pairs-to-insert))
-                                (catch 'done
-                                  (-each open-pairs
-                                    (-lambda ((&keys :open open :close close))
-                                      (--when-let (sp--wrap-repeat-last (cons open close))
-                                        (throw 'done it)))))))
-        (sp--setaction action (sp-insert-pair))
-        (sp--setaction action (sp-skip-closing-pair))
-        ;; if nothing happened, we just inserted a character, so
-        ;; set the apropriate operation.  We also need to check
-        ;; for `sp--self-insert-no-escape' not to overwrite
-        ;; it.  See `sp-autoinsert-quote-if-followed-by-closing-pair'.
-        (when (and (not action)
-                   (not (eq sp-last-operation 'sp-self-insert-no-escape)))
-          (setq sp-last-operation 'sp-self-insert)))))))
+  (with-demoted-errors "sp--post-self-insert-hook-handler: %S"
+    (when smartparens-mode
+      (let (op action)
+        (setq op sp-last-operation)
+        (when (region-active-p)
+          (sp-wrap--initialize))
+        (cond
+         (sp-wrap-overlays
+          (sp-wrap))
+         (t
+          ;; TODO: this does not pick correct pair!! it uses insert and not wrapping code
+          (sp--setaction action (-when-let ((_ . open-pairs) (sp--all-pairs-to-insert))
+                                  (catch 'done
+                                    (-each open-pairs
+                                      (-lambda ((&keys :open open :close close))
+                                        (--when-let (sp--wrap-repeat-last (cons open close))
+                                          (throw 'done it)))))))
+          (sp--setaction action (sp-insert-pair))
+          (sp--setaction action (sp-skip-closing-pair))
+          ;; if nothing happened, we just inserted a character, so
+          ;; set the apropriate operation.  We also need to check
+          ;; for `sp--self-insert-no-escape' not to overwrite
+          ;; it.  See `sp-autoinsert-quote-if-followed-by-closing-pair'.
+          (when (and (not action)
+                     (not (eq sp-last-operation 'sp-self-insert-no-escape)))
+            (setq sp-last-operation 'sp-self-insert))))))))
 
 ;; Unfortunately, some modes rebind "inserting" keys to their own
 ;; handlers but do not hand over the insertion back to
@@ -3712,7 +3713,7 @@ Non-nil return value means to skip the result."
          (sp--looking-back "\\\\" 1 t))))
 
 ;; TODO: since this function is used for all the navigation, we should
-;; optimaze it a lot! Get some elisp profiler! Also, we should split
+;; optimize it a lot! Get some elisp profiler! Also, we should split
 ;; this into smaller functions (esp. the "first expression search"
 ;; business)
 (defun sp-get-paired-expression (&optional back)
@@ -3774,12 +3775,27 @@ The expressions considered are those delimited by pairs on
       (while (and (not done)
                   (sp--search-and-save-match
                    search-fn
-                   (sp--get-allowed-regexp)
+                   ;; #556 The regexp we use here might exclude or
+                   ;; include extra pairs in case the next match is in
+                   ;; a different context.  There's no way to know
+                   ;; beforehand where we land, so we need to consider
+                   ;; *all* pairs in the search and then re-check with
+                   ;; a regexp based on the context of the found pair
+                   (sp--get-allowed-regexp
+                    ;; use all the pairs!
+                    (sp--get-pair-list))
                    (if back bw-bound fw-bound)
                    r mb me ms))
         ;; search for the first opening pair.  Here, only consider tags
         ;; that are allowed in the current context.
-        (unless (sp--skip-match-p ms mb me :global-skip global-skip-fn)
+        (unless (or (not (save-excursion
+                           (if back
+                               (progn
+                                 (goto-char me)
+                                 (sp--looking-back-p (sp--get-allowed-regexp)))
+                             (goto-char mb)
+                             (sp--looking-at-p (sp--get-allowed-regexp)))))
+                    (sp--skip-match-p ms mb me :global-skip global-skip-fn))
           ;; if the point originally wasn't inside of a string or comment
           ;; but now is, jump out of the string/comment and only search
           ;; the code.  This ensures that the comments and strings are
@@ -4316,7 +4332,7 @@ enclosing list boundaries or line boundaries."
 (defun sp-get-enclosing-sexp (&optional arg)
   "Return the balanced expression that wraps point at the same level.
 
-With ARG, ascend that many times.  This function expect positive
+With ARG, ascend that many times.  This function expects a positive
 argument."
   (setq arg (or arg 1))
   (save-excursion
@@ -5921,8 +5937,7 @@ Because the structure is much looser in these languages, this
 command currently does not support all the prefix argument
 triggers that `sp-forward-slurp-sexp' does."
   (interactive)
-  (let ((start-line (line-number-at-pos))
-        slurped-within-line)
+  (let (slurped-within-line)
     (-if-let* ((enc (sp-get-enclosing-sexp))
                (bsexp (save-excursion
                         (sp-get enc (goto-char :end))
@@ -5937,7 +5952,8 @@ triggers that `sp-forward-slurp-sexp' does."
               (delete-region (line-beginning-position) (1+ (line-end-position))))
             (sp-forward-sexp)
 
-            (when (eq (line-number-at-pos) start-line)
+            (when (eq (line-number-at-pos :beg)
+                      (line-number-at-pos :end))
               (setq slurped-within-line t))
             ;; If we're slurping over multiple lines, include the suffix on the next line.
             ;; I.e. while () {|} -> while () {\n foo(); \n}
