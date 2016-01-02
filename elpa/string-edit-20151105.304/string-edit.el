@@ -4,7 +4,7 @@
 
 ;; Author: Magnar Sveen <magnars@gmail.com>
 ;; Version: 0.1.0
-;; Package-Version: 20150809.438
+;; Package-Version: 20151105.304
 ;; Package-Requires: ((dash "1.2.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,9 @@
 ;;; Code:
 
 (require 'dash)
+
+(defvar se/original)
+(defvar se/original-buffer)
 
 ;;;###autoload
 (defun string-edit-at-point ()
