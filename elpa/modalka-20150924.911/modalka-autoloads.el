@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "modalka" "modalka.el" (22005 29916 529471
-;;;;;;  778000))
+;;;### (autoloads nil "modalka" "modalka.el" (22122 45809 539477
+;;;;;;  132000))
 ;;; Generated autoloads from modalka.el
 
 (defvar modalka-excluded-modes nil "\
