@@ -1,10 +1,10 @@
 ;;; scf-mode-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads (scf-mode) "scf-mode" "scf-mode.el" (20837 20596
-;;;;;;  619750 960000))
+;;;### (autoloads nil "scf-mode" "scf-mode.el" (22122 45756 531470
+;;;;;;  481000))
 ;;; Generated autoloads from scf-mode.el
 
 (autoload 'scf-mode "scf-mode" "\
@@ -14,16 +14,9 @@ shorten file names in a compilation buffer
 
 ;;;***
 
-;;;### (autoloads nil nil ("scf-mode-pkg.el") (20837 20596 727473
-;;;;;;  517000))
-
-;;;***
-
-(provide 'scf-mode-autoloads)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
-;; coding: utf-8
 ;; End:
 ;;; scf-mode-autoloads.el ends here

@@ -16,8 +16,8 @@
 ;; Maintainer: Le Wang
 
 ;; Created: Sat Oct  1 03:07:18 2011 (+0800)
-;; Version: 20111202.2307
-;; X-Original-Version: 0.1
+;; Version: 0.1
+;; Package-Version: 20151121.1848
 ;; Last-Updated: Tue Oct  4 13:39:53 2011 (+0800)
 ;;           By: Le Wang
 ;;     Update #: 25
@@ -45,8 +45,8 @@
 ;;
 ;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
+;;; License:
+
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
 ;; published by the Free Software Foundation; either version 3, or
@@ -150,12 +150,5 @@ overlay onto `scf-invisible-overlays'."
                              (point-max)))))
           (setq scf-parsed-point-max (point))))
     (remove-from-invisibility-spec '(scf . t))))
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; scf-mode.el ends here
 
 ;;; scf-mode.el ends here
