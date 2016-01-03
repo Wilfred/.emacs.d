@@ -18,6 +18,13 @@
 (require 'avy-zap)
 (setq avy-zap-forward-only t)
 (setq avy-zap-dwim-prefer-avy nil) ;; https://github.com/cute-jumper/avy-zap/issues/3
+
+(defadvice zap-up-to-char (around zap-case-sensitive activate)
+  "Ensure `zap-up-to-char' is case sensitive.
+This command is generally called from `avy-zap-up-to-char-dwim'."
+  (let ((case-fold-search nil))
+    ad-do-it))
+
 (global-set-key (kbd "M-z") #'avy-zap-up-to-char-dwim)
 
 ;; to be consistent with C-M-f as forward-sexp, bind C-M-backspace to backward-kill-sexp
