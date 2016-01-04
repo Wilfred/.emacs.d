@@ -1019,6 +1019,17 @@ Visit the file after creation."
 
 (add-hook 'css-mode-hook #'company-mode)
 
+(defun wh/toggle-css-important ()
+  (interactive)
+  (save-excursion
+    (end-of-line)
+    (backward-char 1)
+    (if (looking-back "!important")
+        (delete-char (- (length " !important")))
+      (insert " !important"))))
+
+(define-key css-mode-map (kbd "C-c i") #'wh/toggle-css-important)
+
 ;; Less (CSS)
 
 ;; The less compiler doesn't give much feedback, but it does gives us a
