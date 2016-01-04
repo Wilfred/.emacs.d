@@ -33,5 +33,9 @@
  '(diff-hl-delete ((t (:inherit diff-removed :background "red3" :foreground "red3"))))
  '(diff-hl-insert ((t (:inherit diff-added :background "green4" :foreground "green4")))))
 
+;; `with-editor-finish' is bound to C-c C-c by default, which is a bit
+;; tedious to type.
+(define-key with-editor-mode-map (kbd "<f12>") #'with-editor-finish)
+
 (provide 'git-customisations)
 
