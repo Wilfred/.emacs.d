@@ -1299,6 +1299,8 @@ annoying to accidentally close Emacs, so warn first.
    '(hl-line ((t (:background "gray14"))))
    '(hl-sexp-face ((t (:background "gray14"))))
    '(js2-function-param-face ((((class color)) (:foreground "Green"))))
+   '(org-level-1 ((t (:foreground "dodger blue" :weight bold :height 1.0))))
+   '(org-level-2 ((t (:foreground "#edd400" :weight bold :height 1.0))))
    '(smerge-refined-change ((t (:background "black")))))
 
   (put 'narrow-to-region 'disabled nil)
