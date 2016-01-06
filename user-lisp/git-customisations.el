@@ -18,6 +18,9 @@
 (diff-hl-mode)
 (diff-hl-flydiff-mode)
 
+(global-set-key (kbd "C-.") #'diff-hl-next-hunk)
+(global-set-key (kbd "C-,") #'diff-hl-previous-hunk)
+
 ;; Include 'x' in the magit popup.
 ;; From https://github.com/magit/magit/issues/2141
 (magit-define-popup-action 'magit-dispatch-popup

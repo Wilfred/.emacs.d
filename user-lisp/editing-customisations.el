@@ -285,10 +285,6 @@ the kill-ring gets modified by `change-inner'."
   (let (kill-ring)
     ad-do-it))
 
-(use-package goto-chg
-  :bind (("C-." . goto-last-change)
-         ("C-," . goto-last-change-reverse)))
-
 (global-set-key (kbd "C-d") #'hungry-delete-forward)
 
 ;; iedit sets up this key binding when you first use it, but it's nice
