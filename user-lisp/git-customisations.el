@@ -15,7 +15,7 @@
 
 ;; Highlight new/removed/changed lines relative to the last commit in
 ;; VCS.
-(diff-hl-mode)
+(global-diff-hl-mode)
 (diff-hl-flydiff-mode)
 
 (global-set-key (kbd "C-.") #'diff-hl-next-hunk)
