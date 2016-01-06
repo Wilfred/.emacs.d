@@ -1028,6 +1028,7 @@ Visit the file after creation."
         (delete-char (- (length " !important")))
       (insert " !important"))))
 
+(require 'css-mode)
 (define-key css-mode-map (kbd "C-c i") #'wh/toggle-css-important)
 
 ;; Less (CSS)
