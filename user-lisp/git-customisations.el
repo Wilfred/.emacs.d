@@ -40,5 +40,15 @@
 ;; tedious to type.
 (define-key with-editor-mode-map (kbd "<f12>") #'with-editor-finish)
 
+(defun wh/commit-and-push (prefix)
+  (interactive "P")
+  (add-hook 'with-editor-post-finish-hook
+            (lambda ()
+              (call-interactively #'magit-push-current-to-upstream))
+            t t)
+  (with-editor-finish nil))
+
+(define-key with-editor-mode-map (kbd "<C-f12>") #'wh/commit-and-push)
+
 (provide 'git-customisations)
 
