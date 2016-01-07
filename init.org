@@ -589,7 +589,7 @@ It's also useful to quickly generate a minimal HTML page to play with.
   (defun wh/start-scratch-html-file (file-name)
     "Create a test HTML file in ~/scratch to play around with."
     (interactive "sName of scratch HTML file: ")
-    (start-scratch-file file-name)
+    (wh/start-scratch-file file-name)
     (erase-buffer)
     (insert "<!DOCTYPE html>
   <html>
@@ -601,7 +601,7 @@ It's also useful to quickly generate a minimal HTML page to play with.
           </style>
       </head>
       <body>
-      
+  
       </body>
   </html>")
     (forward-line -2)

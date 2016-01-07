@@ -495,7 +495,7 @@ Visit the file after creation."
 (defun wh/start-scratch-html-file (file-name)
   "Create a test HTML file in ~/scratch to play around with."
   (interactive "sName of scratch HTML file: ")
-  (start-scratch-file file-name)
+  (wh/start-scratch-file file-name)
   (erase-buffer)
   (insert "<!DOCTYPE html>
 <html>
@@ -507,7 +507,7 @@ Visit the file after creation."
         </style>
     </head>
     <body>
-    
+
     </body>
 </html>")
   (forward-line -2)
