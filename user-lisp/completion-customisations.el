@@ -124,6 +124,10 @@
 (define-key company-active-map (kbd "RET") #'company-complete-selection)
 
 (require 'company-jit)
+(add-hook 'python-mode-hook #'company-jit-mode)
+(add-hook 'rust-mode-hook #'company-jit-mode)
+(add-hook 'css-mode-hook #'company-jit-mode)
+
 (require 'company-whole-line)
 
 ;; always spaces, never tabs
