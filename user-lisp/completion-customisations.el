@@ -128,6 +128,9 @@
 (add-hook 'rust-mode-hook #'company-jit-mode)
 (add-hook 'css-mode-hook #'company-jit-mode)
 
+(require 'rust-mode)
+(add-hook 'rust-mode-hook 'racer-mode)
+
 (require 'company-whole-line)
 
 ;; always spaces, never tabs
