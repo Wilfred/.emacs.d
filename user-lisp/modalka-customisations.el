@@ -64,7 +64,7 @@
 ;; I'm now experimenting with modalka, and initial results seem
 ;; promising. I like having an explicit key to toggle the minor mode:
 
-(global-set-key (kbd "C-<return>") #'modalka-global-mode)
+(global-set-key (kbd "s-<return>") #'modalka-global-mode)
 
 ;; Modalka also encourages setting a different cursor when it's
 ;; active. This is a big help to avoid surprises.
