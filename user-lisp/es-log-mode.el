@@ -6,12 +6,13 @@
           (group "[" (*? not-newline) "]")
           "[" (group (*? not-newline)) "]"
           "[" (group (*? not-newline)) "]"
+          (0+ space)
+          (group "[" (*? not-newline) "]")
           )
      (1 font-lock-comment-face)
      (2 font-lock-type-face)
      (3 font-lock-variable-name-face)
-     )
-    ))
+     (4 font-lock-comment-face))))
 
 (define-derived-mode es-log-mode text-mode "ES log"
   "Major mode for view elasticsearch log files."
