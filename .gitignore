@@ -9,6 +9,7 @@ history
 helm-adaptive-history
 image-dired
 tramp
+smex-items
 bookmarks
 session.*
 url/
