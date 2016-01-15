@@ -91,8 +91,7 @@
 
 (require 'company)
 (defun wh/company-in-python-mode ()
-  (setq-local company-idle-delay 0.2)
-  (setq-local company-minimum-prefix-length 2)
+  (setq-local company-idle-delay 0.3)
   (set (make-local-variable 'company-backends)
        (list
         ;; It's rare for company-files to fire, but it's great
