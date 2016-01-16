@@ -7,7 +7,9 @@
 
 history
 helm-adaptive-history
+ido.last
 image-dired
+recentf
 tramp
 smex-items
 bookmarks
