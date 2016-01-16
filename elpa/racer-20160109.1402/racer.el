@@ -4,7 +4,7 @@
 
 ;; Author: Phil Dawes
 ;; URL: https://github.com/racer-rust/emacs-racer
-;; Package-Version: 20151016.1716
+;; Package-Version: 20160109.1402
 ;; Version: 1.0.2
 ;; Package-Requires: ((emacs "24.3") (rust-mode "0.2.0") (dash "2.11.0") (s "1.10.0"))
 ;; Keywords: abbrev, convenience, matching, rust, tools
@@ -102,6 +102,7 @@
       (list (or start (point)) (or end (point))
             (completion-table-dynamic #'racer-complete)
             :annotation-function #'racer-complete--annotation
+            :company-prefix-length #'racer-complete--prefix-p
             :company-docsig #'racer-complete--docsig
             :company-location #'racer-complete--location))))
 
@@ -123,6 +124,10 @@
   (-if-let (idx (s-index-of needle s))
       (substring s (+ idx (length needle)))
     s))
+
+(defun racer-complete--prefix-p (beg end)
+  "Return t if a completion should be triggered for a prefix between BEG and END."
+  (looking-back "\\.\\|::" 2))
 
 (defun racer-complete--annotation (arg)
   "Return an annotation for completion candidate ARG."
@@ -224,7 +229,7 @@ foo(bar, |baz); -> foo|(bar, baz);"
   :keymap racer-mode-map
   (setq-local eldoc-documentation-function #'racer-eldoc)
   (make-local-variable 'completion-at-point-functions)
-  (add-to-list 'completion-at-point-functions #'racer-complete-at-point))
+  (add-hook 'completion-at-point-functions #'racer-complete-at-point))
 
 (define-obsolete-function-alias 'racer-turn-on-eldoc 'eldoc-mode)
 (define-obsolete-function-alias 'racer-activate 'racer-mode)

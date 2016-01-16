@@ -1,6 +1,6 @@
 ;;; company-capf.el --- company-mode completion-at-point-functions backend -*- lexical-binding: t -*-
 
-;; Copyright (C) 2013-2015  Free Software Foundation, Inc.
+;; Copyright (C) 2013-2016  Free Software Foundation, Inc.
 
 ;; Author: Stefan Monnier <monnier@iro.umontreal.ca>
 
@@ -48,10 +48,21 @@
               ;; the latter comes later.
               (remove 'tags-completion-at-point-function
                       (default-value 'completion-at-point-functions)))
+             (completion-at-point-functions (company--capf-workaround))
              (data (run-hook-wrapped 'completion-at-point-functions
                                      ;; Ignore misbehaving functions.
                                      #'completion--capf-wrapper 'optimist)))
     (when (and (consp (cdr data)) (integer-or-marker-p (nth 1 data))) data)))
+
+(declare-function python-shell-get-process "python")
+
+(defun company--capf-workaround ()
+  ;; For http://debbugs.gnu.org/cgi/bugreport.cgi?bug=18067
+  (if (or (not (listp completion-at-point-functions))
+          (not (memq 'python-completion-complete-at-point completion-at-point-functions))
+          (python-shell-get-process))
+      completion-at-point-functions
+    (remq 'python-completion-complete-at-point completion-at-point-functions)))
 
 (defun company-capf (command &optional arg &rest _args)
   "`company-mode' backend using `completion-at-point-functions'."
@@ -61,9 +72,15 @@
     (`prefix
      (let ((res (company--capf-data)))
        (when res
-         (if (> (nth 2 res) (point))
-             'stop
-           (buffer-substring-no-properties (nth 1 res) (point))))))
+         (let* ((f (plist-get (nthcdr 4 res) :company-prefix-length))
+                (beg (nth 1 res))
+                (end (nth 2 res))
+                (length (and f (funcall f beg (point))))
+                (prefix (buffer-substring-no-properties beg (point))))
+           (cond
+            ((> end (point)) 'stop)
+            (length (cons prefix length))
+            (t prefix))))))
     (`candidates
      (let ((res (company--capf-data)))
        (when res

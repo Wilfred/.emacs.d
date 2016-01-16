@@ -1,6 +1,6 @@
 ;;; company.el --- Modular text completion framework  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2015  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2016  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
@@ -101,8 +101,7 @@ buffer-local wherever it is set."
   "Face used for the tooltip.")
 
 (defface company-tooltip-selection
-  '((default :inherit company-tooltip)
-    (((class color) (min-colors 88) (background light))
+  '((((class color) (min-colors 88) (background light))
      (:background "light blue"))
     (((class color) (min-colors 88) (background dark))
      (:background "orange1"))
@@ -118,28 +117,26 @@ buffer-local wherever it is set."
   "Face used for the tooltip item under the mouse.")
 
 (defface company-tooltip-common
-  '((default :inherit company-tooltip)
-    (((background light))
+  '((((background light))
      :foreground "darkred")
     (((background dark))
      :foreground "red"))
   "Face used for the common completion in the tooltip.")
 
 (defface company-tooltip-common-selection
-  '((default :inherit company-tooltip-selection)
-    (((background light))
-     :foreground "darkred")
-    (((background dark))
-     :foreground "red"))
+  '((default :inherit company-tooltip-common))
   "Face used for the selected common completion in the tooltip.")
 
 (defface company-tooltip-annotation
-  '((default :inherit company-tooltip)
-    (((background light))
+  '((((background light))
      :foreground "firebrick4")
     (((background dark))
      :foreground "red4"))
-  "Face used for the annotation in the tooltip.")
+  "Face used for the completion annotation in the tooltip.")
+
+(defface company-tooltip-annotation-selection
+  '((default :inherit company-tooltip-annotation))
+  "Face used for the selected completion annotation in the tooltip.")
 
 (defface company-scrollbar-fg
   '((((background light))
@@ -149,8 +146,7 @@ buffer-local wherever it is set."
   "Face used for the tooltip scrollbar thumb.")
 
 (defface company-scrollbar-bg
-  '((default :inherit company-tooltip)
-    (((background light))
+  '((((background light))
      :background "wheat")
     (((background dark))
      :background "gold"))
@@ -158,7 +154,7 @@ buffer-local wherever it is set."
 
 (defface company-preview
   '((((background light))
-     :inherit company-tooltip-selection)
+     :inherit (company-tooltip-selection company-tooltip))
     (((background dark))
      :background "blue4"
      :foreground "wheat"))
@@ -166,7 +162,7 @@ buffer-local wherever it is set."
 
 (defface company-preview-common
   '((((background light))
-     :inherit company-tooltip-selection)
+     :inherit company-tooltip-common-selection)
     (((background dark))
      :inherit company-preview
      :foreground "red"))
@@ -809,7 +805,9 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
   (let ((col (car (posn-col-row posn)))
         ;; `posn-col-row' doesn't work well with lines of different height.
         ;; `posn-actual-col-row' doesn't handle multiple-width characters.
-        (row (cdr (posn-actual-col-row posn))))
+        (row (cdr (or (posn-actual-col-row posn)
+                      ;; When position is non-visible for some reason.
+                      (posn-col-row posn)))))
     (when (and header-line-format (version< emacs-version "24.3.93.3"))
       ;; http://debbugs.gnu.org/18384
       (cl-decf row))
@@ -1199,7 +1197,7 @@ can retrieve meta-data for them."
   (unless (company-call-backend 'sorted)
     (setq candidates (sort candidates 'string<)))
   (when (company-call-backend 'duplicates)
-    (company--strip-duplicates candidates))
+    (setq candidates (company--strip-duplicates candidates)))
   candidates)
 
 (defun company--postprocess-candidates (candidates)
@@ -1210,27 +1208,37 @@ can retrieve meta-data for them."
   (company--transform-candidates candidates))
 
 (defun company--strip-duplicates (candidates)
-  (let ((c2 candidates)
-        (annos 'unk))
-    (while c2
-      (setcdr c2
-              (let ((str (pop c2)))
-                (while (let ((str2 (car c2)))
-                         (if (not (equal str str2))
-                             (progn
-                               (setq annos 'unk)
-                               nil)
-                           (when (eq annos 'unk)
-                             (setq annos (list (company-call-backend
-                                                'annotation str))))
-                           (let ((anno2 (company-call-backend
-                                         'annotation str2)))
-                             (if (member anno2 annos)
-                                 t
-                               (push anno2 annos)
-                               nil))))
-                  (pop c2))
-                c2)))))
+  (let* ((annos 'unk)
+         (str (car candidates))
+         (ref (cdr candidates))
+         res str2 anno2)
+    (while ref
+      (setq str2 (pop ref))
+      (if (not (equal str str2))
+          (progn
+            (push str res)
+            (setq str str2)
+            (setq annos 'unk))
+        (setq anno2 (company-call-backend
+                     'annotation str2))
+        (cond
+         ((null anno2))             ; Skip it.
+         ((when (eq annos 'unk)
+            (let ((ann1 (company-call-backend 'annotation str)))
+              (if (null ann1)
+                  ;; No annotation on the earlier element, drop it.
+                  t
+                (setq annos (list ann1))
+                nil)))
+          (setq annos (list anno2))
+          (setq str str2))
+         ((member anno2 annos))     ; Also skip.
+         (t
+          (push anno2 annos)
+          (push str res)            ; Maintain ordering.
+          (setq str str2)))))
+    (when str (push str res))
+    (nreverse res)))
 
 (defun company--transform-candidates (candidates)
   (let ((c candidates))
@@ -1517,14 +1525,8 @@ from the rest of the backends in the group, if any, will be left at the end."
     (company-call-frontends 'update)))
 
 (defun company-cancel (&optional result)
-  (unwind-protect
-      (when company-prefix
-        (if (stringp result)
-            (progn
-              (company-call-backend 'pre-completion result)
-              (run-hook-with-args 'company-completion-finished-hook result)
-              (company-call-backend 'post-completion result))
-          (run-hook-with-args 'company-completion-cancelled-hook result)))
+  (let ((prefix company-prefix)
+        (backend company-backend))
     (setq company-backend nil
           company-prefix nil
           company-candidates nil
@@ -1543,7 +1545,16 @@ from the rest of the backends in the group, if any, will be left at the end."
     (company-echo-cancel t)
     (company-search-mode 0)
     (company-call-frontends 'hide)
-    (company-enable-overriding-keymap nil))
+    (company-enable-overriding-keymap nil)
+    (when prefix
+      ;; FIXME: RESULT can also be e.g. `unique'.  We should call
+      ;; `company-completion-finished-hook' in that case, with right argument.
+      (if (stringp result)
+          (let ((company-backend backend))
+            (company-call-backend 'pre-completion result)
+            (run-hook-with-args 'company-completion-finished-hook result)
+            (company-call-backend 'post-completion result))
+        (run-hook-with-args 'company-completion-cancelled-hook result))))
   ;; Make return value explicit.
   nil)
 
@@ -1559,6 +1570,7 @@ from the rest of the backends in the group, if any, will be left at the end."
   (and (symbolp command) (get command 'company-keep)))
 
 (defun company-pre-command ()
+  (company--electric-restore-window-configuration)
   (unless (company-keep this-command)
     (condition-case-unless-debug err
         (when company-candidates
@@ -2109,28 +2121,30 @@ character, stripping the modifiers.  That character must be a digit."
         (insert string)))
     (current-buffer)))
 
+(defvar company--electric-saved-window-configuration nil)
+
 (defvar company--electric-commands
   '(scroll-other-window scroll-other-window-down mwheel-scroll)
   "List of Commands that won't break out of electric commands.")
 
+(defun company--electric-restore-window-configuration ()
+  "Restore window configuration (after electric commands)."
+  (when (and company--electric-saved-window-configuration
+             (not (memq this-command company--electric-commands)))
+    (set-window-configuration company--electric-saved-window-configuration)
+    (setq company--electric-saved-window-configuration nil)))
+
 (defmacro company--electric-do (&rest body)
   (declare (indent 0) (debug t))
   `(when (company-manual-begin)
-     (save-window-excursion
-       (let ((height (window-height))
-             (row (company--row))
-             cmd)
-         ,@body
-         (and (< (window-height) height)
-              (< (- (window-height) row 2) company-tooltip-limit)
-              (recenter (- (window-height) row 2)))
-         (while (memq (setq cmd (key-binding (read-key-sequence-vector nil)))
-                      company--electric-commands)
-           (condition-case err
-               (call-interactively cmd)
-             ((beginning-of-buffer end-of-buffer)
-              (message (error-message-string err)))))
-         (company--unread-last-input)))))
+     (cl-assert (null company--electric-saved-window-configuration))
+     (setq company--electric-saved-window-configuration (current-window-configuration))
+     (let ((height (window-height))
+           (row (company--row)))
+       ,@body
+       (and (< (window-height) height)
+            (< (- (window-height) row 2) company-tooltip-limit)
+            (recenter (- (window-height) row 2))))))
 
 (defun company--unread-last-input ()
   (when last-input-event
@@ -2337,6 +2351,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                      (if company-common
                          (string-width company-common)
                        0)))
+         (_ (setq value (company--pre-render value)
+                  annotation (and annotation (company--pre-render annotation t))))
          (ann-ralign company-tooltip-align-annotations)
          (ann-truncate (< width
                           (+ (length value) (length annotation)
@@ -2363,18 +2379,20 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (setq common (+ (min common width) margin))
     (setq width (+ width margin (length right)))
 
-    (add-text-properties 0 width '(face company-tooltip
-                                   mouse-face company-tooltip-mouse)
-                         line)
-    (add-text-properties margin common
-                         '(face company-tooltip-common
-                           mouse-face company-tooltip-mouse)
-                         line)
+    (font-lock-append-text-property 0 width 'mouse-face
+                                    'company-tooltip-mouse
+                                    line)
     (when (< ann-start ann-end)
-      (add-text-properties ann-start ann-end
-                           '(face company-tooltip-annotation
-                             mouse-face company-tooltip-mouse)
-                           line))
+      (font-lock-append-text-property ann-start ann-end 'face
+                                      (if selected
+                                          'company-tooltip-annotation-selection
+                                        'company-tooltip-annotation)
+                                      line))
+    (font-lock-prepend-text-property margin common 'face
+                                     (if selected
+                                         'company-tooltip-common-selection
+                                       'company-tooltip-common)
+                                     line)
     (when selected
       (if (let ((re (funcall company-search-regexp-function
                              company-search-string)))
@@ -2385,16 +2403,15 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                   (end (+ margin mend))
                   (width (- width (length right))))
               (when (< beg width)
-                (add-text-properties beg (min end width)
-                                     '(face company-tooltip-search)
-                                     line))))
-        (add-text-properties 0 width '(face company-tooltip-selection
-                                       mouse-face company-tooltip-selection)
-                             line)
-        (add-text-properties margin common
-                             '(face company-tooltip-common-selection
-                               mouse-face company-tooltip-selection)
-                             line)))
+                (font-lock-prepend-text-property beg (min end width)
+                                                 'face 'company-tooltip-search
+                                                 line))))
+        (font-lock-append-text-property 0 width 'face
+                                        'company-tooltip-selection
+                                        line)))
+    (font-lock-append-text-property 0 width 'face
+                                    'company-tooltip
+                                    line)
     line))
 
 (defun company--search-chunks ()
@@ -2406,6 +2423,17 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
         (when (car md)
           (push (cons (car md) (cadr md)) res))))
     res))
+
+(defun company--pre-render (str &optional annotation-p)
+  (or (company-call-backend 'pre-render str annotation-p)
+      (progn
+        (when (or (text-property-not-all 0 (length str) 'face nil str)
+                  (text-property-not-all 0 (length str) 'mouse-face nil str))
+          (setq str (copy-sequence str))
+          (remove-text-properties 0 (length str)
+                                  '(face nil font-lock-face nil mouse-face nil)
+                                  str))
+        str)))
 
 (defun company--clean-string (str)
   (replace-regexp-in-string
@@ -2785,19 +2813,22 @@ Returns a negative number if the tooltip should be displayed above point."
   (company-preview-hide)
 
   (let ((completion (nth company-selection company-candidates)))
-    (setq completion (propertize completion 'face 'company-preview))
-    (add-text-properties 0 (length company-common)
-                         '(face company-preview-common) completion)
+    (setq completion (copy-sequence (company--pre-render completion)))
+    (font-lock-append-text-property 0 (length completion)
+                                    'face 'company-preview
+                                    completion)
+    (font-lock-prepend-text-property 0 (length company-common)
+                                     'face 'company-preview-common
+                                     completion)
 
     ;; Add search string
     (and (string-match (funcall company-search-regexp-function
                                 company-search-string)
                        completion)
          (pcase-dolist (`(,mbeg . ,mend) (company--search-chunks))
-           (add-text-properties mbeg
-                                mend
-                                '(face company-preview-search)
-                                completion)))
+           (font-lock-prepend-text-property mbeg mend
+                                            'face 'company-preview-search
+                                            completion)))
 
     (setq completion (company-strip-prefix completion))
 
