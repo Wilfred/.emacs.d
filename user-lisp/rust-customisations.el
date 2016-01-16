@@ -1,4 +1,3 @@
-(add-hook 'rust-mode-hook #'flycheck-mode)
 
 (require 'racer)
 (setq racer-rust-src-path "/home/wilfred/src/rust/src")
