@@ -125,7 +125,6 @@
 
 (require 'company-jit)
 (add-hook 'python-mode-hook #'company-jit-mode)
-(add-hook 'rust-mode-hook #'company-jit-mode)
 (add-hook 'css-mode-hook #'company-jit-mode)
 
 (require 'rust-mode)
