@@ -26,6 +26,10 @@
 ;; Show killed buffers at end when using ido for switching buffers.
 (setq ido-use-virtual-buffers 'auto)
 
+;; Don't switch to other directories if the current file/directory
+;; doesn't exist. http://stackoverflow.com/a/7485815/509706
+(setq ido-auto-merge-work-directories-length -1)
+
 ;; when using ido for opening files, show last modified first:
 ;; this version from http://jqian.googlecode.com/svn-history/r145/trunk/emacsconf/config/30-elisp.el
 (add-hook 'ido-make-file-list-hook 'ido-sort-mtime)
