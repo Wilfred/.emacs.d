@@ -153,10 +153,11 @@
             (insert "\n")))
       (let ((beg (point)))
         (insert "\n" (pget :body))
-        (replace-string "" "" nil beg (point)))
+        (replace-string "\r" "" nil beg (point)))
       (github-issue-mode)
       (github-switch-to-buffer buffer))))
 
+;;;###autoload
 (defun github-issues (user repo)
   "Display a list of issues list for a GitHub repository."
   (interactive
