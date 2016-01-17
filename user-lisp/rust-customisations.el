@@ -37,6 +37,16 @@
 
 (define-key rust-mode-map (kbd "C-c m") #'wh/rust-toggle-mutability)
 
+(defun wh/rust-vec-as-slice ()
+  "Convert the vector expression at point to a slice.
+foo -> &foo[..]"
+  (interactive)
+  (insert "&")
+  (forward-symbol 1)
+  (insert "[..]"))
+
+(define-key rust-mode-map (kbd "C-c s") #'wh/rust-vec-as-slice)
+
 (require 'projectile)
 (require 'which-func)
 
