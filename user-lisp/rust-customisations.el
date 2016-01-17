@@ -1,6 +1,6 @@
 
 (require 'racer)
-(setq racer-rust-src-path "/home/wilfred/src/rust/src")
+(setq racer-rust-src-path "/home/wilfred/src/rustc-1.5.0/src")
 (setq racer-cmd "/home/wilfred/src/racer/target/release/racer")
 
 (add-to-list 'company-backends #'racer-company-complete)
