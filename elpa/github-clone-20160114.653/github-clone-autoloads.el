@@ -1,10 +1,10 @@
 ;;; github-clone-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
+(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "github-clone" "github-clone.el" (21930 51130
-;;;;;;  928886 354000))
+;;;### (autoloads nil "github-clone" "github-clone.el" (22171 49327
+;;;;;;  670940 930000))
 ;;; Generated autoloads from github-clone.el
 
 (autoload 'github-clone "github-clone" "\
