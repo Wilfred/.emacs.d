@@ -4,7 +4,7 @@
 
 ;; Author: Phil Dawes
 ;; URL: https://github.com/racer-rust/emacs-racer
-;; Package-Version: 20160109.1402
+;; Package-Version: 20160120.1229
 ;; Version: 1.0.2
 ;; Package-Requires: ((emacs "24.3") (rust-mode "0.2.0") (dash "2.11.0") (s "1.10.0"))
 ;; Keywords: abbrev, convenience, matching, rust, tools
@@ -98,11 +98,13 @@
 (defun racer-complete-at-point ()
   "Complete the symbol at point."
   (unless (nth 3 (syntax-ppss)) ;; not in string
-    (-let [(start . end) (bounds-of-thing-at-point 'symbol)]
-      (list (or start (point)) (or end (point))
+    (let* ((bounds (bounds-of-thing-at-point 'symbol))
+           (beg (or (car bounds) (point)))
+           (end (or (cdr bounds) (point))))
+      (list beg end
             (completion-table-dynamic #'racer-complete)
             :annotation-function #'racer-complete--annotation
-            :company-prefix-length #'racer-complete--prefix-p
+            :company-prefix-length (racer-complete--prefix-p beg end)
             :company-docsig #'racer-complete--docsig
             :company-location #'racer-complete--location))))
 
@@ -127,7 +129,9 @@
 
 (defun racer-complete--prefix-p (beg end)
   "Return t if a completion should be triggered for a prefix between BEG and END."
-  (looking-back "\\.\\|::" 2))
+  (save-excursion
+    (goto-char beg)
+    (looking-back "\\.\\|::" 2)))
 
 (defun racer-complete--annotation (arg)
   "Return an annotation for completion candidate ARG."

@@ -1,9 +1,9 @@
 ;;; racer-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
+(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "racer" "racer.el" (22170 10256 570453 18000))
+;;;### (autoloads nil "racer" "racer.el" (22176 5884 299583 55000))
 ;;; Generated autoloads from racer.el
 
 (autoload 'racer-find-definition "racer" "\
