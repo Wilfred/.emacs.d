@@ -422,6 +422,12 @@ If a prefix argument is given, don't change the kill-ring."
 
 (global-set-key (kbd "C-x C-g") 'projectile-find-file)
 
+(defun wh/projectile-forget-project (project)
+  "Remove a project from `projectile-known-projects'."
+  (interactive (list (completing-read "Forget project: "
+                                      projectile-known-projects)))
+  (delete project projectile-known-projects))
+
 ;; Dired
 
 ;; Dired isn't very colourful by default, but `dired+' has helpful
