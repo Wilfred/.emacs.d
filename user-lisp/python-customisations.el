@@ -122,4 +122,14 @@
 (define-key python-mode-map (kbd "<f1>") #'python-smart-execute)
 (define-key python-mode-map (kbd "<S-f1>") #'python-smart-execute-no-move)
 
+;; From http://emacsredux.com/blog/2015/01/18/clear-comint-buffers/
+;; (but widely used e.g. spacemacs has it too).
+;;
+;; This is useful when tab completion stops working in *Python*
+;; buffers. This has been fixed in Emacs 25.
+(defun wh/comint-clear-buffer ()
+  (interactive)
+  (let ((comint-buffer-maximum-size 0))
+    (comint-truncate-buffer)))
+
 (provide 'python-customisations)
