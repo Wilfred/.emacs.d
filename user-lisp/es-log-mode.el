@@ -14,6 +14,7 @@
      (3 font-lock-variable-name-face)
      (4 font-lock-comment-face))))
 
+;;;###autoload
 (define-derived-mode es-log-mode text-mode "ES log"
   "Major mode for view elasticsearch log files."
   (setq-local font-lock-defaults '(es-log-mode-font-lock-keywords)))
