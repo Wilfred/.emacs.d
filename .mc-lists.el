@@ -24,6 +24,7 @@
         markdown-exdent-or-delete
         org-delete-char
         org-self-insert-command
+        paredit-backward
         paredit-backward-kill-word
         paredit-forward
         python-indent-electric-colon
