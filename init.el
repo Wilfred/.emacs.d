@@ -851,7 +851,7 @@ Visit the file after creation."
 
 
 (require 'smartparens-config)
-(add-hook 'html-mode-hook 'smartparens-mode)
+(add-hook 'html-mode-hook 'smartparens-strict-mode)
 
 
 

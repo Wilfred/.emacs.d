@@ -949,7 +949,7 @@ Automatically close < and " character inside HTML using smartparens.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'smartparens-config)
-  (add-hook 'html-mode-hook 'smartparens-mode)
+  (add-hook 'html-mode-hook 'smartparens-strict-mode)
 #+END_SRC
 
 Much of my HTML is for Django templates. These sometimes have .dtml
