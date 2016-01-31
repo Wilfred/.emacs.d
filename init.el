@@ -263,28 +263,11 @@ the start of the line."
 ;; http://emacsredux.com/blog/2013/03/26/smarter-open-line/ .
 
 
-(defun smart-open-line ()
-  "Insert an empty line after the current line.
-Position the cursor at its beginning, according to the current mode."
-  (interactive)
-  (move-end-of-line nil)
-  (newline-and-indent))
+(require 'crux)
 
-(global-set-key (kbd "M-o") 'smart-open-line)
+(global-set-key (kbd "M-o") #'crux-smart-open-line)
 
-(defun smart-open-line-above ()
-  "Insert an empty line above the current line.
-Position the cursor at its beginning, according to the current mode."
-  (interactive)
-  (move-beginning-of-line nil)
-  ;; TODO: edebug doesn't handle this error, suggesting that the
-  ;; previous line throws the error. File a bug and/or find out why.
-  (ignore-errors ; If we're at the beginning of the buffer.
-    (newline-and-indent))
-  (forward-line -1)
-  (indent-according-to-mode))
-
-(global-set-key (kbd "M-O") 'smart-open-line-above)
+(global-set-key (kbd "M-O") #'crux-smart-open-line-above)
 
 ;; Killing
 
@@ -370,7 +353,7 @@ If a prefix argument is given, don't change the kill-ring."
 ;; Opening
 
 ;; It's useful to be able to quickly open files that we opened before. We
-;; define a function for this:
+;; load and configure a function for this:
 
 
 (require 'recentf)
@@ -382,12 +365,7 @@ If a prefix argument is given, don't change the kill-ring."
 (setq recentf-max-saved-items 500)
 
 ;; from http://www.masteringemacs.org/article/find-files-faster-recent-files-package
-(defun ido-recentf-open ()
-  "Use `ido-completing-read' to \\[find-file] a recent file"
-  (interactive)
-  (if (find-file (ido-completing-read "Find recent file: " recentf-list))
-      (message "Opening file...")
-    (message "Aborting")))
+(require 'crux)
 
 
 
@@ -396,7 +374,7 @@ If a prefix argument is given, don't change the kill-ring."
 ;; as read only with `read-only-mode', mapped to `C-x C-q'.)
 
 
-(global-set-key (kbd "C-x C-r") 'ido-recentf-open)
+(global-set-key (kbd "C-x C-r") #'crux-recentf-ido-find-file)
 
 
 
