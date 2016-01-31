@@ -1087,7 +1087,7 @@ Smartparens is well suited to CSS too, to automatically pair up curly
 brackets.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (add-hook 'css-mode-hook 'smartparens-mode)
+  (add-hook 'css-mode-hook #'smartparens-strict-mode)
 #+END_SRC
 
 Highlight symbols, so we can see repeated tag names and classes.

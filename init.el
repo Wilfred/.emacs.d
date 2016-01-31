@@ -992,7 +992,7 @@ Visit the file after creation."
 ;; brackets.
 
 
-(add-hook 'css-mode-hook 'smartparens-mode)
+(add-hook 'css-mode-hook #'smartparens-strict-mode)
 
 (add-hook 'css-mode-hook #'highlight-symbol-mode)
 
