@@ -4,7 +4,7 @@
 
 ;; Author: Artem Malyshev <proofit404@gmail.com>
 ;; URL: https://github.com/proofit404/anaconda-mode
-;; Package-Version: 20151210.323
+;; Package-Version: 20151230.1103
 ;; Version: 0.1.0
 ;; Package-Requires: ((company "0.8.0") (anaconda-mode "0.1.1") (cl-lib "0.5.0") (dash "2.6.0") (s "1.9"))
 
@@ -118,7 +118,7 @@ Apply passed CALLBACK to extracted collection."
     (cons module-path line)))
 
 ;;;###autoload
-(defun company-anaconda (command &optional arg)
+(defun company-anaconda (command &optional arg &rest _args)
   "Anaconda backend for company-mode.
 See `company-backends' for more info about COMMAND and ARG."
   (interactive (list 'interactive))
