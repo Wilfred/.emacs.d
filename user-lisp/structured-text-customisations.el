@@ -55,7 +55,7 @@
                                 (s-replace " " "-"))))
         (wh/insert-anchor heading-slug)))))
 
-; XML position utility:
+;; XML position utility:
 (autoload 'nxml-ensure-scan-up-to-date "nxml-rap")
 (autoload 'nxml-backward-up-element "nxml-mode")
 (autoload 'xmltok-start-tag-qname "xmltok")
