@@ -11,11 +11,49 @@
 
 (add-hook 'yaml-mode-hook #'highlight-symbol-mode)
 
-; markdown mode
+;; markdown mode
 (autoload 'markdown-mode "markdown-mode"
-   "Major mode for editing Markdown files" t)
+  "Major mode for editing Markdown files" t)
 (add-to-list 'auto-mode-alist '("\\.md$" . gfm-mode))
 (add-to-list 'auto-mode-alist '("\\.markdown$" . markdown-mode))
+
+(require 's)
+(require 'dash)
+
+;; TODO: submit as a useful command to markdown-toc.
+(defconst commonmark-anchor-rx (rx "<a name=\"" (group (1+ (char alnum "-"))) "\"></a>"))
+(defconst commonmark-heading-rx (rx line-start (1+ "#") (group (+? anything)) line-end))
+
+(defun wh/heading-anchor-p ()
+  "Return non-nil if there's an anchor before the heading at point."
+  (let ((start-pos (point)))
+    (save-excursion
+      ;; Move to the previous line
+      (forward-line -1)
+      ;; See if there's an anchor tag, not searching beyond our start point.
+      (search-forward-regexp commonmark-anchor-rx start-pos t))))
+
+(defun wh/insert-anchor (name)
+  "Insert a named anchor on the heading at point."
+  (save-excursion
+    (when (wh/heading-anchor-p)
+      (forward-line -1)
+      (kill-whole-line))
+    (crux-smart-open-line-above)
+    (insert (format "<a name=\"%s\"></a>" name))))
+
+(defun wh/add-commonmark-headings ()
+  "Ensure there's an <a name=''> on each heading in a commonmark file."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (search-forward-regexp commonmark-heading-rx nil t)
+      (let* ((heading-text (match-string-no-properties 1))
+             (heading-slug (->> heading-text
+                                s-trim
+                                s-downcase
+                                (s-replace " " "-"))))
+        (wh/insert-anchor heading-slug)))))
 
 ; XML position utility:
 (autoload 'nxml-ensure-scan-up-to-date "nxml-rap")
