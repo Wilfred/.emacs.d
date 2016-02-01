@@ -48,12 +48,14 @@
   (save-excursion
     (goto-char (point-min))
     (while (search-forward-regexp commonmark-heading-rx nil t)
-      (let* ((heading-text (match-string-no-properties 1))
+      (let* ((heading-properties (text-properties-at (point)))
+             (heading-text (match-string-no-properties 1))
              (heading-slug (->> heading-text
                                 s-trim
                                 s-downcase
                                 (s-replace " " "-"))))
-        (wh/insert-anchor heading-slug)))))
+        (unless (-contains? heading-properties 'markdown-pre-face)
+          (wh/insert-anchor heading-slug))))))
 
 ;; XML position utility:
 (autoload 'nxml-ensure-scan-up-to-date "nxml-rap")
