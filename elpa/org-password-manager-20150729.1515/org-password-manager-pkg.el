@@ -1,0 +1,1 @@
+(define-package "org-password-manager" "20150729.1515" "Minimal password manager for Emacs Org Mode." '((org "8.2.10") (s "1.9.0")) :url "https://github.com/leafac/org-password-manager" :keywords '("password"))
