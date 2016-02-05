@@ -1003,17 +1003,8 @@ Visit the file after creation."
 
 (add-hook 'css-mode-hook #'company-mode)
 
-(defun wh/toggle-css-important ()
-  (interactive)
-  (save-excursion
-    (end-of-line)
-    (backward-char 1)
-    (if (looking-back "!important")
-        (delete-char (- (length " !important")))
-      (insert " !important"))))
-
 (require 'css-mode)
-(define-key css-mode-map (kbd "C-c i") #'wh/toggle-css-important)
+(define-key css-mode-map (kbd "C-c i") #'emr-css-toggle-important)
 
 ;; Less (CSS)
 

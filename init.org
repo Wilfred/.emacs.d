@@ -1102,21 +1102,12 @@ Company does a great job with completion for CSS, so use it here.
   (add-hook 'css-mode-hook #'company-mode)
 #+END_SRC
 
-I often toggle =!important= when editing, so define a utility command
-for doing this.
+I often toggle =!important= when editing, so define a keybinding
+for this.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (defun wh/toggle-css-important ()
-    (interactive)
-    (save-excursion
-      (end-of-line)
-      (backward-char 1)
-      (if (looking-back "!important")
-          (delete-char (- (length " !important")))
-        (insert " !important"))))
-
   (require 'css-mode)
-  (define-key css-mode-map (kbd "C-c i") #'wh/toggle-css-important)
+  (define-key css-mode-map (kbd "C-c i") #'emr-css-toggle-important)
 #+END_SRC
 
 ** Less (CSS)
