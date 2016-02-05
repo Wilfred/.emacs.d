@@ -78,6 +78,7 @@
 ;; To be consistent with our paredit keybindings, use super for syntatic movement.
 (define-key python-mode-map (kbd "s-n") 'python-nav-forward-statement)
 (define-key python-mode-map (kbd "s-p") 'python-nav-backward-statement)
+(define-key python-mode-map (kbd "s-u") 'python-nav-backward-up-list)
 
 ;; Anaconda is great for jump-to-definition and eldoc. You do need to
 ;; tell it which virtualenv you're using, see `venv-workon'.
