@@ -42,6 +42,14 @@
     (crux-smart-open-line-above)
     (insert (format "<a name=\"%s\"></a>" name))))
 
+(defun wh/slugify (heading-text)
+  "Convert 'Foo Bar/Baz?' to 'foo-barbaz'."
+  (->> heading-text
+       s-downcase
+       s-trim
+       (s-replace " " "-")
+       (replace-regexp-in-string "[^a-z0-9-]" "")))
+
 (defun wh/add-commonmark-headings ()
   "Ensure there's an <a name=''> on each heading in a commonmark file."
   (interactive)
@@ -49,13 +57,9 @@
     (goto-char (point-min))
     (while (search-forward-regexp commonmark-heading-rx nil t)
       (let* ((heading-properties (text-properties-at (point)))
-             (heading-text (match-string-no-properties 1))
-             (heading-slug (->> heading-text
-                                s-trim
-                                s-downcase
-                                (s-replace " " "-"))))
+             (heading-text (match-string-no-properties 1)))
         (unless (-contains? heading-properties 'markdown-pre-face)
-          (wh/insert-anchor heading-slug))))))
+          (wh/insert-anchor (wh/slugify heading-text)))))))
 
 ;; XML position utility:
 (autoload 'nxml-ensure-scan-up-to-date "nxml-rap")
