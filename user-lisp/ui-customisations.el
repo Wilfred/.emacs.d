@@ -46,6 +46,10 @@ Defaults to `t'.")
 (custom-set-faces
  '(font-lock-fic-face ((t (:foreground "Red"))) t))
 
+;; winner-mode allows changes to frame layouts (e.g. splits) to be
+;; undone with `winner-undo'.
+(winner-mode 1)
+
 ;;; ibuffer
 
 ;; use ibuffer to group buffers
