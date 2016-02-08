@@ -78,6 +78,9 @@
 ;; To be consistent with our paredit keybindings, use super for syntatic movement.
 (define-key python-mode-map (kbd "s-n") 'python-nav-forward-statement)
 (define-key python-mode-map (kbd "s-p") 'python-nav-backward-statement)
+(define-key python-mode-map (kbd "s-f") #'python-nav-forward-sexp)
+(define-key python-mode-map (kbd "s-b") #'python-nav-backward-sexp)
+
 (define-key python-mode-map (kbd "s-u") 'python-nav-backward-up-list)
 
 ;; Anaconda is great for jump-to-definition. You do need to
