@@ -50,6 +50,7 @@
        (s-replace " " "-")
        (replace-regexp-in-string "[^a-z0-9-]" "")))
 
+;;;###autoload
 (defun wh/add-commonmark-headings ()
   "Ensure there's an <a name=''> on each heading in a commonmark file."
   (interactive)
