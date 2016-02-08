@@ -434,6 +434,15 @@ commands with the command `sp-cheat-sheet'.
   (define-key smartparens-mode-map (kbd "M-'") #'wh/smartparens-wrap-singlequote)
 #+END_SRC
 
+Many useful smartparens have a =C-M-= prefix, which I find difficult
+to type. I use super (usually the windows key) keybindings too (so
+=C-M-f= becomes =s-f= and so on).
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (define-key smartparens-mode-map (kbd "s-f") #'sp-forward-sexp)
+  (define-key smartparens-mode-map (kbd "s-b") #'sp-backward-sexp)
+#+END_SRC
+
 I like to use smartparens in all programming modes. Smartparens strict
 mode ensures parens always stay balanced when editing. For example,
 given code of the form =foo(1, |bar())=, C-k produces =foo(1, |)=.

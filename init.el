@@ -338,6 +338,9 @@ If a prefix argument is given, don't change the kill-ring."
 
 (define-key smartparens-mode-map (kbd "M-'") #'wh/smartparens-wrap-singlequote)
 
+(define-key smartparens-mode-map (kbd "s-f") #'sp-forward-sexp)
+(define-key smartparens-mode-map (kbd "s-b") #'sp-backward-sexp)
+
 
 
 ;; I like to use smartparens in all programming modes. Smartparens strict
