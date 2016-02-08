@@ -13,13 +13,14 @@
   (add-hook hook 'switch-on-paredit))
 
 ;; Paredit's C-M-f and C-M-b are really handy but difficult to type.
-(global-set-key (kbd "s-f") #'paredit-forward)
-(global-set-key (kbd "s-b") #'paredit-backward)
+(require 'paredit)
+(define-key paredit-mode-map (kbd "s-f") #'paredit-forward)
+(define-key paredit-mode-map (kbd "s-b") #'paredit-backward)
 ;; Likewise for other sexp commands.
-(global-set-key (kbd "s-u") #'paredit-backward-up)
-(global-set-key (kbd "s-d") #'paredit-forward-down)
-(global-set-key (kbd "<s-backspace>") #'backward-kill-sexp)
-(global-set-key (kbd "s-k") #'kill-sexp)
+(define-key paredit-mode-map (kbd "s-u") #'paredit-backward-up)
+(define-key paredit-mode-map (kbd "s-d") #'paredit-forward-down)
+(define-key paredit-mode-map (kbd "<s-backspace>") #'backward-kill-sexp)
+(define-key paredit-mode-map (kbd "s-k") #'kill-sexp)
 
 (require 'highlight-quoted)
 ;; Highlight the ' character itself in the same colour
