@@ -5,6 +5,14 @@
 
 (add-to-list 'company-backends #'racer-company-complete)
 
+(require 'company)
+
+(defun wh/rust-company-settings ()
+  "Set up company settings for rust buffers."
+  (setq-local company-idle-delay 0.1))
+
+(add-hook 'rust-mode-hook #'wh/rust-company-settings)
+
 (require 'rust-mode)
 (add-hook 'rust-mode-hook #'racer-turn-on-eldoc)
 (define-key rust-mode-map (kbd "M-.") #'racer-find-definition)
