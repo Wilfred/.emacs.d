@@ -22,6 +22,7 @@
         kill-or-delete-region
         kill-visual-line
         markdown-exdent-or-delete
+        open-newline-and-indent
         org-delete-char
         org-self-insert-command
         paredit-backward
