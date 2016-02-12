@@ -64,8 +64,8 @@ that start with the current line at point."
     (prefix
      ;; We can complete if we're at the end of a non-empty line,
      (when (and (eolp) (not (cwl--empty-line-p))
-                ;; and we're not on a comment.
-                (not (nth 4 (syntax-ppss))))
+                ;; and we're not in a comment/string.
+                (not (company-in-string-or-comment)))
        ;; Note that company only searches other completion backends
        ;; using the prefix found by the first backend.
        ;; https://github.com/company-mode/company-mode/issues/47#issuecomment-33472005
