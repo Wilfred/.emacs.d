@@ -145,23 +145,10 @@ are interchanged."
 (require 'python-el-fgallina-expansions)
 (global-set-key (kbd "C-=") 'er/expand-region)
 
-(require 'move-text)
-(move-text-default-bindings)
+(require 'move-dup)
+(global-move-dup-mode)
 
-(defun wh/open-line-duplicate ()
-  "Duplicate the current line below."
-  (interactive)
-  (let* ((initial-column (current-column))
-         (line-start (progn (beginning-of-line) (point)))
-         (line-end (progn (end-of-line) (point)))
-         (line-contents (buffer-substring line-start line-end)))
-    (forward-line)
-    (insert line-contents)
-    (insert "\n")
-    (goto-char (1+ line-end))
-    (forward-char initial-column)))
-
-(global-set-key (kbd "C-c o") #'wh/open-line-duplicate)
+(global-set-key (kbd "C-c o") #'md/duplicate-down)
 
 ;; Fastest load, according to https://github.com/jwiegley/use-package#use-packageel-is-no-longer-needed-at-runtime
 (eval-when-compile
