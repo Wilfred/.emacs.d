@@ -137,4 +137,32 @@
   (let ((comint-buffer-maximum-size 0))
     (comint-truncate-buffer)))
 
+(defun wh/wrap-try-ipdb ()
+  "Wrap the current line in a try-except that uses ipdb on exception.
+
+Before:
+x = foo()
+
+After:
+try:
+    x = foo()
+except Exception as e:
+    import ipdb; ipdb.set_trace()"
+  (interactive "*")
+  (save-excursion
+    ;; Insert try: above.
+    (crux-smart-open-line-above)
+    (insert "try:")
+    ;; Indent the next line.
+    (forward-line 1)
+    (back-to-indentation)
+    (insert "    ")
+    ;; Add an except below
+    (python-nav-forward-sexp 1)
+    (newline-and-indent)
+    (python-indent-dedent-line-backspace 1)
+    (insert "except Exception as e:")
+    (newline-and-indent)
+    (insert "import ipdb; ipdb.set_trace()")))
+
 (provide 'python-customisations)
