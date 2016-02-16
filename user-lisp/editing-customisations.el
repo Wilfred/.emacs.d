@@ -147,6 +147,7 @@ are interchanged."
 
 (require 'move-dup)
 (global-move-dup-mode)
+(diminish 'move-dup-mode)
 
 (global-set-key (kbd "C-c o") #'md/duplicate-down)
 
