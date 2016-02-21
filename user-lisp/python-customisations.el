@@ -83,6 +83,9 @@
 
 (define-key python-mode-map (kbd "s-u") 'python-nav-backward-up-list)
 
+(exec-path-from-shell-copy-env "WORKON_HOME")
+(require 'virtualenvwrapper)
+
 ;; Anaconda is great for jump-to-definition. You do need to
 ;; tell it which virtualenv you're using, see `venv-workon'.
 (add-hook 'python-mode-hook 'anaconda-mode)
