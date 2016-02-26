@@ -420,6 +420,14 @@ run.")
 Only the pairs defined by `sp-pair' are considered.  Tag pairs
 can be of any length.")
 
+(defconst sp-max-prefix-length 100
+  "Maximum length of a pair prefix.
+
+Because prefixes for pairs can be specified using regular
+expressions, they can potentially be of arbitrary length.  This
+settings solves the problem where the parser would decide to
+backtrack the entire buffer which would lock up Emacs.")
+
 (defvar sp-pairs '((t
                     .
                     ((:open "\\\\(" :close "\\\\)" :actions (insert wrap autoskip navigate))
@@ -1474,7 +1482,7 @@ does not trigger `post-self-insert-hook'."
 
 (cl-eval-when (compile eval load)
   (defun sp--get-substitute (struct list)
-    "Only ever call this from sp-get!  This function do the
+    "Only ever call this from sp-get!  This function does the
 replacement of all the keywords with actual calls to sp-get."
     (if (listp list)
         (if (eq (car list) 'sp-get)
@@ -1838,7 +1846,7 @@ If PROP is non-nil, return the value of that property instead."
 (defun sp-wrap-with-pair (pair)
   "Wrap the following expression with PAIR.
 
-This function is non-interactive helper.  To use this function
+This function is a non-interactive helper.  To use this function
 interactively, bind the following lambda to a key:
 
  (lambda (&optional arg) (interactive \"P\") (sp-wrap-with-pair \"(\"))
@@ -4427,7 +4435,7 @@ is used to retrieve the prefix instead of the global setting."
     (save-excursion
       (goto-char p)
       (if pref
-          (when (sp--looking-back pref)
+          (when (sp--looking-back pref sp-max-prefix-length)
             (match-string-no-properties 0))
         (-if-let (mmode-prefix (cdr (assoc major-mode sp-sexp-prefix)))
             (cond
@@ -5511,7 +5519,7 @@ Note: prefix argument is shown after the example in
          (n (abs arg))
          (ok t)
          (b (point-max))
-         (e (point-min))
+         (e (point))
          (kill-fn (if dont-kill 'copy-region-as-kill 'kill-region)))
     (cond
      ;; kill to the end or beginning of list
