@@ -1118,6 +1118,7 @@ Visit the file after creation."
   (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
 
 (require 'conflicts-customisations)
+(require 'org-customisations)
 
 (require 'tags-utils)
 
