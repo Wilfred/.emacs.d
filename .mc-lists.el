@@ -33,6 +33,7 @@
         sp--self-insert-command
         sp-backward-delete-char
         sp-backward-kill-word
+        sp-forward-sexp
         sp-remove-active-pair-overlay
         sp-slurp-hybrid-sexp
         wh/decrement-number-decimal
