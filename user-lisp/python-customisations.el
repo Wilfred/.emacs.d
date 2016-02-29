@@ -126,9 +126,9 @@
 
 (setq pytest-cmd-flags "-x --tb=native")
 
-(require 'python-smart-execute)
-(define-key python-mode-map (kbd "<f1>") #'python-smart-execute)
-(define-key python-mode-map (kbd "<S-f1>") #'python-smart-execute-no-move)
+(require 'eval-in-repl)
+(require 'eval-in-repl-python)
+(define-key python-mode-map (kbd "<f1>") #'eir-eval-in-python)
 
 ;; From http://emacsredux.com/blog/2015/01/18/clear-comint-buffers/
 ;; (but widely used e.g. spacemacs has it too).
