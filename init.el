@@ -1082,6 +1082,7 @@ Visit the file after creation."
 (require 'coffee-customisations)
 (require 'javascript-customisations)
 (require 'lisp-customisations)
+(require 'makefile-customisations)
 (require 'python-customisations)
 (require 'rust-customisations)
 (require 'llvm-customisations)
