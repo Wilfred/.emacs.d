@@ -92,8 +92,7 @@
 (add-hook 'python-mode-hook 'eldoc-mode)
 (diminish 'anaconda-mode "Ana")
 
-(define-key python-mode-map (kbd "M-.") #'anaconda-mode-find-definitions)
-(define-key python-mode-map (kbd "M-,") #'anaconda-mode-go-back)
+(define-key anaconda-mode-map (kbd "M-,") #'anaconda-mode-go-back)
 
 (require 'company)
 (defun wh/company-in-python-mode ()
