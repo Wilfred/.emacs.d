@@ -106,8 +106,10 @@
         ;; particularly useful with built-ins like IndexError and
         ;; packages like 'from foo import bar'.
         #'company-anaconda
-        ;; This is a noisy backend, so we try it last.
-        #'company-whole-line)))
+        ;; This is a noisy backend, so we try it later.
+        #'company-whole-line
+        ;; As a last ditch attempt, just normal dabbrev.
+        #'company-dabbrev-code)))
 
 (add-hook 'python-mode-hook #'wh/company-in-python-mode)
 
