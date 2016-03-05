@@ -91,4 +91,8 @@
 ;; is coming first.
 (define-key paredit-mode-map (kbd "C-d") 'hungry-delete-forward)
 
+;; When evaluating lisp in the minibuffer, use paredit and eldoc.
+(add-hook 'eval-expression-minibuffer-setup-hook #'paredit-mode)
+(add-hook 'eval-expression-minibuffer-setup-hook #'eldoc-mode)
+
 (provide 'lisp-customisations)
