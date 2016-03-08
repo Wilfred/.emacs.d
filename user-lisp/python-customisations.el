@@ -94,6 +94,10 @@
 
 (define-key anaconda-mode-map (kbd "M-,") #'anaconda-mode-go-back)
 
+;; Sometimes it's still useful to find tags, even when we're using
+;; anaconda. Provide a fallback keybinding.
+(define-key anaconda-mode-map (kbd "C-c M-.") #'etags-select-find-tag)
+
 (require 'company)
 (defun wh/company-in-python-mode ()
   (setq-local company-idle-delay 0.3)
