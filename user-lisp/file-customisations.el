@@ -58,4 +58,11 @@ The original buffer and file are untouched."
 (require 'saveplace)
 (setq-default save-place t)
 
+;;;###autoload
+(defun wh/open-customisations (name)
+  (interactive "sCustomisations file name: ")
+  (let ((path (f-join (f-expand "~/.emacs.d")
+                      "user-lisp" (format "%s.el" name))))
+    (find-file path)))
+
 (provide 'file-customisations)
