@@ -86,6 +86,12 @@
 (exec-path-from-shell-copy-env "WORKON_HOME")
 (require 'virtualenvwrapper)
 
+(defadvice python-nav-up-list (before python-nav-push-mark activate)
+  "Push the mark before this Python nav command.
+This means `pop-mark' can take us back to our previous position."
+  (push-mark)
+  ad-do-it)
+
 ;; Anaconda is great for jump-to-definition. You do need to
 ;; tell it which virtualenv you're using, see `venv-workon'.
 (add-hook 'python-mode-hook 'anaconda-mode)
