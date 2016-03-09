@@ -264,9 +264,10 @@ where a symbol was imported.
     (eval
      `(progn
         (goto-char (point-min))
-        (search-forward-regexp
-         (rx symbol-start ,(thing-at-point 'symbol) symbol-end)
-         nil t)
+        (let ((case-fold-search nil))
+          (search-forward-regexp
+           (rx symbol-start ,(thing-at-point 'symbol) symbol-end)
+           nil t))
         (beginning-of-thing 'symbol))))
 
   (define-key prog-mode-map (kbd "M-P") #'highlight-symbol-first)
@@ -283,10 +284,11 @@ a symbol.
     (eval
      `(progn
         (goto-char (point-max))
-        (search-backward-regexp
-         (rx symbol-start ,(thing-at-point 'symbol) symbol-end)
-         nil t))))
-  
+        (let ((case-fold-search nil))
+          (search-backward-regexp
+           (rx symbol-start ,(thing-at-point 'symbol) symbol-end)
+           nil t)))))
+
   (global-set-key (kbd "M-N") 'highlight-symbol-last)
 #+END_SRC
 
