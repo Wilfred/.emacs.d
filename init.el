@@ -1078,6 +1078,7 @@ Visit the file after creation."
 (require 'snippet-customisations)
 (require 'structured-text-customisations)
 (require 'isearch-customisations)
+(require 'projectile-customisations)
 
 (require 'c-customisations)
 (require 'asm-customisations)

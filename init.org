@@ -1193,6 +1193,7 @@ annoying to accidentally close Emacs, so warn first.
   (require 'snippet-customisations)
   (require 'structured-text-customisations)
   (require 'isearch-customisations)
+  (require 'projectile-customisations)
 
   (require 'c-customisations)
   (require 'asm-customisations)
