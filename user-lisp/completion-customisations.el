@@ -123,6 +123,9 @@
 
 (define-key company-active-map (kbd "RET") #'company-complete-selection)
 
+;; Remember which completions we've used before, and sort those first.
+(add-hook 'after-init-hook #'company-statistics-mode)
+
 (require 'company-jit)
 (add-hook 'python-mode-hook #'company-jit-mode)
 (add-hook 'css-mode-hook #'company-jit-mode)

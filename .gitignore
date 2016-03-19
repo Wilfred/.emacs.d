@@ -5,6 +5,7 @@
 *.pyc
 *.elc
 
+company-statistics-cache.el
 history
 helm-adaptive-history
 ido.last
