@@ -70,5 +70,12 @@ foo -> &foo[..]"
 ;; Use 'cargo check' as a build command, as it's much faster.
 (projectile-register-project-type 'rust-cargo '("Cargo.toml") "cargo check" "cargo test")
 
+(require 'multi-compile)
+(setq multi-compile-alist
+      '((rust-mode . (("rust-build" . "cargo build")
+                      ("rust-check" . "cargo check")
+                      ("rust-test" . "cargo test")))))
+
+(define-key rust-mode-map (kbd "C-c C-c") #'multi-compile-run)
 
 (provide 'rust-customisations)
