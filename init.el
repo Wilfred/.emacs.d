@@ -347,15 +347,25 @@ If a prefix argument is given, don't change the kill-ring."
 
 
 
-;; I like to use smartparens in all programming modes. Smartparens strict
-;; mode ensures parens always stay balanced when editing. For example,
-;; given code of the form =foo(1, |bar())=, C-k produces =foo(1, |)=.
+;; I like to use smartparens in all programming modes.
+
+;; Smartparens strict mode ensures parens always stay balanced when
+;; editing. For example, given code of the form =foo(1, |bar())=, C-k
+;; produces =foo(1, |)=.
 
 
 (require 'smartparens-config)
 (require 'smartparens-html)
 (add-hook 'prog-mode-hook #'smartparens-strict-mode)
+
+
+
+;; Outside of programming, strict mode is more easily confused, so I
+;; prefer normal smartparens-mode.
+
+
 (add-hook 'yaml-mode-hook #'smartparens-mode)
+(add-hook 'sqlplus-mode-hook #'smartparens-mode)
 
 ;; Opening
 

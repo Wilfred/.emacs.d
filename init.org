@@ -447,15 +447,24 @@ to type. I use super (usually the windows key) keybindings too (so
   (define-key smartparens-mode-map (kbd "s-u") #'sp-backward-up-sexp)
 #+END_SRC
 
-I like to use smartparens in all programming modes. Smartparens strict
-mode ensures parens always stay balanced when editing. For example,
-given code of the form =foo(1, |bar())=, C-k produces =foo(1, |)=.
+I like to use smartparens in all programming modes.
+
+Smartparens strict mode ensures parens always stay balanced when
+editing. For example, given code of the form =foo(1, |bar())=, C-k
+produces =foo(1, |)=.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'smartparens-config)
   (require 'smartparens-html)
   (add-hook 'prog-mode-hook #'smartparens-strict-mode)
+#+END_SRC
+
+Outside of programming, strict mode is more easily confused, so I
+prefer normal smartparens-mode.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (add-hook 'yaml-mode-hook #'smartparens-mode)
+  (add-hook 'sqlplus-mode-hook #'smartparens-mode)
 #+END_SRC
 
 ** Files
