@@ -31,7 +31,8 @@
     (set-visited-file-name new-name)
     (set-buffer-modified-p nil)))
 
-(defun find-file-sudo ()
+;;;###autoload
+(defun wh/find-file-sudo ()
   (interactive)
   (find-file (concat "/sudo::" (ido-read-file-name "Sudo find file:"))))
 
