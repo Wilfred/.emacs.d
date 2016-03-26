@@ -62,7 +62,7 @@ Defaults to `t'.")
 
 ;; Highlight TODO, FIXME and BUG.
 (require 'fic-mode) ;; required to diminish fic-mode
-(add-hook 'prog-mode-hook #'turn-on-fic-mode)
+(add-hook 'prog-mode-hook #'fic-mode)
 (diminish 'fic-mode)
 
 ;; TODO: work out why this highlighting doesn't work when the current
