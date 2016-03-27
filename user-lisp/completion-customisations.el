@@ -86,6 +86,12 @@
 
 (require 'company)
 (require 'company-elisp)
+
+(defadvice company-etags--candidates (around wh/etags-blacklist-modes activate)
+  "Don't offer etags completion in modes where it's not helpful."
+  (unless (memq major-mode '(asm-mode))
+    ad-do-it))
+
 (require 'company-files)
 (require 'company-css)
 (require 'company-clang)
