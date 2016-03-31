@@ -50,8 +50,9 @@ when checking the current buffer."
           (make-local-variable 'flycheck-clang-include-path)
           ;; Add include paths to `flycheck-clang-include-path' unless
           ;; already present.
-          (--each lib-paths
-            (cl-pushnew it flycheck-clang-include-path))
+          (setq flycheck-clang-include-path
+                (-union flycheck-clang-include-path
+                        lib-paths))
           (message "flycheck-clang-include-path: %s"
                    flycheck-clang-include-path))
       ;; Otherwise, no such library with this name.
