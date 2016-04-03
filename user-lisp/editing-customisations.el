@@ -297,6 +297,9 @@ If the region is active, toggle commenting on the whole region."
 
 (global-set-key (kbd "M-;") #'wh/comment-dwim)
 
+(use-package string-edit-at-point
+  :bind (("C-c C-c" . string-edit-at-point)))
+
 ;; TODO: write this as a command in erefactor.
 ;; TODO: add 'ends here' too.
 (defun wh/insert-provide ()
