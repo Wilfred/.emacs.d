@@ -83,6 +83,10 @@
 
 (define-key python-mode-map (kbd "s-u") 'python-nav-backward-up-list)
 
+;; mark-sexp is useless in python, we want the the equivalent command
+;; for marking a Python statement.
+(define-key python-mode-map (kbd "C-M-SPC") #'er/mark-python-statement)
+
 (exec-path-from-shell-copy-env "WORKON_HOME")
 (require 'virtualenvwrapper)
 
