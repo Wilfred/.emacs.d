@@ -1,6 +1,7 @@
 (require 's)
 (require 'f)
 
+;; TODO: migrate these functions to https://github.com/fred-o/jekyll-modes/
 (defun blog-file-name (title &optional time)
   (format "%s-%s.markdown"
           ;; use `parse-time-string' to reverse this formatting
@@ -20,6 +21,29 @@ title: \"%s\"
 ---
 
 " title))))
+
+(defun blog-post-title ()
+  "Get the post title from the YAML front matter
+in the current buffer."
+  (save-excursion
+    (goto-char (point-min))
+    (search-forward "title: ")
+    (let* ((title-start (point))
+           (title-end (progn (end-of-line) (point)))
+           (raw-title (buffer-substring-no-properties
+                       title-start title-end)))
+      (if (s-starts-with-p "\"" raw-title)
+          (substring raw-title 1 -1)
+        raw-title))))
+
+(defun blog-update-file-name ()
+  "Set the current file name according to the current title."
+  (interactive)
+  (let* ((title (blog-post-title))
+         ;; TODO: preserve the existing date.
+         (filename (blog-file-name title)))
+    (rename-file (buffer-file-name) filename)
+    (rename-buffer filename)))
 
 (defun convert-creole ()
   "Convert creole text in the current buffer to markdown."
