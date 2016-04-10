@@ -1,13 +1,17 @@
 (require 's)
 (require 'f)
 
-(defun new-blog-post ()
+(defun blog-file-name (title &optional time)
+  (format "%s-%s.markdown"
+          (format-time-string "%Y-%m-%d" time)
+          (s-dashed-words title)))
+
+(defun blog-new-post ()
   "Create a new blog post with appropriate filename and header."
   (interactive)
   (let* ((dir (ido-read-directory-name "Posts directory: "))
          (title (read-string "Post title: "))
-         (date-string (format-time-string "%Y-%m-%d"))
-         (file-name (format "%s-%s.markdown" date-string (s-dashed-words title))))
+         (file-name (blog-file-name title)))
     (find-file (f-join dir file-name))
     (insert (format "--- 
 layout: post
