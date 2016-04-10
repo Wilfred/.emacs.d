@@ -3,6 +3,7 @@
 
 (defun blog-file-name (title &optional time)
   (format "%s-%s.markdown"
+          ;; use `parse-time-string' to reverse this formatting
           (format-time-string "%Y-%m-%d" time)
           (s-dashed-words title)))
 
