@@ -22,6 +22,7 @@
 (define-key paredit-mode-map (kbd "<s-backspace>") #'backward-kill-sexp)
 (define-key paredit-mode-map (kbd "s-k") #'kill-sexp)
 (define-key paredit-mode-map (kbd "s-t") #'transpose-sexps)
+(define-key paredit-mode-map (kbd "s-n") #'paredit-forward-up)
 
 (require 'highlight-quoted)
 ;; Highlight the ' character itself in the same colour
