@@ -326,8 +326,6 @@ buffer is not visiting a file."
               (crux-file-owned-by-user-p buffer-file-name))
     (crux-find-alternate-file-as-root buffer-file-name)))
 
-(add-hook 'find-file-hook #'crux-reopen-as-root)
-
 (defun crux-insert-date ()
   "Insert a timestamp according to locale's date and time format."
   (interactive)
