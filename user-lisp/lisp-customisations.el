@@ -125,4 +125,12 @@
                  (end-of-defun)
                  (point)))))
 
+(advice-add 'special-lispy-eval :filter-return
+            (lambda (r)
+              (endless/eval-overlay
+               r
+               (save-excursion
+                 (end-of-defun)
+                 (point)))))
+
 (provide 'lisp-customisations)
