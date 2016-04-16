@@ -85,6 +85,9 @@
 ;; Ensure elisp code is continuously indented.
 (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode)
 
+;; Use lispy-mode in emacs-lisp
+(add-hook 'emacs-lisp-mode-hook #'lispy-mode)
+
 (require 'company)
 (require 'company-elisp)
 
