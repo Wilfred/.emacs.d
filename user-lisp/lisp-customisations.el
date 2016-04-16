@@ -125,7 +125,7 @@
                  (end-of-defun)
                  (point)))))
 
-(advice-add 'special-lispy-eval :filter-return
+(advice-add 'lispy-eval :filter-return
             (lambda (r)
               (endless/eval-overlay
                r
