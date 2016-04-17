@@ -128,6 +128,14 @@
                  (end-of-defun)
                  (point)))))
 
+(advice-add 'edebug-eval-defun :filter-return
+            (lambda (r)
+              (endless/eval-overlay
+               r
+               (save-excursion
+                 (end-of-defun)
+                 (point)))))
+
 (advice-add 'lispy-eval :filter-return
             (lambda (r)
               (endless/eval-overlay
