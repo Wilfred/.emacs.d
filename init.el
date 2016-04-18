@@ -154,6 +154,8 @@
 (require 'cc-mode)
 (define-key c++-mode-map (kbd "M-n") #'highlight-symbol-next)
 (define-key c++-mode-map (kbd "M-p") #'highlight-symbol-prev)
+(define-key c++-mode-map (kbd "M-N") #'highlight-symbol-last)
+(define-key c++-mode-map (kbd "M-P") #'highlight-symbol-first)
 (define-key c-mode-map (kbd "M-n") #'highlight-symbol-next)
 (define-key c-mode-map (kbd "M-p") #'highlight-symbol-prev)
 ;; Java-mode has the same problem.
