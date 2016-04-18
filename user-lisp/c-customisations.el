@@ -17,5 +17,10 @@
          flycheck-clang-definitions '("__STDC_LIMIT_MACROS"
                                       "__STDC_CONSTANT_MACROS"))))
 
+(add-hook
+ 'c++-mode-hook
+ (lambda ()
+   ;; LLVM convention
+   (setq c-basic-offset 2)))
 
 (provide 'c-customisations)
