@@ -1,9 +1,8 @@
 (require 'js2-mode)
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 
-; indent with tab characters (treating them as eight spaces)
-(setq-default js-indent-level 4)
-(setq tab-width 4)
+;; for js-mode, which we use when editing JSON, use two space indents
+(setq js-indent-level 2)
 
 ;; these are the default settings, but it's nice to be explicit for ease of customisation
 (add-hook 'js-mode-hook
