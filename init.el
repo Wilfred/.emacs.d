@@ -98,9 +98,7 @@
 ;; bold faces for definitions. It also has good support for a range of
 ;; popular packages.
 
-;; TODO: I don't like the large font sizes in org-mode. I would also
-;; prefer zig-zag underlines for flycheck. There's also an issue with
-;; hl-line or hl-sexp in the minibuffer with ido.
+;; TODO: I would also prefer zig-zag underlines for flycheck.
 
 
 (load-theme 'tangotango t)
