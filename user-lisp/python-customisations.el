@@ -154,6 +154,7 @@ This means `pop-mark' can take us back to our previous position."
   (let ((comint-buffer-maximum-size 0))
     (comint-truncate-buffer)))
 
+;;;###autoload
 (defun wh/wrap-try-ipdb ()
   "Wrap the current line in a try-except that uses ipdb on exception.
 
