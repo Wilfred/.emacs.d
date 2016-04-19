@@ -124,7 +124,7 @@
 ;;
 ;; Some Clojure support depends on `cider'.
 ;; Some Scheme support depends on `geiser'.
-;; Some Common Lisp support depends on `slime'.
+;; Some Common Lisp support depends on `slime' or `sly'.
 ;; You can get them from MELPA.
 ;;
 ;; See http://abo-abo.github.io/lispy/ for a detailed documentation.
@@ -1185,6 +1185,10 @@ assumed to belong to the list are also deleted.")
     (skip-chars-backward " ")
     (delete-region (point) pt)))
 
+(defvar lispy-delete-backward-recenter -20
+  "When cursor is near top of screen when calling
+  lispy-delete-backward, recenter cursor with arg.")
+
 (defun lispy-delete-backward (arg)
   "From \")|\", delete ARG sexps backwards.
 Otherwise (`backward-delete-char-untabify' ARG)."
@@ -1319,9 +1323,10 @@ Otherwise (`backward-delete-char-untabify' ARG)."
   (when (and (buffer-file-name)
              (< (- (line-number-at-pos (point))
                    (line-number-at-pos (window-start)))
-                5))
+                5)
+             lispy-delete-backward-recenter)
     (ignore-errors
-      (recenter -20)))
+      (recenter lispy-delete-backward-recenter)))
   (when (and (lispy-left-p)
              (not (lispy--in-string-or-comment-p)))
     (indent-sexp)))
@@ -1628,7 +1633,9 @@ If ARG is 2, amend the current list with a space from current side.
 If ARG is 3, switch to the different side beforehand.
 If jammed between parens, \"(|(\" unjam: \"(| (\"."
   (interactive "p")
-  (cond ((region-active-p)
+  (cond ((bound-and-true-p edebug-active)
+         (edebug-step-mode))
+        ((region-active-p)
          (goto-char (region-end))
          (deactivate-mark)
          (insert " "))
@@ -1771,6 +1778,7 @@ When the region is active, toggle a ~ at the start of the region."
 
 (declare-function cider-repl-return "ext:cider-repl")
 (declare-function slime-repl-return "ext:slime-repl")
+(declare-function sly-mrepl-return "ext:sly-mrepl")
 (defun lispy-newline-and-indent-plain ()
   "When in minibuffer, exit it.  Otherwise forward to `newline-and-indent'."
   (interactive)
@@ -1781,6 +1789,8 @@ When the region is active, toggle a ~ at the start of the region."
      (cider-repl-return))
     (slime-repl-mode
      (slime-repl-return))
+    (sly-mrepl-mode
+     (sly-mrepl-return))
     (python-mode
      (newline-and-indent))
     (t
@@ -1965,7 +1975,7 @@ to all the functions, while maintaining the parens in a pretty state."
 (defvar helm-input)
 (declare-function helm "ext:helm")
 
-(defun lispy--occur-action (x)
+(defun lispy-occur-action-goto-paren (x)
   "Goto line X for `lispy-occur'."
   (setq x (read x))
   (goto-char lispy--occur-beg)
@@ -1996,6 +2006,36 @@ to all the functions, while maintaining the parens in a pretty state."
           (t
            (back-to-indentation)))))
 
+(defun lispy-occur-action-goto-end (x)
+  "Goto line X for `lispy-occur'."
+  (setq x (read x))
+  (goto-char lispy--occur-beg)
+  (forward-line x)
+  (re-search-forward (ivy--regex ivy-text) (line-end-position) t))
+
+(defun lispy-occur-action-goto-beg (x)
+  "Goto line X for `lispy-occur'."
+  (when (lispy-occur-action-goto-end x)
+    (goto-char (match-beginning 0))))
+
+(defun lispy-occur-action-mc (_x)
+  "Make a fake cursor for each `lispy-occur' candidate."
+  (let ((cands (nreverse ivy--old-cands))
+        cand)
+    (while (setq cand (pop cands))
+      (goto-char lispy--occur-beg)
+      (forward-line (read cand))
+      (re-search-forward (ivy--regex ivy-text) (line-end-position) t)
+      (when cands
+        (mc/create-fake-cursor-at-point))))
+  (multiple-cursors-mode 1))
+
+(ivy-set-actions
+ 'lispy-occur
+ '(("m" lispy-occur-action-mc "multiple-cursors")
+   ("j" lispy-occur-action-goto-beg "goto start")
+   ("k" lispy-occur-action-goto-end "goto end")))
+
 (defun lispy-occur ()
   "Select a line within current top level sexp.
 See `lispy-occur-backend' for the selection back end."
@@ -2011,7 +2051,7 @@ See `lispy-occur-backend' for the selection back end."
               (helm :sources
                     `((name . "this defun")
                       (candidates . ,(lispy--occur-candidates))
-                      (action . lispy--occur-action)
+                      (action . lispy-occur-action-goto-paren)
                       (match-strict .
                                     (lambda (x)
                                       (ignore-errors
@@ -2033,7 +2073,8 @@ See `lispy-occur-backend' for the selection back end."
                         :update-fn (lambda ()
                                      (lispy--occur-update-input
                                       ivy-text ivy--current))
-                        :action #'lispy--occur-action)
+                        :action #'lispy-occur-action-goto-paren
+                        :caller 'lispy-occur)
            (swiper--cleanup)
            (when (null ivy-exit)
              (goto-char swiper--opoint))))
@@ -3657,7 +3698,7 @@ Sexp is obtained by exiting list ARG times."
 (defvar lispy-goto-symbol-alist
   '((clojure-mode lispy-goto-symbol-clojure le-clojure)
     (scheme-mode lispy-goto-symbol-scheme le-scheme)
-    (lisp-mode slime-edit-definition slime)
+    (lisp-mode lispy-goto-symbol-lisp le-lisp)
     (python-mode lispy-goto-symbol-python le-python))
   "An alist of `major-mode' to function for jumping to symbol.
 
@@ -3796,6 +3837,7 @@ When ARG is 2, insert the result as a comment."
                 outline-end))))
     (cond ((null res)
            (lispy-message lispy-eval-error))
+          ((equal res ""))
           ((= ?: (char-before (line-end-position)))
            (goto-char outline-end)
            (lispy--insert-eval-result res)
@@ -3806,7 +3848,7 @@ When ARG is 2, insert the result as a comment."
 (defun lispy-message (str)
   "Display STR in the echo area.
 If STR is too large, pop it to a buffer instead."
-  (if (> (cl-count ?\n str) 20)
+  (if (> (cl-count ?\n str) 15)
       (progn
         (pop-to-buffer "*lispy-message*")
         (special-mode)
@@ -4002,20 +4044,22 @@ When ARG is non-nil, force select the window."
               (setq lispy-eval-other--cfg nil)
               (selected-window))))
          res)
-    (with-selected-window target-window
-      (setq res (lispy--eval-elisp-form expr lexical-binding))
-      (if (equal res lispy--eval-cond-msg)
-          (message res)
-        (if (and (fboundp 'object-p) (object-p res))
-            (message "(eieio object length %d)" (length res))
-          (message "%S" res))))))
+    (if (eq major-mode 'lisp-mode)
+        (message (lispy--eval (prin1-to-string expr)))
+      (with-selected-window target-window
+        (setq res (lispy--eval-elisp-form expr lexical-binding))
+        (if (equal res lispy--eval-cond-msg)
+            (message res)
+          (if (and (fboundp 'object-p) (object-p res))
+              (message "(eieio object length %d)" (length res))
+            (message "%S" res)))))))
 
 (defun lispy-follow ()
   "Follow to `lispy--current-function'."
   (interactive)
   (lispy-goto-symbol (lispy--current-function)))
 
-(declare-function cider-doc-lookup "ext:cider-interaction")
+(declare-function cider-doc-lookup "ext:cider-doc")
 
 (defun lispy-describe ()
   "Display documentation for `lispy--current-function'."
@@ -4027,6 +4071,7 @@ When ARG is non-nil, force select the window."
                  ((boundp symbol)
                   (describe-variable symbol)))))
         ((memq major-mode lispy-clojure-modes)
+         (require 'cider-doc)
          (cider-doc-lookup (lispy--current-function)))
 
         (t
@@ -4056,13 +4101,16 @@ When ARG is non-nil, force select the window."
   "Forward to `beginning-of-defun' with ARG.  Deactivate region.
 When called twice in a row, restore point and mark."
   (interactive "p")
-  (cond ((and (looking-at "^(")
-              (memq last-command
-                    '(lispy-beginning-of-defun
-                      special-lispy-beginning-of-defun)))
+  (cond ((and (called-interactively-p 'any)
+              (looking-at "^(")
+              (let ((pt (if (consp lispy-bof-last-point)
+                            (car lispy-bof-last-point)
+                          lispy-bof-last-point)))
+                (and
+                 (> pt (point))
+                 (<= pt (save-excursion (forward-list) (point))))))
          (lispy-pam-restore 'lispy-bof-last-point))
-        ((looking-at "^(")
-         (setq lispy-bof-last-point (point)))
+        ((looking-at "^("))
         (t
          (lispy-pam-store 'lispy-bof-last-point)
          (beginning-of-defun arg))))
@@ -4356,6 +4404,7 @@ When ARG isn't nil, show table of contents."
            (lispy-extract-block)))))
 
 (declare-function lispy-flatten--clojure "le-clojure")
+(declare-function lispy-flatten--lisp "le-lisp")
 (defun lispy-flatten (arg)
   "Inline a function at the point of its call.
 Pass the ARG along."
@@ -4368,6 +4417,9 @@ Pass the ARG along."
                                 cider-clojure-interaction-mode)))
          (require 'le-clojure)
          (lispy-flatten--clojure arg))
+
+        ((eq major-mode 'lisp-mode)
+         (lispy-flatten--lisp))
 
         (t
          (lispy-complain
@@ -4737,6 +4789,7 @@ ARG is 4: `eval-defun' on the function from this sexp."
              (error "%s isn't bound" fun))))))
 
 (declare-function lispy--clojure-debug-step-in "le-clojure")
+(declare-function lispy--python-debug-step-in "le-python")
 
 (defun lispy-debug-step-in ()
   "Eval current function arguments and jump to definition."
@@ -4744,42 +4797,56 @@ ARG is 4: `eval-defun' on the function from this sexp."
   (cond ((memq major-mode lispy-elisp-modes)
          (let* ((ldsi-sxp (lispy--setq-expression))
                 (ldsi-fun (car ldsi-sxp)))
-           (if (or (functionp ldsi-fun)
-                   (macrop ldsi-fun))
-               (let ((ldsi-args
-                      (copy-seq
-                       (help-function-arglist
-                        (if (ad-is-advised ldsi-fun)
-                            (ad-get-orig-definition ldsi-fun)
-                          ldsi-fun)
-                        t)))
-                     (ldsi-vals (cdr ldsi-sxp))
-                     ldsi-arg
-                     ldsi-val)
-                 (catch 'done
-                   (while (setq ldsi-arg (pop ldsi-args))
-                     (cond ((eq ldsi-arg '&optional)
-                            (setq ldsi-arg (pop ldsi-args))
-                            (set ldsi-arg (eval (pop ldsi-vals))))
-                           ((eq ldsi-arg '&rest)
-                            (setq ldsi-arg (pop ldsi-args))
-                            (set ldsi-arg
-                                 (if (functionp ldsi-fun)
-                                     (mapcar #'eval ldsi-vals)
-                                   ldsi-vals))
-                            (throw 'done t))
-                           (t
-                            (setq ldsi-val (pop ldsi-vals))
-                            (set ldsi-arg
-                                 (if (functionp ldsi-fun)
-                                     (eval ldsi-val)
-                                   ldsi-val))))))
-                 (lispy-goto-symbol ldsi-fun))
-             (lispy-complain
-              (format "%S isn't a function" ldsi-fun)))))
+           (cond
+             ((memq ldsi-fun '(mapcar mapc))
+              (let ((fn (nth 1 ldsi-sxp))
+                    (lst (nth 2 ldsi-sxp)))
+                (when (eq (car-safe fn) 'lambda)
+                  (set (car (cadr fn)) (car (eval lst)))
+                  (lispy-flow 2))))
+             ((or (functionp ldsi-fun)
+                  (macrop ldsi-fun))
+              (when (eq ldsi-fun 'funcall)
+                (setq ldsi-fun (eval (cadr ldsi-sxp)))
+                (setq ldsi-sxp (cons ldsi-fun (cddr ldsi-sxp))))
+              (let ((ldsi-args
+                     (copy-seq
+                      (help-function-arglist
+                       (if (ad-is-advised ldsi-fun)
+                           (ad-get-orig-definition ldsi-fun)
+                         ldsi-fun)
+                       t)))
+                    (ldsi-vals (cdr ldsi-sxp))
+                    ldsi-arg
+                    ldsi-val)
+                (catch 'done
+                  (while (setq ldsi-arg (pop ldsi-args))
+                    (cond ((eq ldsi-arg '&optional)
+                           (setq ldsi-arg (pop ldsi-args))
+                           (set ldsi-arg (eval (pop ldsi-vals))))
+                          ((eq ldsi-arg '&rest)
+                           (setq ldsi-arg (pop ldsi-args))
+                           (set ldsi-arg
+                                (if (functionp ldsi-fun)
+                                    (mapcar #'eval ldsi-vals)
+                                  ldsi-vals))
+                           (throw 'done t))
+                          (t
+                           (setq ldsi-val (pop ldsi-vals))
+                           (set ldsi-arg
+                                (if (functionp ldsi-fun)
+                                    (eval ldsi-val)
+                                  ldsi-val))))))
+                (lispy-goto-symbol ldsi-fun)))
+             (t
+              (lispy-complain
+               (format "%S isn't a function" ldsi-fun))))))
         ((eq major-mode 'clojure-mode)
          (require 'le-clojure)
          (lispy--clojure-debug-step-in))
+        ((eq major-mode 'python-mode)
+         (require 'le-python)
+         (lispy--python-debug-step-in))
         (t
          (lispy-complain
           (format "%S isn't currently supported" major-mode)))))
@@ -4814,46 +4881,43 @@ An equivalent of `cl-destructuring-bind'."
   (interactive)
   (describe-bindings (kbd "C-4")))
 
-(defvar lispy-mode-map-x
-  (let ((map (make-sparse-keymap)))
-    (define-key map "xa" nil)
-    (define-key map "xb" 'lispy-bind-variable)
-    (define-key map "xc" 'lispy-to-cond)
-    (define-key map "xd" 'lispy-to-defun)
-    (define-key map "xe" 'lispy-edebug)
-    (define-key map "xf" 'lispy-flatten)
-    (define-key map "xg" nil)
-    (define-key map "xh" 'lispy-describe)
-    (define-key map "xi" 'lispy-to-ifs)
-    (define-key map "xj" 'lispy-debug-step-in)
-    (define-key map "xk" 'lispy-extract-block)
-    (define-key map "xl" 'lispy-to-lambda)
-    (define-key map "xm" 'lispy-cursor-ace)
-    (define-key map "xn" nil)
-    (define-key map "xo" nil)
-    (define-key map "xp" nil)
-    (define-key map "xq" nil)
-    (define-key map "xr" 'lispy-eval-and-replace)
-    (define-key map "xs" 'save-buffer)
-    (define-key map "xt" nil)
-    (define-key map "xu" 'lispy-unbind-variable)
-    (define-key map "xv" 'lispy-view-test)
-    (define-key map "xw" nil)
-    (define-key map "xx" nil)
-    (define-key map "xy" nil)
-    (define-key map "xz" nil)
-    (define-key map "xB" 'lispy-store-region-and-buffer)
-    (define-key map "xR" 'lispy-reverse)
-    (define-key map (concat "x" (char-to-string help-char))
-      'lispy-describe-bindings-C-4)
-    map))
+(defhydra hydra-lispy-x (:exit t)
+  ("a" nil)
+  ("b" lispy-bind-variable)
+  ("c" lispy-to-cond)
+  ("d" lispy-to-defun)
+  ("e" lispy-edebug)
+  ("f" lispy-flatten)
+  ("g" nil)
+  ("h" lispy-describe)
+  ("i" lispy-to-ifs)
+  ("j" lispy-debug-step-in)
+  ("k" lispy-extract-block)
+  ("l" lispy-to-lambda)
+  ("m" lispy-cursor-ace)
+  ("n" nil)
+  ("o" nil)
+  ("p" nil)
+  ("q" nil)
+  ("r" lispy-eval-and-replace)
+  ("s" save-buffer)
+  ("t" nil)
+  ("u" lispy-unbind-variable)
+  ("v" lispy-view-test)
+  ("w" nil)
+  ("x" nil)
+  ("y" nil)
+  ("z" nil)
+  ("B" lispy-store-region-and-buffer)
+  ("R" lispy-reverse)
+  ("" (hydra-set-property 'hydra-lispy-x :verbosity 1) :exit nil)
+  ("?" (hydra-set-property 'hydra-lispy-x :verbosity 1) :exit nil))
 
 (defun lispy-x ()
-  "Forward to `lispy-mode-map-x'."
+  "Forward to `hydra-lispy-x/body'"
   (interactive)
-  (unless (window-minibuffer-p)
-    (hydra-set-transient-map lispy-mode-map-x (lambda ()))
-    (setq unread-command-events (list (cons t ?x)))))
+  (hydra-set-property 'hydra-lispy-x :verbosity 0)
+  (hydra-lispy-x/body))
 
 (defun lispy-ert ()
   "Call (`ert' t)."
@@ -4868,13 +4932,13 @@ An equivalent of `cl-destructuring-bind'."
   (undo))
 
 (defun lispy-view ()
-  "Recenter current sexp to first screen line.
+  "Recenter current sexp to first screen line, accounting for scroll-margin.
 If already there, return it to previous position."
   (interactive)
   (lispy-from-left
    (let ((window-line (count-lines (window-start) (point))))
      (if (or (= window-line 0)
-             (and (not (bolp)) (= window-line 1)))
+             (and (not (bolp)) (= window-line (1+ scroll-margin))))
          (recenter (or (get 'lispy-recenter :line) 0))
        (put 'lispy-recenter :line window-line)
        (recenter 0)))))
@@ -5045,57 +5109,59 @@ When ARG is given, paste at that place in the current list."
         (setq mk (point))
         (when (< mk pt)
           (decf pt)))
-      (goto-char pt)
-      (cond ((lispy-right-p)
-             (setq p2 (1- (point)))
-             (lispy-different)
-             (setq p1 (point)))
-            ((lispy-left-p)
-             (setq p1 (point))
-             (lispy-different)
-             (setq p2 (1- (point)))))
-      (setq str (buffer-string))
-      (add-face-text-property 0 (length str) '(face 'lispy-test-face) t str)
-      (when pt
-        (when mk
-          (if (< mk pt)
-              (progn
-                (add-text-properties (1- mk) (1- pt) '(face region) str)
-                (set-text-properties (1- pt) pt '(face cursor) str))
-            (add-text-properties (1- (min pt mk)) (1- (max pt mk)) '(face region) str)
-            (set-text-properties (1- pt) pt '(face cursor) str)))
-        (when p1
-          (add-text-properties
-           (1- p1) p1
-           `(face (:background
-                   ,color-paren
-                   :foreground
-                   ,(if (and mk
-                             (>= p1 (min pt mk))
-                             (<= p1 (max pt mk)))
-                        color-cursor-fg
-                        color-cursor-bg))) str))
-        (when p2
-          (add-text-properties
-           (1- p2) p2
-           `(face (:background
-                   ,color-paren
-                   :foreground
-                   ,(if (and mk
-                             (>= p2 (min pt mk))
-                             (<= p2 (max pt mk)))
-                        color-cursor-fg
-                        color-cursor-bg)))
-           str))
-        (add-text-properties
-         (1- pt) pt
-         `(face (:background
-                 ,color-cursor-bg
-                 :foreground
-                 ,(if (eq pt p1)
-                      color-paren
-                      color-cursor-fg)))
-         str)
+      (if pt
+          (progn
+            (goto-char pt)
+            (cond ((lispy-right-p)
+                   (setq p2 (1- (point)))
+                   (lispy-different)
+                   (setq p1 (point)))
+                  ((lispy-left-p)
+                   (setq p1 (point))
+                   (lispy-different)
+                   (setq p2 (1- (point)))))
+            (setq str (buffer-string))
+            (add-face-text-property 0 (length str) '(face 'lispy-test-face) t str)
+            (when mk
+              (if (< mk pt)
+                  (progn
+                    (add-text-properties (1- mk) (1- pt) '(face region) str)
+                    (set-text-properties (1- pt) pt '(face cursor) str))
+                (add-text-properties (1- (min pt mk)) (1- (max pt mk)) '(face region) str)
+                (set-text-properties (1- pt) pt '(face cursor) str)))
+            (when p1
+              (add-text-properties
+               (1- p1) p1
+               `(face (:background
+                       ,color-paren
+                       :foreground
+                       ,(if (and mk
+                                 (>= p1 (min pt mk))
+                                 (<= p1 (max pt mk)))
+                            color-cursor-fg
+                          color-cursor-bg))) str))
+            (when p2
+              (add-text-properties
+               (1- p2) p2
+               `(face (:background
+                       ,color-paren
+                       :foreground
+                       ,(if (and mk
+                                 (>= p2 (min pt mk))
+                                 (<= p2 (max pt mk)))
+                            color-cursor-fg
+                          color-cursor-bg)))
+               str))
+            (add-text-properties
+             (1- pt) pt
+             `(face (:background
+                     ,color-cursor-bg
+                     :foreground
+                     ,(if (eq pt p1)
+                          color-paren
+                        color-cursor-fg)))
+             str)
+            str)
         str))))
 
 (defun lispy-view-test ()
@@ -5106,7 +5172,7 @@ When ARG is given, paste at that place in the current list."
          (delete-overlay lispy-overlay)
          (setq lispy-overlay nil))
 
-        ((looking-at "(should (string=")
+        ((looking-at "(should (\\(?:string=\\|equal\\)")
          (setq lispy-hint-pos (point))
          (let* ((expr (cadr (read (lispy--string-dwim))))
                 (str1 (cadr (cadr expr)))
@@ -5128,7 +5194,9 @@ When ARG is given, paste at that place in the current list."
                     "\n" sep "\n"
                     (substring (prin1-to-string keys) 1 -1)
                     "\n" sep "\n"
-                    (lispy--fontify str2 mode)
+                    (lispy--fontify (if (stringp str2)
+                                        str2
+                                      (prin1-to-string str2)) mode)
                     "\n"))))
 
         (t
@@ -5361,6 +5429,18 @@ Otherwise return cons of current string, symbol or list bounds."
            (backward-list)
            (prog1 (bounds-of-thing-at-point 'sexp)
              (forward-list)))
+          ((looking-at lispy-outline)
+           (save-excursion
+             (cons
+              (progn
+                (outline-end-of-heading)
+                (1+ (point)))
+              (progn
+                (outline-end-of-subtree)
+                (skip-chars-backward "\n")
+                (when (setq bnd (lispy--bounds-comment))
+                  (goto-char (1- (car bnd))))
+                (point)))))
           ((or (looking-at (format "[`'#]*%s" lispy-left))
                (looking-at "[`'#]"))
            (bounds-of-thing-at-point 'sexp))
@@ -5370,6 +5450,9 @@ Otherwise return cons of current string, symbol or list bounds."
            bnd)
           ((looking-at ";;")
            (lispy--bounds-comment))
+          ((and (eq major-mode 'python-mode)
+                (lispy-bolp))
+           (lispy--bounds-c-toplevel))
           (t
            (let ((res (ignore-errors
                         (bounds-of-thing-at-point
@@ -5399,6 +5482,16 @@ Otherwise return cons of current string, symbol or list bounds."
                   (save-excursion
                     (forward-word 1)
                     (bounds-of-thing-at-point 'symbol))))))))))
+
+(defun lispy--bounds-c-toplevel ()
+  "Return a cons of the bounds of a C-like top-level expression."
+  (cons
+   (point)
+   (save-excursion
+     (let ((end (line-end-position)))
+       (while (< (point) end)
+         (forward-sexp 1)))
+     (point))))
 
 (defun lispy--bounds-list ()
   "Return the bounds of smallest list that includes the point.
@@ -5587,6 +5680,15 @@ When ADD-OUTPUT is t, append the output to the result."
          ((eq major-mode 'lisp-mode)
           (require 'le-lisp)
           'lispy--eval-lisp)
+         ((eq major-mode 'hy-mode)
+          (require 'le-hy)
+          'lispy--eval-hy)
+         ((eq major-mode 'python-mode)
+          (require 'le-python)
+          'lispy--eval-python)
+         ((eq major-mode 'julia-mode)
+          (require 'le-julia)
+          'lispy--eval-julia)
          (t (error "%s isn't supported currently" major-mode)))
    e-str))
 
@@ -5658,13 +5760,14 @@ so that no other packages disturb the match data."
      (in-package . 1)
      (load . 1)
      (setq . 2)
-     ;; SLIME specific
+     ;; SLIME/SLY specific
      (definterface . 1)
      (defimplementation . 1)
      (define-caller-pattern . 1)
      (define-variable-pattern . 1)
      (define-pattern-substitution . 1)
-     (defslimefun . 1))
+     (defslimefun . 1)
+     (defslyfun . 1))
     (emacs-lisp-mode
      (setq . 2)
      (csetq . 2)
@@ -5703,19 +5806,11 @@ so that no other packages disturb the match data."
      ;; lispy-specific
      (lispy-defverb . 1)
      ;; misc
-     (defhydra . 1)))
+     (defhydra . 1)
+     (ivy-set-actions . 1)
+     (ivy-set-sources . 1)
+     (ivy-set-occur . 1)))
   "Alist of tag arities for supported modes.")
-
-(defun lispy--fetch-this-file-tags (&optional file)
-  "Fetch tags for FILE."
-  (setq file (or file (buffer-file-name)))
-  (semantic-new-buffer-fcn)
-  (let ((tags (semantic-parse-region (point-min) (point-max))))
-    (when (memq major-mode (cons 'lisp-mode lispy-elisp-modes))
-      (lexical-let ((arity (cdr (assoc major-mode lispy-tag-arity)))
-                    (tag-regex (lispy--tag-regexp)))
-        (mapc (lambda (x) (lispy--modify-tag x tag-regex arity file)) tags)))
-    tags))
 
 (defun lispy--tag-regexp (&optional mode)
   "Return tag regexp based on MODE."
@@ -6047,9 +6142,9 @@ Ignore the matches in strings and comments."
                     (forward-sexp)
                     (insert ")")
                     (replace-match "(ly-raw function ")))
-                ;; ——— #{ or { or #( ——————————
+                ;; ——— #{ or { or #( or @( or #?( or #?@( ——————————
                 (goto-char (point-min))
-                (while (re-search-forward "#(\\|{\\|#{\\|#\\?(" nil t)
+                (while (re-search-forward "#\\?@(\\|@(\\|#(\\|{\\|#{\\|#\\?(" nil t)
                   (let ((class
                          (cond ((string= (match-string 0) "#{")
                                 "clojure-set")
@@ -6057,6 +6152,10 @@ Ignore the matches in strings and comments."
                                 "clojure-map")
                                ((string= (match-string 0) "#(")
                                 "clojure-lambda")
+                               ((string= (match-string 0) "@(")
+                                "clojure-deref-list")
+                               ((string= (match-string 0) "#?@(")
+                                "clojure-reader-conditional-splice")
                                ((string= (match-string 0) "#?(")
                                 "clojure-reader-conditional")
                                (t
@@ -6600,6 +6699,11 @@ Try to refresh if nil is returned."
 (defvar lispy-tag-history nil
   "History for tags.")
 
+(defvar lispy-select-candidate-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-.") 'ivy-done)
+    map))
+
 (defun lispy--select-candidate (candidates action)
   "Select from CANDIDATES list with `helm'.
 ACTION is called for the selected candidate."
@@ -6620,6 +6724,7 @@ ACTION is called for the selected candidate."
              (setq strs (mapcar #'car candidates))
              (eq lispy-completion-method 'ivy))
            (ivy-read "tag: " strs
+                     :keymap lispy-select-candidate-mode-map
                      :require-match t
                      :preselect (lispy--current-tag)
                      :action (lambda (x)
@@ -6759,6 +6864,14 @@ The outer delimiters are stripped."
            (delete-region beg (point))
            (insert (format "{%s}" (lispy--splice-to-str (cl-caddr sxp))))
            (goto-char beg))
+	      (clojure-deref-list
+            (delete-region beg (point))
+            (insert (format "@(%s)" (lispy--splice-to-str (cl-caddr sxp))))
+            (goto-char beg))
+          (clojure-reader-conditional-splice
+            (delete-region beg (point))
+            (insert (format "#?@(%s)" (lispy--splice-to-str (cl-caddr sxp))))
+            (goto-char beg))
           (clojure-reader-conditional
            (delete-region beg (point))
            (insert (format "#?(%s)" (lispy--splice-to-str (cl-caddr sxp))))
@@ -7129,7 +7242,7 @@ PLIST currently accepts:
              ((or (lispy-left-p)
                   (lispy-right-p)
                   (and (lispy-bolp)
-                       (or (looking-at ";")
+                       (or (looking-at lispy-outline-header)
                            (looking-at lispy-outline))))
               (call-interactively ',def))
 
@@ -7251,9 +7364,11 @@ Return an appropriate `setq' expression when in `let', `dolist',
                   (int-form
                    (and (fboundp fn-name)
                         (interactive-form fn-name)))
-                  (int-form (when (and (eq (car int-form) 'interactive)
-                                       (listp (cadr int-form)))
-                              (cadr int-form))))
+                  (int-form (when (eq (car int-form) 'interactive)
+                              (cond ((listp (cadr int-form))
+                                     (cadr int-form))
+                                    ((equal (cadr int-form) "p")
+                                     ''(1))))))
              (if int-form
                  `(lispy-destructuring-setq ,tsexp
                       ,int-form)
@@ -7407,8 +7522,7 @@ If `lispy-safe-paste' is non-nil, any unmatched delimiters will be added to it."
 
 ;;* Key definitions
 (defvar ac-trigger-commands '(self-insert-command))
-(defvar company-begin-commands '(self-insert-command))
-(defvar company-no-begin-commands nil)
+
 (defvar mc/cmds-to-run-for-all nil)
 (defvar mc/cmds-to-run-once nil)
 (mapc (lambda (x) (add-to-list 'mc/cmds-to-run-once x))
@@ -7431,8 +7545,6 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
     (add-to-list 'ac-trigger-commands func)
     (unless (memq func mc/cmds-to-run-once)
       (add-to-list 'mc/cmds-to-run-for-all func))
-    (unless (memq func company-no-begin-commands)
-      (add-to-list 'company-begin-commands func))
     (eldoc-add-command func)
     (define-key keymap (kbd key) func)))
 
@@ -8058,6 +8170,7 @@ When ARG is non-nil, unquote the current string."
     (define-key map (kbd "M-J") 'lispy-join)
     (define-key map (kbd "<C-return>") 'lispy-open-line)
     (define-key map (kbd "<M-return>") 'lispy-meta-return)
+    (define-key map (kbd "M-RET") 'lispy-meta-return)
     ;; misc
     (define-key map (kbd "M-o") 'lispy-string-oneline)
     (define-key map (kbd "M-i") 'lispy-iedit)
@@ -8076,10 +8189,8 @@ When ARG is non-nil, unquote the current string."
     (define-key map (kbd "C-φ") 'lispy-parens-down)
     (define-key map (kbd "χ") 'lispy-right)
     (define-key map (kbd "C-M-a") 'lispy-beginning-of-defun)
-    (define-key map (kbd "C-x C-j") 'lispy-debug-step-in)
     (define-key map (kbd "<return>") 'lispy-alt-line)
     (define-key map (kbd "RET") 'lispy-newline-and-indent-plain)
-    (lispy-define-key map "Y" 'swiper)
     map))
 
 (defun lispy-set-key-theme (theme)
