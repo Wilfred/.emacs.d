@@ -17,10 +17,7 @@
 
 (require 'ido)
 
-;; ido-mode -- fuzzy completion
-(setq ido-enable-flex-matching t)
-
-; reduce how often we get 'directory too big' problems:
+;; reduce how often we get 'directory too big' problems:
 (setq ido-max-directory-size 100000)
 
 ;; Show killed buffers at end when using ido for switching buffers.
