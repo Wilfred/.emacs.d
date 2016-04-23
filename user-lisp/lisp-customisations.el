@@ -88,6 +88,22 @@
 ;; Use lispy-mode in emacs-lisp
 (add-hook 'emacs-lisp-mode-hook #'lispy-mode)
 
+;; Disable the lispy keybindings that I don't want:
+
+(require 'lispy)
+;; Conflicts with my keybinding for yas-expand.
+(define-key lispy-mode-map (kbd "SPC") nil)
+
+;; I want to type [ literally, see
+;; https://github.com/abo-abo/lispy/issues/64
+(define-key lispy-mode-map-lispy (kbd "[") nil)
+(define-key lispy-mode-map-lispy (kbd "]") nil)
+
+;; I use this keybinding a lot, to navigate between instances of a
+;; variable with `highlight-symbol-next'.
+(define-key lispy-mode-map (kbd "M-n") nil)
+(define-key lispy-mode-map (kbd "M-p") nil)
+
 (require 'company)
 (require 'company-elisp)
 
