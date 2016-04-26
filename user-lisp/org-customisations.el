@@ -9,4 +9,7 @@
 (require 'ob-sh)
 (require 'ob-python)
 
+(custom-set-faces
+ '(org-date ((((class color)) (:underline nil))) t))
+
 (provide 'org-customisations)
