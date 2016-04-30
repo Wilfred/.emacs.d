@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- 2016-04-30 Sat 10:58 -->
+<!-- 2016-04-30 Sat 23:37 -->
 <meta  charset="utf-8">
 <meta  name="viewport" content="width=device-width, initial-scale=1">
 <title></title>
@@ -244,7 +244,7 @@ This is the Emacs environment I (Wilfred Hughes) use for development.
 <h3 id="orgheadline1"><span class="section-number-3">1.1</span> Licensing</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
-Code I've written (init.el and files under `user-lisp/') is BSD
+Code I've written (init.el and files under <code>user-lisp/</code>) is BSD
 licensed, see <a href="COPYING">COPYING</a>.
 </p>
 </div>
@@ -261,7 +261,7 @@ init.org in Emacs.
 
 <p>
 You can edit any code block by putting point inside the block and
-pressing `C-c '' (press `C-c '' again to escape).
+pressing =C-c '= (press =C-c '= again to escape).
 </p>
 </div>
 </div>
@@ -373,7 +373,7 @@ install JSHint, run:
 <h3 id="orgheadline9"><span class="section-number-3">2.5</span> Less</h3>
 <div class="outline-text-3" id="text-2-5">
 <p>
-I use lessc to check the syntax of `.less' files. You can install it
+I use lessc to check the syntax of <code>.less</code> files. You can install it
 with:
 </p>
 
@@ -400,8 +400,8 @@ and package customisations.
 
 <p>
 Interactive commands, configuration and keybindings are kept in files
-named `FOO-customisations.el'. Elisp convenience functions are kept in
-files named `FOO-utils.el'.
+named <code>FOO-customisations.el</code>. Elisp convenience functions are kept in
+files named <code>FOO-utils.el</code>.
 </p>
 
 <div class="org-src-container">
@@ -491,7 +491,7 @@ we can call inside Emacs.
 </p>
 
 <p>
-Note this function comes from the package `exec-path-from-shell.el'.
+Note this function comes from the package <code>exec-path-from-shell.el</code>.
 </p>
 
 <div class="org-src-container">
@@ -682,7 +682,7 @@ a symbol.
 <a href="(describe-key%20(kbd%20"C-a"))">C-a</a> normally moves us to the beginning of the line unconditionally
 with <a href="(describe-function%20#'move-beginning-of-line)">move-beginning-of-line</a>. This version is more useful, as it moves
 to the first non-whitespace character if we're already at the
-beginning of the line. Repeated use of `C-a' toggles between these two
+beginning of the line. Repeated use of <code>C-a</code> toggles between these two
 positions.
 </p>
 
@@ -710,15 +710,15 @@ positions.
 <h4 id="orgheadline20"><span class="section-number-4">3.5.3</span> By Character</h4>
 <div class="outline-text-4" id="text-3-5-3">
 <p>
-Vim has a handy command where you can type `f' to jump to the next
+Vim has a handy command where you can type <code>f</code> to jump to the next
 occurrence of a character on a line.
 </p>
 
 <p>
-We can do this with `jump-char' without the constraint that the
+We can do this with <code>jump-char</code> without the constraint that the
 character must be on the current line. This command needs to be
-accessible with a short shortcut, so we use `M-m'. `M-m' is bound to
-`back-to-indentation' by default, but our `C-a' behaviour makes it
+accessible with a short shortcut, so we use <code>M-m</code>. <code>M-m</code> is bound to
+<code>back-to-indentation</code> by default, but our <code>C-a</code> behaviour makes it
 redundant.
 </p>
 
@@ -792,7 +792,7 @@ It's handy to also delete the trailing newline when using <a href="(describe-key
 <p>
 I sometimes want to simply delete a region, rather than
 saving it to the kill-ring. I've added a function that allows me to
-type `C-u C-w' to delete the region, whilst `C-w' works as normal.
+type <code>C-u C-w</code> to delete the region, whilst <code>C-w</code> works as normal.
 </p>
 
 <div class="org-src-container">
@@ -832,7 +832,7 @@ programming languages and even HTML.
 <p>
 Currently, I only use a few smartparens commands, using the same
 keybindings as the equivalent paredit commands. You can view a list of all smartparens
-commands with the command `sp-cheat-sheet'.
+commands with the command <code>sp-cheat-sheet</code>.
 </p>
 
 <div class="org-src-container">
@@ -946,9 +946,9 @@ load and configure a function for this:
 </div>
 
 <p>
-We bind this to `C-x C-r' (mnemonic: recent). By default, `C-x C-r' is bound to
-`find-file-read-only', which isn't very useful. (You can set any file
-as read only with `read-only-mode', mapped to `C-x C-q'.)
+We bind this to <code>C-x C-r</code> (mnemonic: recent). By default, <code>C-x C-r</code> is bound to
+<code>find-file-read-only</code>, which isn't very useful. (You can set any file
+as read only with <code>read-only-mode</code>, mapped to <code>C-x C-q</code>.)
 </p>
 
 <div class="org-src-container">
@@ -960,14 +960,14 @@ as read only with `read-only-mode', mapped to `C-x C-q'.)
 <p>
 Most of the time though, it's helpful to be able to pick a file in the
 same source code repository as the current buffer. There are several
-tools to do this. I've played with `find-file-in-repository',
-`projectile' and `find-file-in-project'.
+tools to do this. I've played with <code>find-file-in-repository</code>,
+<code>projectile</code> and <code>find-file-in-project</code>.
 </p>
 
 <p>
-`find-file-in-project' seems unmaintained. `find-file-in-repository'
+<code>find-file-in-project</code> seems unmaintained. <code>find-file-in-repository</code>
 is fast and works well, but is only lightly maintained and doesn't
-support some version control systems. `projectile' is fast enough,
+support some version control systems. <code>projectile</code> is fast enough,
 actively maintained and featureful.
 </p>
 
@@ -979,8 +979,8 @@ actively maintained and featureful.
 </div>
 
 <p>
-We bind `projectile-find-file' to `C-x C-g', as we use it
-a lot and it's right next to `C-x C-f'.
+We bind <code>projectile-find-file</code> to <code>C-x C-g</code>, as we use it
+a lot and it's right next to <code>C-x C-f</code>.
 </p>
 
 <div class="org-src-container">
@@ -1010,7 +1010,7 @@ if we had a test copy of a project at some point.
 <h4 id="orgheadline28"><span class="section-number-4">3.9.2</span> Dired</h4>
 <div class="outline-text-4" id="text-3-9-2">
 <p>
-Dired isn't very colourful by default, but `dired+' has helpful
+Dired isn't very colourful by default, but <code>dired+</code> has helpful
 highlighting.
 </p>
 
@@ -1058,8 +1058,8 @@ store all our backups in `~/.saves`.
 
 <p>
 However, Emacs isn't aggressive enough with backups. We use
-backup-each-save to ensure we have a copy of state of every file we've
-modified.
+<code>backup-each-save</code> to ensure we have a copy of state of every file
+we've modified.
 </p>
 
 <div class="org-src-container">
@@ -1143,8 +1143,8 @@ It's also useful to quickly generate a minimal HTML page to play with.
 
 <p>
 It's really useful to be able to move between flymake errors, so we
-bind F8 and F9 for this. Since there's a gap between these two keys,
-they're easy to find.
+bind <code>F8</code> and <code>F9</code> for this. Since there's a gap between these two
+keys, they're easy to find.
 </p>
 
 <div class="org-src-container">
@@ -1192,14 +1192,14 @@ I prefer my errors underlined.
 <p>
 Flycheck is an excellent on-the-fly checker that provides many
 additional features and languages. Flymake is part of stock Emacs,
-flychcks is third-party.
+flycheck is third-party.
 </p>
 
 <p>
 Flycheck can be quite slow with a large number of errors. We reduce
 how often we run it. We also change the highlighting to simply
 highlight the whole line, as it's much faster. See
-<a href="https://github.com/lunaryorn/flycheck/issues/153#issuecomment-19450255">https://github.com/lunaryorn/flycheck/issues/153#issuecomment-19450255</a>
+<a href="https://github.com/lunaryorn/flycheck/issues/153#issuecomment-19450255">flycheck issue #53</a>.
 </p>
 
 <div class="org-src-container">
@@ -1244,16 +1244,15 @@ to <code>C-c ! f</code>. This is tricky to type, so we use our own keybinding.
 </div>
 
 <p>
-flycheck-next-error doesn't push the mark, so we can't use pop-mark to
-go back to our previous position. We define and activate advice to fix
-that.
+<code>flycheck-next-error</code> doesn't push the mark, so we can't use
+<code>pop-mark</code> to go back to our previous position. We define and activate
+advice to fix that.
 </p>
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defadvice</span> <span class="org-function-name">flycheck-next-error</span> <span class="org-rainbow-delimiters-depth-2">(</span>around wh/flycheck-next-error-push-mark activate<span class="org-rainbow-delimiters-depth-2">)</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>push-mark<span class="org-rainbow-delimiters-depth-2">)</span>
-  ad-do-it<span class="org-rainbow-delimiters-depth-1">)</span>
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defadvice</span> <span class="org-function-name">flycheck-next-error</span> <span class="org-rainbow-delimiters-depth-2">(</span>before wh/flycheck-next-error-push-mark activate<span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span>push-mark<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
@@ -1306,7 +1305,7 @@ it on the mode line. Hide it.
 <h4 id="orgheadline36"><span class="section-number-4">3.12.1</span> Shortcuts</h4>
 <div class="outline-text-4" id="text-3-12-1">
 <p>
-<code>eval-defun</code> is bound to `C-M-x', but Gnome doesn't allow Emacs to
+<code>eval-defun</code> is bound to <code>C-M-x</code>, but Gnome doesn't allow Emacs to
 receive that key sequence. When writing elisp, it's very useful, so we
 bind it to a convenient keybinding.
 </p>
@@ -1471,7 +1470,7 @@ the way for quick throwaway elisp scripts, so we switch off checkdoc.
 <p>
 Emacs lisp highlighting works pretty well out of the box. However,
 dash.el provides addition highlighting for its functions and variables
-used in its anaphoric macros (e.g. `it').
+used in its anaphoric macros (e.g. <code>it</code>).
 </p>
 
 <div class="org-src-container">
@@ -1919,7 +1918,7 @@ Markdown is essentially prose, so it's nice to automatically line-wrap
 <h3 id="orgheadline52"><span class="section-number-3">3.22</span> Performance</h3>
 <div class="outline-text-3" id="text-3-22">
 <p>
-Emacs will run garbage collection after `gc-cons-threshold' bytes of
+Emacs will run garbage collection after <code>gc-cons-threshold</code> bytes of
 consing. The default value is 800,000 bytes, or ~ 0.7 MiB. By
 increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </p>
@@ -1936,7 +1935,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 <h3 id="orgheadline53"><span class="section-number-3">3.23</span> Shut Down</h3>
 <div class="outline-text-3" id="text-3-23">
 <p>
-I rarely close Emacs, but using Zile means I use `C-x C-c' a lot. It's
+I rarely close Emacs, but using Zile means I use <code>C-x C-c</code> a lot. It's
 annoying to accidentally close Emacs, so warn first.
 </p>
 
@@ -2145,7 +2144,7 @@ Don't try to reopen all files that are owned by other users.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2016-04-30 Sat 10:58</p>
+<p class="date">Created: 2016-04-30 Sat 23:37</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

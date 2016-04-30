@@ -21,8 +21,8 @@
 ;; and package customisations.
 
 ;; Interactive commands, configuration and keybindings are kept in files
-;; named `FOO-customisations.el'. Elisp convenience functions are kept in
-;; files named `FOO-utils.el'.
+;; named =FOO-customisations.el=. Elisp convenience functions are kept in
+;; files named =FOO-utils.el=.
 
 
 (add-to-list 'load-path "~/.emacs.d/user-lisp/")
@@ -86,7 +86,7 @@
 ;; environment. This ensures that any command we can call from a shell,
 ;; we can call inside Emacs.
 
-;; Note this function comes from the package `exec-path-from-shell.el'.
+;; Note this function comes from the package =exec-path-from-shell.el=.
   
 
 ;; set exec-path according to the system's PATH
@@ -212,7 +212,7 @@
 ;; [[elisp:(describe-key%20(kbd%20"C-a"))][C-a]] normally moves us to the beginning of the line unconditionally
 ;; with [[elisp:(describe-function%20#'move-beginning-of-line)][move-beginning-of-line]]. This version is more useful, as it moves
 ;; to the first non-whitespace character if we're already at the
-;; beginning of the line. Repeated use of `C-a' toggles between these two
+;; beginning of the line. Repeated use of =C-a= toggles between these two
 ;; positions.
 
 
@@ -232,13 +232,13 @@ the start of the line."
 
 ;; By Character
 
-;; Vim has a handy command where you can type `f' to jump to the next
+;; Vim has a handy command where you can type =f= to jump to the next
 ;; occurrence of a character on a line.
 
-;; We can do this with `jump-char' without the constraint that the
+;; We can do this with ~jump-char~ without the constraint that the
 ;; character must be on the current line. This command needs to be
-;; accessible with a short shortcut, so we use `M-m'. `M-m' is bound to
-;; `back-to-indentation' by default, but our `C-a' behaviour makes it
+;; accessible with a short shortcut, so we use =M-m=. =M-m= is bound to
+;; ~back-to-indentation~ by default, but our =C-a= behaviour makes it
 ;; redundant.
 
 
@@ -284,7 +284,7 @@ the start of the line."
 
 ;; I sometimes want to simply delete a region, rather than
 ;; saving it to the kill-ring. I've added a function that allows me to
-;; type `C-u C-w' to delete the region, whilst `C-w' works as normal.
+;; type =C-u C-w= to delete the region, whilst =C-w= works as normal.
 
 
 (defun kill-or-delete-region (beg end prefix)
@@ -305,7 +305,7 @@ If a prefix argument is given, don't change the kill-ring."
 
 ;; Currently, I only use a few smartparens commands, using the same
 ;; keybindings as the equivalent paredit commands. You can view a list of all smartparens
-;; commands with the command `sp-cheat-sheet'.
+;; commands with the command ~sp-cheat-sheet~.
 
 
 (require 'smartparens)
@@ -386,9 +386,9 @@ If a prefix argument is given, don't change the kill-ring."
 
 
 
-;; We bind this to `C-x C-r' (mnemonic: recent). By default, `C-x C-r' is bound to
-;; `find-file-read-only', which isn't very useful. (You can set any file
-;; as read only with `read-only-mode', mapped to `C-x C-q'.)
+;; We bind this to =C-x C-r= (mnemonic: recent). By default, =C-x C-r= is bound to
+;; ~find-file-read-only~, which isn't very useful. (You can set any file
+;; as read only with ~read-only-mode~, mapped to =C-x C-q=.)
 
 
 (global-set-key (kbd "C-x C-r") #'crux-recentf-ido-find-file)
@@ -397,12 +397,12 @@ If a prefix argument is given, don't change the kill-ring."
 
 ;; Most of the time though, it's helpful to be able to pick a file in the
 ;; same source code repository as the current buffer. There are several
-;; tools to do this. I've played with `find-file-in-repository',
-;; `projectile' and `find-file-in-project'.
+;; tools to do this. I've played with ~find-file-in-repository~,
+;; ~projectile~ and ~find-file-in-project~.
 
-;; `find-file-in-project' seems unmaintained. `find-file-in-repository'
+;; ~find-file-in-project~ seems unmaintained. ~find-file-in-repository~
 ;; is fast and works well, but is only lightly maintained and doesn't
-;; support some version control systems. `projectile' is fast enough,
+;; support some version control systems. ~projectile~ is fast enough,
 ;; actively maintained and featureful.
 
 
@@ -411,8 +411,8 @@ If a prefix argument is given, don't change the kill-ring."
 
 
 
-;; We bind `projectile-find-file' to `C-x C-g', as we use it
-;; a lot and it's right next to `C-x C-f'.
+;; We bind ~projectile-find-file~ to =C-x C-g=, as we use it
+;; a lot and it's right next to =C-x C-f=.
 
 
 (global-set-key (kbd "C-x C-g") 'projectile-find-file)
@@ -425,7 +425,7 @@ If a prefix argument is given, don't change the kill-ring."
 
 ;; Dired
 
-;; Dired isn't very colourful by default, but `dired+' has helpful
+;; Dired isn't very colourful by default, but ~dired+~ has helpful
 ;; highlighting.
 
 
@@ -459,8 +459,8 @@ If a prefix argument is given, don't change the kill-ring."
 
 
 ;; However, Emacs isn't aggressive enough with backups. We use
-;; backup-each-save to ensure we have a copy of state of every file we've
-;; modified.
+;; ~backup-each-save~ to ensure we have a copy of state of every file
+;; we've modified.
 
 
 (require 'backup-each-save)
@@ -519,8 +519,8 @@ Visit the file after creation."
 ;; (Note that there's language-specific flymake configuration too.)
 
 ;; It's really useful to be able to move between flymake errors, so we
-;; bind F8 and F9 for this. Since there's a gap between these two keys,
-;; they're easy to find.
+;; bind =F8= and =F9= for this. Since there's a gap between these two
+;; keys, they're easy to find.
 
 
 (require 'flymake)
@@ -554,12 +554,12 @@ Visit the file after creation."
 
 ;; Flycheck is an excellent on-the-fly checker that provides many
 ;; additional features and languages. Flymake is part of stock Emacs,
-;; flychcks is third-party.
+;; flycheck is third-party.
 
 ;; Flycheck can be quite slow with a large number of errors. We reduce
 ;; how often we run it. We also change the highlighting to simply
 ;; highlight the whole line, as it's much faster. See
-;; https://github.com/lunaryorn/flycheck/issues/153#issuecomment-19450255
+;; [[https://github.com/lunaryorn/flycheck/issues/153#issuecomment-19450255][flycheck issue #53]].
 
 
 (setq flycheck-highlighting-mode 'lines)
@@ -592,14 +592,13 @@ Visit the file after creation."
 
 
 
-;; flycheck-next-error doesn't push the mark, so we can't use pop-mark to
-;; go back to our previous position. We define and activate advice to fix
-;; that.
+;; ~flycheck-next-error~ doesn't push the mark, so we can't use
+;; ~pop-mark~ to go back to our previous position. We define and activate
+;; advice to fix that.
 
 
-(defadvice flycheck-next-error (around wh/flycheck-next-error-push-mark activate)
-  (push-mark)
-  ad-do-it)
+(defadvice flycheck-next-error (before wh/flycheck-next-error-push-mark activate)
+  (push-mark))
 
 ;; Undoing
 
@@ -628,7 +627,7 @@ Visit the file after creation."
 
 ;; Shortcuts
 
-;; =eval-defun= is bound to `C-M-x', but Gnome doesn't allow Emacs to
+;; =eval-defun= is bound to =C-M-x=, but Gnome doesn't allow Emacs to
 ;; receive that key sequence. When writing elisp, it's very useful, so we
 ;; bind it to a convenient keybinding.
 
@@ -736,7 +735,7 @@ Visit the file after creation."
 
 ;; Emacs lisp highlighting works pretty well out of the box. However,
 ;; dash.el provides addition highlighting for its functions and variables
-;; used in its anaphoric macros (e.g. `it').
+;; used in its anaphoric macros (e.g. ~it~).
 
 
 (eval-after-load "dash" '(dash-enable-font-lock))
@@ -1050,7 +1049,7 @@ Visit the file after creation."
 
 ;; Performance
 
-;; Emacs will run garbage collection after `gc-cons-threshold' bytes of
+;; Emacs will run garbage collection after ~gc-cons-threshold~ bytes of
 ;; consing. The default value is 800,000 bytes, or ~ 0.7 MiB. By
 ;; increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 
@@ -1059,7 +1058,7 @@ Visit the file after creation."
 
 ;; Shut Down
 
-;; I rarely close Emacs, but using Zile means I use `C-x C-c' a lot. It's
+;; I rarely close Emacs, but using Zile means I use =C-x C-c= a lot. It's
 ;; annoying to accidentally close Emacs, so warn first.
 
 
