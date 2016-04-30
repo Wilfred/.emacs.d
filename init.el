@@ -1065,6 +1065,8 @@ Visit the file after creation."
 
 (setq confirm-kill-emacs #'y-or-n-p)
 
+(remove-hook 'find-file-hook #'crux-reopen-as-root)
+
 ;; Undocumented
 
 

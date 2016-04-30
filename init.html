@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- 2016-04-19 Tue 08:20 -->
+<!-- 2016-04-30 Sat 10:58 -->
 <meta  charset="utf-8">
 <meta  name="viewport" content="width=device-width, initial-scale=1">
 <title></title>
@@ -161,7 +161,7 @@ for the JavaScript code in this tag.
 <li><a href="#orgheadline9">2.5. Less</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline55">3. Contents</a>
+<li><a href="#orgheadline56">3. Contents</a>
 <ul>
 <li><a href="#orgheadline11">3.1. Folder Structure</a></li>
 <li><a href="#orgheadline12">3.2. Packages</a></li>
@@ -224,7 +224,8 @@ for the JavaScript code in this tag.
 <li><a href="#orgheadline51">3.21. Markdown</a></li>
 <li><a href="#orgheadline52">3.22. Performance</a></li>
 <li><a href="#orgheadline53">3.23. Shut Down</a></li>
-<li><a href="#orgheadline54">3.24. Undocumented</a></li>
+<li><a href="#orgheadline54">3.24. Workarounds</a></li>
+<li><a href="#orgheadline55">3.25. Undocumented</a></li>
 </ul>
 </li>
 </ul>
@@ -385,8 +386,8 @@ with:
 </div>
 </div>
 
-<div id="outline-container-orgheadline55" class="outline-2">
-<h2 id="orgheadline55"><span class="section-number-2">3</span> Contents</h2>
+<div id="outline-container-orgheadline56" class="outline-2">
+<h2 id="orgheadline56"><span class="section-number-2">3</span> Contents</h2>
 <div class="outline-text-2" id="text-3">
 </div><div id="outline-container-orgheadline11" class="outline-3">
 <h3 id="orgheadline11"><span class="section-number-3">3.1</span> Folder Structure</h3>
@@ -1948,8 +1949,24 @@ annoying to accidentally close Emacs, so warn first.
 </div>
 
 <div id="outline-container-orgheadline54" class="outline-3">
-<h3 id="orgheadline54"><span class="section-number-3">3.24</span> Undocumented</h3>
+<h3 id="orgheadline54"><span class="section-number-3">3.24</span> Workarounds</h3>
 <div class="outline-text-3" id="text-3-24">
+<p>
+Don't try to reopen all files that are owned by other users.
+<a href="https://github.com/bbatsov/crux/issues/20">https://github.com/bbatsov/crux/issues/20</a>
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>remove-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">find-file-hook</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">crux-reopen-as-root</span><span class="org-rainbow-delimiters-depth-1">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline55" class="outline-3">
+<h3 id="orgheadline55"><span class="section-number-3">3.25</span> Undocumented</h3>
+<div class="outline-text-3" id="text-3-25">
 <div class="org-src-container">
 
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">ui-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -2128,7 +2145,7 @@ annoying to accidentally close Emacs, so warn first.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2016-04-19 Tue 08:20</p>
+<p class="date">Created: 2016-04-30 Sat 10:58</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

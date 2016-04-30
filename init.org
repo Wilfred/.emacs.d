@@ -1179,6 +1179,15 @@ annoying to accidentally close Emacs, so warn first.
   (setq confirm-kill-emacs #'y-or-n-p)
 #+END_SRC
 
+** Workarounds
+
+Don't try to reopen all files that are owned by other users.
+https://github.com/bbatsov/crux/issues/20
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (remove-hook 'find-file-hook #'crux-reopen-as-root)
+#+END_SRC
+
 ** Undocumented
 
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org
