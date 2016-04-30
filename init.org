@@ -534,8 +534,9 @@ Dired isn't very colourful by default, but ~dired+~ has helpful
 highlighting.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (setq diredp-hide-details-initially-flag nil)
-  (require 'dired+)
+  (use-package dired+
+    :init
+    (setq diredp-hide-details-initially-flag nil))
 #+END_SRC
 
 *** Deleting and Backups
