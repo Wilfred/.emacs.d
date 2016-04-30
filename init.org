@@ -699,9 +699,8 @@ go back to our previous position. We define and activate advice to fix
 that.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (defadvice flycheck-next-error (around wh/flycheck-next-error-push-mark activate)
-    (push-mark)
-    ad-do-it)
+  (defadvice flycheck-next-error (before wh/flycheck-next-error-push-mark activate)
+    (push-mark))
 #+END_SRC
 
 ** Undoing
