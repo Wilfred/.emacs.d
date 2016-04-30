@@ -548,8 +548,8 @@ just acting like shell:rm.
 #+END_SRC
 
 Emacs' backup behaviour is helpful, so we increase the number of
-backups. However, rather than writing foo~1~ files everywhere, we
-store all our backups in `~/.saves`.
+backups. However, rather than writing =foo~1~= files everywhere, we
+store all our backups in =~/.saves=.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (setq
