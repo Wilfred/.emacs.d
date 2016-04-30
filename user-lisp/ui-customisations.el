@@ -128,22 +128,29 @@ Assumes that the frame is only split into two."
 
 (global-set-key (kbd "C-x 5") 'wh/toggle-frame-split)
 
-(defadvice split-window-right (after wh/switch-after-split activate)
-  "Switch to the right after splitting."
-  (other-window 1))
-
-(defun split-this-frame ()
-  "Change this frame to be split vertically, with the current buffer in both.
-All other buffers are hidden.
-
-Yes this is an obscure function, but it's pretty common in my workflow. I use
-it to open related buffers easily and discard other buffers (commonly magit)."
+;; It's common for me to split the window vertically, with the same
+;; buffer on both sides. This lets me easily view two different parts
+;; of the same buffer.
+;;
+;; If this command leads to surprising behaviour, `winner-undo' will
+;; restore the previous window arrangement.
+(defun wh/split-window-or-repeat ()
+  "If the frame isn't split vertically, split it.
+If it is split, repeat the current buffer in a vertical split."
   (interactive)
-  (delete-other-windows)
-  (split-window-right)
-  (other-window 1))
+  (if (= (length (window-list)) 1)
+      ;; Split the window as normal.
+      (progn
+        (split-window-right)
+        ;; When I split the window I always switch to the right
+        ;; window. Switch automatically to save a few keystrokes.
+        (other-window 1))
+    (progn
+      ;; Use a vertical split where both sides are the current buffer.
+      (delete-other-windows)
+      (split-window-right))))
 
-(global-set-key (kbd "C-c C-x 2") 'split-this-frame)
+(global-set-key (kbd "C-x 3") #'wh/split-window-or-repeat)
 
 (require 'paredit)
 (diminish 'paredit-mode "PE")
