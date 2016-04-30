@@ -114,7 +114,7 @@ Defaults to `t'.")
   (add-hook 'grep-mode-hook (lambda () (scf-mode 1)))
   (add-hook 'ack-and-a-half-mode-hook (lambda () (scf-mode 1))))
 
-(defun toggle-frame-split ()
+(defun wh/toggle-frame-split ()
   "If the frame is split vertically, split it horizontally or vice versa.
 Assumes that the frame is only split into two."
   (interactive)
@@ -126,7 +126,7 @@ Assumes that the frame is only split into two."
       (split-window-vertically)) ; gives us a split with the other window twice
     (switch-to-buffer nil))) ; restore the original window in this part of the frame
 
-(global-set-key (kbd "C-x 5") 'toggle-frame-split)
+(global-set-key (kbd "C-x 5") 'wh/toggle-frame-split)
 
 (defadvice split-window-right (after wh/switch-after-split activate)
   "Switch to the right after splitting."
