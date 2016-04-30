@@ -660,7 +660,7 @@ I prefer my errors underlined.
 
 Flycheck is an excellent on-the-fly checker that provides many
 additional features and languages. Flymake is part of stock Emacs,
-flychcks is third-party.
+flycheck is third-party.
 
 Flycheck can be quite slow with a large number of errors. We reduce
 how often we run it. We also change the highlighting to simply
