@@ -24,7 +24,7 @@ init.org is the source file that I edit, and init.el and init.html are
 generated from it. We define a convenience function to generate these files.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (defun wh/export-init ()
+  (defun wh/export-init-org ()
     "Generate init.html and init.html from the current init.org file."
     (interactive)
     (call-interactively #'org-babel-tangle)

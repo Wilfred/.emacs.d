@@ -4,7 +4,7 @@
 ;; generated from it. We define a convenience function to generate these files.
 
 
-(defun wh/export-init ()
+(defun wh/export-init-org ()
   "Generate init.html and init.html from the current init.org file."
   (interactive)
   (call-interactively #'org-babel-tangle)
