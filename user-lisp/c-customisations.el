@@ -1,9 +1,5 @@
 (require 'flycheck)
 
-;; todo: show eldoc in modeline, since the minibuffer is used by
-;; flycheck.
-(add-hook 'c-mode-hook #'c-turn-on-eldoc-mode)
-
 ;; TODO: this doesn't belong here.
 (require 'which-func)
 (setq which-func-modes (list #'c-mode))
