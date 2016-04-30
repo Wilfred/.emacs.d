@@ -300,6 +300,11 @@ If the region is active, toggle commenting on the whole region."
 (use-package string-edit-at-point
   :bind (("C-c C-c" . string-edit-at-point)))
 
+(use-package crux
+  ;; Generally, we use C-foo for line-based commands, and M-foo for
+  ;; word-based commands, so kill the rest of the line with C-backspace.
+  :bind (("<C-backspace>" . crux-kill-line-backwards)))
+
 ;; TODO: write this as a command in erefactor.
 ;; TODO: add 'ends here' too.
 (defun wh/insert-provide ()
