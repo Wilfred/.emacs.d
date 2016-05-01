@@ -429,8 +429,9 @@ If a prefix argument is given, don't change the kill-ring."
 ;; highlighting.
 
 
-(setq diredp-hide-details-initially-flag nil)
-(require 'dired+)
+(use-package dired+
+  :init
+  (setq diredp-hide-details-initially-flag nil))
 
 ;; Deleting and Backups
 
@@ -443,8 +444,8 @@ If a prefix argument is given, don't change the kill-ring."
 
 
 ;; Emacs' backup behaviour is helpful, so we increase the number of
-;; backups. However, rather than writing foo~1~ files everywhere, we
-;; store all our backups in `~/.saves`.
+;; backups. However, rather than writing =foo~1~= files everywhere, we
+;; store all our backups in =~/.saves=.
 
 
 (setq
@@ -1238,3 +1239,8 @@ The FILE-NAME defaults to the one used in the URL."
 ;; cycle through amounts of spacing
 ;; http://pragmaticemacs.com/emacs/cycle-spacing/
 (global-set-key (kbd "M-SPC") #'cycle-spacing)
+
+(use-package twittering-mode
+  :init
+  ;; Don't show the twitter client or location, it's just distracting.
+  (setq twittering-status-format "%i %s,  %@:\n%FILL[  ]{%T %r%R}\n "))
