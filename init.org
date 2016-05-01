@@ -1360,4 +1360,9 @@ https://github.com/bbatsov/crux/issues/20
   ;; cycle through amounts of spacing
   ;; http://pragmaticemacs.com/emacs/cycle-spacing/
   (global-set-key (kbd "M-SPC") #'cycle-spacing)
+
+  (use-package twittering-mode
+    :init
+    ;; Don't show the twitter client or location, it's just distracting.
+    (setq twittering-status-format "%i %s,  %@:\n%FILL[  ]{%T %r%R}\n "))
 #+END_SRC
