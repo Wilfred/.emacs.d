@@ -335,7 +335,10 @@ If the region is active, toggle commenting on the whole region."
 
 ;; Automatically save when tabbing out of a buffer.
 ;; Inspired by http://ngnghm.github.io/blog/2015/08/03/chapter-2-save-our-souls/
-(super-save-mode +1)
-(diminish 'super-save-mode)
+(use-package super-save
+  :demand
+  :config
+  (super-save-mode +1)
+  :diminish super-save-mode)
 
 (provide 'editing-customisations)
