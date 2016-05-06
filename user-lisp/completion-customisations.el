@@ -29,11 +29,6 @@
 ;; Use company-dabbrev-code in all modes.
 (setq company-dabbrev-code-modes t)
 
-;; Although we only candidates to be taken from actual code, it's nice
-;; to offer completion inside comments too.
-;; TODO: company-dabbrev seems to be taking candidates *from* inside strings too!
-(setq company-dabbrev-code-everywhere t)
-
 (global-set-key (kbd "s-/") #'company-dabbrev)
 
 ;; Precise completion.
