@@ -188,4 +188,23 @@ except Exception as e:
     (newline-and-indent)
     (insert "import ipdb; ipdb.set_trace()")))
 
+(defun wh/wrap-try-ipdb-post-mortem ()
+  "Equivalent to `wh/wrap-try-ipdb', but using post-mortem debugging."
+  (interactive "*")
+  (save-excursion
+    ;; Insert try: above.
+    (crux-smart-open-line-above)
+    (insert "try:")
+    ;; Indent the next line.
+    (forward-line 1)
+    (back-to-indentation)
+    (insert "    ")
+    ;; Add an except below
+    (python-nav-forward-sexp 1)
+    (newline-and-indent)
+    (python-indent-dedent-line-backspace 1)
+    (insert "except Exception:")
+    (newline-and-indent)
+    (insert "import ipdb, sys; tb = sys.exc_info()[2]; ipdb.post_mortem(tb)")))
+
 (provide 'python-customisations)
