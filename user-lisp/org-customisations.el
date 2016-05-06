@@ -9,6 +9,10 @@
 (require 'ob-sh)
 (require 'ob-python)
 
+(use-package org
+  :config
+  (setq org-clock-continuously t))
+
 (custom-set-faces
  '(org-date ((((class color)) (:underline nil))) t))
 
