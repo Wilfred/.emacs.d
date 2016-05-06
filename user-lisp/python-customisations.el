@@ -126,8 +126,6 @@ This means `pop-mark' can take us back to our previous position."
         ;; particularly useful with built-ins like IndexError and
         ;; packages like 'from foo import bar'.
         #'company-anaconda
-        ;; This is a noisy backend, so we try it later.
-        #'company-whole-line
         ;; As a last ditch attempt, just normal dabbrev.
         #'company-dabbrev-code)))
 
