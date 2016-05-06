@@ -163,10 +163,11 @@ If it is split, repeat the current buffer in a vertical split."
   (define-key org-mode-map (kbd "S-<left>") nil)
   (define-key org-mode-map (kbd "S-<right>") nil))
 
-(require 'paredit)
-(diminish 'paredit-mode "PE")
-(require 'projectile)
-(diminish 'projectile-mode)
+(use-package paredit
+  :diminish "PE")
+
+(use-package projectile
+  :diminish "")
 
 ;;; Mode-line.
 
