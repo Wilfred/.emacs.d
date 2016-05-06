@@ -17,6 +17,11 @@
 
 (require 'ido)
 
+;; TODO: ido is a little slow for large option sets, e.g. C-h v or C-h
+;; f. ido-flx looks hopeful as an alternative that's faster with
+;; negligible change in experience. Ido-hacks also exists, but it's a
+;; fork of ido.
+
 ;; reduce how often we get 'directory too big' problems:
 (setq ido-max-directory-size 100000)
 
