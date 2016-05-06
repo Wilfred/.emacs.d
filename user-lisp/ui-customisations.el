@@ -152,6 +152,17 @@ If it is split, repeat the current buffer in a vertical split."
 
 (global-set-key (kbd "C-x 3") #'wh/split-window-or-repeat)
 
+;; windmove allows S-<right> and S-<right> to switch between windows
+;; instead of `C-x o'
+(when (fboundp 'windmove-default-keybindings)
+  (windmove-default-keybindings))
+
+;; Don't let org override these keybindings.
+(use-package org
+  :config
+  (define-key org-mode-map (kbd "S-<left>") nil)
+  (define-key org-mode-map (kbd "S-<right>") nil))
+
 (require 'paredit)
 (diminish 'paredit-mode "PE")
 (require 'projectile)
