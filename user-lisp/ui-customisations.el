@@ -77,10 +77,6 @@ Defaults to `t'.")
 ;; undone with `winner-undo'.
 (winner-mode 1)
 
-;; Don't open a debugger when we quit (especially common in the
-;; minibuffer). TODO: find what's triggering this.
-(add-to-list 'debug-ignored-errors 'quit)
-
 ;;; ibuffer
 
 ;; use ibuffer to group buffers
