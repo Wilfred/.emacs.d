@@ -10,6 +10,9 @@
   ;; item.
   (setq org-clock-continuously t)
 
+  ;; When creating or completing a TODO, record the timestamps.
+  (setq org-log-done 'time)
+
   ;; Syntax highlight org code snippets.
   (setq org-src-fontify-natively t))
 
