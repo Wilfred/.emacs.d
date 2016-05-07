@@ -1,7 +1,5 @@
 (require 'org)
 
-(setq org-return-follows-link t)
-
 ;; Allow running code in sh and python
 (require 'ob-sh)
 (require 'ob-python)
