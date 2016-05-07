@@ -57,18 +57,21 @@ Defaults to `t'.")
 (setq frame-title-format "%b - emacs")
 
 ; name buffers foo<directory> foo<other_directory> rather than just numbering
-(require 'uniquify)
-(setq uniquify-buffer-name-style 'post-forward-angle-brackets)
+(use-package uniquify
+  :config
+  (setq uniquify-buffer-name-style 'post-forward-angle-brackets))
 
 ;; Highlight TODO, FIXME and BUG.
-(require 'fic-mode) ;; required to diminish fic-mode
-(add-hook 'prog-mode-hook #'fic-mode)
-(diminish 'fic-mode)
+(use-package fic-mode
+  :config
+  (add-hook 'prog-mode-hook #'fic-mode)
 
-;; TODO: work out why this highlighting doesn't work when the current
-;; sexp/line is highlighted.
-(custom-set-faces
- '(font-lock-fic-face ((t (:foreground "Red"))) t))
+  ;; TODO: work out why this highlighting doesn't work when the current
+  ;; sexp/line is highlighted.
+  (custom-set-faces
+   '(font-lock-fic-face ((t (:foreground "Red"))) t))
+
+  :diminish "")
 
 ;; winner-mode allows changes to frame layouts (e.g. splits) to be
 ;; undone with `winner-undo'.
@@ -81,11 +84,24 @@ Defaults to `t'.")
 ;;; ibuffer
 
 ;; use ibuffer to group buffers
-(require 'ibuffer)
-(global-set-key (kbd "C-x C-b") 'ibuffer)
+(use-package ibuffer
+  :config
+  ;; Modify the default ibuffer-formats
+  (setq ibuffer-formats
+        '((mark modified read-only " "
+                (name 40 40 :left :elide)
+                " "
+                (size-h 10 -1 :right)
+                " "
+                (mode 16 16 :left :elide)
+                " "
+                filename-and-process)))
+
+  :bind ("C-x C-b" . ibuffer))
 
 ;; Cycle between buffers with the same major mode.
-(global-set-key (kbd "C-x v") #'cbm-cycle)
+(use-package cbm
+  :bind ("C-x v" . cbm-cycle))
 
 ;; Use human readable Size column instead of original one
 (define-ibuffer-column size-h
@@ -94,18 +110,6 @@ Defaults to `t'.")
    ((> (buffer-size) 1000) (format "%7.0f KiB" (/ (buffer-size) 1024.0)))
    ((> (buffer-size) 1000000) (format "%7.0f MiB" (/ (buffer-size) (* 1024.0 1024.0))))
    (t (format "%9d B" (buffer-size)))))
-
-;; Modify the default ibuffer-formats
-(setq ibuffer-formats
-      '((mark modified read-only " "
-              (name 40 40 :left :elide)
-              " "
-              (size-h 10 -1 :right)
-              " "
-              (mode 16 16 :left :elide)
-              " "
-              filename-and-process)))
-
 
 ;; automatically abbreviate long paths in grep or ack output
 (defvar abbreviate-paths-when-searching nil)

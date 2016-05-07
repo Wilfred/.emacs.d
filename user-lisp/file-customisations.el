@@ -37,12 +37,15 @@ The original buffer and file are untouched."
     (basic-save-buffer)))
 
 ;; When switching to a project (bound to `C-c p p'), open magit.
-(require 'projectile)
-(setq projectile-switch-project-action (lambda () (magit-status default-directory)))
+(use-package projectile
+  :config
+  (setq projectile-switch-project-action
+        (lambda () (magit-status default-directory))))
 
 ;; When opening a file, restore point to the previous location.
-(require 'saveplace)
-(setq-default save-place t)
+(use-package saveplace
+  :config
+  (setq-default save-place t))
 
 ;;;###autoload
 (defun wh/open-customisations (name)
