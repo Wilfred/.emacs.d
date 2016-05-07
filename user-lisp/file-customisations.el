@@ -16,21 +16,6 @@
   (not-modified)
   (set-visited-file-modtime))
 
-;; note there is also set-visited-file-name but this is for name changes, not path changes
-;; TODO: Move to `crux-rename-buffer-and-file' (it currently uses ido inappropriately).
-(defun rename-file-and-buffer (new-name)
-  "Renames both current buffer and file it's visiting to NEW-NAME."
-  (interactive (list (read-from-minibuffer "New name: " (buffer-file-name))))
-  (let ((filename (buffer-file-name))
-        (new-directory (file-name-directory new-name)))
-    (unless filename (error "Buffer '%s' is not visiting a file!" (buffer-name)))
-    
-    (make-directory new-directory t)
-    (rename-file filename new-name 1)
-    (rename-buffer new-name t)
-    (set-visited-file-name new-name)
-    (set-buffer-modified-p nil)))
-
 ;;;###autoload
 (defun wh/find-file-sudo ()
   (interactive)
