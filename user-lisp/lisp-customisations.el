@@ -24,7 +24,10 @@
 (define-key paredit-mode-map (kbd "s-t") #'transpose-sexps)
 (define-key paredit-mode-map (kbd "s-n") #'paredit-forward-up)
 
-(require 'highlight-quoted)
+(use-package highlight-quoted
+  :init
+  (add-hook 'emacs-lisp-mode-hook #'highlight-quoted-mode)
+  (add-hook 'lisp-mode-hook #'highlight-quoted-mode))
 ;; Highlight the ' character itself in the same colour
 ;; as the quoted symbol.
 (set-face-attribute 'highlight-quoted-quote nil
@@ -33,8 +36,7 @@
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
             (setq use-hl-line nil)
-            (hl-sexp-mode)
-            (highlight-quoted-mode)))
+            (hl-sexp-mode)))
 
 (eval-after-load 'flycheck
   '(add-hook 'flycheck-mode-hook #'flycheck-cask-setup))
