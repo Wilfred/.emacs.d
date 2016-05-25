@@ -4,6 +4,10 @@
   ;; item.
   (setq org-clock-continuously t)
 
+  ;; Show drawers, e.g. :PROPERTIES:, when we expand a heading.
+  ;; See http://emacs.stackexchange.com/a/22540/304
+  (remove-hook 'org-cycle-hook #'org-cycle-hide-drawers)
+
   ;; When creating or completing a TODO, record the timestamps.
   (setq org-log-done 'time)
 
