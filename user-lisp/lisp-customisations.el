@@ -106,6 +106,14 @@
 (define-key lispy-mode-map (kbd "M-n") nil)
 (define-key lispy-mode-map (kbd "M-p") nil)
 
+;; Work around https://github.com/abo-abo/lispy/issues/283
+(remove-hook 'python-mode-hook #'wisent-python-default-setup)
+
+(defun wh/elisp-imenu-reset ()
+  (setq imenu-create-index-function #'imenu-default-create-index-function))
+
+(add-hook 'emacs-lisp-mode-hook #'wh/elisp-imenu-reset)
+
 (require 'company)
 (require 'company-elisp)
 
