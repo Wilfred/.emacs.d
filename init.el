@@ -1139,7 +1139,7 @@ Visit the file after creation."
 (require 'conflicts-customisations)
 (require 'org-customisations)
 
-(require 'tags-utils)
+(require 'tags-customisations)
 
 (require 'blog-utils)
 

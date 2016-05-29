@@ -1,8 +1,7 @@
-;;; tags-utils.el --- programmatically regenerate TAGS using etags
+;;; tags-customisations.el
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 1 October 2012
-;; Version: 0.1
 
 (require 'etags-select)
 
@@ -31,4 +30,4 @@ opening another window so the call site is still visible."
 ;; Always append tags to the tags table without prompting.
 (setq tags-add-tables t)
 
-(provide 'tags-utils)
+(provide 'tags-customisations)
