@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- 2016-04-30 Sat 23:37 -->
+<!-- 2016-05-29 Sun 11:27 -->
 <meta  charset="utf-8">
 <meta  name="viewport" content="width=device-width, initial-scale=1">
 <title></title>
@@ -436,8 +436,9 @@ later.
 
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">package</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>setq package-archives
-      <span class="org-highlight-quoted-quote">`</span><span class="org-rainbow-delimiters-depth-2">(</span><span class="org-rainbow-delimiters-depth-3">(</span><span class="org-string">"gnu"</span> . <span class="org-string">"https://elpa.gnu.org/packages/"</span><span class="org-rainbow-delimiters-depth-3">)</span>
-        <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-string">"melpa"</span> . <span class="org-string">"https://melpa.org/packages/"</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
+      <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span><span class="org-rainbow-delimiters-depth-3">(</span><span class="org-string">"gnu"</span> . <span class="org-string">"https://elpa.gnu.org/packages/"</span><span class="org-rainbow-delimiters-depth-3">)</span>
+        <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-string">"melpa"</span> . <span class="org-string">"https://melpa.org/packages/"</span><span class="org-rainbow-delimiters-depth-3">)</span>
+        <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-string">"org"</span> . <span class="org-string">"http://orgmode.org/elpa/"</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span>package-initialize<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -1016,8 +1017,9 @@ highlighting.
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>setq diredp-hide-details-initially-flag nil<span class="org-rainbow-delimiters-depth-1">)</span>
-<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">dired+</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">use-package</span> <span class="org-constant">dired+</span>
+  <span class="org-builtin">:init</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span>setq diredp-hide-details-initially-flag nil<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
@@ -1039,8 +1041,8 @@ just acting like <a href="rm">rm</a>.
 
 <p>
 Emacs' backup behaviour is helpful, so we increase the number of
-backups. However, rather than writing foo~1~ files everywhere, we
-store all our backups in `~/.saves`.
+backups. However, rather than writing <code>foo~1~</code> files everywhere, we
+store all our backups in <code>~/.saves</code>.
 </p>
 
 <div class="org-src-container">
@@ -2053,11 +2055,6 @@ Don't try to reopen all files that are owned by other users.
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">suspend-frame</span> <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-type">&amp;rest</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>interactive<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">windmove allows S-&lt;right&gt; and S-&lt;right&gt; to switch between windows</span>
-<span class="org-comment-delimiter">;; </span><span class="org-comment">instead of `C-x o'</span>
-<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">when</span> <span class="org-rainbow-delimiters-depth-2">(</span>fboundp <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">windmove-default-keybindings</span><span class="org-rainbow-delimiters-depth-2">)</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>windmove-default-keybindings<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
-
 <span class="org-rainbow-delimiters-depth-1">(</span>custom-set-variables
  <span class="org-comment-delimiter">;; </span><span class="org-comment">custom-set-variables was added by Custom.</span>
  <span class="org-comment-delimiter">;; </span><span class="org-comment">If you edit it by hand, you could mess it up, so be careful.</span>
@@ -2137,6 +2134,11 @@ Don't try to reopen all files that are owned by other users.
 <span class="org-comment-delimiter">;; </span><span class="org-comment">cycle through amounts of spacing</span>
 <span class="org-comment-delimiter">;; </span><span class="org-comment">http://pragmaticemacs.com/emacs/cycle-spacing/</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>global-set-key <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-SPC"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">cycle-spacing</span><span class="org-rainbow-delimiters-depth-1">)</span>
+
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">use-package</span> <span class="org-constant">twittering-mode</span>
+  <span class="org-builtin">:init</span>
+  <span class="org-comment-delimiter">;; </span><span class="org-comment">Don't show the twitter client or location, it's just distracting.</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span>setq twittering-status-format <span class="org-string">"%i %s,  %@:\n%FILL[  ]{%T %r%R}\n "</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
@@ -2144,7 +2146,7 @@ Don't try to reopen all files that are owned by other users.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2016-04-30 Sat 23:37</p>
+<p class="date">Created: 2016-05-29 Sun 11:27</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
