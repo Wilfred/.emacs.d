@@ -229,6 +229,14 @@ except Exception as e:
     (crux-smart-open-line-above)
     (insert line)))
 
+(defun wh/import-simplify (line symbol)
+  "Given LINE 'from foo import bar, baz', simplify it to 'from foo import baz', where
+baz is SYMBOL."
+  (if (s-starts-with-p "from " line)
+      (let ((parts (s-split " " line)))
+        (format "from %s import %s" (nth 1 parts) symbol))
+    line))
+
 (defun wh/auto-import (symbol)
   "Try to insert an import for the symbol at point.
 Dumb: just scans open Python buffers."
@@ -246,6 +254,7 @@ Dumb: just scans open Python buffers."
     (cl-sort matching-lines #'< :key #'length)
 
     (when matching-lines
-      (wh/insert-import (-first-item matching-lines)))))
+      (wh/insert-import
+       (wh/import-simplify (-first-item matching-lines) symbol)))))
 
 (provide 'python-customisations)
