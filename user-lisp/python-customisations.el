@@ -206,4 +206,46 @@ except Exception as e:
     (newline-and-indent)
     (insert "import ipdb, sys; tb = sys.exc_info()[2]; ipdb.post_mortem(tb)")))
 
+(require 'company-whole-line)
+(require 'rx)
+(require 's)
+
+(defun wh/import-lines (buffer)
+  "Return all the lines in this Python buffer that look like imports."
+  (with-current-buffer buffer
+    (save-excursion
+      (goto-char (point-min))
+      (cl-loop
+       if (looking-at (rx (or (seq bol "from ")
+                              (seq bol "import "))))
+       collect (cwl--current-line)
+       until (cwl--last-line-p)
+       do (forward-line)))))
+
+(defun wh/insert-import (line)
+  "Insert IMPORT, a line of python imports, in the current buffer."
+  (save-excursion
+    (goto-char (point-min))
+    (crux-smart-open-line-above)
+    (insert line)))
+
+(defun wh/auto-import (symbol)
+  "Try to insert an import for the symbol at point.
+Dumb: just scans open Python buffers."
+  (interactive (list (read-string "Symbol: "
+                                  (substring-no-properties (thing-at-point 'symbol)))))
+  (let ((matching-lines nil))
+    ;; Find all the import lines in all Python buffers
+    (dolist (buffer (cwl--buffers-in-mode 'python-mode))
+      (dolist (line (wh/import-lines buffer))
+        ;; If any of them contain the current symbol:
+        (when (s-contains-p symbol line)
+          (push line matching-lines))))
+
+    ;; Sort by string length, because the shortest string is usually best.
+    (cl-sort matching-lines #'< :key #'length)
+
+    (when matching-lines
+      (wh/insert-import (-first-item matching-lines)))))
+
 (provide 'python-customisations)
