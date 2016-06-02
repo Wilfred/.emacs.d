@@ -213,21 +213,52 @@ except Exception as e:
 (defun wh/import-lines (buffer)
   "Return all the lines in this Python buffer that look like imports."
   (with-current-buffer buffer
-    (save-excursion
-      (goto-char (point-min))
-      (cl-loop
-       if (looking-at (rx (or (seq bol "from ")
-                              (seq bol "import "))))
-       collect (cwl--current-line)
-       until (cwl--last-line-p)
-       do (forward-line)))))
+    (let (lines)
+      (wh/for-each-line
+       (when (looking-at (rx (or (seq bol "from ")
+                                 (seq bol "import "))))
+         (push (cwl--current-line) lines)))
+      lines)))
+
+;; TODO: factor out a function that just returns a list of lines in the file.
+(defmacro wh/for-each-line (&rest body)
+  `(save-excursion
+     (goto-char (point-min))
+     ;; TODO: this ignores the last line.
+     (cl-loop
+      until (cwl--last-line-p)
+      do (progn
+           ,@body
+           (forward-line)))))
+
+(defun wh/same-module (import1 import2)
+  "Return t if both lines of Python imports are from the same module."
+  (-let (((keyword1 mod1 ...) (s-split " " import1))
+         ((keyword2 mod2 ...) (s-split " " import2)))
+    (and (string= keyword1 "from")
+         (string= keyword2 "from")
+         (string= mod1 mod2))))
 
 (defun wh/insert-import (line)
   "Insert IMPORT, a line of python imports, in the current buffer."
-  (save-excursion
-    (goto-char (point-min))
-    (crux-smart-open-line-above)
-    (insert line)))
+  (let* ((current-lines (wh/import-lines (current-buffer)))
+         (same-pkg-lines (--filter (wh/same-module it line) current-lines)))
+    (if same-pkg-lines
+        ;; Find the first matching line, and append there
+        (wh/for-each-line
+         (when (wh/same-module (cwl--current-line) line)
+           (move-end-of-line nil)
+           (-let [(_ _module _ name) (s-split " " line)]
+             (insert ", " name))
+           ;; Break from this loop.
+           (cl-return nil)))
+
+      ;; We don't have any imports for this module yet, so just insert
+      ;; LINE as-is.
+      (save-excursion
+        (goto-char (point-min))
+        (crux-smart-open-line-above)
+        (insert line)))))
 
 (defun wh/import-simplify (line symbol)
   "Given LINE 'from foo import bar, baz', simplify it to 'from foo import baz', where
