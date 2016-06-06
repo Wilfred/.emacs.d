@@ -1240,3 +1240,8 @@ The FILE-NAME defaults to the one used in the URL."
   :init
   ;; Don't show the twitter client or location, it's just distracting.
   (setq twittering-status-format "%i %s,  %@:\n%FILL[  ]{%T %r%R}\n "))
+
+(defun font-size-for-demos ()
+  "Increase font size everywhere.
+Really handy when doing Emacs demos on projectors."
+  (set-face-attribute 'default (selected-frame) :height 120))
