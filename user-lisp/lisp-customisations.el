@@ -162,12 +162,6 @@
                  (end-of-defun)
                  (point)))))
 
-(advice-add 'lispy-eval :filter-return
-            (lambda (r)
-              (endless/eval-overlay
-               r
-               (save-excursion
-                 (end-of-defun)
-                 (point)))))
+(setq lispy-eval-display-style 'overlay)
 
 (provide 'lisp-customisations)
