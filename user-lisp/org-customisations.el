@@ -30,3 +30,5 @@
               (save-excursion
                 (org-back-to-heading)
                 (org-expiry-insert-created)))))
+
+(provide 'org-customisations)
