@@ -268,12 +268,12 @@ baz is SYMBOL."
         (format "from %s import %s" (nth 1 parts) symbol))
     line))
 
-(defun wh/auto-import (symbol)
+(defun wh/auto-import ()
   "Try to insert an import for the symbol at point.
 Dumb: just scans open Python buffers."
-  (interactive (list (read-string "Symbol: "
-                                  (substring-no-properties (thing-at-point 'symbol)))))
-  (let ((matching-lines nil))
+  (interactive)
+  (let ((symbol (substring-no-properties (thing-at-point 'symbol)))
+        (matching-lines nil))
     ;; Find all the import lines in all Python buffers
     (dolist (buffer (cwl--buffers-in-mode 'python-mode))
       (dolist (line (wh/import-lines buffer))
@@ -284,8 +284,10 @@ Dumb: just scans open Python buffers."
     ;; Sort by string length, because the shortest string is usually best.
     (cl-sort matching-lines #'< :key #'length)
 
-    (when matching-lines
-      (wh/insert-import
-       (wh/import-simplify (-first-item matching-lines) symbol)))))
+    (if matching-lines
+        (let ((line (wh/import-simplify (-first-item matching-lines) symbol)))
+          (wh/insert-import line)
+          (message "%s" line))
+      (user-error "No matches found"))))
 
 (provide 'python-customisations)
