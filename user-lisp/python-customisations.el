@@ -290,4 +290,53 @@ Dumb: just scans open Python buffers."
           (message "%s" line))
       (user-error "No matches found"))))
 
+(defun wh/extract-unused-var (flycheck-message)
+  "Given a string from flycheck of the form:
+
+'foo' imported but unused
+
+return 'foo'."
+  (-last-item (s-match "'\\(.*\\)' imported but unused" flycheck-message)))
+
+(defun wh/remove-on-line (text)
+  "Remove the first text on the current line, if present.
+Returns t on success, nil otherwise."
+  (save-excursion
+    (move-beginning-of-line nil)
+    (let ((next-line-pos (save-excursion (forward-line 1) (point))))
+      ;; Search forward, until we find the text on this line.
+      (when (search-forward text next-line-pos t)
+        ;; If we found it, delete it.
+        (delete-backward-char (length text))
+        t))))
+
+(defun wh/remove-import (line var)
+  "Given a line of Python code of the form
+
+from foo import bar, baz, biz
+
+on line number LINE, remove VAR (e.g. 'baz')."
+  (save-excursion
+    (goto-char (point-min))
+    (forward-line (1- line))
+    (or (wh/remove-on-line (format ", %s" var))
+        (wh/remove-on-line var))))
+
+(defun wh/cleanup-imports ()
+  "Remove unused imports in Python code."
+  (interactive)
+  (let* ((filename (buffer-file-name))
+         (flycheck-output (shell-command-to-string
+                           (format "%s %s"
+                                   flycheck-python-pyflakes-executable
+                                   filename)))
+         (raw-lines (s-split "\n" (s-trim flycheck-output)))
+         (lines (--map (s-split ":" it) raw-lines))
+         (import-lines (--filter (s-ends-with-p "imported but unused" (-last-item it)) lines))
+         (unused-imports (--map (cons (read (nth 1 it))
+                                      (wh/extract-unused-var (nth 2 it))) import-lines)))
+    (--each unused-imports
+      (-let [(line . var ) it]
+        (wh/remove-import line var)))))
+
 (provide 'python-customisations)
