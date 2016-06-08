@@ -31,13 +31,14 @@
 
 (global-set-key (kbd "s-/") #'company-dabbrev)
 
-;; Precise completion.
 (global-set-key (kbd "C-z") #'company-try-hard)
 (define-key company-active-map (kbd "C-z") #'company-try-hard)
 
 ;; Whole line completion is sufficiently useful that we give it a
 ;; separate keybinding.
 (global-set-key (kbd "C-\\") #'company-whole-line)
+
+;; Precise completion.
 
 ;; force hippie-expand completions to be case-sensitive
 (defadvice hippie-expand (around hippie-expand-case-fold activate)
