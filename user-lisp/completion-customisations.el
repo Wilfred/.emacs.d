@@ -95,7 +95,7 @@
 (add-to-list 'company-backends 'company-c-headers)
 (add-hook 'prog-mode-hook #'company-mode)
 
-(diminish 'company-mode)
+(diminish 'company-mode "Comp")
 
 ;; Offer idle completion for three characters or more. (1 is very
 ;; noisy, and 2 hurts typing performance a little.)
