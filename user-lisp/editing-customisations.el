@@ -16,8 +16,17 @@
 ;; usual zap-to-char shortcut. With a prefix, prompt for the char to
 ;; zap up to.
 (require 'avy-zap)
-(setq avy-zap-forward-only t)
 (setq avy-zap-dwim-prefer-avy nil) ;; https://github.com/cute-jumper/avy-zap/issues/3
+
+(setq avy-zap-forward-only t)
+
+(defadvice avy-zap-up-to-char-dwim (around wh/any-direction-when-avy activate)
+  "When calling with a prefix argument, allow zapping in any direction.
+Only zap forwards otherwise."
+  (if current-prefix-arg
+      (let ((avy-zap-forward-only nil))
+        ad-do-it)
+    ad-do-it))
 
 (defadvice zap-up-to-char (around zap-case-sensitive activate)
   "Ensure `zap-up-to-char' is case sensitive.
