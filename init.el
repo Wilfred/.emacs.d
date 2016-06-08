@@ -334,6 +334,13 @@ If a prefix argument is given, don't change the kill-ring."
 
 (define-key smartparens-mode-map (kbd "M-(") #'wh/smartparens-wrap-round)
 
+(defun wh/smartparens-wrap-square-bracket (arg)
+  "[] equivalent of `wh/smartparens-wrap-round'."
+  (interactive "P")
+  (sp-wrap-with-pair "["))
+
+(define-key smartparens-mode-map (kbd "M-[") #'wh/smartparens-wrap-square-bracket)
+
 (defun wh/smartparens-wrap-singlequote (arg)
   "As `wh/smartparens-wrap-round' but for wrapping with single quotes."
   (interactive "P")
