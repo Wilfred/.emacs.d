@@ -320,7 +320,10 @@ on line number LINE, remove VAR (e.g. 'baz')."
     (goto-char (point-min))
     (forward-line (1- line))
     (or (wh/remove-on-line (format ", %s" var))
-        (wh/remove-on-line var))))
+        (wh/remove-on-line var))
+    ;; If we only have "from foo import " left, remove the rest of the line.
+    (when (looking-at (rx "from " (1+ (not (any space))) " import " line-end))
+      (whole-line-or-region-delete 1))))
 
 (defun wh/cleanup-unused-imports ()
   "Remove unused imports in Python code."
