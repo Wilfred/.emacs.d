@@ -782,7 +782,7 @@ Visit the file after creation."
 (define-skeleton python-insert-docstring
   "Insert a Python docstring."
   "This string is ignored!"
-  "\"\"\"" - "\"\"\"")
+  "\"\"\"" - "\n\n    \"\"\"")
 
 (define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
 

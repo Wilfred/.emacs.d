@@ -881,12 +881,12 @@ shortcut for inserting them.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'python)
-  
+
   (define-skeleton python-insert-docstring
     "Insert a Python docstring."
     "This string is ignored!"
-    "\"\"\"" - "\"\"\"")
-  
+    "\"\"\"" - "\n\n    \"\"\"")
+
   (define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
 #+END_SRC
 
