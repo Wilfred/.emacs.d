@@ -322,7 +322,7 @@ on line number LINE, remove VAR (e.g. 'baz')."
     (or (wh/remove-on-line (format ", %s" var))
         (wh/remove-on-line var))))
 
-(defun wh/cleanup-imports ()
+(defun wh/cleanup-unused-imports ()
   "Remove unused imports in Python code."
   (interactive)
   (let* ((filename (buffer-file-name))
