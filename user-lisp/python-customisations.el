@@ -290,6 +290,8 @@ Dumb: just scans open Python buffers."
           (message "%s" line))
       (user-error "No matches found"))))
 
+(define-key python-mode-map (kbd "C-c C-i") #'wh/auto-import)
+
 (defun wh/extract-unused-var (flycheck-message)
   "Given a string from flycheck of the form:
 
