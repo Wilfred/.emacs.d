@@ -314,7 +314,9 @@ If the region is active, toggle commenting on the whole region."
 (use-package crux
   ;; Generally, we use C-foo for line-based commands, and M-foo for
   ;; word-based commands, so kill the rest of the line with C-backspace.
-  :bind (("<C-backspace>" . crux-kill-line-backwards)))
+  :bind (("<C-backspace>" . crux-kill-line-backwards)
+         ;; Mnemonic: change name
+         ("C-c C-n" . crux-rename-buffer-and-file)))
 
 ;; TODO: write this as a command in erefactor.
 ;; TODO: add 'ends here' too.
