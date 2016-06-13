@@ -330,7 +330,8 @@ on line number LINE, remove VAR (e.g. 'baz')."
         (wh/remove-on-line (format "%s, " var))
         (wh/remove-on-line var))
     ;; If we only have "from foo import " left, remove the rest of the line.
-    (when (looking-at (rx "from " (1+ (not (any space))) " import " line-end))
+    (when (or (looking-at (rx "from " (1+ (not (any space))) " import " line-end))
+              (looking-at (rx "import " (1+ (not (any space))) " as " line-end)))
       (whole-line-or-region-delete 1))))
 
 (defun wh/cleanup-unused-imports ()
