@@ -263,10 +263,14 @@ except Exception as e:
 (defun wh/import-simplify (line symbol)
   "Given LINE 'from foo import bar, baz', simplify it to 'from foo import baz', where
 baz is SYMBOL."
-  (if (s-starts-with-p "from " line)
-      (let ((parts (s-split " " line)))
-        (format "from %s import %s" (nth 1 parts) symbol))
-    line))
+  ;; TODO: simplify "from foo import bar, baz as biz" -> "from foo import baz as biz"
+  (cond ((string-match "from .* import .* as .*" line)
+         line)
+        ((s-starts-with-p "from " line)
+         (let ((parts (s-split " " line)))
+           (format "from %s import %s" (nth 1 parts) symbol)))
+        (t
+         line)))
 
 (defun wh/auto-import ()
   "Try to insert an import for the symbol at point.
