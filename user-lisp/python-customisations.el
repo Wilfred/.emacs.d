@@ -217,7 +217,7 @@ except Exception as e:
       (wh/for-each-line
        (when (looking-at (rx (or (seq bol "from ")
                                  (seq bol "import "))))
-         (push (cwl--current-line) lines)))
+         (push (propertize (cwl--current-line) 'pyimport-path (buffer-name)) lines)))
       lines)))
 
 ;; TODO: factor out a function that just returns a list of lines in the file.
@@ -285,9 +285,10 @@ Dumb: just scans open Python buffers."
     (cl-sort matching-lines #'< :key #'length)
 
     (if matching-lines
-        (let ((line (wh/import-simplify (-first-item matching-lines) symbol)))
+        (let* ((example-line (-first-item matching-lines))
+               (line (wh/import-simplify example-line symbol)))
           (wh/insert-import line)
-          (message "%s" line))
+          (message "%s (from %s)" line (get-text-property 0 'pyimport-path example-line)))
       (user-error "No matches found"))))
 
 (define-key python-mode-map (kbd "C-c C-i") #'wh/auto-import)
