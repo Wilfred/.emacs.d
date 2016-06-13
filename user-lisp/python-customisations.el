@@ -278,7 +278,7 @@ Dumb: just scans open Python buffers."
     (dolist (buffer (cwl--buffers-in-mode 'python-mode))
       (dolist (line (wh/import-lines buffer))
         ;; If any of them contain the current symbol:
-        (when (s-contains-p symbol line)
+        (when (string-match (rx-to-string `(seq symbol-start ,symbol symbol-end)) line)
           (push line matching-lines))))
 
     ;; Sort by string length, because the shortest string is usually best.
