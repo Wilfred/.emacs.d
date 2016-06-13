@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- 2016-06-08 Wed 13:42 -->
+<!-- 2016-06-13 Mon 15:58 -->
 <meta  charset="utf-8">
 <meta  name="viewport" content="width=device-width, initial-scale=1">
 <title></title>
@@ -871,6 +871,13 @@ commands with the command <code>sp-cheat-sheet</code>.
 
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key smartparens-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-["</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">wh/smartparens-wrap-square-bracket</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">wh/smartparens-wrap-curly-paren</span> <span class="org-rainbow-delimiters-depth-2">(</span>arg<span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-doc">"{} equivalent of `</span><span class="org-doc"><span class="org-constant">wh/smartparens-wrap-round</span></span><span class="org-doc">'."</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span> <span class="org-string">"P"</span><span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span>sp-wrap-with-pair <span class="org-string">"{"</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
+
+<span class="org-rainbow-delimiters-depth-1">(</span>define-key smartparens-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-{"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">wh/smartparens-wrap-curly-paren</span><span class="org-rainbow-delimiters-depth-1">)</span>
+
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">wh/smartparens-wrap-singlequote</span> <span class="org-rainbow-delimiters-depth-2">(</span>arg<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-doc">"As `</span><span class="org-doc"><span class="org-constant">wh/smartparens-wrap-round</span></span><span class="org-doc">' but for wrapping with single quotes."</span>
   <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span> <span class="org-string">"P"</span><span class="org-rainbow-delimiters-depth-2">)</span>
@@ -1535,7 +1542,7 @@ shortcut for inserting them.
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">define-skeleton</span> <span class="org-function-name">python-insert-docstring</span>
   <span class="org-doc">"Insert a Python docstring."</span>
   <span class="org-string">"This string is ignored!"</span>
-  <span class="org-string">"\"\"\""</span> - <span class="org-string">"\"\"\""</span><span class="org-rainbow-delimiters-depth-1">)</span>
+  <span class="org-string">"\"\"\""</span> - <span class="org-string">"\n\n    \"\"\""</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key python-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"C-c s"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">python-insert-docstring</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -2160,7 +2167,7 @@ Don't try to reopen all files that are owned by other users.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Hughes, Wilfred (London)</p>
-<p class="date">Created: 2016-06-08 Wed 13:42</p>
+<p class="date">Created: 2016-06-13 Mon 15:58</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
