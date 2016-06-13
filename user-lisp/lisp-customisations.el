@@ -24,6 +24,9 @@
 (define-key paredit-mode-map (kbd "s-t") #'transpose-sexps)
 (define-key paredit-mode-map (kbd "s-n") #'paredit-forward-up)
 
+;; Mark-sexp is also very useful but tricky to type.
+(define-key paredit-mode-map (kbd "M-SPC") #'mark-sexp)
+
 (use-package highlight-quoted
   :init
   (add-hook 'emacs-lisp-mode-hook #'highlight-quoted-mode)
