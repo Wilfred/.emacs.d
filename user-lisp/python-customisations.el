@@ -277,7 +277,8 @@ baz is SYMBOL."
 Dumb: just scans open Python buffers."
   (interactive)
   (let ((symbol (substring-no-properties (thing-at-point 'symbol)))
-        (matching-lines nil))
+        (matching-lines nil)
+        (case-fold-search nil))
     ;; Find all the import lines in all Python buffers
     (dolist (buffer (cwl--buffers-in-mode 'python-mode))
       (dolist (line (wh/import-lines buffer))
