@@ -1241,6 +1241,7 @@ https://github.com/bbatsov/crux/issues/20
   (require 'llvm-customisations)
   (require 'sh-customisations)
   (require 'xml-customisations)
+  (require 'html-customisations)
 
   (require 'startup-customisations)
 
