@@ -1120,6 +1120,7 @@ Visit the file after creation."
 (require 'llvm-customisations)
 (require 'sh-customisations)
 (require 'xml-customisations)
+(require 'html-customisations)
 
 (require 'startup-customisations)
 
@@ -1216,7 +1217,7 @@ Visit the file after creation."
 (require 'f)
 (require 's)
 
-(defun download-file (url directory file-name)
+(defun wh/download-file (url directory file-name)
   "Download the file at URL into DIRECTORY.
 The FILE-NAME defaults to the one used in the URL."
   (interactive
