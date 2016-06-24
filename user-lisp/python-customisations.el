@@ -330,16 +330,26 @@ Returns t on success, nil otherwise."
 from foo import bar, baz, biz
 
 on line number LINE, remove VAR (e.g. 'baz')."
-  (save-excursion
-    (goto-char (point-min))
-    (forward-line (1- line))
-    (or (wh/remove-on-line (format ", %s" var))
-        (wh/remove-on-line (format "%s, " var))
-        (wh/remove-on-line var))
-    ;; If we only have "from foo import " left, remove the rest of the line.
-    (when (or (looking-at (rx "from " (1+ (not (any space))) " import " line-end))
-              (looking-at (rx "import " (1+ (not (any space))) " as " line-end)))
-      (wh/delete-current-line))))
+  (let ((case-fold-search nil))
+    (save-excursion
+      (goto-char (point-min))
+      (forward-line (1- line))
+
+      (cond
+       ;; If it's just 'import foo' or 'import foo.bar', just remove it.
+       ((looking-at (rx "from " (1+ (not (any space))) line-end))
+        (wh/delete-current-line))
+
+       ;; Otherwise, it's '... import foo' or '... import foo as bar'
+       (t
+        ;; Remove the variable reference.
+        (or (wh/remove-on-line (format ", %s" var))
+            (wh/remove-on-line (format "%s, " var))
+            (wh/remove-on-line var))
+        ;; If we only have "from foo import " left, remove the rest of the line.
+        (when (or (looking-at (rx "from " (1+ (not (any space))) " import " line-end))
+                  (looking-at (rx "import " (1+ (not (any space))) " as " line-end)))
+          (wh/delete-current-line)))))))
 
 (defun wh/cleanup-unused-imports ()
   "Remove unused imports in Python code."
