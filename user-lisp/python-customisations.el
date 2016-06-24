@@ -337,7 +337,7 @@ on line number LINE, remove VAR (e.g. 'baz')."
 
       (cond
        ;; If it's just 'import foo' or 'import foo.bar', just remove it.
-       ((looking-at (rx "from " (1+ (not (any space))) line-end))
+       ((looking-at (rx "import " (1+ (not (any space))) line-end))
         (wh/delete-current-line))
 
        ;; Otherwise, it's '... import foo' or '... import foo as bar'
