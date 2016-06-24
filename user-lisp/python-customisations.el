@@ -318,6 +318,12 @@ Returns t on success, nil otherwise."
         (delete-backward-char (length text))
         t))))
 
+(defun wh/delete-current-line ()
+  (save-excursion
+    (let ((line-start (progn (move-beginning-of-line nil) (point)))
+          (next-line-start (progn (forward-line 1) (point))))
+      (delete-region line-start next-line-start))))
+
 (defun wh/remove-import (line var)
   "Given a line of Python code of the form
 
@@ -333,7 +339,7 @@ on line number LINE, remove VAR (e.g. 'baz')."
     ;; If we only have "from foo import " left, remove the rest of the line.
     (when (or (looking-at (rx "from " (1+ (not (any space))) " import " line-end))
               (looking-at (rx "import " (1+ (not (any space))) " as " line-end)))
-      (whole-line-or-region-delete 1))))
+      (wh/delete-current-line))))
 
 (defun wh/cleanup-unused-imports ()
   "Remove unused imports in Python code."
