@@ -348,7 +348,9 @@ on line number LINE, remove VAR (e.g. 'baz')."
          (import-lines (--filter (s-ends-with-p "imported but unused" (-last-item it)) lines))
          (unused-imports (--map (cons (read (nth 1 it))
                                       (wh/extract-unused-var (nth 2 it))) import-lines)))
-    (--each unused-imports
+    ;; Iterate starting form the last unused import, so our line
+    ;; numbers stay correct, even when we delete lines.
+    (--each (reverse unused-imports)
       (-let [(line . var ) it]
         (wh/remove-import line var)))))
 
