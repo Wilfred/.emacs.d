@@ -96,8 +96,6 @@
 ;; Disable the lispy keybindings that I don't want:
 
 (require 'lispy)
-;; Conflicts with my keybinding for yas-expand.
-(define-key lispy-mode-map (kbd "SPC") nil)
 
 ;; I want to type [ literally, see
 ;; https://github.com/abo-abo/lispy/issues/64
