@@ -319,15 +319,11 @@ If the region is active, toggle commenting on the whole region."
          ("C-c C-n" . crux-rename-buffer-and-file)))
 
 ;; TODO: write this as a command in erefactor.
-;; TODO: add 'ends here' too.
 (defun wh/insert-provide ()
   (interactive)
-  (->>
-   (buffer-file-name)
-   (f-filename)
-   (f-no-ext)
-   (format "(provide '%s)")
-   (insert)))
+  (let ((filename (f-filename (buffer-file-name))))
+    (insert (format "(provide '%s)" (f-no-ext filename)))
+    (insert (format "\n;;; %s ends here" filename))))
 
 ;; Disable fringe now we're using diff-hl-mode. TODO: find a better file for this.
 (use-package flycheck
