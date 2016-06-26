@@ -49,6 +49,21 @@
                    (string-trim-right
                     (lispy--string-dwim
                      (lispy--bounds-dwim))))
+                  ((save-excursion
+                     (when (looking-at " ")
+                       (forward-char))
+                     (python-info-beginning-of-block-p))
+                   (concat
+                    (string-trim-right
+                     (buffer-substring-no-properties
+                      (point)
+                      (save-excursion
+                        (python-nav-end-of-block)
+                        (while (looking-at "[\n ]*\\(except\\)")
+                          (goto-char (match-beginning 1))
+                          (python-nav-end-of-block))
+                        (point))))
+                    "\n"))
                   ((lispy-bolp)
                    (lispy--string-dwim
                     (lispy--bounds-c-toplevel)))
@@ -60,7 +75,8 @@
                           (error "Unexpected")))
                    (setq bnd (lispy--bounds-dwim))
                    (ignore-errors (backward-sexp))
-                   (while (eq (char-before) ?.)
+                   (while (or (eq (char-before) ?.)
+                              (eq (char-after) ?\())
                      (backward-sexp))
                    (setcar bnd (point))
                    (lispy--string-dwim bnd)))))
@@ -88,7 +104,7 @@
       (setq str (string-trim-left str))
       (when (and single-line-p
                  (string-match "\\`\\(\\(?:\\sw\\|\\s_\\|[][]\\)+\\) = " str))
-        (setq str (concat str (format "; print repr(%s)" (match-string 1 str))))))
+        (setq str (concat str (format "; print (repr (%s))" (match-string 1 str))))))
     (let ((res
            (if (or single-line-p
                    (string-match "\n .*\\'" str))
@@ -209,7 +225,7 @@
                                         nil)
                              fn-defaults)))
          (fn-alist-x fn-alist)
-         dmg-cmd)
+         dbg-cmd)
     (dolist (arg args-normal)
       (setcdr (pop fn-alist-x) arg))
     (dolist (arg args-key)
@@ -233,7 +249,7 @@
       (goto-char p-ar-beg)
       (message lispy-eval-error))))
 
-(defun lispy-goto-symbol-python (symbol)
+(defun lispy-goto-symbol-python (_symbol)
   (save-restriction
     (widen)
     (deferred:sync!
