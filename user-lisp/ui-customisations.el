@@ -170,6 +170,13 @@ If it is split, repeat the current buffer in a vertical split."
 (use-package projectile
   :diminish "")
 
+(use-package interaction-log
+  :config
+  (interaction-log-mode +1)
+  (global-set-key
+   (kbd "C-h C-l")
+   (lambda () (interactive) (display-buffer ilog-buffer-name))))
+
 ;;; Mode-line.
 
 ;; I want a minimalistic mode line. It should only have:
