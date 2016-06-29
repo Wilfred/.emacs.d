@@ -34,6 +34,8 @@
 
 ;;; Code:
 
+;; TODO: 'import foo.bar as baz' is not cleaned up correctly
+
 (require 'rx)
 (require 's)
 (require 'dash)
