@@ -33,7 +33,7 @@
 (require 'which-func)
 
 ;; FIXME: breaks for class methods, since it assumes `self'
-(defun python-insert-super-function ()
+(defun wh/python-insert-super-function ()
   "Insert a call to super for the current class and function."
   (interactive)
   (let* (class-name method-name args-start args-end)
