@@ -199,6 +199,23 @@ except Exception as e:
     (newline-and-indent)
     (insert "import ipdb, sys; tb = sys.exc_info()[2]; ipdb.post_mortem(tb)")))
 
+;; TODO: move to emr.
+(defun wh/unwrap-python-try ()
+  "Given a single line wrapped in a try: block, extract the line and remove the try/except."
+  (interactive "*")
+  ;; Move to the except: block
+  (python-nav-forward-statement)
+  ;; Delete it.
+  (er/mark-python-block)
+  (delete-region (region-beginning) (region-end))
+  (pyimport--delete-current-line)
+  ;; Move to the try: keyword.
+  (python-nav-forward-statement -2)
+  ;; Delete it.
+  (pyimport--delete-current-line)
+  ;; Unindent the current line.
+  (python-indent-shift-left (line-beginning-position) (line-end-position)))
+
 (define-key python-mode-map (kbd "C-c C-i") #'pyimport-insert-missing)
 
 (provide 'python-customisations)
