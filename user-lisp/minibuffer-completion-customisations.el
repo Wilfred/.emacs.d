@@ -22,79 +22,41 @@
 ;; negligible change in experience. Ido-hacks also exists, but it's a
 ;; fork of ido.
 
-;; reduce how often we get 'directory too big' problems:
-(setq ido-max-directory-size 100000)
+;; The advantages of ido are:
+;; * Simplicity. It doesn't open a new buffer like helm does.
+;; * Convenient narrow. It may not be ergonomic, but I'm very familiar with it.
+;; * Less invasive. Helm has opinions on how commands should work,
+;; whereas ido is a drop-in replacement.
+;; * Low configuration. Smex just works, saving command history, whereas
+;; helm requires a separate package for this.
+;; * Aesthetics. I prefer tools that stay in the minibuffer. Helm does
+;; not, and even defines its own font sizes, which I dislike.
+;;
+;; My customisations:
+;; * Virtual buffers are nice for reopening files when switching buffers.
+;; * Ordering
+;;
+;; The disadvantages:
+;; * ido needs lots of package. ido-ubiquitous does what ido-everywhere
+;; should have done. ido-vertical. smex.
+;; * smex does not show keybindings (see my PR on the smex repo).
+;; * slow for large datasets. Particularly C-h f and C-h v.
+;; 
+;; Instead, we use ivy.
+(ivy-mode 1)
+(setq ivy-use-virtual-buffers t)
 
-;; Show killed buffers at end when using ido for switching buffers.
-(setq ido-use-virtual-buffers 'auto)
+(global-set-key (kbd "M-x") 'counsel-M-x)
+(global-set-key (kbd "C-x C-f") 'counsel-find-file)
 
-;; Don't switch to other directories if the current file/directory
-;; doesn't exist. http://stackoverflow.com/a/7485815/509706
-(setq ido-auto-merge-work-directories-length -1)
-
-;; when using ido for opening files, show last modified first:
-;; this version from http://jqian.googlecode.com/svn-history/r145/trunk/emacsconf/config/30-elisp.el
-(add-hook 'ido-make-file-list-hook 'ido-sort-mtime)
-(add-hook 'ido-make-dir-list-hook 'ido-sort-mtime)
-(defun ido-sort-mtime ()
-  (setq ido-temp-list
-        (sort ido-temp-list
-              (lambda (a b)           ; avoid tramp
-                (cond ((and (string-match "[:\\*]$" a) (not (string-match "[:\\*]$" b)))
-                       nil)
-                      ((and (string-match "[:\\*]$" b) (not (string-match "[:\\*]$" a)))
-                       t)
-                      ((and (string-match "[:\\*]$" a) (string-match "[:\\*]$" b))
-                       nil)
-                      (t
-                       (let ((ta (nth 5 (file-attributes
-                                         (concat ido-current-directory a))))
-                             (tb (nth 5 (file-attributes
-                                         (concat ido-current-directory b)))))
-                         (cond ((and (null ta) tb) nil) ; avoid temporary buffers
-                               ((and ta (null tb)) t)
-                               ((and (null ta) (null tb)) nil)
-                               (t (if (= (nth 0 ta) (nth 0 tb))
-                                      (> (nth 1 ta) (nth 1 tb))
-                                    (> (nth 0 ta) (nth 0 tb)))))))))))
-  (ido-to-end  ;; move . files to end (again)
-   (delq nil (mapcar
-              (lambda (x) (if (string-equal (substring x 0 1) ".") x))
-              ido-temp-list))))
-
-(defadvice find-file (before make-directory-maybe (filename &optional wildcards) activate)
-  "When opening files, create their parent directories if they don't exist."
-  (unless (f-exists? filename)
-    (let ((dir (f-dirname filename)))
-      (unless (f-exists? dir)
-        (make-directory dir)))))
-
-;; ido is nicer for finding files, due to the configuration above for sorting by recency, and
-;; the ability to easily move into directories. See http://emacs.stackexchange.com/q/3798/304
-(ido-mode t)
-
-;; Use a vertical display for ido candidates. This shows more results,
-;; and it's more attractive too.
-(require 'ido-vertical-mode)
-(ido-vertical-mode 1)
-(setq ido-vertical-define-keys 'C-n-and-C-p-only)
-(setq ido-vertical-show-count nil)
-
-;; Use ido wherever we can.
-(ido-everywhere t)
-(ido-ubiquitous-mode t)
-
-;; Enable ido completion for etags.
-(add-to-list 'ido-ubiquitous-command-overrides
-             '(enable prefix "etags-select"))
-
-(setq magit-completing-read-function 'magit-ido-completing-read)
-(setq org-completion-use-ido t)
+;; (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+;; (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+(define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
 
 ;; Use ido for projectile features, primarily C-x C-g (finding
 ;; files) and C-c p p (switching projects).
 (require 'projectile)
-(setq projectile-completion-system 'ido)
+(setq projectile-completion-system 'ivy)
 
 ;;; helm:
 ;; Helm is an opinionated collection of great completion commands. I
@@ -127,8 +89,6 @@
   ;; header. Override that.
   (custom-set-faces
    '(helm-source-header ((t (:background "#22083397778B" :foreground "white"))))))
-
-(global-set-key (kbd "M-x") #'smex)
 
 (global-set-key (kbd "<f7>") #'helm-imenu)
 
