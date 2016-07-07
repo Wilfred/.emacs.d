@@ -43,8 +43,17 @@
 ;; * slow for large datasets. Particularly C-h f and C-h v.
 ;; 
 ;; Instead, we use ivy.
+
+;; Enable ivy.
 (ivy-mode 1)
+
+;; When switching buffers, offer recently accessed files that we don't
+;; currently have open.
 (setq ivy-use-virtual-buffers t)
+
+;; Don't require order, so 'func descr' matches 'describe-function'
+(setq ivy-re-builders-alist
+      '((t . ivy--regex-ignore-order)))
 
 (global-set-key (kbd "M-x") 'counsel-M-x)
 (global-set-key (kbd "C-x C-f") 'counsel-find-file)
