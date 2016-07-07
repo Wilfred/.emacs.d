@@ -1,0 +1,41 @@
+GNU Emacs Excorporate NEWS -- history of user-visible changes.
+
+* Excorporate 0.7.5
+
+Released 2016-06-16
+
+** Interoperate with `save-some-buffers'
+
+* Excorporate 0.7.4
+
+Released 2016-06-15
+
+** Interoperate with `org-startup-with-latex-preview'
+
+* Excorporate 0.7.3
+
+Released 2016-04-01
+
+** Bind q to quit-window in Org mode backend
+
+* Excorporate 0.7.2
+
+Released 2016-03-16
+
+** Support Office 365 and Exchange 2010_SP1
+
+* Excorporate 0.7.1
+
+Released 2016-02-26
+
+** Add Info manual
+
+* Excorporate 0.7.0
+
+Released 2016-02-21
+
+** First release in GNU ELPA
+
+Local variables:
+mode: outline
+end:
