@@ -117,9 +117,7 @@ This means `pop-mark' can take us back to our previous position."
         ;; anaconda is able to do smarter Python analysis, so it's
         ;; particularly useful with built-ins like IndexError and
         ;; packages like 'from foo import bar'.
-        #'company-anaconda
-        ;; As a last ditch attempt, just normal dabbrev.
-        #'company-dabbrev-code)))
+        #'company-anaconda)))
 
 (add-hook 'python-mode-hook #'wh/company-in-python-mode)
 
