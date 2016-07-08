@@ -115,6 +115,36 @@
 
 (add-hook 'emacs-lisp-mode-hook #'wh/elisp-imenu-reset)
 
+(defun wh/split-pkg-version (pkg)
+  "Split PKG into the package name and version.
+
+E.g. \"~/.emacs.d/elpa/el-mock-20150906.321\" into \"el-mock\" and \"20150906.321\"."
+  (message "pkg: %s" pkg)
+  (let* ((filename (f-filename pkg))
+         (parts (s-split (rx "-") filename))
+         (version (-last-item parts))
+         (package-name (s-join "-" (-butlast parts))))
+    (list package-name version)))
+
+(require 'f)
+
+(defun wh/cleanup-old-elpa-dirs ()
+  (interactive)
+  (let* ((elpa-dirs (f-directories "~/.emacs.d/elpa"))
+         ;; Ignore ~/.emacs.d/elpa/gnupg etc.
+         (pkg-dirs (--filter (s-contains-p "-" it) elpa-dirs))
+         ;; Todo: ensure '0.12' comes after '0.9'.
+         (sorted-pkg-dirs (--sort (read (wh/split-pkg-version it)) pkg-dirs))
+         (pkgs-by-version (--group-by
+                           (-first-item (wh/split-pkg-version it)) sorted-pkg-dirs))
+         (deleted-count 0))
+    (--each pkgs-by-version
+      (-let [(pkg . versions) it]
+        (--each (-butlast versions)
+          (f-delete it t)
+          (incf deleted-count))))
+    (message "Deleted %d directories in ~/.emacs.d/elpa" deleted-count)))
+
 (require 'company)
 (require 'company-elisp)
 
