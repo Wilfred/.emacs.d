@@ -97,11 +97,6 @@
 
 (require 'lispy)
 
-;; I want to type [ literally, see
-;; https://github.com/abo-abo/lispy/issues/64
-(define-key lispy-mode-map-lispy (kbd "[") nil)
-(define-key lispy-mode-map-lispy (kbd "]") nil)
-
 ;; I use this keybinding a lot, to navigate between instances of a
 ;; variable with `highlight-symbol-next'.
 (define-key lispy-mode-map (kbd "M-n") nil)
