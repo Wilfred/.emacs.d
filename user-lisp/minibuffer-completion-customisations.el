@@ -55,6 +55,10 @@
 (setq ivy-re-builders-alist
       '((t . ivy--regex-ignore-order)))
 
+;; Don't show ./ and ../ when finding files with ivy.
+;; To go up a directory, use backspace.
+(setq ivy-extra-directories nil)
+
 (global-set-key (kbd "M-x") 'counsel-M-x)
 (global-set-key (kbd "C-x C-f") 'counsel-find-file)
 
