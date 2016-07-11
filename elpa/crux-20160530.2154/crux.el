@@ -379,9 +379,9 @@ as the current user."
 (defun crux-recentf-ido-find-file ()
   "Find a recent file using ido."
   (interactive)
-  (let ((file (ido-completing-read "Choose recent file: "
-                                   (mapcar #'abbreviate-file-name recentf-list)
-                                   nil t)))
+  (let ((file (completing-read "Choose recent file: "
+                               (mapcar #'abbreviate-file-name recentf-list)
+                               nil t)))
     (when file
       (find-file file))))
 
