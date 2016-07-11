@@ -59,6 +59,9 @@
 ;; To go up a directory, use backspace.
 (setq ivy-extra-directories nil)
 
+;; Highlight the current selection with an arrow too.
+(setq ivy-format-function 'ivy-format-function-arrow)
+
 (global-set-key (kbd "M-x") 'counsel-M-x)
 (global-set-key (kbd "C-x C-f") 'counsel-find-file)
 
