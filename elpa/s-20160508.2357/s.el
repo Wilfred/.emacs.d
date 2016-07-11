@@ -185,7 +185,7 @@ See also `s-split'."
     (insert s)
     (let ((fill-column len))
       (fill-region (point-min) (point-max)))
-    (buffer-substring-no-properties (point-min) (point-max))))
+    (buffer-substring (point-min) (point-max))))
 
 (defun s-center (len s)
   "If S is shorter than LEN, pad it with spaces so it is centered."
