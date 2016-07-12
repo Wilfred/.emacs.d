@@ -136,6 +136,7 @@ This means `pop-mark' can take us back to our previous position."
 (setq pytest-cmd-flags "-x --tb=native")
 
 (require 'python-smart-execute)
+(define-key python-mode-map (kbd "C-c e") #'python-smart-execute)
 (define-key python-mode-map (kbd "<f1>") #'python-smart-execute)
 (define-key python-mode-map (kbd "<S-f1>") #'python-smart-execute-no-move)
 
