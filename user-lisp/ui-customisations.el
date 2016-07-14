@@ -13,12 +13,12 @@
 Defaults to `t'.")
 (make-variable-buffer-local 'use-hl-line)
 
-(defun activate-hl-line ()
+(defun wh/activate-hl-line ()
   "Enable `hl-line-mode' unless `use-hl-line` says otherwise."
   (when (and use-hl-line (not (active-minibuffer-window)))
     (hl-line-mode)))
 
-(add-hook 'after-change-major-mode-hook 'activate-hl-line)
+(add-hook 'after-change-major-mode-hook #'wh/activate-hl-line)
 
 ;; don't use hl-line in the minibuffer, it's not useful
 ;; FIXME: doesn't work
