@@ -105,6 +105,9 @@
 ;; Work around https://github.com/abo-abo/lispy/issues/283
 (remove-hook 'python-mode-hook #'wisent-python-default-setup)
 
+;; Ensure q closes macrostep.
+(setq lispy-compat '(edebug macrostep))
+
 (defun wh/elisp-imenu-reset ()
   (setq imenu-create-index-function #'imenu-default-create-index-function))
 
