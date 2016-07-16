@@ -72,9 +72,9 @@ foo -> &foo[..]"
 
 (require 'multi-compile)
 (setq multi-compile-alist
-      '((rust-mode . (("rust-build" . "cargo build")
-                      ("rust-check" . "cargo check")
-                      ("rust-test" . "cargo test")))))
+      '((rust-mode . (("rust-build" "cargo build" (projectile-project-root))
+                      ("rust-check" "cargo check" (projectile-project-root))
+                      ("rust-test" "cargo test" (projectile-project-root))))))
 
 (define-key rust-mode-map (kbd "C-c C-c") #'multi-compile-run)
 
