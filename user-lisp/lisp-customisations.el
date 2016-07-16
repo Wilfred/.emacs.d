@@ -94,6 +94,8 @@
 (add-hook 'emacs-lisp-mode-hook #'lispy-mode)
 
 ;; Disable the lispy keybindings that I don't want:
+(define-key lispy-mode-map (kbd "M-.") nil)
+(define-key lispy-mode-map (kbd "M-,") nil)
 
 (require 'lispy)
 
