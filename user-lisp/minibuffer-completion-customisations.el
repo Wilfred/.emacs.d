@@ -62,6 +62,10 @@
 ;; Highlight the current selection with an arrow too.
 (setq ivy-format-function 'ivy-format-function-arrow)
 
+;; Don't start the search term with ^ by default. I often have a
+;; substring in mind.
+(setq ivy-initial-inputs-alist nil)
+
 (global-set-key (kbd "M-x") 'counsel-M-x)
 (global-set-key (kbd "C-x C-f") 'counsel-find-file)
 
