@@ -1,15 +1,16 @@
 ;;; refine.el --- interactive value editing         -*- lexical-binding: t; -*-
 
 ;; TODO: prompt the user to choose between local and global variables
-;; TODO: hook into customize when users are choosing new values.
+;; TODO: Link to help for that variable
+;; TODO: Link to variable definition, if known
 
 ;; Copyright (C) 2016  
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Version: 0.2
-;; Package-Version: 20160715.1704
+;; Package-Version: 20160722.645
 ;; Keywords: convenience
-;; Package-Requires: ((emacs "24.3") (s "1.11.0") (dash "2.12.0") (list-utils "0.4.4") (magit-popup "2.7.0"))
+;; Package-Requires: ((emacs "24.3") (s "1.11.0") (dash "2.12.0") (list-utils "0.4.4") (loop "1.2"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -34,9 +35,9 @@
 (require 'dash)
 (require 'cl-lib) ;; cl-prettyprint, cl-incf, cl-decf
 (require 'list-utils)
+(require 'loop)
 (eval-when-compile
-  (require 'cl-macs) ;; cl-assert
-  (require 'magit-popup))
+  (require 'cl-macs)) ;; cl-assert
 
 (defun refine--variables ()
   "Return a list of all symbols that are variables."
@@ -45,6 +46,41 @@
                 (when (boundp symbol)
                   (push symbol symbols))))
     symbols))
+
+(defun refine--custom-values (const-spec)
+  "Given a list of (const ...) items from a `defcustom' spec,
+ return the possible values."
+  ;; E.g. (const :tag "Cider" cider) => 'cider
+  (->> const-spec
+       (--filter (consp it))
+       (--filter (eq (-first-item it) 'const))
+       (-map #'-last-item)))
+
+(defun refine--possible-elements (symbol)
+  "Return a list of the possible list elements SYMBOL can have.
+Returns nil if SYMBOL is not a custom variable."
+  (when (custom-variable-p symbol)
+    (let ((custom-type (get symbol 'custom-type))
+          choices)
+      ;; If custom-type takes the form '(repeat (choice (...)))
+      (-when-let ((repeat-sym (choice-sym . repeated-choices)) custom-type)
+        (when (and (eq repeat-sym 'repeat) (eq choice-sym 'choice))
+          (setq choices repeated-choices)))
+      ;; If custom-type takes the form '(set (...))
+      (-when-let ((set-sym . set-choices) custom-type)
+        (when (eq set-sym 'set)
+          (setq choices set-choices)))
+      (when choices
+        (refine--custom-values choices)))))
+
+(defun refine--possible-values (symbol)
+  "Return a list of the possible values SYMBOL can have.
+Returns nil if SYMBOL is not a custom variable."
+  (when (custom-variable-p symbol)
+    ;; If custom-type takes the form '(choice (...))) or '(radio (...))
+    (-let [(kind . choices) (get symbol 'custom-type)]
+      (when (or (eq kind 'choice) (eq kind 'radio))
+        (refine--custom-values choices)))))
 
 (defun refine--pretty-format (value)
   "Pretty print VALUE as a string."
@@ -71,10 +107,6 @@
            (format "'%s" cl-formatted))
           (t
            cl-formatted))))
-
-(defun refine--eval (symbol)
-  "Return the value of SYMBOL."
-  (eval symbol t))
 
 (defface refine-index-face
   '((((class color) (background light))
@@ -113,14 +145,21 @@ return a pretty, propertized string."
     (refine--prefix-lines
      (concat propertized-index " ") formatted-element)))
 
-(defun refine--format-value (value)
-  "Given a list or vector VALUE, return a pretty propertized
-string listing the elements."
+(defun refine--format-with-index (value)
+  "Given an elisp VALUE, return a pretty propertized
+string listing the elements.
+
+VALUE may be a list, string, vector or symbol."
   (cond
    ((vectorp value)
-    (refine--format-value (refine--vector->list value)))
+    (refine--format-with-index (refine--vector->list value)))
 
-   ((null value) "nil")
+   ((null value)
+    (propertize "nil" 'refine-index 'empty))
+
+   ;; Scalar values are values that we treat as a single item.
+   ((or (symbolp value) (stringp value) (numberp value))
+    (propertize (refine--pretty-format value) 'refine-index 'scalar))
 
    ((refine--dotted-pair-p value)
     (format "%s\n%s"
@@ -132,7 +171,7 @@ string listing the elements."
             (if (null value) 0 (ceiling (log (safe-length value) 10))))
            ;; If there are 10 or more items, make sure we print the
            ;; index with a width of 2, and so on.
-           (index-format-string (format "%%%dd " index-digits-required))
+           (index-format-string (concat "%" (format "%s" index-digits-required) "d"))
            ;; Pretty-print each element, along with an index.
            (formatted-elements
             (--map-indexed
@@ -148,13 +187,18 @@ string listing the elements."
 (defun refine--update (buffer symbol)
   "Update BUFFER with the current value of SYMBOL."
   (with-current-buffer buffer
-    (let* ((value (refine--eval symbol))
-           (pos (point))
+    (let* ((value (symbol-value symbol))
+           (current-line (line-number-at-pos))
+           (current-column (current-column))
            buffer-read-only)
       (erase-buffer)
       (insert (format "%s:\n\n" (refine--describe symbol value)))
-      (insert (refine--format-value value))
-      (goto-char pos))))
+      (insert (refine--format-with-index value))
+      ;; We can't use `save-excursion' because we erased the whole
+      ;; buffer. Go back to the previous position.
+      (goto-char (point-min))
+      (forward-line (1- current-line))
+      (forward-char current-column))))
 
 (defvar-local refine--symbol nil
   "The symbol being inspected in the current buffer.")
@@ -196,23 +240,23 @@ This mutates the list.
 If SYMBOL is nil, assigns to SYMBOL instead."
   (interactive)
   (assert (symbolp symbol))
-  (let* ((list (refine--eval symbol))
+  (let* ((list (symbol-value symbol))
          (length (safe-length list)))
-    ;; `symbol' must be a list that's long enough.
-    (assert (and (consp list) (>= length index)))
-
+    (assert (or (consp list) (null list)))
     (cond
      ;; If list is nil, we can't modify destructively.
      ((= length 0) (set symbol (list value)))
 
-     (t (refine--insert-list list index value)))))
+     (t
+      (assert (>= length index))
+      (refine--insert-list list index value)))))
 
 (defun refine--vector-pop (symbol index)
   "Remove the item at INDEX from vector variable SYMBOL.
 
 This creates a new vector and assigns it to SYMBOL. Vectors have
 fixed length, see *info* (elisp) Arrays."
-  (let* ((vector (refine--eval symbol))
+  (let* ((vector (symbol-value symbol))
          (length (length vector)))
     (assert (and (vectorp vector) (< index length)))
 
@@ -246,7 +290,7 @@ This mutates the list."
 (defun refine--pop (symbol index)
   "Remote the item at INDEX in vectory/list variable SYMBOL.
 Mutates the value where possible."
-  (let ((value (refine--eval symbol)))
+  (let ((value (symbol-value symbol)))
     (cond ((vectorp value)
            (refine--vector-pop symbol index))
           ((equal (length value) 1)
@@ -268,6 +312,13 @@ Mutates the value where possible."
 Equivalent to interactive \"X\"."
   (eval (read--expression prompt initial-contents)))
 
+(defun refine--read-element (symbol prompt &optional initial-contents)
+  "Read a new value for a list element of SYMBOL."
+  (let ((possibilities (refine--possible-elements symbol)))
+    (if possibilities
+        (eval (read (completing-read prompt (-map #'refine--pretty-format possibilities))))
+      (refine--read-eval-expr prompt initial-contents))))
+
 (defun refine-delete ()
   "Remove the current list item at point."
   (interactive)
@@ -281,12 +332,17 @@ Equivalent to interactive \"X\"."
   (interactive
    (let ((index (refine--index-at-point)))
      (if index
-         (list (refine--read-eval-expr
-                (format "Value to insert at %s: " (refine--index-at-point))))
+         (list (refine--read-element
+                refine--symbol
+                (format "Value to insert at %s: "
+                        (if (numberp index) index 0))))
        (user-error "No value here"))))
-  (-when-let (list-index (refine--index-at-point))
-    (refine--insert refine--symbol list-index value)
-    (refine-update)))
+  (let ((index (refine--index-at-point)))
+    (unless (numberp index)
+      (setq index 0))
+    (refine--insert refine--symbol index value)
+    (refine-update)
+    (refine--goto index)))
 
 (defun refine-insert-after (value)
   "Insert a new item before the list item at point."
@@ -301,10 +357,9 @@ Equivalent to interactive \"X\"."
     (refine-update))
   (refine-next 1))
 
-(defun refine--swap (index1 index2)
-  "Switch the items at INDEX1 and INDEX2 in the current list."
-  (let* ((value (refine--eval refine--symbol))
-         (index1-element (nth index1 value))
+(defun refine--swap (value index1 index2)
+  "Switch the items at INDEX1 and INDEX2 in list VALUE."
+  (let* ((index1-element (nth index1 value))
          (index2-element (nth index2 value)))
     (setf (nth index2 value) index1-element)
     (setf (nth index1 value) index2-element)))
@@ -326,76 +381,100 @@ When called with a prefix, move that many positions."
   (refine-move-forward (- arg)))
 
 ;; TODO: extract all these internal manipulation functions to a
-;; separate package. Each function should take a symbol rather than
-;; implicitly using `refine--symbol'.
-(defun refine--move-element (index distance)
-  "Move the element at INDEX by DISTANCE positions.
+;; separate package.
+(defun refine--move-element (value index distance)
+  "Move the element at INDEX by DISTANCE positions in list VALUE.
 If DISTANCE is too big, move it as far as possible."
-  (let* ((value (refine--eval refine--symbol))
-         (target-index-raw (+ index distance))
+  (let* ((target-index-raw (+ index distance))
          ;; Ensure 0 <= target-index <= length - 1
          (target-index (max (min target-index-raw (1- (length value))) 0)))
-    (while (not (equal index target-index))
+    (loop-until (equal index target-index)
       (if (> distance 0)
           ;; Moving forwards
           (progn
-            (refine--swap index (1+ index))
+            (refine--swap value index (1+ index))
             (cl-incf index))
         ;; Moving backwards
         (progn
-          (refine--swap index (1- index))
+          (refine--swap value index (1- index))
           (cl-decf index))))))
 
-(defun refine--move (distance)
+(defun refine--move-point (distance)
   "Move point DISTANCE items forward.
 If DISTANCE is negative, move backwards."
-  (let* ( ;; Work out which list index to go to.
-         (current-index (or (refine--index-at-point) -1))
-         (requested-index (+ current-index distance))
-         ;; Ensure we don't try to go outside the range allowed for
-         ;; this list.
-         (value (refine--eval refine--symbol))
-         (target-index (max 0 (min requested-index (1- (safe-length value))))))
-    (beginning-of-line)
-    (if (> distance 0)
-        ;; Go forwards until we're on the first line of the requested value.
-        (while (or (null (refine--index-at-point))
-                   (< (refine--index-at-point) target-index))
-          (forward-line 1))
-      ;; Go backwards until we're on the first line of the requested
-      ;; value, even if it has multiple lines.
-      (progn
-        ;; Go to last line of the target value.
-        (while (not (equal (refine--index-at-point) target-index))
-          (forward-line -1))
-        ;; Go past the target value.
-        (while (equal (refine--index-at-point) target-index)
-          (forward-line -1))
-        ;; Move back to the first line of this value.
-        (forward-line 1)))))
+  (let* ((value (symbol-value refine--symbol)))
+    ;; If we're dealing with a scalar or the empty list, just move to
+    ;; the line where it's shown.
+    (if (not (consp value))
+        (progn
+          (goto-char (point-min))
+          (loop-until (not (null (refine--index-at-point)))
+            (forward-line 1)))
+      ;; Otherwise, we have a non-empty list.
+      (let* ( ;; Work out which list index to go to.
+             (current-index (or (refine--index-at-point) -1))
+             (requested-index (+ current-index distance))
+             ;; Ensure we don't try to go outside the range allowed for
+             ;; this list.
+             (length (safe-length value))
+             (target-index (max 0 (min requested-index (1- length)))))
+        (beginning-of-line)
+        (if (> distance 0)
+            ;; Go forwards until we're on the first line of the requested value.
+            (loop-until (or (eq (refine--index-at-point) 'empty)
+                            (equal (refine--index-at-point) target-index))
+              (forward-line 1))
+          ;; Go backwards until we're on the first line of the requested
+          ;; value, even if it has multiple lines.
+          (progn
+            ;; Go to last line of the target value.
+            (loop-until (equal (refine--index-at-point) target-index)
+              (forward-line -1))
+            ;; Go past the target value.
+            (while (equal (refine--index-at-point) target-index)
+              (forward-line -1))
+            ;; Move back to the first line of this value.
+            (forward-line 1)))))))
 
+;; TODO: it would be nice for variables like `racer-cmd' (custom
+;; variables for file paths) to be editable here too.
 (defun refine-edit (new-value)
   "Edit the current item in the list."
   (interactive
-   (let* ((lst (refine--eval refine--symbol))
-          (current-value (nth (refine--index-at-point) lst)))
-     (list (read--expression "New value: " (refine--pretty-format current-value)))))
-  ;; TODO: is there a nicer way of doing this?
-  (eval
-   `(setf (nth ,(refine--index-at-point) ,refine--symbol) ,new-value))
+   (let* ((lst (symbol-value refine--symbol))
+          (index (refine--index-at-point))
+          (prompt (format "Set value at %s: " index))
+          (current-value (nth index lst)))
+     (list (refine--read-element refine--symbol prompt
+                                 (refine--pretty-format current-value)))))
+  (setf (nth (refine--index-at-point) (symbol-value refine--symbol)) new-value)
   (refine-update))
 
 (defun refine-next (arg)
   "Move point to the next item.
 With a numeric prefix, move that many items."
   (interactive "p")
-  (refine--move arg))
+  (refine--move-point arg))
 
 (defun refine-previous (arg)
   "Move point to the previous item.
 With a numeric prefix, move that many items."
   (interactive "p")
-  (refine--move (- arg)))
+  (refine--move-point (- arg)))
+
+;; TODO: can we write refine--move-point in terms of refine--goto?
+(defun refine--goto (index)
+  "Move point to list INDEX requested."
+  (goto-char (point-min))
+  (loop-until (or (eq (refine--index-at-point) 'empty)
+                  (equal (refine--index-at-point) index))
+    (forward-line 1)))
+
+(defun refine--next-item (current items)
+  "Given a list ITEMS, return the item after CURRENT.
+If CURRENT is at the end, or not present, use the first item."
+  (let ((index (or (-elem-index current items) -1)))
+    (nth (1+ index) (-cycle items))))
 
 (defun refine--buffer (symbol)
   "Get or create a refine buffer for SYMBOL."
@@ -427,6 +506,8 @@ With a numeric prefix, move that many items."
          (cond
           ((stringp value) "a string")
           ((null value) "nil")
+          ((symbolp value) "a symbol")
+          ((numberp value) "a number")
           ((and (consp value) (not (consp (cdr value))) (not (null (cdr value))))
            "a pair")
           ((and (consp value) (list-utils-cyclic-p value))
@@ -443,6 +524,42 @@ With a numeric prefix, move that many items."
                          pretty-symbol symbol-descripton
                          type-description))))
 
+;; TODO: add demo in readme of this command.
+(defun refine-cycle ()
+  "Cycle the variable or list element through all possible values.
+For booleans, toggle nil/t."
+  (interactive)
+  (let ((value (symbol-value refine--symbol))
+        (index (refine--index-at-point)))
+    (cond
+     ;; If we're on a list element of a `defcustom', try to cycle
+     ;; the element.
+     ((and (custom-variable-p refine--symbol) (consp value))
+      (unless index
+        (user-error "No list element at point"))
+      ;; Find the values that an element can take.
+      (let ((values (refine--possible-elements refine--symbol))
+            (element-value (nth index value)))
+        (if values
+            ;; Set this element to the next possible value.
+            (setf (nth index value) (refine--next-item element-value values))
+          (user-error "I don't know what values elements of '%s can take" refine--symbol))))
+     ;; For other `defcustom' values, cycle the whole variable.
+     ((custom-variable-p refine--symbol)
+      (-if-let (values (refine--possible-values refine--symbol))
+          ;; Set to the next value.
+          (set refine--symbol (refine--next-item value values))
+        (user-error "I don't know what values '%s can take" refine--symbol)))
+     ;; Toggle booleans.
+     ((null value)
+      (set refine--symbol t))
+     ((eq value t)
+      (set refine--symbol nil))
+     ;; Otherwise, we don't know what to do.
+     (t
+      (user-error "'%s is not a custom variable, so cannot cycle it" refine--symbol)))
+    (refine-update)))
+
 ;;;###autoload
 (defun refine (symbol)
   "Interactively edit the value of a symbol \(usually a list\)."
@@ -455,13 +572,7 @@ With a numeric prefix, move that many items."
   "A major mode for interactively editing elisp values."
   (setq buffer-read-only t))
 
-(magit-define-popup refine-popup
-  "Popup console for changing items in a list."
-  :actions '((?g "Reload" refine-update)
-             (?d "Delete" refine-delete)))
-
-;; TODO: get this popup working.
-;; (define-key refine-mode-map (kbd "?") #'refine-popup)
+;; TODO: add a magit-style popup.
 
 ;; Buffer-level operations.
 (define-key refine-mode-map (kbd "q") #'kill-this-buffer)
@@ -469,6 +580,8 @@ With a numeric prefix, move that many items."
 
 ;; Modifying the list.
 (define-key refine-mode-map (kbd "e") #'refine-edit)
+(define-key refine-mode-map (kbd "RET") #'refine-edit)
+(define-key refine-mode-map (kbd "c") #'refine-cycle)
 (define-key refine-mode-map (kbd "k") #'refine-delete)
 (define-key refine-mode-map (kbd "a") #'refine-insert-after)
 (define-key refine-mode-map (kbd "i") #'refine-insert)
