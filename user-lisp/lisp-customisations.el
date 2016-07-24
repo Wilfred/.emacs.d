@@ -93,12 +93,11 @@
 ;; Use lispy-mode in emacs-lisp
 (add-hook 'emacs-lisp-mode-hook #'lispy-mode)
 
+(require 'lispy)
+
 ;; Disable the lispy keybindings that I don't want:
 (define-key lispy-mode-map (kbd "M-.") nil)
 (define-key lispy-mode-map (kbd "M-,") nil)
-
-(require 'lispy)
-
 ;; I use this keybinding a lot, to navigate between instances of a
 ;; variable with `highlight-symbol-next'.
 (define-key lispy-mode-map (kbd "M-n") nil)
