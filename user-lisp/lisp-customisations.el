@@ -103,6 +103,15 @@
 (define-key lispy-mode-map (kbd "M-n") nil)
 (define-key lispy-mode-map (kbd "M-p") nil)
 
+;; `lispy-move-beginning-of-line' adds nothing over
+;; `move-beginning-of-line-dwim', but goes to column 1 first. I prefer
+;; going back to indentation first, it's usually what I want.
+(define-key lispy-mode-map-lispy (kbd "C-a") nil)
+
+;; lispy-kill-at-point is really handy, but I use C-, for navigating
+;; hunks. TODO: find a new keybinding for the lispy command.
+(define-key lispy-mode-map-lispy (kbd "C-,") nil)
+
 ;; Work around https://github.com/abo-abo/lispy/issues/283
 (remove-hook 'python-mode-hook #'wisent-python-default-setup)
 
