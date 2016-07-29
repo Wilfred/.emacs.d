@@ -4,7 +4,7 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Version: 1.3
-;; Package-Version: 20160627.1527
+;; Package-Version: 20160725.2005
 ;; Keywords: loop, while, for each, break, continue
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,6 @@
 
 ;; Future ideas:
 
-;; * loop-return
 ;; * Named loops so you can break/continue outer loops
 
 (defmacro loop-while (condition &rest body)
@@ -74,19 +73,33 @@
   "Return non-nil if point is on the last line in the buffer."
   (looking-at (rx (0+ not-newline) buffer-end)))
 
+(defun loop--current-line ()
+  "Return the current line that contains point."
+  (save-excursion
+    (let ((line-start (progn (beginning-of-line) (point)))
+          (line-end (progn (end-of-line) (point))))
+      (buffer-substring line-start line-end))))
+
 (defmacro loop-for-each-line (&rest body)
-  "For every line in the buffer, put point at the start of the line and
-execute BODY."
+  "Execute BODY for every line in the buffer.
+Point is placed at the start of the line on each iteration.
+
+Inside BODY, `it' is bound to the contents of the current line."
   (declare (indent 0) (debug (&rest form)))
   `(save-excursion
      (catch 'loop-break
        (goto-char (point-min))
+       ;; Execute body on all but the last line.
        (while (not (loop--last-line-p))
          (catch 'loop-continue
-           ,@body)
+           (save-excursion
+             (let ((it (loop--current-line)))
+               ,@body)))
          (forward-line))
+       ;; Execute body on the last line.
        (catch 'loop-continue
-         ,@body))))
+         (let ((it (loop--current-line)))
+           ,@body)))))
 
 (defun loop-break ()
   "Terminate evaluation of a `loop-while', `loop-do-while', or `loop-for-each' block.
@@ -98,6 +111,12 @@ If there are nested loops, breaks out of the innermost loop."
 `loop-for-each' block and continue to the next iteration. If there
 are nested loops, applies to the innermost loop."
   (throw 'loop-continue nil))
+
+
+(defun loop-return (value)
+  "Terminate evaluation of a `loop-while', `loop-do-while', or `loop-for-each' block.
+The return value from the loop is VALUE."
+  (throw 'loop-break value))
 
 (provide 'loop)
 ;;; loop.el ends here
