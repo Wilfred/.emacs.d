@@ -69,6 +69,12 @@
 ;; substring in mind.
 (setq ivy-initial-inputs-alist nil)
 
+;; Use C-j for immediate termination with the current value, and RET
+;; for continuing completion for that directory. This is the ido
+;; behaviour.
+(define-key ivy-minibuffer-map (kbd "C-j") #'ivy-immediate-done)
+(define-key ivy-minibuffer-map (kbd "RET") #'ivy-alt-done)
+
 (global-set-key (kbd "M-x") 'counsel-M-x)
 (global-set-key (kbd "C-x C-f") 'counsel-find-file)
 
