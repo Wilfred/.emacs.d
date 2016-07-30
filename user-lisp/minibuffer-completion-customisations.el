@@ -47,6 +47,9 @@
 ;; Enable ivy.
 (ivy-mode 1)
 
+;; Don't bother showing ivy in the mode line.
+(diminish 'ivy-mode)
+
 ;; When switching buffers, offer recently accessed files that we don't
 ;; currently have open.
 (setq ivy-use-virtual-buffers t)
