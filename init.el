@@ -1125,6 +1125,7 @@ Visit the file after creation."
 (require 'startup-customisations)
 
 (require 'git-customisations)
+(require 'irc-customisations)
 (require 'eshell-customisations)
 
 (require 'compilation-customisations)
