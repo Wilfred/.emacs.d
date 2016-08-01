@@ -2,6 +2,6 @@
 # name: function
 # key: af
 # --
-function() {
+function(${1:}) {
   $0
 }
