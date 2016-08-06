@@ -109,8 +109,9 @@
 (define-key lispy-mode-map-lispy (kbd "C-a") nil)
 
 ;; lispy-kill-at-point is really handy, but I use C-, for navigating
-;; hunks. TODO: find a new keybinding for the lispy command.
+;; hunks.
 (define-key lispy-mode-map-lispy (kbd "C-,") nil)
+(define-key lispy-mode-map-lispy (kbd "s-k") #'lispy-kill-at-point)
 
 ;; Work around https://github.com/abo-abo/lispy/issues/283
 (remove-hook 'python-mode-hook #'wisent-python-default-setup)
