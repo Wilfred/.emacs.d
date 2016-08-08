@@ -18,20 +18,14 @@
 (custom-set-faces
  '(js2-function-param-face ((((class color)) (:foreground "Green")))))
 
-;; js2-mode offers a variety of warnings, but jshint is better at
+;; js2-mode offers a variety of warnings, but eslint is better at
 ;; this, so we switch of those in js2-mode.
 (setq js2-strict-inconsistent-return-warning nil)
 (setq js2-strict-missing-semi-warning 't)
 (setq js2-strict-trailing-comma-warning nil)
 
-(require 'flymake-jshint)
-
-(custom-set-variables
- '(jshint-configuration-path "~/.emacs.d/user-js/jshint.json")
- '(js2-strict-missing-semi-warning t))
-
-(add-hook 'js-mode-hook 'flymake-jshint-load)
-(add-hook 'js2-mode-hook 'flymake-jshint-load)
+(add-hook 'js-jsx-mode-hook #'flycheck-mode)
+(add-hook 'js2-mode #'flycheck-mode)
 
 (require 'company)
 (add-to-list 'company-backends 'company-tern)
