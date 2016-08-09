@@ -21,7 +21,7 @@
 ;; js2-mode offers a variety of warnings, but eslint is better at
 ;; this, so we switch of those in js2-mode.
 (setq js2-strict-inconsistent-return-warning nil)
-(setq js2-strict-missing-semi-warning 't)
+(setq js2-strict-missing-semi-warning nil)
 (setq js2-strict-trailing-comma-warning nil)
 
 (add-hook 'js2-jsx-mode-hook #'flycheck-mode)
