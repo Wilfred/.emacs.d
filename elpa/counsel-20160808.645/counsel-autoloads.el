@@ -3,7 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "counsel" "counsel.el" (22410 2028 974556 843000))
+;;;### (autoloads nil "counsel" "counsel.el" (22442 32973 340794
+;;;;;;  735000))
 ;;; Generated autoloads from counsel.el
 
 (autoload 'counsel-el "counsel" "\
@@ -116,6 +117,22 @@ Call the \"locate\" shell command.
 INITIAL-INPUT can be given as the initial minibuffer input.
 
 \(fn &optional INITIAL-INPUT)" t nil)
+
+(autoload 'counsel-file-jump "counsel" "\
+Jump to a file from a list of all files directories
+below the current one.  INITIAL-INPUT can be given as the initial
+minibuffer input.  INITIAL-DIRECTORY, if non-nil, is used as the
+root directory for search.
+
+\(fn &optional INITIAL-INPUT INITIAL-DIRECTORY)" t nil)
+
+(autoload 'counsel-dired-jump "counsel" "\
+Jump to a directory (in dired) from a list of all directories
+below the current one.  INITIAL-INPUT can be given as the initial
+minibuffer input.  INITIAL-DIRECTORY, if non-nil, is used as the
+root directory for search.
+
+\(fn &optional INITIAL-INPUT INITIAL-DIRECTORY)" t nil)
 
 (autoload 'counsel-ag "counsel" "\
 Grep for a string in the current directory using ag.
