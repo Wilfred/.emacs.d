@@ -4,7 +4,7 @@
 
 ;; Author: Phil Dawes
 ;; URL: https://github.com/racer-rust/emacs-racer
-;; Package-Version: 20160711.1538
+;; Package-Version: 20160812.2308
 ;; Version: 1.1
 ;; Package-Requires: ((emacs "24.3") (rust-mode "0.2.0") (dash "2.11.0") (s "1.10.0"))
 ;; Keywords: abbrev, convenience, matching, rust, tools
@@ -83,8 +83,7 @@
   (or (getenv "CARGO_HOME") (expand-file-name "~/.cargo"))
   "To enable completion for cargo crates, you need to set the CARGO_HOME environment variable to .cargo in your home directory."
   :type 'file
-  :group 'racer
-  )
+  :group 'racer)
 
 (defun racer--cargo-project-root ()
   "Find the root of the current Cargo project."
@@ -93,11 +92,14 @@
 
 (defun racer--call (command &rest args)
   "Call racer command COMMAND with args ARGS."
+  (when (null racer-rust-src-path)
+    (user-error "You need to set racer-rust-src-path"))
+  (unless (file-directory-p racer-rust-src-path)
+    (user-error "%s is not a directory" racer-rust-src-path))
   (setenv "RUST_SRC_PATH" (expand-file-name racer-rust-src-path))
   (setenv "CARGO_HOME" (expand-file-name racer-cargo-home))
-  (let ((default-directory (racer--cargo-project-root)))
-    (apply #'process-lines racer-cmd command args)
-    ))
+  (let ((default-directory (or (racer--cargo-project-root) default-directory)))
+    (apply #'process-lines racer-cmd command args)))
 
 (defun racer--call-at-point (command)
   "Call racer command COMMAND at point of current buffer."
