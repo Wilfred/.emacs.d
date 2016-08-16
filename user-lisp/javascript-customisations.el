@@ -38,4 +38,11 @@
 
 (js2r-add-keybindings-with-prefix "C-c C-r")
 
+;; TODO: there are better pre-existing tools that do this, with
+;; convenient cleanup commands.
+(defun wh/insert-console-log (var)
+  "Insert a log statement at point for VARIABLE."
+  (interactive "sVariable: ")
+  (insert (format "console.log(['%s', %s]);" var var)))
+
 (provide 'javascript-customisations)
