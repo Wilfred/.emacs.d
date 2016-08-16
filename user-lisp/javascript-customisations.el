@@ -40,9 +40,29 @@
 
 ;; TODO: there are better pre-existing tools that do this, with
 ;; convenient cleanup commands.
-(defun wh/insert-console-log (var)
+(defun wh/insert-console-log ()
   "Insert a log statement at point for VARIABLE."
-  (interactive "sVariable: ")
-  (insert (format "console.log(['%s', %s]);" var var)))
+  (interactive)
+  (let ((variable (completing-read "Variable: " (wh/nearby-symbols))))
+    (insert (format "console.log(['%s', %s]);" variable variable))))
+
+(require 'dash)
+(require 's)
+
+(defun wh/nearby-symbols ()
+  (->>
+   (apply #'buffer-substring-no-properties (wh/js-surrounding-region))
+   (s-split "[^[:word:]0-9]+")
+   (--filter (> (length it) 1))
+   (-distinct)))
+
+(defun wh/js-surrounding-region ()
+  "Return the region surrounding point, as a string.
+Purely a heuristic, intended for finding symbols that might be useful."
+  (interactive)
+  (save-mark-and-excursion
+   (let ((current-prefix-arg '(5)))
+     (call-interactively #'er/expand-region)
+     (list (region-beginning) (region-end)))))
 
 (provide 'javascript-customisations)
