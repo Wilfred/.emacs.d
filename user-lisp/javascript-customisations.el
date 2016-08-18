@@ -41,9 +41,14 @@
 ;; TODO: there are better pre-existing tools that do this, with
 ;; convenient cleanup commands.
 (defun wh/insert-console-log ()
-  "Insert a log statement at point for VARIABLE."
+  "Insert a log statement at point for VARIABLE.
+Variable is a taken from the current selection, or suggested from
+variables near point."
   (interactive)
-  (let ((variable (completing-read "Variable: " (wh/nearby-symbols))))
+  (let ((variable (if (use-region-p)
+                      (buffer-substring-no-properties (region-beginning) (region-end))
+                    (completing-read "Variable: " (wh/nearby-symbols)))))
+    (crux-smart-open-line-above)
     (insert (format "console.log(['%s', %s]);" variable variable))))
 
 (require 'dash)
