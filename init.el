@@ -1109,6 +1109,7 @@ Visit the file after creation."
 (require 'isearch-customisations)
 (require 'projectile-customisations)
 
+(require 'go-customisations)
 (require 'c-customisations)
 (require 'asm-customisations)
 (require 'coffee-customisations)
