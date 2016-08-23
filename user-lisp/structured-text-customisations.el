@@ -1,7 +1,13 @@
 ; csv mode stuff, since it's used extensively in GBBO
 (autoload 'csv-mode "csv-mode")
 
-; yaml mode stuff, since google app engine uses it
+;; JSON
+(add-hook 'json-mode-hook
+          (lambda ()
+            (setq-local js-indent-level 4)))
+(add-hook 'json-mode-hook #'flycheck-mode)
+
+;; yaml mode stuff, since google app engine uses it
 (require 'yaml-mode)
 (add-hook 'yaml-mode-hook
 	  '(lambda ()

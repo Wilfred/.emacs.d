@@ -2,9 +2,6 @@
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 (add-to-list 'auto-mode-alist '("\\.jsx$" . js2-jsx-mode))
 
-;; for js-mode, which we use when editing JSON, use two space indents
-(setq js-indent-level 2)
-
 ;; these are the default settings, but it's nice to be explicit for ease of customisation
 (add-hook 'js-mode-hook
           '(lambda ()
