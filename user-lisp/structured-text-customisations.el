@@ -4,7 +4,11 @@
 ;; JSON
 (add-hook 'json-mode-hook
           (lambda ()
-            (setq-local js-indent-level 4)))
+            (if (equal (f-filename (buffer-file-name)) "package.json")
+                ;; npm uses two-spaces indents.
+                (setq-local js-indent-level 2)
+              ;; Most other packages use 4 space indents
+              (setq-local js-indent-level 4))))
 (add-hook 'json-mode-hook #'flycheck-mode)
 
 ;; yaml mode stuff, since google app engine uses it
