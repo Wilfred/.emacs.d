@@ -378,4 +378,6 @@ a symmetrically-encrypted GPG file. Require explict saving in this case."
         (t
          (insert (file-relative-name filename)))))
 
+(global-set-key (kbd "C-c t") #'bool-flip-do-flip)
+
 (provide 'editing-customisations)
