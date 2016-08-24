@@ -204,4 +204,11 @@ E.g. \"~/.emacs.d/elpa/el-mock-20150906.321\" into \"el-mock\" and \"20150906.32
 
 (setq lispy-eval-display-style 'overlay)
 
+;; http://stackoverflow.com/a/17118588/509706
+(defun wh/p (x)
+  "Print VALUE to the current buffer.
+Handy for ielm."
+  (move-end-of-line 0)
+  (insert (format "\n%s" x)))
+
 (provide 'lisp-customisations)
