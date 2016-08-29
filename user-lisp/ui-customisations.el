@@ -189,6 +189,10 @@ If it is split, repeat the current buffer in a vertical split."
 ;; https://github.com/wasamasa/dotemacs/blob/master/init.org#unique-buffer-names
 (setq uniquify-buffer-name-style 'forward)
 
+;; Recenter should start at the top. Noticeably more intuitive.
+;; https://github.com/wasamasa/dotemacs/blob/master/init.org#make-recentering-behave-more-similiar-to-other-programs
+(setq recenter-positions '(top middle bottom))
+
 ;;; Mode-line.
 
 ;; I want a minimalistic mode line. It should only have:
