@@ -177,6 +177,14 @@ If it is split, repeat the current buffer in a vertical split."
    (kbd "C-h C-l")
    (lambda () (interactive) (display-buffer ilog-buffer-name))))
 
+;; Show unfinished command keystrokes more promptly than the default.
+;; Taken from https://github.com/wasamasa/dotemacs/blob/master/init.org#adjust-keystroke-echo-timeout
+(setq echo-keystrokes 0.5)
+
+;; Avoid showing ?? in the mode line when we have long lines.
+;; https://github.com/wasamasa/dotemacs/blob/master/init.org#fix-line-number-mode
+(setq line-number-display-limit-width 10000)
+
 ;;; Mode-line.
 
 ;; I want a minimalistic mode line. It should only have:
