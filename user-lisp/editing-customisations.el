@@ -60,10 +60,10 @@ The point is also moved one character forward."
 (autoload 're-find-all "regexp-utils")
 (autoload 're-match-p "regexp-utils")
 
-(defun format-symbol (string format)
+(defun wh/format-symbol (string format)
   "Convert a given string to a specified formatting convention.
 
- (format-symbol \"fooBar\" 'constant) => \"FOO_BAR\""
+ \(wh/format-symbol \"fooBar\" 'constant) => \"FOO_BAR\""
   (let ((components))
     ;; split the string into its word components
     (if (s-contains? "_" string)
@@ -88,25 +88,26 @@ The point is also moved one character forward."
       (setq first-char (downcase first-char)))
     (concat first-char rest)))
 
-(defun cycle-symbol-case ()
+(defun wh/cycle-symbol-case ()
   "Convert toggle symbol at mark between the forms \"fooBar\",
 \"FooBar\", \"FOO_BAR\" and \"foo_bar\"."
   (interactive)
   (let* ((symbol (symbol-name (symbol-at-point)))
-        (symbol-bounds (bounds-of-thing-at-point 'symbol))
-        (bound-start (car symbol-bounds))
-        (bound-end (cdr symbol-bounds)))
+         (symbol-bounds (bounds-of-thing-at-point 'symbol))
+         (bound-start (car symbol-bounds))
+         (bound-end (cdr symbol-bounds))
+         (case-fold-search nil))
     (when symbol-bounds
       (goto-char bound-start)
       (kill-forward-chars (- bound-end bound-start))
       (cond
-       ((re-match-p "[a-z-]+$" symbol) (insert (format-symbol symbol 'variable-underscore)))
-       ((re-match-p "[a-z_]+$" symbol) (insert (format-symbol symbol 'camelcase-lower)))
-       ((re-match-p "[a-z]+" symbol) (insert (format-symbol symbol 'camelcase)))
-       ((re-match-p "[A-Z][a-z]+" symbol) (insert (format-symbol symbol 'constant)))
-       (t (insert (format-symbol symbol 'variable-underscore)))))))
+       ((re-match-p "[a-z-]+$" symbol) (insert (wh/format-symbol symbol 'variable-underscore)))
+       ((re-match-p "[a-z_]+$" symbol) (insert (wh/format-symbol symbol 'camelcase-lower)))
+       ((re-match-p "[a-z]+" symbol) (insert (wh/format-symbol symbol 'camelcase)))
+       ((re-match-p "[A-Z][a-z]+" symbol) (insert (wh/format-symbol symbol 'constant)))
+       (t (insert (wh/format-symbol symbol 'variable-underscore)))))))
 
-(global-set-key (kbd "C-M-c") 'cycle-symbol-case)
+(global-set-key (kbd "C-M-c") 'wh/cycle-symbol-case)
 
 
 (defun wh/transpose-symbols (arg)
