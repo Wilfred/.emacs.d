@@ -2,16 +2,15 @@
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 (add-to-list 'auto-mode-alist '("\\.jsx$" . js2-jsx-mode))
 
-;; these are the default settings, but it's nice to be explicit for ease of customisation
-(add-hook 'js-mode-hook
-          '(lambda ()
-             (setq indent-tabs-mode nil)))
-(add-hook 'js2-mode-hook
-          '(lambda ()
-             (setq indent-tabs-mode nil)
-	     (setq js2-basic-offset 4)))
+(defun wh/js-setup-indentation ()
+  (setq indent-tabs-mode nil)
+  (setq js2-basic-offset 2))
 
-; fix js2-mode's function parameter colour, which is too dark for a dark theme
+(dolist (hook '(js-mode-hook js2-mode-hook js-jsx-mode-hook js2-jsx-mode-hook))
+  (add-hook hook #'wh/js-setup-indentation)
+  (add-hook hook #'flycheck-mode))
+
+;; fix js2-mode's function parameter colour, which is too dark for a dark theme
 (custom-set-faces
  '(js2-function-param-face ((((class color)) (:foreground "Green")))))
 
