@@ -7,7 +7,8 @@
 ;; always highlight matching parentheses
 (show-paren-mode 1)
 
-;; always highlight line that cursor is on, unless a mode has set d
+;; always highlight line that cursor is on, unless a mode requests
+;; otherwise.
 (defvar use-hl-line t
   "Whether we should use `hl-line-mode' in this buffer.
 Defaults to `t'.")
@@ -19,12 +20,6 @@ Defaults to `t'.")
     (hl-line-mode)))
 
 (add-hook 'after-change-major-mode-hook #'wh/activate-hl-line)
-
-;; don't use hl-line in the minibuffer, it's not useful
-;; FIXME: doesn't work
-(add-hook 'minibuffer-setup-hook
-          (lambda ()
-            (setq use-hl-line nil)))
 
 (require 'dash)
 (require 's)
