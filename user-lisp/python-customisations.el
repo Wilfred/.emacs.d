@@ -24,6 +24,10 @@
 (require 'python-utils)
 (eval-when-compile (require 'cl)) ;; first, second
 
+;; Everyone uses four space indents, and Emacs noisily announces
+;; indentation guessing.
+(setq python-indent-guess-indent-offset nil)
+
 ;; TODO: properly highlight differently named self arguments (often seen in nested classes):
 
 ;; class Foo(object):
