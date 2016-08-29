@@ -188,6 +188,9 @@ If it is split, repeat the current buffer in a vertical split."
 ;; https://github.com/wasamasa/dotemacs/blob/master/init.org#make-recentering-behave-more-similiar-to-other-programs
 (setq recenter-positions '(top middle bottom))
 
+;; Show eldoc more promptly.
+(setq eldoc-idle-delay 0.1)
+
 ;;; Mode-line.
 
 ;; I want a minimalistic mode line. It should only have:
