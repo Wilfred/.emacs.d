@@ -185,6 +185,10 @@ If it is split, repeat the current buffer in a vertical split."
 ;; https://github.com/wasamasa/dotemacs/blob/master/init.org#fix-line-number-mode
 (setq line-number-display-limit-width 10000)
 
+;; Use normal path formatting when disambiguating buffer names.
+;; https://github.com/wasamasa/dotemacs/blob/master/init.org#unique-buffer-names
+(setq uniquify-buffer-name-style 'forward)
+
 ;;; Mode-line.
 
 ;; I want a minimalistic mode line. It should only have:
