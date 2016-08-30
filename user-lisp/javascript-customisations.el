@@ -20,9 +20,6 @@
 (setq js2-strict-missing-semi-warning nil)
 (setq js2-strict-trailing-comma-warning nil)
 
-(add-hook 'js2-jsx-mode-hook #'flycheck-mode)
-(add-hook 'js2-mode-hook #'flycheck-mode)
-
 (require 'company)
 (add-to-list 'company-backends 'company-tern)
 
