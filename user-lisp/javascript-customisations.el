@@ -8,6 +8,7 @@
 
 (dolist (hook '(js-mode-hook js2-mode-hook js-jsx-mode-hook js2-jsx-mode-hook))
   (add-hook hook #'wh/js-setup-indentation)
+  (add-hook hook #'tern-mode)
   (add-hook hook #'flycheck-mode))
 
 ;; fix js2-mode's function parameter colour, which is too dark for a dark theme
@@ -24,10 +25,12 @@
 (add-to-list 'company-backends 'company-tern)
 
 (defun wh/company-in-js2-mode ()
-  (set (make-local-variable 'company-backends)
-       (list #'company-tern #'company-dabbrev-code #'company-keywords )))
+  (setq-local company-backends (list #'company-keywords #'company-tern #'company-dabbrev-code))
+  (setq-local company-idle-delay 0.2))
 
 (add-hook 'js2-mode-hook #'wh/company-in-js2-mode)
+
+(define-key company-mode-map (kbd "TAB") #'company-indent-or-complete-common)
 
 (js2r-add-keybindings-with-prefix "C-c C-r")
 
