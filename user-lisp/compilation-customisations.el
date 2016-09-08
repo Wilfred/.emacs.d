@@ -1,11 +1,13 @@
 (require 'ansi-color)
 
-(defun colorize-compilation-buffer ()
-  (let ((read-only-mode t))
-    (ansi-color-apply-on-region (point-min) (point-max))))
+;; http://stackoverflow.com/q/3072648/509706
+(defun wh/colorize-compilation-buffer ()
+  "If a build tool outputs ANSI terminal colours, highlight them correctly
+rather than showing ^[[31m garbage."
+  (when (eq major-mode 'compilation-mode)
+    (let ((read-only-mode t))
+      (ansi-color-apply-on-region (point-min) (point-max)))))
 
-;; FIXME: This works wonderfully for coloured output during make jobs, but
-;; breaks ag.el
-;; (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
+(add-hook 'compilation-filter-hook 'wh/colorize-compilation-buffer)
 
 (provide 'compilation-customisations)
