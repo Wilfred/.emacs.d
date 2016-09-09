@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- 2016-08-20 Sat 11:29 -->
+<!-- 2016-09-08 Thu 23:04 -->
 <meta  charset="utf-8">
 <meta  name="viewport" content="width=device-width, initial-scale=1">
 <title></title>
@@ -1271,6 +1271,19 @@ advice to fix that.
   <span class="org-rainbow-delimiters-depth-2">(</span>push-mark<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
+
+<p>
+Since I like using the minibuffer for eldoc, showing flycheck errors
+in the minibuffer just causes it to jump around. As suggested at
+<a href="https://www.reddit.com/r/emacs/comments/4yhvt7/eldoc_and_flycheck_constantly_fighting_for_the/">https://www.reddit.com/r/emacs/comments/4yhvt7/eldoc_and_flycheck_constantly_fighting_for_the/</a>,
+I use a popup for the error at point.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">flycheck-mode-hook</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">flycheck-pos-tip-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
+</pre>
+</div>
 </div>
 </div>
 </div>
@@ -2168,7 +2181,7 @@ Don't try to reopen all files that are owned by other users.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2016-08-20 Sat 11:29</p>
+<p class="date">Created: 2016-09-08 Thu 23:04</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

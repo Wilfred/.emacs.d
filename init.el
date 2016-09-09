@@ -616,6 +616,16 @@ Visit the file after creation."
 (defadvice flycheck-next-error (before wh/flycheck-next-error-push-mark activate)
   (push-mark))
 
+
+
+;; Since I like using the minibuffer for eldoc, showing flycheck errors
+;; in the minibuffer just causes it to jump around. As suggested at
+;; https://www.reddit.com/r/emacs/comments/4yhvt7/eldoc_and_flycheck_constantly_fighting_for_the/,
+;; I use a popup for the error at point.
+
+
+(add-hook 'flycheck-mode-hook #'flycheck-pos-tip-mode)
+
 ;; Undoing
 
 ;; Emacs' undo facility is excellent, but undo-tree is even better.
