@@ -34,20 +34,16 @@
 ;; Highlight the ' character itself in the same colour
 ;; as the quoted symbol.
 (set-face-attribute 'highlight-quoted-quote nil
-  :inherit 'highlight-quoted-symbol)
+                    :inherit 'highlight-quoted-symbol)
 
-(add-hook 'emacs-lisp-mode-hook
-          (lambda ()
-            (setq use-hl-line nil)
-            (hl-sexp-mode)))
+(dolist (hook '(emacs-lisp-mode-hook clojure-mode-hook))
+  (add-hook hook
+            (lambda ()
+              (setq use-hl-line nil)
+              (hl-sexp-mode))))
 
 (eval-after-load 'flycheck
   '(add-hook 'flycheck-mode-hook #'flycheck-cask-setup))
-
-(add-hook 'clojure-mode-hook
-          (lambda ()
-            (setq use-hl-line nil)
-            (hl-sexp-mode)))
 
 ;; rather than using TAGS, jump to function definitions that we have
 ;; loaded
@@ -66,7 +62,6 @@
 (add-hook 'lisp-mode-hook 'rainbow-delimiters-mode)
 
 (autoload 'clojure-mode "clojure-mode")
-(add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
 
 (require 'cider)
 
