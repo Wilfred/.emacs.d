@@ -156,4 +156,8 @@
 ;; Always use 'y or n' for questions, since 'yes' is tedious to type over and over.
 (fset 'yes-or-no-p 'y-or-n-p)
 
+;; Save the contents of the minibuffer between emacs sessions.
+(add-hook #'emacs-startup-hook #'savehist-mode)
+(setq history-length 10000)
+
 (provide 'minibuffer-completion-customisations)
