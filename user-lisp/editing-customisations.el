@@ -251,7 +251,7 @@ Handy when editing markdown."
   
   (set-file-modes (buffer-file-name)
                   (file-modes-symbolic-to-number "u+rwx" (file-modes (buffer-file-name))))
-  (let ((interpreter (ido-completing-read "Interpreter: " (list "#!/bin/bash" "#!/usr/bin/env python"))))
+  (let ((interpreter (completing-read "Interpreter: " (list "#!/bin/bash" "#!/usr/bin/env python"))))
     (insert interpreter)
     (insert "\n\n")
     (cond
