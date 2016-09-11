@@ -381,4 +381,19 @@ a symmetrically-encrypted GPG file. Require explict saving in this case."
 
 (global-set-key (kbd "C-c t") #'bool-flip-do-flip)
 
+;; http://stackoverflow.com/a/4459159/509706
+(defun aj/toggle-fold ()
+  "Toggle fold all lines larger than indentation on current line."
+  (interactive)
+  (let ((col 1))
+    (save-excursion
+      (back-to-indentation)
+      (setq col (+ 1 (current-column)))
+      (set-selective-display
+       (if selective-display nil (or col 1))))))
+
+;; No mnemonic for this keybinding, it's simply one available in major
+;; modes that I use (python binds a lot of C-c prefixes).
+(global-set-key (kbd "C-c C-b") #'aj/toggle-fold)
+
 (provide 'editing-customisations)
