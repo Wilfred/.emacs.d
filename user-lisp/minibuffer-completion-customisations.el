@@ -119,7 +119,7 @@
   (custom-set-faces
    '(helm-source-header ((t (:background "#22083397778B" :foreground "white"))))))
 
-(global-set-key (kbd "<f7>") #'helm-imenu)
+(global-set-key (kbd "<f7>") #'counsel-imenu)
 
 ;;; Known helm issues:
 ;; There are a number of commands where I tried helm, but wasn't happy
