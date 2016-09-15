@@ -83,7 +83,10 @@
 (define-key slime-mode-map (kbd "C-c e") 'slime-eval-defun)
 
 ;; Ensure elisp code is continuously indented.
-(add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode)
+(use-package aggressive-indent
+  :config
+  (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode)
+  :diminish "")
 
 ;; Use lispy-mode in emacs-lisp
 (add-hook 'emacs-lisp-mode-hook #'lispy-mode)
