@@ -97,34 +97,32 @@
 ;; Use lispy-mode in emacs-lisp
 (add-hook 'emacs-lisp-mode-hook #'lispy-mode)
 
-(require 'lispy)
-
-;; Disable the lispy keybindings that I don't want:
-(define-key lispy-mode-map (kbd "M-.") nil)
-(define-key lispy-mode-map (kbd "M-,") nil)
-;; I use this keybinding a lot, to navigate between instances of a
-;; variable with `highlight-symbol-next'.
-(define-key lispy-mode-map (kbd "M-n") nil)
-(define-key lispy-mode-map (kbd "M-p") nil)
-
-;; lispy-underscore has some extra smarts, but they're only for
-;; Clojure. I like using _ with `nameless-mode'.
-(define-key lispy-mode-map (kbd "_") nil)
-
-;; `lispy-move-beginning-of-line' adds nothing over
-;; `move-beginning-of-line-dwim', but goes to column 1 first. I prefer
-;; going back to indentation first, it's usually what I want.
-(define-key lispy-mode-map-lispy (kbd "C-a") nil)
-
-;; lispy-kill-at-point is really handy, but I use C-, for navigating
-;; hunks.
-(define-key lispy-mode-map-lispy (kbd "C-,") nil)
-
 ;; Work around https://github.com/abo-abo/lispy/issues/283
 (remove-hook 'python-mode-hook #'wisent-python-default-setup)
 
 (use-package lispy
   :config
+  ;; Disable the lispy keybindings that I don't want:
+  (define-key lispy-mode-map (kbd "M-.") nil)
+  (define-key lispy-mode-map (kbd "M-,") nil)
+  ;; I use this keybinding a lot, to navigate between instances of a
+  ;; variable with `highlight-symbol-next'.
+  (define-key lispy-mode-map (kbd "M-n") nil)
+  (define-key lispy-mode-map (kbd "M-p") nil)
+
+  ;; lispy-underscore has some extra smarts, but they're only for
+  ;; Clojure. I like using _ with `nameless-mode'.
+  (define-key lispy-mode-map (kbd "_") nil)
+
+  ;; `lispy-move-beginning-of-line' adds nothing over
+  ;; `move-beginning-of-line-dwim', but goes to column 1 first. I prefer
+  ;; going back to indentation first, it's usually what I want.
+  (define-key lispy-mode-map-lispy (kbd "C-a") nil)
+
+  ;; lispy-kill-at-point is really handy, but I use C-, for navigating
+  ;; hunks.
+  (define-key lispy-mode-map-lispy (kbd "C-,") nil)
+  
   ;; Ensure pressing q closes edebug, macrostep and magit-blame.
   (setq lispy-compat '(edebug macrostep magit-blame-mode)))
 
