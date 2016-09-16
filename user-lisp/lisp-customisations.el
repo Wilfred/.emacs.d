@@ -36,6 +36,12 @@
 (set-face-attribute 'highlight-quoted-quote nil
                     :inherit 'highlight-quoted-symbol)
 
+(use-package nameless
+  :config
+  (setq nameless-private-prefix t)
+  (define-key emacs-lisp-mode-map (kbd "_")
+    #'nameless-insert-name-or-self-insert))
+
 (dolist (hook '(emacs-lisp-mode-hook clojure-mode-hook))
   (add-hook hook
             (lambda ()
@@ -100,6 +106,10 @@
 ;; variable with `highlight-symbol-next'.
 (define-key lispy-mode-map (kbd "M-n") nil)
 (define-key lispy-mode-map (kbd "M-p") nil)
+
+;; lispy-underscore has some extra smarts, but they're only for
+;; Clojure. I like using _ with `nameless-mode'.
+(define-key lispy-mode-map (kbd "_") nil)
 
 ;; `lispy-move-beginning-of-line' adds nothing over
 ;; `move-beginning-of-line-dwim', but goes to column 1 first. I prefer
