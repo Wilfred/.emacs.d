@@ -1,34 +1,53 @@
-;; Use paredit for all the lisp modes I use.
-(defun switch-on-paredit ()
-  (turn-off-smartparens-mode)
-  (smartparens-strict-mode -1)
-  (paredit-mode 1))
-
-(dolist (hook
-         '(clojure-mode-hook
-           emacs-lisp-mode-hook
-           scheme-mode-hook
-           lisp-mode-hook
-           ielm-mode-hook))
-  (add-hook hook 'switch-on-paredit))
+;;; lisp-customisations --- Emacs configuration for lisp languages
 
 (use-package paredit
-  :diminish "")
+  :diminish ""
+  :config
+  ;; Paredit has a wealth of handy commands, but they're mostly bound
+  ;; to C-M-something. This is awkward to type, especially in
+  ;; environments where meta is intercepted (the standard Emacs work
+  ;; around is to use ESC, so C-M-something becomes ESC C-something).
+  ;;
+  ;; Instead, for these sexp-oriented commands, we provide equivalent
+  ;; keybindings using super (ie the windows key).
+  ;;
+  ;; Note that window managers tend to have windows key shortcuts, so
+  ;; using the old C-M-something keybinding is still necessary
+  ;; sometimes.
+  (define-key paredit-mode-map (kbd "s-f") #'paredit-forward)
+  (define-key paredit-mode-map (kbd "s-b") #'paredit-backward)
+  ;; Likewise for other sexp commands.
+  (define-key paredit-mode-map (kbd "s-u") #'paredit-backward-up)
+  (define-key paredit-mode-map (kbd "s-d") #'paredit-forward-down)
+  (define-key paredit-mode-map (kbd "s-n") #'paredit-forward-up)
+  ;; For consistency, we do the same thing for other sexp-oriented
+  ;; commands that ship with Emacs.
+  (define-key paredit-mode-map (kbd "<s-backspace>") #'backward-kill-sexp)
+  (define-key paredit-mode-map (kbd "s-k") #'kill-sexp)
+  (define-key paredit-mode-map (kbd "s-t") #'transpose-sexps)
 
-;; Paredit's C-M-f and C-M-b are really handy but difficult to type.
-(require 'paredit)
-(define-key paredit-mode-map (kbd "s-f") #'paredit-forward)
-(define-key paredit-mode-map (kbd "s-b") #'paredit-backward)
-;; Likewise for other sexp commands.
-(define-key paredit-mode-map (kbd "s-u") #'paredit-backward-up)
-(define-key paredit-mode-map (kbd "s-d") #'paredit-forward-down)
-(define-key paredit-mode-map (kbd "<s-backspace>") #'backward-kill-sexp)
-(define-key paredit-mode-map (kbd "s-k") #'kill-sexp)
-(define-key paredit-mode-map (kbd "s-t") #'transpose-sexps)
-(define-key paredit-mode-map (kbd "s-n") #'paredit-forward-up)
+  ;; Use hungry-delete in elisp too.  There is also
+  ;; `turn-on-hungry-delete-mode', but it seems that paredit's mode map
+  ;; is coming first.
+  (define-key paredit-mode-map (kbd "C-d") 'hungry-delete-forward)
 
-;; Mark-sexp is also very useful but tricky to type.
-(define-key paredit-mode-map (kbd "M-SPC") #'mark-sexp)
+  ;; Use paredit when evaluating lisp in the minibuffer.
+  (add-hook 'eval-expression-minibuffer-setup-hook #'paredit-mode)
+
+  ;; We've configured smartparens to come on in all programming
+  ;; modes. However, I find that paredit is more robust in lisps.
+  (defun wh/switch-on-paredit ()
+    "Enable paredit, and disable smartparens."
+    (turn-off-smartparens-mode)
+    (smartparens-strict-mode -1)
+    (paredit-mode 1))
+  (dolist (hook
+           '(clojure-mode-hook
+             emacs-lisp-mode-hook
+             scheme-mode-hook
+             lisp-mode-hook
+             ielm-mode-hook))
+    (add-hook hook #'wh/switch-on-paredit)))
 
 (use-package highlight-quoted
   :init
@@ -54,14 +73,14 @@
 (eval-after-load 'flycheck
   '(add-hook 'flycheck-mode-hook #'flycheck-cask-setup))
 
-;; rather than using TAGS, jump to function definitions that we have
-;; loaded
-(require 'elisp-slime-nav)
-(dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook))
-  (add-hook hook 'elisp-slime-nav-mode))
-
-(require 'diminish)
-(diminish 'elisp-slime-nav-mode)
+;; A handy command for jumping to elisp function definitions. Rather
+;; than using TAGS (which require updating), it simply uses Emacs'
+;; knowledge of where the function is defined.
+(use-package elisp-slime-nav
+  :diminish ""
+  :config
+  (dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook))
+    (add-hook hook 'elisp-slime-nav-mode)))
 
 (add-hook 'ielm-mode-hook #'company-mode)
 (add-hook 'ielm-mode-hook #'eldoc-mode)
@@ -86,10 +105,10 @@
     (delete-backward-char indent-size)))
 
 ;; Common Lisp configuration
-(setq inferior-lisp-program "/usr/bin/sbcl")
-
-(require 'slime)
-(define-key slime-mode-map (kbd "C-c e") 'slime-eval-defun)
+(use-package slime
+  :config
+  (setq inferior-lisp-program "/usr/bin/sbcl")
+  (define-key slime-mode-map (kbd "C-c e") 'slime-eval-defun))
 
 ;; Ensure elisp code is continuously indented.
 (use-package aggressive-indent
@@ -97,14 +116,11 @@
   (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode)
   :diminish "")
 
-;; Use lispy-mode in emacs-lisp
-(add-hook 'emacs-lisp-mode-hook #'lispy-mode)
-
-;; Work around https://github.com/abo-abo/lispy/issues/283
-(remove-hook 'python-mode-hook #'wisent-python-default-setup)
-
 (use-package lispy
   :config
+  ;; Use lispy-mode in emacs-lisp
+  (add-hook 'emacs-lisp-mode-hook #'lispy-mode)
+
   ;; Disable the lispy keybindings that I don't want:
   (define-key lispy-mode-map (kbd "M-.") nil)
   (define-key lispy-mode-map (kbd "M-,") nil)
@@ -128,6 +144,9 @@
   
   ;; Ensure pressing q closes edebug, macrostep and magit-blame.
   (setq lispy-compat '(edebug macrostep magit-blame-mode)))
+
+;; Work around https://github.com/abo-abo/lispy/issues/283
+(remove-hook 'python-mode-hook #'wisent-python-default-setup)
 
 (defun wh/elisp-imenu-reset ()
   (setq imenu-create-index-function #'imenu-default-create-index-function))
@@ -167,13 +186,7 @@ E.g. \"~/.emacs.d/elpa/el-mock-20150906.321\" into \"el-mock\" and \"20150906.32
 (require 'company)
 (require 'company-elisp)
 
-;; Use hungry-delete in elisp too.  There is also
-;; `turn-on-hungry-delete-mode', but it seems that paredit's mode map
-;; is coming first.
-(define-key paredit-mode-map (kbd "C-d") 'hungry-delete-forward)
-
-;; When evaluating lisp in the minibuffer, use paredit and eldoc.
-(add-hook 'eval-expression-minibuffer-setup-hook #'paredit-mode)
+;; When evaluating lisp in the minibuffer, use eldoc.
 (add-hook 'eval-expression-minibuffer-setup-hook #'eldoc-mode)
 
 ;; from http://endlessparentheses.com/eval-result-overlays-in-emacs-lisp.html
