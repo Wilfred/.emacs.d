@@ -45,3 +45,6 @@ user-lisp/site-customisations.el
 
 var/pcache
 .org-id-locations
+
+# Copies of Emacs C source code
+src
