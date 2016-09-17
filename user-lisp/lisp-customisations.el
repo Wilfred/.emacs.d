@@ -12,6 +12,9 @@
            ielm-mode-hook))
   (add-hook hook 'switch-on-paredit))
 
+(use-package paredit
+  :diminish "")
+
 ;; Paredit's C-M-f and C-M-b are really handy but difficult to type.
 (require 'paredit)
 (define-key paredit-mode-map (kbd "s-f") #'paredit-forward)
