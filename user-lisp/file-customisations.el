@@ -16,11 +16,6 @@
   (not-modified)
   (set-visited-file-modtime))
 
-;;;###autoload
-(defun wh/find-file-sudo ()
-  (interactive)
-  (find-file (concat "/sudo::" (ido-read-file-name "Sudo find file:"))))
-
 (defun duplicate-buffer (new-name)
   "Create a copy of the current buffer with the filename NEW-NAME.
 The original buffer and file are untouched."
