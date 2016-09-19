@@ -1,4 +1,4 @@
-; scroll one row at at time
+;; scroll one row at at time
 (setq scroll-step 1)
 
 ;; Show a scrollbar when moving.
