@@ -46,5 +46,8 @@ user-lisp/site-customisations.el
 var/pcache
 .org-id-locations
 
+# Downloaded files
 # Copies of Emacs C source code
 src
+# Images of emojis
+emojis
