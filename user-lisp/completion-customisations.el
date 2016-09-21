@@ -80,6 +80,12 @@
         try-complete-lisp-symbol))
 (global-set-key (kbd "M-/") 'hippie-expand)
 
+(use-package company
+  :config
+  (add-hook 'emacs-lisp-mode-hook
+            (lambda () (setq-local company-backends (list 'company-elisp))))
+  :diminish "Comp")
+
 (require 'company)
 (require 'company-elisp)
 
@@ -95,8 +101,6 @@
 (require 'company-anaconda)
 (add-to-list 'company-backends 'company-c-headers)
 (add-hook 'prog-mode-hook #'company-mode)
-
-(diminish 'company-mode "Comp")
 
 ;; Offer idle completion for three characters or more. (1 is very
 ;; noisy, and 2 hurts typing performance a little.)
