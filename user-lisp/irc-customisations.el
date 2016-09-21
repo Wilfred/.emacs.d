@@ -11,6 +11,6 @@
   (setq rcirc-log-directory "~/irc_logs")
   ;; Ignore away/join/part messages from lurkers.
   (setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
-  (add-hook 'rcirc-mode #'rcirc-omit-mode))
+  (add-hook 'rcirc-mode-hook #'rcirc-omit-mode))
 
 (provide 'irc-customisations)
