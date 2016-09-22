@@ -160,6 +160,11 @@
 ;; Java-mode has the same problem.
 (define-key java-mode-map (kbd "M-n") #'highlight-symbol-next)
 (define-key java-mode-map (kbd "M-p") #'highlight-symbol-prev)
+;; And groovy-mode (note these all inherit from cc-mode).
+(use-package groovy-mode
+  :config
+  (define-key groovy-mode-map (kbd "M-n") #'highlight-symbol-next)
+  (define-key groovy-mode-map (kbd "M-p") #'highlight-symbol-prev))
 
 ;; Whilst YAML isn't a programming language, it's useful to move by
 ;; symbol here too.

@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- 2016-09-08 Thu 23:04 -->
+<!-- 2016-09-22 Thu 15:42 -->
 <meta  charset="utf-8">
 <meta  name="viewport" content="width=device-width, initial-scale=1">
 <title></title>
 <meta  name="generator" content="Org-mode">
+<meta  name="author" content="Hughes, Wilfred (London)">
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   .title  { text-align: center;
@@ -278,7 +279,7 @@ generated from it. We define a convenience function to generate these files.
 
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">wh/export-init-org</span> <span class="org-rainbow-delimiters-depth-2">()</span>
   <span class="org-doc">"Generate init.html and init.html from the current init.org file."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive<span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>call-interactively <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">org-babel-tangle</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-comment-delimiter">;; </span><span class="org-comment">Export as HTML 5, and include our styling overrides.</span>
   <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">let</span> <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-rainbow-delimiters-depth-4">(</span>org-html-doctype <span class="org-string">"html5"</span><span class="org-rainbow-delimiters-depth-4">)</span>
@@ -435,7 +436,7 @@ later.
 <div class="org-src-container">
 
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">package</span><span class="org-rainbow-delimiters-depth-1">)</span>
-<span class="org-rainbow-delimiters-depth-1">(</span>setq package-archives
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> package-archives
       <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span><span class="org-rainbow-delimiters-depth-3">(</span><span class="org-string">"gnu"</span> . <span class="org-string">"https://elpa.gnu.org/packages/"</span><span class="org-rainbow-delimiters-depth-3">)</span>
         <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-string">"melpa"</span> . <span class="org-string">"https://melpa.org/packages/"</span><span class="org-rainbow-delimiters-depth-3">)</span>
         <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-string">"org"</span> . <span class="org-string">"http://orgmode.org/elpa/"</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -555,7 +556,7 @@ commands that require the minibuffer.
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>setq enable-recursive-minibuffers t<span class="org-rainbow-delimiters-depth-1">)</span>
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> enable-recursive-minibuffers t<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 
@@ -588,7 +589,7 @@ preservered. Fix that.
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>setq scroll-preserve-screen-position <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">always</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> scroll-preserve-screen-position <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">always</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
@@ -618,6 +619,11 @@ of the same symbol.
 <span class="org-comment-delimiter">;; </span><span class="org-comment">Java-mode has the same problem.</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key java-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-n"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-next</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key java-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-p"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-prev</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-comment-delimiter">;; </span><span class="org-comment">And groovy-mode (note these all inherit from cc-mode).</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">use-package</span> <span class="org-constant">groovy-mode</span>
+  <span class="org-builtin">:config</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span>define-key groovy-mode-map <span class="org-rainbow-delimiters-depth-3">(</span>kbd <span class="org-string">"M-n"</span><span class="org-rainbow-delimiters-depth-3">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-next</span><span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span>define-key groovy-mode-map <span class="org-rainbow-delimiters-depth-3">(</span>kbd <span class="org-string">"M-p"</span><span class="org-rainbow-delimiters-depth-3">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-prev</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-comment-delimiter">;; </span><span class="org-comment">Whilst YAML isn't a programming language, it's useful to move by</span>
 <span class="org-comment-delimiter">;; </span><span class="org-comment">symbol here too.</span>
@@ -636,14 +642,14 @@ where a symbol was imported.
 
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">highlight-symbol-first</span> <span class="org-rainbow-delimiters-depth-2">()</span>
   <span class="org-doc">"Jump to the first location of symbol at point."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive<span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>push-mark<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>eval
    <span class="org-highlight-quoted-quote">`</span><span class="org-rainbow-delimiters-depth-3">(</span><span class="org-keyword">progn</span>
       <span class="org-rainbow-delimiters-depth-4">(</span>goto-char <span class="org-rainbow-delimiters-depth-5">(</span>point-min<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span>
       <span class="org-rainbow-delimiters-depth-4">(</span><span class="org-keyword">let</span> <span class="org-rainbow-delimiters-depth-5">(</span><span class="org-rainbow-delimiters-depth-6">(</span>case-fold-search nil<span class="org-rainbow-delimiters-depth-6">)</span><span class="org-rainbow-delimiters-depth-5">)</span>
         <span class="org-rainbow-delimiters-depth-5">(</span>search-forward-regexp
-         <span class="org-rainbow-delimiters-depth-6">(</span>rx symbol-start ,<span class="org-rainbow-delimiters-depth-7">(</span>thing-at-point <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">symbol</span><span class="org-rainbow-delimiters-depth-7">)</span> symbol-end<span class="org-rainbow-delimiters-depth-6">)</span>
+         <span class="org-rainbow-delimiters-depth-6">(</span><span class="org-keyword">rx</span> symbol-start ,<span class="org-rainbow-delimiters-depth-7">(</span>thing-at-point <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">symbol</span><span class="org-rainbow-delimiters-depth-7">)</span> symbol-end<span class="org-rainbow-delimiters-depth-6">)</span>
          nil t<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span>
       <span class="org-rainbow-delimiters-depth-4">(</span>beginning-of-thing <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">symbol</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
@@ -660,14 +666,14 @@ a symbol.
 
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">highlight-symbol-last</span> <span class="org-rainbow-delimiters-depth-2">()</span>
   <span class="org-doc">"Jump to the last location of symbol at point."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive<span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>push-mark<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>eval
    <span class="org-highlight-quoted-quote">`</span><span class="org-rainbow-delimiters-depth-3">(</span><span class="org-keyword">progn</span>
       <span class="org-rainbow-delimiters-depth-4">(</span>goto-char <span class="org-rainbow-delimiters-depth-5">(</span>point-max<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span>
       <span class="org-rainbow-delimiters-depth-4">(</span><span class="org-keyword">let</span> <span class="org-rainbow-delimiters-depth-5">(</span><span class="org-rainbow-delimiters-depth-6">(</span>case-fold-search nil<span class="org-rainbow-delimiters-depth-6">)</span><span class="org-rainbow-delimiters-depth-5">)</span>
         <span class="org-rainbow-delimiters-depth-5">(</span>search-backward-regexp
-         <span class="org-rainbow-delimiters-depth-6">(</span>rx symbol-start ,<span class="org-rainbow-delimiters-depth-7">(</span>thing-at-point <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">symbol</span><span class="org-rainbow-delimiters-depth-7">)</span> symbol-end<span class="org-rainbow-delimiters-depth-6">)</span>
+         <span class="org-rainbow-delimiters-depth-6">(</span><span class="org-keyword">rx</span> symbol-start ,<span class="org-rainbow-delimiters-depth-7">(</span>thing-at-point <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">symbol</span><span class="org-rainbow-delimiters-depth-7">)</span> symbol-end<span class="org-rainbow-delimiters-depth-6">)</span>
          nil t<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span>global-set-key <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-N"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">highlight-symbol-last</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -692,7 +698,7 @@ positions.
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">beginning-of-line-dwim</span> <span class="org-rainbow-delimiters-depth-2">()</span>
   <span class="org-doc">"Toggles between moving point to the first non-whitespace character, and</span>
 <span class="org-doc">the start of the line."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive<span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">let</span> <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-rainbow-delimiters-depth-4">(</span>start-position <span class="org-rainbow-delimiters-depth-5">(</span>point<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span>
     <span class="org-comment-delimiter">;; </span><span class="org-comment">Move to the first non-whitespace character.</span>
     <span class="org-rainbow-delimiters-depth-3">(</span>back-to-indentation<span class="org-rainbow-delimiters-depth-3">)</span>
@@ -801,7 +807,7 @@ type <code>C-u C-w</code> to delete the region, whilst <code>C-w</code> works as
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">kill-or-delete-region</span> <span class="org-rainbow-delimiters-depth-2">(</span>beg end prefix<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-doc">"Delete the region, storing it in the kill-ring.</span>
 <span class="org-doc">If a prefix argument is given, don't change the kill-ring."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive <span class="org-string">"r\nP"</span><span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span> <span class="org-string">"r\nP"</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">if</span> prefix
       <span class="org-rainbow-delimiters-depth-3">(</span>delete-region beg end<span class="org-rainbow-delimiters-depth-3">)</span>
     <span class="org-rainbow-delimiters-depth-3">(</span>kill-region beg end<span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -858,28 +864,28 @@ commands with the command <code>sp-cheat-sheet</code>.
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">wh/smartparens-wrap-round</span> <span class="org-rainbow-delimiters-depth-2">(</span>arg<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-doc">"Smartparens equivalent of `</span><span class="org-doc"><span class="org-constant">paredit-wrap-round</span></span><span class="org-doc">'."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive <span class="org-string">"P"</span><span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span> <span class="org-string">"P"</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>sp-wrap-with-pair <span class="org-string">"("</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key smartparens-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-("</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">wh/smartparens-wrap-round</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">wh/smartparens-wrap-square-bracket</span> <span class="org-rainbow-delimiters-depth-2">(</span>arg<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-doc">"[] equivalent of `</span><span class="org-doc"><span class="org-constant">wh/smartparens-wrap-round</span></span><span class="org-doc">'."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive <span class="org-string">"P"</span><span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span> <span class="org-string">"P"</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>sp-wrap-with-pair <span class="org-string">"["</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key smartparens-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-["</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">wh/smartparens-wrap-square-bracket</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">wh/smartparens-wrap-curly-paren</span> <span class="org-rainbow-delimiters-depth-2">(</span>arg<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-doc">"{} equivalent of `</span><span class="org-doc"><span class="org-constant">wh/smartparens-wrap-round</span></span><span class="org-doc">'."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive <span class="org-string">"P"</span><span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span> <span class="org-string">"P"</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>sp-wrap-with-pair <span class="org-string">"{"</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key smartparens-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-{"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">wh/smartparens-wrap-curly-paren</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">wh/smartparens-wrap-singlequote</span> <span class="org-rainbow-delimiters-depth-2">(</span>arg<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-doc">"As `</span><span class="org-doc"><span class="org-constant">wh/smartparens-wrap-round</span></span><span class="org-doc">' but for wrapping with single quotes."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive <span class="org-string">"P"</span><span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span> <span class="org-string">"P"</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>sp-wrap-with-pair <span class="org-string">"'"</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key smartparens-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-'"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">wh/smartparens-wrap-singlequote</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -953,7 +959,7 @@ load and configure a function for this:
 <span class="org-rainbow-delimiters-depth-1">(</span>recentf-mode t<span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-comment-delimiter">;; </span><span class="org-comment">remember this many files</span>
-<span class="org-rainbow-delimiters-depth-1">(</span>setq recentf-max-saved-items 500<span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> recentf-max-saved-items 500<span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-comment-delimiter">;; </span><span class="org-comment">from http://www.masteringemacs.org/article/find-files-faster-recent-files-package</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">crux</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -1013,7 +1019,7 @@ if we had a test copy of a project at some point.
 
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">wh/projectile-forget-project</span> <span class="org-rainbow-delimiters-depth-2">(</span>project<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-doc">"Remove a project from `</span><span class="org-doc"><span class="org-constant">projectile-known-projects</span></span><span class="org-doc">'."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive <span class="org-rainbow-delimiters-depth-3">(</span>list <span class="org-rainbow-delimiters-depth-4">(</span>completing-read <span class="org-string">"Forget project: "</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span> <span class="org-rainbow-delimiters-depth-3">(</span>list <span class="org-rainbow-delimiters-depth-4">(</span>completing-read <span class="org-string">"Forget project: "</span>
                                       projectile-known-projects<span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>delete project projectile-known-projects<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -1033,7 +1039,7 @@ highlighting.
 
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">use-package</span> <span class="org-constant">dired+</span>
   <span class="org-builtin">:init</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>setq diredp-hide-details-initially-flag nil<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">setq</span> diredp-hide-details-initially-flag nil<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
@@ -1049,7 +1055,7 @@ just acting like <a href="rm">rm</a>.
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>setq delete-by-moving-to-trash t<span class="org-rainbow-delimiters-depth-1">)</span>
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> delete-by-moving-to-trash t<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 
@@ -1061,7 +1067,7 @@ store all our backups in <code>~/.saves</code>.
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>setq
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span>
    backup-by-copying t      <span class="org-comment-delimiter">; </span><span class="org-comment">don't clobber symlinks</span>
    backup-directory-alist
     <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span><span class="org-rainbow-delimiters-depth-3">(</span><span class="org-string">"."</span> . <span class="org-string">"~/.saves"</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span>    <span class="org-comment-delimiter">; </span><span class="org-comment">don't litter my fs tree</span>
@@ -1105,12 +1111,12 @@ testcase for some language or library feature.
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">wh/start-scratch-file</span> <span class="org-rainbow-delimiters-depth-2">(</span>file-name<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-doc">"Create a file in ~/scratch for the given file name."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive <span class="org-string">"sName of scratch file: "</span><span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span> <span class="org-string">"sName of scratch file: "</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>start--file <span class="org-rainbow-delimiters-depth-3">(</span>expand-file-name <span class="org-rainbow-delimiters-depth-4">(</span>format <span class="org-string">"~/scratch/%s"</span> file-name<span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">wh/start-tmp-file</span> <span class="org-rainbow-delimiters-depth-2">(</span>file-name<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-doc">"Create a file in /tmp for the given file name."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive <span class="org-string">"sName of temporary file: "</span><span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span> <span class="org-string">"sName of temporary file: "</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>start--file <span class="org-rainbow-delimiters-depth-3">(</span>expand-file-name <span class="org-rainbow-delimiters-depth-4">(</span>format <span class="org-string">"/tmp/%s"</span> file-name<span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1123,7 +1129,7 @@ It's also useful to quickly generate a minimal HTML page to play with.
 
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">wh/start-scratch-html-file</span> <span class="org-rainbow-delimiters-depth-2">(</span>file-name<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-doc">"Create a test HTML file in ~/scratch to play around with."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive <span class="org-string">"sName of scratch HTML file: "</span><span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span> <span class="org-string">"sName of scratch HTML file: "</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>wh/start-scratch-file file-name<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>erase-buffer<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>insert <span class="org-string">"&lt;!DOCTYPE html&gt;</span>
@@ -1220,7 +1226,7 @@ highlight the whole line, as it's much faster. See
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>setq flycheck-highlighting-mode <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">lines</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> flycheck-highlighting-mode <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">lines</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 
@@ -1309,7 +1315,7 @@ when the edit occurred.
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>setq undo-tree-visualizer-timestamps t<span class="org-rainbow-delimiters-depth-1">)</span>
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> undo-tree-visualizer-timestamps t<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 
@@ -1487,7 +1493,7 @@ the way for quick throwaway elisp scripts, so we switch off checkdoc.
 <div class="org-src-container">
 
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">flycheck</span><span class="org-rainbow-delimiters-depth-1">)</span>
-<span class="org-rainbow-delimiters-depth-1">(</span>setq flycheck-checkers <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">--remove</span> <span class="org-rainbow-delimiters-depth-3">(</span>eq <span class="org-variable-name">it</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">emacs-lisp-checkdoc</span><span class="org-rainbow-delimiters-depth-3">)</span> flycheck-checkers<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> flycheck-checkers <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">--remove</span> <span class="org-rainbow-delimiters-depth-3">(</span>eq <span class="org-variable-name">it</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">emacs-lisp-checkdoc</span><span class="org-rainbow-delimiters-depth-3">)</span> flycheck-checkers<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
@@ -1623,7 +1629,7 @@ Always indent with 4 spaces, in the Linux kernel style.
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>setq-default c-default-style <span class="org-string">"linux"</span>
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq-default</span> c-default-style <span class="org-string">"linux"</span>
               c-basic-offset 4<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1635,7 +1641,7 @@ non-whitespace character on C-d) when removing indentation.
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>setq-default c-hungry-delete-key t<span class="org-rainbow-delimiters-depth-1">)</span>
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq-default</span> c-hungry-delete-key t<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
@@ -1655,11 +1661,11 @@ shop I worked at).
 
 <span class="org-comment-delimiter">; </span><span class="org-comment">indent html with tabs only</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">html-mode-hook</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>function
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">function</span>
    <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-keyword">lambda</span> <span class="org-rainbow-delimiters-depth-4">()</span>
      <span class="org-rainbow-delimiters-depth-4">(</span><span class="org-keyword">progn</span>
-       <span class="org-rainbow-delimiters-depth-5">(</span>setq indent-tabs-mode nil<span class="org-rainbow-delimiters-depth-5">)</span>
-       <span class="org-rainbow-delimiters-depth-5">(</span>setq sgml-basic-offset 4<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
+       <span class="org-rainbow-delimiters-depth-5">(</span><span class="org-keyword">setq</span> indent-tabs-mode nil<span class="org-rainbow-delimiters-depth-5">)</span>
+       <span class="org-rainbow-delimiters-depth-5">(</span><span class="org-keyword">setq</span> sgml-basic-offset 4<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 
@@ -1761,7 +1767,7 @@ TODO: document the rest of our HTML configuration.
     underscore-skeleton<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">insert-django-skeleton</span> <span class="org-rainbow-delimiters-depth-2">()</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive<span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">let*</span> <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-rainbow-delimiters-depth-4">(</span>skeleton-names <span class="org-rainbow-delimiters-depth-5">(</span>mapcar <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">symbol-name</span> template-skeletons<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span>
         <span class="org-rainbow-delimiters-depth-4">(</span>skeleton-chosen <span class="org-rainbow-delimiters-depth-5">(</span>ido-completing-read <span class="org-string">"HTML skeleton: "</span> skeleton-names<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span>
     <span class="org-rainbow-delimiters-depth-3">(</span>funcall <span class="org-rainbow-delimiters-depth-4">(</span>intern skeleton-chosen<span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -1770,7 +1776,7 @@ TODO: document the rest of our HTML configuration.
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">visit-parent-django-template</span> <span class="org-rainbow-delimiters-depth-2">()</span>
   <span class="org-doc">"In a buffer containg {% extends \"foo.html\" %}, visit foo.html."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive<span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">let</span> <span class="org-rainbow-delimiters-depth-3">(</span>start-pos end-pos template-name<span class="org-rainbow-delimiters-depth-3">)</span>
     <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-keyword">save-excursion</span>
       <span class="org-rainbow-delimiters-depth-4">(</span>widen<span class="org-rainbow-delimiters-depth-4">)</span>
@@ -1782,14 +1788,14 @@ TODO: document the rest of our HTML configuration.
       <span class="org-rainbow-delimiters-depth-4">(</span><span class="org-keyword">while</span> <span class="org-rainbow-delimiters-depth-5">(</span>not <span class="org-rainbow-delimiters-depth-6">(</span>looking-at <span class="org-string">"\""</span><span class="org-rainbow-delimiters-depth-6">)</span><span class="org-rainbow-delimiters-depth-5">)</span>
         <span class="org-rainbow-delimiters-depth-5">(</span>forward-char 1<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span>
       <span class="org-rainbow-delimiters-depth-4">(</span>forward-char<span class="org-rainbow-delimiters-depth-4">)</span>
-      <span class="org-rainbow-delimiters-depth-4">(</span>setq start-pos <span class="org-rainbow-delimiters-depth-5">(</span>point<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span>
+      <span class="org-rainbow-delimiters-depth-4">(</span><span class="org-keyword">setq</span> start-pos <span class="org-rainbow-delimiters-depth-5">(</span>point<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span>
 
       <span class="org-comment-delimiter">;; </span><span class="org-comment">Find the closing "</span>
       <span class="org-rainbow-delimiters-depth-4">(</span><span class="org-keyword">while</span> <span class="org-rainbow-delimiters-depth-5">(</span>not <span class="org-rainbow-delimiters-depth-6">(</span>looking-at <span class="org-string">"\""</span><span class="org-rainbow-delimiters-depth-6">)</span><span class="org-rainbow-delimiters-depth-5">)</span>
         <span class="org-rainbow-delimiters-depth-5">(</span>forward-char 1<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span>
-      <span class="org-rainbow-delimiters-depth-4">(</span>setq end-pos <span class="org-rainbow-delimiters-depth-5">(</span>point<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span>
+      <span class="org-rainbow-delimiters-depth-4">(</span><span class="org-keyword">setq</span> end-pos <span class="org-rainbow-delimiters-depth-5">(</span>point<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span>
 
-      <span class="org-rainbow-delimiters-depth-4">(</span>setq template-name <span class="org-rainbow-delimiters-depth-5">(</span>buffer-substring-no-properties start-pos end-pos<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span>
+      <span class="org-rainbow-delimiters-depth-4">(</span><span class="org-keyword">setq</span> template-name <span class="org-rainbow-delimiters-depth-5">(</span>buffer-substring-no-properties start-pos end-pos<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span>
 
     <span class="org-comment-delimiter">;; </span><span class="org-comment">Open this file, assuming it's in the same directory.</span>
     <span class="org-comment-delimiter">;; </span><span class="org-fic">TODO</span><span class="org-comment">: Search the current VCS checkout for it.</span>
@@ -1797,7 +1803,7 @@ TODO: document the rest of our HTML configuration.
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">html-linkify-region</span> <span class="org-rainbow-delimiters-depth-2">(</span>url<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-doc">"Wraps the region in an &lt;a&gt; tag with href set to URL."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive <span class="org-string">"sURL: "</span><span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span> <span class="org-string">"sURL: "</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">let*</span> <span class="org-rainbow-delimiters-depth-3">(</span>
          <span class="org-rainbow-delimiters-depth-4">(</span>initial-cursor-position <span class="org-rainbow-delimiters-depth-5">(</span>point<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span>
          <span class="org-rainbow-delimiters-depth-4">(</span>beginning <span class="org-rainbow-delimiters-depth-5">(</span>region-beginning<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span>
@@ -1830,11 +1836,11 @@ Typically I work on projects that use 4 spaces for CSS indenetation.
 <div class="org-src-container">
 
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">css-mode-hook</span>
-          <span class="org-rainbow-delimiters-depth-2">(</span>function
+          <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">function</span>
            <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-keyword">lambda</span> <span class="org-rainbow-delimiters-depth-4">()</span>
              <span class="org-rainbow-delimiters-depth-4">(</span><span class="org-keyword">progn</span>
-               <span class="org-rainbow-delimiters-depth-5">(</span>setq css-indent-offset 4<span class="org-rainbow-delimiters-depth-5">)</span>
-               <span class="org-rainbow-delimiters-depth-5">(</span>setq indent-tabs-mode nil<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
+               <span class="org-rainbow-delimiters-depth-5">(</span><span class="org-keyword">setq</span> css-indent-offset 4<span class="org-rainbow-delimiters-depth-5">)</span>
+               <span class="org-rainbow-delimiters-depth-5">(</span><span class="org-keyword">setq</span> indent-tabs-mode nil<span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 
@@ -1921,7 +1927,7 @@ them.
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>setq org-src-fontify-natively t<span class="org-rainbow-delimiters-depth-1">)</span>
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> org-src-fontify-natively t<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
@@ -1954,7 +1960,7 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>setq gc-cons-threshold <span class="org-rainbow-delimiters-depth-2">(</span>* 10 1024 1024<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> gc-cons-threshold <span class="org-rainbow-delimiters-depth-2">(</span>* 10 1024 1024<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
@@ -1970,7 +1976,7 @@ annoying to accidentally close Emacs, so warn first.
 
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>setq confirm-kill-emacs <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">y-or-n-p</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> confirm-kill-emacs <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">y-or-n-p</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
@@ -2010,10 +2016,10 @@ Don't try to reopen all files that are owned by other users.
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">minibuffer-completion-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-comment-delimiter">;; </span><span class="org-comment">make re-builder use the same regexp format as regexp-replace (no double escaping)</span>
-<span class="org-rainbow-delimiters-depth-1">(</span>setq reb-re-syntax <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">string</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> reb-re-syntax <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">string</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-comment-delimiter">;; </span><span class="org-comment">treat space charcters as matching space characters, not like PCRE's '\s+'</span>
-<span class="org-rainbow-delimiters-depth-1">(</span>setq search-whitespace-regexp nil<span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> search-whitespace-regexp nil<span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">completion-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">snippet-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -2045,12 +2051,12 @@ Don't try to reopen all files that are owned by other users.
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">ignore-errors</span> <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">site-customisations</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
-<span class="org-rainbow-delimiters-depth-1">(</span>setq ag-highlight-search <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">t</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> ag-highlight-search <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">t</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>global-set-key <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"&lt;f5&gt;"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">ag-project</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-comment-delimiter">;; </span><span class="org-comment">stolen from http://whattheemacsd.com/setup-dired.el-02.html</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">dired-back-to-top</span> <span class="org-rainbow-delimiters-depth-2">()</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive<span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>beginning-of-buffer<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>dired-next-line <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-keyword">if</span> dired-omit-mode 2 4<span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
@@ -2058,7 +2064,7 @@ Don't try to reopen all files that are owned by other users.
   <span class="org-rainbow-delimiters-depth-2">(</span>vector <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">remap</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">beginning-of-buffer</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">dired-back-to-top</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">dired-jump-to-bottom</span> <span class="org-rainbow-delimiters-depth-2">()</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive<span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>end-of-buffer<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>dired-next-line -1<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
@@ -2076,34 +2082,34 @@ Don't try to reopen all files that are owned by other users.
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">crontab-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>add-to-list <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">auto-mode-alist</span> <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span><span class="org-string">"crontab.*?\\'"</span> . crontab-mode<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
-<span class="org-rainbow-delimiters-depth-1">(</span>setq ring-bell-function <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">ignore</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> ring-bell-function <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">ignore</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-comment-delimiter">;; </span><span class="org-comment">suspend seems to crash on Gnome 3, and I don't use it anyway, so just disable it</span>
-<span class="org-rainbow-delimiters-depth-1">(</span>setq cannot-suspend t<span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> cannot-suspend t<span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">suspend-emacs</span> <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-type">&amp;rest</span><span class="org-rainbow-delimiters-depth-2">)</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">suspend-frame</span> <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-type">&amp;rest</span><span class="org-rainbow-delimiters-depth-2">)</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span>custom-set-variables
  <span class="org-comment-delimiter">;; </span><span class="org-comment">custom-set-variables was added by Custom.</span>
  <span class="org-comment-delimiter">;; </span><span class="org-comment">If you edit it by hand, you could mess it up, so be careful.</span>
  <span class="org-comment-delimiter">;; </span><span class="org-comment">Your init file should contain only one such instance.</span>
  <span class="org-comment-delimiter">;; </span><span class="org-comment">If there is more than one, they won't work right.</span>
- <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span>frame-background-mode <span class="org-rainbow-delimiters-depth-3">(</span>quote dark<span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span>
+ <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span>frame-background-mode <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-keyword">quote</span> dark<span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span>
  <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span>safe-local-variable-values
-   <span class="org-rainbow-delimiters-depth-3">(</span>quote
+   <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-keyword">quote</span>
     <span class="org-rainbow-delimiters-depth-4">(</span><span class="org-rainbow-delimiters-depth-5">(</span>eval font-lock-add-keywords nil
            <span class="org-rainbow-delimiters-depth-6">(</span>\<span class="org-highlight-quoted-quote">`</span>
             <span class="org-rainbow-delimiters-depth-7">(</span><span class="org-rainbow-delimiters-depth-8">(</span><span class="org-rainbow-delimiters-depth-9">(</span>\,
                <span class="org-rainbow-delimiters-depth-1">(</span>concat <span class="org-string">"("</span>
                        <span class="org-rainbow-delimiters-depth-2">(</span>regexp-opt
-                        <span class="org-rainbow-delimiters-depth-3">(</span>quote
+                        <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-keyword">quote</span>
                          <span class="org-rainbow-delimiters-depth-4">(</span><span class="org-string">"sp-do-move-op"</span> <span class="org-string">"sp-do-move-cl"</span> <span class="org-string">"sp-do-put-op"</span> <span class="org-string">"sp-do-put-cl"</span> <span class="org-string">"sp-do-del-op"</span> <span class="org-string">"sp-do-del-cl"</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span>
                         t<span class="org-rainbow-delimiters-depth-2">)</span>
                        <span class="org-string">"\\_&gt;"</span><span class="org-rainbow-delimiters-depth-1">)</span><span class="org-rainbow-delimiters-depth-9">)</span>
               1
-              <span class="org-rainbow-delimiters-depth-9">(</span>quote font-lock-variable-name-face<span class="org-rainbow-delimiters-depth-9">)</span><span class="org-rainbow-delimiters-depth-8">)</span><span class="org-rainbow-delimiters-depth-7">)</span><span class="org-rainbow-delimiters-depth-6">)</span><span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
+              <span class="org-rainbow-delimiters-depth-9">(</span><span class="org-keyword">quote</span> font-lock-variable-name-face<span class="org-rainbow-delimiters-depth-9">)</span><span class="org-rainbow-delimiters-depth-8">)</span><span class="org-rainbow-delimiters-depth-7">)</span><span class="org-rainbow-delimiters-depth-6">)</span><span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>custom-set-faces
  <span class="org-comment-delimiter">;; </span><span class="org-comment">custom-set-faces was added by Custom.</span>
  <span class="org-comment-delimiter">;; </span><span class="org-comment">If you edit it by hand, you could mess it up, so be careful.</span>
@@ -2125,7 +2131,7 @@ Don't try to reopen all files that are owned by other users.
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">indent-buffer</span> <span class="org-rainbow-delimiters-depth-2">()</span>
   <span class="org-doc">"Indent the everything in the current buffer."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive<span class="org-rainbow-delimiters-depth-2">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span><span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>indent-region <span class="org-rainbow-delimiters-depth-3">(</span>point-min<span class="org-rainbow-delimiters-depth-3">)</span> <span class="org-rainbow-delimiters-depth-3">(</span>point-max<span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">f</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -2134,7 +2140,7 @@ Don't try to reopen all files that are owned by other users.
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">wh/download-file</span> <span class="org-rainbow-delimiters-depth-2">(</span>url directory file-name<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-doc">"Download the file at URL into DIRECTORY.</span>
 <span class="org-doc">The FILE-NAME defaults to the one used in the URL."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>interactive
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span>
    <span class="org-comment-delimiter">;; </span><span class="org-comment">We're forced to let-bind url here since we access it before</span>
    <span class="org-comment-delimiter">;; </span><span class="org-comment">interactive binds the function parameters.</span>
    <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-keyword">let</span> <span class="org-rainbow-delimiters-depth-4">(</span><span class="org-rainbow-delimiters-depth-5">(</span>url <span class="org-rainbow-delimiters-depth-6">(</span>read-from-minibuffer <span class="org-string">"URL: "</span><span class="org-rainbow-delimiters-depth-6">)</span><span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span>
@@ -2149,7 +2155,7 @@ Don't try to reopen all files that are owned by other users.
     <span class="org-rainbow-delimiters-depth-3">(</span>url-copy-file url destination <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">t</span><span class="org-rainbow-delimiters-depth-3">)</span>
     <span class="org-rainbow-delimiters-depth-3">(</span>find-file destination<span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
-<span class="org-rainbow-delimiters-depth-1">(</span>setq-default dired-listing-switches <span class="org-string">"-alhv"</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq-default</span> dired-listing-switches <span class="org-string">"-alhv"</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span>global-anzu-mode +1<span class="org-rainbow-delimiters-depth-1">)</span>
 
@@ -2159,7 +2165,7 @@ Don't try to reopen all files that are owned by other users.
 
 <span class="org-comment-delimiter">;; </span><span class="org-comment">There are a few applications, such as crontab, that require a</span>
 <span class="org-comment-delimiter">;; </span><span class="org-comment">trailing new line. To be safe, always leave a trailing newline.</span>
-<span class="org-rainbow-delimiters-depth-1">(</span>setq-default require-final-newline t<span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq-default</span> require-final-newline t<span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-comment-delimiter">;; </span><span class="org-comment">cycle through amounts of spacing</span>
 <span class="org-comment-delimiter">;; </span><span class="org-comment">http://pragmaticemacs.com/emacs/cycle-spacing/</span>
@@ -2168,7 +2174,7 @@ Don't try to reopen all files that are owned by other users.
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">use-package</span> <span class="org-constant">twittering-mode</span>
   <span class="org-builtin">:init</span>
   <span class="org-comment-delimiter">;; </span><span class="org-comment">Don't show the twitter client or location, it's just distracting.</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span>setq twittering-status-format <span class="org-string">"%i %s,  %@:\n%FILL[  ]{%T %r%R}\n "</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
+  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">setq</span> twittering-status-format <span class="org-string">"%i %s,  %@:\n%FILL[  ]{%T %r%R}\n "</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">font-size-for-demos</span> <span class="org-rainbow-delimiters-depth-2">()</span>
   <span class="org-doc">"Increase font size everywhere.</span>
@@ -2181,7 +2187,8 @@ Don't try to reopen all files that are owned by other users.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2016-09-08 Thu 23:04</p>
+<p class="author">Author: Hughes, Wilfred (London)</p>
+<p class="date">Created: 2016-09-22 Thu 15:42</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
