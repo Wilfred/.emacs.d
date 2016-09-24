@@ -6,6 +6,7 @@
 
 ;; always highlight matching parentheses
 (show-paren-mode 1)
+(setq show-paren-when-point-inside-paren t)
 
 ;; always highlight line that cursor is on, unless a mode requests
 ;; otherwise.
