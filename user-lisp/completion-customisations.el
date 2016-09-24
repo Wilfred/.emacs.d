@@ -83,7 +83,8 @@
 (use-package company
   :config
   (add-hook 'emacs-lisp-mode-hook
-            (lambda () (setq-local company-backends (list 'company-elisp))))
+            (lambda () (setq-local company-backends
+                                   (list 'company-elisp 'company-dabbrev-code))))
   :diminish "Comp")
 
 (require 'company)
