@@ -73,6 +73,11 @@ Defaults to `t'.")
 ;; undone with `winner-undo'.
 (winner-mode 1)
 
+;; Show *Help* text using `foo' style quoting rather than curly
+;; quotes. I prefer the help formatting to match the underlying
+;; docstring.
+(setq text-quoting-style 'grave)
+
 ;;; ibuffer
 
 ;; use ibuffer to group buffers
