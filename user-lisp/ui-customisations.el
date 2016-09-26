@@ -98,8 +98,8 @@ Defaults to `t'.")
 
 ;; Cycle between buffers with the same major mode.
 (use-package cbm
-  ;; TODO: diff-hl is clobbering this, fix.
-  :bind ("C-x v" . cbm-cycle))
+  ;; Mnemonic 'switch'.
+  :bind ("C-c s" . cbm-switch-buffer))
 
 ;; Use human readable Size column instead of original one
 (define-ibuffer-column size-h
