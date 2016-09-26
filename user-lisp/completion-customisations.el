@@ -54,14 +54,16 @@
   (let ((matching-buffers (--filter
                            (eq major-mode (with-current-buffer it major-mode))
                            (buffer-list))))
-    (flet ((buffer-list () matching-buffers))
+    (cl-letf (((symbol-function 'buffer-list)
+               (lambda () matching-buffers)))
       (try-expand-dabbrev-all-buffers old))))
 
 (defun try-expand-dabbrev-other-buffers (old)
   (let ((matching-buffers (--remove
                            (eq major-mode (with-current-buffer it major-mode))
                            (buffer-list))))
-    (flet ((buffer-list () matching-buffers))
+    (cl-letf (((symbol-function 'buffer-list)
+               (lambda () matching-buffers)))
       (try-expand-dabbrev-all-buffers old))))
 
 ;; fixme: we don't want lisp symbols on non-lisp modes
