@@ -11,7 +11,7 @@
 (defun wh/new-blog-post ()
   "Create a new blog post with appropriate filename and header."
   (interactive)
-  (let* ((dir (ido-read-directory-name "Posts directory: "))
+  (let* ((dir (read-directory-name "Posts directory: "))
          (title (read-string "Post title: "))
          (file-name (blog-file-name title)))
     (find-file (f-join dir file-name))
