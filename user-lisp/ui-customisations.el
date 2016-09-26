@@ -193,6 +193,9 @@ If it is split, repeat the current buffer in a vertical split."
 ;; Show eldoc more promptly.
 (setq eldoc-idle-delay 0.1)
 
+;; Just kill the current buffer rather than prompting.
+(global-set-key (kbd "C-x k") #'kill-this-buffer)
+
 ;;; Mode-line.
 
 ;; I want a minimalistic mode line. It should only have:
