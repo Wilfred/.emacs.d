@@ -8,7 +8,7 @@
           (format-time-string "%Y-%m-%d" time)
           (s-dashed-words title)))
 
-(defun blog-new-post ()
+(defun wh/new-blog-post ()
   "Create a new blog post with appropriate filename and header."
   (interactive)
   (let* ((dir (ido-read-directory-name "Posts directory: "))
