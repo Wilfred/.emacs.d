@@ -216,8 +216,9 @@ scroll bar."
   (when yascroll:delay-to-hide
     (run-with-idle-timer yascroll:delay-to-hide nil
                          (lambda (buffer)
-                           (with-current-buffer buffer
-                             (yascroll:hide-scroll-bar)))
+                           (when (buffer-live-p buffer)
+                             (with-current-buffer buffer
+                               (yascroll:hide-scroll-bar))))
                          (current-buffer))))
 
 (defun yascroll:choose-scroll-bar ()
