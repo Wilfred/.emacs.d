@@ -1,9 +1,6 @@
 ;;; conflicts-customisations.el -- Conveniences for handling files with conflicts
 
-;; This is just a wrapper around smerge, but with more memorable
-;; command names and more convenient key bindings.
-
-(defun conflicts-list ()
+(defun wh/conflicts-list ()
   "Show all the conflicts in the current buffer using occur-mode."
   (interactive)
   (occur "<<<<<<< ")
@@ -12,19 +9,12 @@
   (other-window 1)
   (forward-line))
 
-(defalias 'conflicts-keep-current 'smerge-keep-current)
-
-;; TODO: it would be nice if these jumped to the first conflict
-(defalias 'conflicts-keep-first 'smerge-keep-mine)
-(defalias 'conflicts-keep-second 'smerge-keep-other)
-
-(require 'smerge-mode)
-(define-key smerge-mode-map (kbd "<C-return>") 'conflicts-keep-current)
-(define-key smerge-mode-map (kbd "<f8>") 'smerge-prev)
-(define-key smerge-mode-map (kbd "<f9>") 'smerge-next)
-
-;; TODO: a function to find all files containing merge conflicts in a repo
-
-;; TODO: SVN conflicts seem to enable smerge-mode, but not git conflicts
+(use-package smerge-mode
+  :config
+  ;; TODO: it would be nice if this jumped to the next conflict
+  (define-key smerge-mode-map (kbd "<C-return>") #'smerge-keep-current)
+  (define-key smerge-mode-map (kbd "C-c <C-return>") #'smerge-keep-all)
+  (define-key smerge-mode-map (kbd "<f8>") #'smerge-prev)
+  (define-key smerge-mode-map (kbd "<f9>") #'smerge-next))
 
 (provide 'conflicts-customisations)
