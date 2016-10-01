@@ -117,20 +117,6 @@ later.
   (package-initialize)
 #+END_SRC
 
-** Paths
-
-We set up Emacs' exec-path based on PATH in a shell. This is primarily
-for OS X, where starting Emacs in GUI mode doesn't inherit the shell's
-environment. This ensures that any command we can call from a shell,
-we can call inside Emacs.
-
-Note this function comes from the package =exec-path-from-shell=.
-  
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  ;; set exec-path according to the system's PATH
-  (exec-path-from-shell-initialize)
-#+END_SRC
-
 ** UI
 
 *** Theme

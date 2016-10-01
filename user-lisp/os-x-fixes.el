@@ -5,13 +5,11 @@
 ;; set Meta-3 to insert a # character
 (global-set-key "\263" 'insert-hash)
 
-;; same PATH as bash from Terminal
-(setenv
- "PATH"
- "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/X11/bin:/usr/local/bin/g4bin:/usr/local/git/bin:/usr/local/sbin:/usr/X11/bin:/Users/wilfredhughes/homebrew/bin:/Users/wilfredhughes/homebrew/Cellar/fish/1.23.1/bin:/usr/X11R6/bin")
-
-;; and add these to exec-path too, so Emacs can find git and so on
-(setq exec-path (append exec-path
-                        (split-string (getenv "PATH") ":")))
+;; In OS X, starting Emacs in GUI mode doesn't inherit the shell's
+;; environment. We set up Emacs' exec-path based on PATH in a shell,
+;; so any command we can call from a shell, we can call inside Emacs.
+(use-package exec-path-from-shell
+  :init
+  (exec-path-from-shell-initialize))
 
 (provide 'os-x-fixes)

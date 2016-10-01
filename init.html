@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- 2016-09-22 Thu 15:42 -->
+<!-- 2016-10-01 Sat 11:16 -->
 <meta  charset="utf-8">
 <meta  name="viewport" content="width=device-width, initial-scale=1">
 <title></title>
 <meta  name="generator" content="Org-mode">
-<meta  name="author" content="Hughes, Wilfred (London)">
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   .title  { text-align: center;
@@ -153,80 +152,78 @@ for the JavaScript code in this tag.
 <li><a href="#orgheadline3">1.3. Generating This Document</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline10">2. Installing locally</a>
+<li><a href="#orgheadline9">2. Installing locally</a>
 <ul>
 <li><a href="#orgheadline5">2.1. The Git Repository</a></li>
-<li><a href="#orgheadline6">2.2. Emacs 24</a></li>
+<li><a href="#orgheadline6">2.2. Emacs 25</a></li>
 <li><a href="#orgheadline7">2.3. Python</a></li>
-<li><a href="#orgheadline8">2.4. JavaScript</a></li>
-<li><a href="#orgheadline9">2.5. Less</a></li>
+<li><a href="#orgheadline8">2.4. Less</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline56">3. Contents</a>
+<li><a href="#orgheadline54">3. Contents</a>
 <ul>
-<li><a href="#orgheadline11">3.1. Folder Structure</a></li>
-<li><a href="#orgheadline12">3.2. Packages</a></li>
-<li><a href="#orgheadline13">3.3. Paths</a></li>
-<li><a href="#orgheadline17">3.4. UI</a>
+<li><a href="#orgheadline10">3.1. Folder Structure</a></li>
+<li><a href="#orgheadline11">3.2. Packages</a></li>
+<li><a href="#orgheadline15">3.3. UI</a>
 <ul>
-<li><a href="#orgheadline14">3.4.1. Theme</a></li>
-<li><a href="#orgheadline15">3.4.2. Visibility of UI Elements</a></li>
-<li><a href="#orgheadline16">3.4.3. Recursive Editing</a></li>
+<li><a href="#orgheadline12">3.3.1. Theme</a></li>
+<li><a href="#orgheadline13">3.3.2. Visibility of UI Elements</a></li>
+<li><a href="#orgheadline14">3.3.3. Recursive Editing</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline22">3.5. Moving Around</a>
+<li><a href="#orgheadline20">3.4. Moving Around</a>
 <ul>
-<li><a href="#orgheadline18">3.5.1. By Symbol</a></li>
-<li><a href="#orgheadline19">3.5.2. By indentation</a></li>
-<li><a href="#orgheadline20">3.5.3. By Character</a></li>
-<li><a href="#orgheadline21">3.5.4. Measuring Movement</a></li>
+<li><a href="#orgheadline16">3.4.1. By Symbol</a></li>
+<li><a href="#orgheadline17">3.4.2. By indentation</a></li>
+<li><a href="#orgheadline18">3.4.3. By Character</a></li>
+<li><a href="#orgheadline19">3.4.4. Measuring Movement</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline23">3.6. Inserting</a></li>
-<li><a href="#orgheadline24">3.7. Killing</a></li>
-<li><a href="#orgheadline26">3.8. Modifying and Editing</a>
+<li><a href="#orgheadline21">3.5. Inserting</a></li>
+<li><a href="#orgheadline22">3.6. Killing</a></li>
+<li><a href="#orgheadline24">3.7. Modifying and Editing</a>
 <ul>
-<li><a href="#orgheadline25">3.8.1. Matched Pairs</a></li>
+<li><a href="#orgheadline23">3.7.1. Matched Pairs</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline31">3.9. Files</a>
+<li><a href="#orgheadline29">3.8. Files</a>
 <ul>
-<li><a href="#orgheadline27">3.9.1. Opening</a></li>
-<li><a href="#orgheadline28">3.9.2. Dired</a></li>
-<li><a href="#orgheadline29">3.9.3. Deleting and Backups</a></li>
-<li><a href="#orgheadline30">3.9.4. Scratch Files</a></li>
+<li><a href="#orgheadline25">3.8.1. Opening</a></li>
+<li><a href="#orgheadline26">3.8.2. Dired</a></li>
+<li><a href="#orgheadline27">3.8.3. Deleting and Backups</a></li>
+<li><a href="#orgheadline28">3.8.4. Scratch Files</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline34">3.10. As-you-type Checks</a>
+<li><a href="#orgheadline32">3.9. As-you-type Checks</a>
 <ul>
-<li><a href="#orgheadline32">3.10.1. Flymake</a></li>
-<li><a href="#orgheadline33">3.10.2. Flycheck</a></li>
+<li><a href="#orgheadline30">3.9.1. Flymake</a></li>
+<li><a href="#orgheadline31">3.9.2. Flycheck</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline35">3.11. Undoing</a></li>
-<li><a href="#orgheadline42">3.12. Emacs Lisp</a>
+<li><a href="#orgheadline33">3.10. Undoing</a></li>
+<li><a href="#orgheadline40">3.11. Emacs Lisp</a>
 <ul>
-<li><a href="#orgheadline36">3.12.1. Shortcuts</a></li>
-<li><a href="#orgheadline37">3.12.2. Editing Parentheses</a></li>
-<li><a href="#orgheadline38">3.12.3. Highlighting Parentheses</a></li>
-<li><a href="#orgheadline39">3.12.4. Function Signatures</a></li>
-<li><a href="#orgheadline40">3.12.5. On-the-fly Checking</a></li>
-<li><a href="#orgheadline41">3.12.6. Highlighting</a></li>
+<li><a href="#orgheadline34">3.11.1. Shortcuts</a></li>
+<li><a href="#orgheadline35">3.11.2. Editing Parentheses</a></li>
+<li><a href="#orgheadline36">3.11.3. Highlighting Parentheses</a></li>
+<li><a href="#orgheadline37">3.11.4. Function Signatures</a></li>
+<li><a href="#orgheadline38">3.11.5. On-the-fly Checking</a></li>
+<li><a href="#orgheadline39">3.11.6. Highlighting</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline43">3.13. Python</a></li>
-<li><a href="#orgheadline44">3.14. Haskell</a></li>
-<li><a href="#orgheadline45">3.15. Ruby</a></li>
-<li><a href="#orgheadline46">3.16. C/C++</a></li>
-<li><a href="#orgheadline47">3.17. HTML</a></li>
-<li><a href="#orgheadline48">3.18. CSS</a></li>
-<li><a href="#orgheadline49">3.19. Less (CSS)</a></li>
-<li><a href="#orgheadline50">3.20. Org-mode</a></li>
-<li><a href="#orgheadline51">3.21. Markdown</a></li>
-<li><a href="#orgheadline52">3.22. Performance</a></li>
-<li><a href="#orgheadline53">3.23. Shut Down</a></li>
-<li><a href="#orgheadline54">3.24. Workarounds</a></li>
-<li><a href="#orgheadline55">3.25. Undocumented</a></li>
+<li><a href="#orgheadline41">3.12. Python</a></li>
+<li><a href="#orgheadline42">3.13. Haskell</a></li>
+<li><a href="#orgheadline43">3.14. Ruby</a></li>
+<li><a href="#orgheadline44">3.15. C/C++</a></li>
+<li><a href="#orgheadline45">3.16. HTML</a></li>
+<li><a href="#orgheadline46">3.17. CSS</a></li>
+<li><a href="#orgheadline47">3.18. Less (CSS)</a></li>
+<li><a href="#orgheadline48">3.19. Org-mode</a></li>
+<li><a href="#orgheadline49">3.20. Markdown</a></li>
+<li><a href="#orgheadline50">3.21. Performance</a></li>
+<li><a href="#orgheadline51">3.22. Shut Down</a></li>
+<li><a href="#orgheadline52">3.23. Workarounds</a></li>
+<li><a href="#orgheadline53">3.24. Undocumented</a></li>
 </ul>
 </li>
 </ul>
@@ -292,8 +289,8 @@ generated from it. We define a convenience function to generate these files.
 </div>
 </div>
 
-<div id="outline-container-orgheadline10" class="outline-2">
-<h2 id="orgheadline10"><span class="section-number-2">2</span> Installing locally</h2>
+<div id="outline-container-orgheadline9" class="outline-2">
+<h2 id="orgheadline9"><span class="section-number-2">2</span> Installing locally</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 This repository seeks to be as self-contained as possible. Generally,
@@ -329,12 +326,11 @@ Clone the repo:
 </div>
 
 <div id="outline-container-orgheadline6" class="outline-3">
-<h3 id="orgheadline6"><span class="section-number-3">2.2</span> Emacs 24</h3>
+<h3 id="orgheadline6"><span class="section-number-3">2.2</span> Emacs 25</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
-I use this repository with Emacs 24. Most code works with Emacs 23 but
-I don't test it often. Bug fixes for other Emacs versions (or other
-Emacsen) are welcomed.
+I use this repository with Emacs 25. Older Emacsen are used
+occasionally, but will probably have bugs.
 </p>
 </div>
 </div>
@@ -355,24 +351,8 @@ I use pyflakes, which is available on PyPI. You can install it with:
 </div>
 
 <div id="outline-container-orgheadline8" class="outline-3">
-<h3 id="orgheadline8"><span class="section-number-3">2.4</span> JavaScript</h3>
+<h3 id="orgheadline8"><span class="section-number-3">2.4</span> Less</h3>
 <div class="outline-text-3" id="text-2-4">
-<p>
-I use JSHint, which requires you to have node.js installed. To
-install JSHint, run:
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-sh">sudo npm install -g jshint
-</pre>
-</div>
-</div>
-</div>
-
-<div id="outline-container-orgheadline9" class="outline-3">
-<h3 id="orgheadline9"><span class="section-number-3">2.5</span> Less</h3>
-<div class="outline-text-3" id="text-2-5">
 <p>
 I use lessc to check the syntax of <code>.less</code> files. You can install it
 with:
@@ -387,11 +367,11 @@ with:
 </div>
 </div>
 
-<div id="outline-container-orgheadline56" class="outline-2">
-<h2 id="orgheadline56"><span class="section-number-2">3</span> Contents</h2>
+<div id="outline-container-orgheadline54" class="outline-2">
+<h2 id="orgheadline54"><span class="section-number-2">3</span> Contents</h2>
 <div class="outline-text-2" id="text-3">
-</div><div id="outline-container-orgheadline11" class="outline-3">
-<h3 id="orgheadline11"><span class="section-number-3">3.1</span> Folder Structure</h3>
+</div><div id="outline-container-orgheadline10" class="outline-3">
+<h3 id="orgheadline10"><span class="section-number-3">3.1</span> Folder Structure</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
 Code I've written lives in user-lisp. This includes packages that I
@@ -424,8 +404,8 @@ should ultimately disappear once all these packages live in <a href="http://melp
 </div>
 </div>
 
-<div id="outline-container-orgheadline12" class="outline-3">
-<h3 id="orgheadline12"><span class="section-number-3">3.2</span> Packages</h3>
+<div id="outline-container-orgheadline11" class="outline-3">
+<h3 id="orgheadline11"><span class="section-number-3">3.2</span> Packages</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
 I use ELPA packages heavily for functionality, primarily the MELPA
@@ -444,73 +424,15 @@ later.
 <span class="org-rainbow-delimiters-depth-1">(</span>package-initialize<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
-
-<p>
-When a package is installed, it's byte-compiled. However, git is set
-up to ignore .elc files (see the .gitignore file). The system that
-installs the file therefore has .elc files, but other systems need to
-byte-compile those directories.
-</p>
-
-<p>
-To make matters worse, we can't just compile on startup any package
-files that aren't compiled already, since some files fail compilation
-every time. Instead, we compile directories that don't contain any
-.elc files.
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">dash</span><span class="org-rainbow-delimiters-depth-1">)</span>
-<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">f</span><span class="org-rainbow-delimiters-depth-1">)</span>
-
-<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">was-compiled-p</span> <span class="org-rainbow-delimiters-depth-2">(</span>path<span class="org-rainbow-delimiters-depth-2">)</span>
-  <span class="org-doc">"Does the directory at PATH contain any .elc files?"</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">--any-p</span> <span class="org-rainbow-delimiters-depth-3">(</span>f-ext? <span class="org-variable-name">it</span> <span class="org-string">"elc"</span><span class="org-rainbow-delimiters-depth-3">)</span> <span class="org-rainbow-delimiters-depth-3">(</span>f-files path<span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
-
-<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">ensure-packages-compiled</span> <span class="org-rainbow-delimiters-depth-2">()</span>
-  <span class="org-doc">"If any packages installed with package.el aren't compiled yet, compile them."</span>
-  <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">--each</span> <span class="org-rainbow-delimiters-depth-3">(</span>f-directories package-user-dir<span class="org-rainbow-delimiters-depth-3">)</span>
-    <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-keyword">unless</span> <span class="org-rainbow-delimiters-depth-4">(</span>was-compiled-p <span class="org-variable-name">it</span><span class="org-rainbow-delimiters-depth-4">)</span>
-      <span class="org-rainbow-delimiters-depth-4">(</span>byte-recompile-directory <span class="org-variable-name">it</span> 0<span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
-
-<span class="org-rainbow-delimiters-depth-1">(</span>ensure-packages-compiled<span class="org-rainbow-delimiters-depth-1">)</span>
-
-<span class="org-comment-delimiter">;; </span><span class="org-comment">todo: clean up orphaned .elc files</span>
-</pre>
-</div>
 </div>
 </div>
 
-<div id="outline-container-orgheadline13" class="outline-3">
-<h3 id="orgheadline13"><span class="section-number-3">3.3</span> Paths</h3>
+<div id="outline-container-orgheadline15" class="outline-3">
+<h3 id="orgheadline15"><span class="section-number-3">3.3</span> UI</h3>
 <div class="outline-text-3" id="text-3-3">
-<p>
-We set up Emacs' exec-path based on PATH in a shell. This is primarily
-for OS X, where starting Emacs in GUI mode doesn't inherit the shell's
-environment. This ensures that any command we can call from a shell,
-we can call inside Emacs.
-</p>
-
-<p>
-Note this function comes from the package <code>exec-path-from-shell.el</code>.
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;; </span><span class="org-comment">set exec-path according to the system's PATH</span>
-<span class="org-rainbow-delimiters-depth-1">(</span>exec-path-from-shell-initialize<span class="org-rainbow-delimiters-depth-1">)</span>
-</pre>
-</div>
-</div>
-</div>
-
-<div id="outline-container-orgheadline17" class="outline-3">
-<h3 id="orgheadline17"><span class="section-number-3">3.4</span> UI</h3>
-<div class="outline-text-3" id="text-3-4">
-</div><div id="outline-container-orgheadline14" class="outline-4">
-<h4 id="orgheadline14"><span class="section-number-4">3.4.1</span> Theme</h4>
-<div class="outline-text-4" id="text-3-4-1">
+</div><div id="outline-container-orgheadline12" class="outline-4">
+<h4 id="orgheadline12"><span class="section-number-4">3.3.1</span> Theme</h4>
+<div class="outline-text-4" id="text-3-3-1">
 <p>
 I like the tangotango theme. It has very contrasting colours and uses
 bold faces for definitions. It also has good support for a range of
@@ -529,9 +451,9 @@ TODO: I would also prefer zig-zag underlines for flycheck.
 </div>
 </div>
 
-<div id="outline-container-orgheadline15" class="outline-4">
-<h4 id="orgheadline15"><span class="section-number-4">3.4.2</span> Visibility of UI Elements</h4>
-<div class="outline-text-4" id="text-3-4-2">
+<div id="outline-container-orgheadline13" class="outline-4">
+<h4 id="orgheadline13"><span class="section-number-4">3.3.2</span> Visibility of UI Elements</h4>
+<div class="outline-text-4" id="text-3-3-2">
 <div class="org-src-container">
 
 <pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;; </span><span class="org-comment">hide toolbar and scrollbar</span>
@@ -545,9 +467,9 @@ TODO: I would also prefer zig-zag underlines for flycheck.
 </div>
 </div>
 
-<div id="outline-container-orgheadline16" class="outline-4">
-<h4 id="orgheadline16"><span class="section-number-4">3.4.3</span> Recursive Editing</h4>
-<div class="outline-text-4" id="text-3-4-3">
+<div id="outline-container-orgheadline14" class="outline-4">
+<h4 id="orgheadline14"><span class="section-number-4">3.3.3</span> Recursive Editing</h4>
+<div class="outline-text-4" id="text-3-3-3">
 <p>
 We can make the minibuffer much more useful by enabling recursive
 usage. This means that when the minibuffer is active we can still call
@@ -579,9 +501,9 @@ want. ESC ESC ESC will close the minibuffer.
 </div>
 </div>
 
-<div id="outline-container-orgheadline22" class="outline-3">
-<h3 id="orgheadline22"><span class="section-number-3">3.5</span> Moving Around</h3>
-<div class="outline-text-3" id="text-3-5">
+<div id="outline-container-orgheadline20" class="outline-3">
+<h3 id="orgheadline20"><span class="section-number-3">3.4</span> Moving Around</h3>
+<div class="outline-text-3" id="text-3-4">
 <p>
 C-v and M-v don't undo each other, because the point position isn't
 preservered. Fix that.
@@ -594,9 +516,9 @@ preservered. Fix that.
 </div>
 </div>
 
-<div id="outline-container-orgheadline18" class="outline-4">
-<h4 id="orgheadline18"><span class="section-number-4">3.5.1</span> By Symbol</h4>
-<div class="outline-text-4" id="text-3-5-1">
+<div id="outline-container-orgheadline16" class="outline-4">
+<h4 id="orgheadline16"><span class="section-number-4">3.4.1</span> By Symbol</h4>
+<div class="outline-text-4" id="text-3-4-1">
 <p>
 It's extremely useful to be able to move between different occurrences
 of the same symbol.
@@ -682,9 +604,9 @@ a symbol.
 </div>
 </div>
 
-<div id="outline-container-orgheadline19" class="outline-4">
-<h4 id="orgheadline19"><span class="section-number-4">3.5.2</span> By indentation</h4>
-<div class="outline-text-4" id="text-3-5-2">
+<div id="outline-container-orgheadline17" class="outline-4">
+<h4 id="orgheadline17"><span class="section-number-4">3.4.2</span> By indentation</h4>
+<div class="outline-text-4" id="text-3-4-2">
 <p>
 <a href="(describe-key%20(kbd%20"C-a"))">C-a</a> normally moves us to the beginning of the line unconditionally
 with <a href="(describe-function%20#'move-beginning-of-line)">move-beginning-of-line</a>. This version is more useful, as it moves
@@ -713,9 +635,9 @@ positions.
 </div>
 </div>
 
-<div id="outline-container-orgheadline20" class="outline-4">
-<h4 id="orgheadline20"><span class="section-number-4">3.5.3</span> By Character</h4>
-<div class="outline-text-4" id="text-3-5-3">
+<div id="outline-container-orgheadline18" class="outline-4">
+<h4 id="orgheadline18"><span class="section-number-4">3.4.3</span> By Character</h4>
+<div class="outline-text-4" id="text-3-4-3">
 <p>
 Vim has a handy command where you can type <code>f</code> to jump to the next
 occurrence of a character on a line.
@@ -740,9 +662,9 @@ redundant.
 </div>
 </div>
 
-<div id="outline-container-orgheadline21" class="outline-4">
-<h4 id="orgheadline21"><span class="section-number-4">3.5.4</span> Measuring Movement</h4>
-<div class="outline-text-4" id="text-3-5-4">
+<div id="outline-container-orgheadline19" class="outline-4">
+<h4 id="orgheadline19"><span class="section-number-4">3.4.4</span> Measuring Movement</h4>
+<div class="outline-text-4" id="text-3-4-4">
 <p>
 Since movement commands tend to be used more than any others, it's
 useful to measure how much we use each command. This enables us to
@@ -760,9 +682,9 @@ or different keybindings for common commands.
 </div>
 </div>
 
-<div id="outline-container-orgheadline23" class="outline-3">
-<h3 id="orgheadline23"><span class="section-number-3">3.6</span> Inserting</h3>
-<div class="outline-text-3" id="text-3-6">
+<div id="outline-container-orgheadline21" class="outline-3">
+<h3 id="orgheadline21"><span class="section-number-3">3.5</span> Inserting</h3>
+<div class="outline-text-3" id="text-3-5">
 <p>
 It's often useful to start a new line of code that's above or below
 the current line. This code is based on
@@ -781,9 +703,9 @@ the current line. This code is based on
 </div>
 </div>
 
-<div id="outline-container-orgheadline24" class="outline-3">
-<h3 id="orgheadline24"><span class="section-number-3">3.7</span> Killing</h3>
-<div class="outline-text-3" id="text-3-7">
+<div id="outline-container-orgheadline22" class="outline-3">
+<h3 id="orgheadline22"><span class="section-number-3">3.6</span> Killing</h3>
+<div class="outline-text-3" id="text-3-6">
 <p>
 It's handy to also delete the trailing newline when using <a href="(describe-key%20(kbd%20"C-k"))">C-k</a>.
 </p>
@@ -818,18 +740,18 @@ type <code>C-u C-w</code> to delete the region, whilst <code>C-w</code> works as
 </div>
 </div>
 
-<div id="outline-container-orgheadline26" class="outline-3">
-<h3 id="orgheadline26"><span class="section-number-3">3.8</span> Modifying and Editing</h3>
-<div class="outline-text-3" id="text-3-8">
+<div id="outline-container-orgheadline24" class="outline-3">
+<h3 id="orgheadline24"><span class="section-number-3">3.7</span> Modifying and Editing</h3>
+<div class="outline-text-3" id="text-3-7">
 <p>
 Modifying text is fundamental to Emacs, and I use many utilites to
 make life easier. Most of these are still in user-lisp/editing-customisations.el.
 </p>
 </div>
 
-<div id="outline-container-orgheadline25" class="outline-4">
-<h4 id="orgheadline25"><span class="section-number-4">3.8.1</span> Matched Pairs</h4>
-<div class="outline-text-4" id="text-3-8-1">
+<div id="outline-container-orgheadline23" class="outline-4">
+<h4 id="orgheadline23"><span class="section-number-4">3.7.1</span> Matched Pairs</h4>
+<div class="outline-text-4" id="text-3-7-1">
 <p>
 Smartparens is an excellent way of editing pairs of brackets, quotes
 etc. It's similar to paredit, but can be used in lisp, other
@@ -940,12 +862,12 @@ prefer normal smartparens-mode.
 </div>
 </div>
 
-<div id="outline-container-orgheadline31" class="outline-3">
-<h3 id="orgheadline31"><span class="section-number-3">3.9</span> Files</h3>
-<div class="outline-text-3" id="text-3-9">
-</div><div id="outline-container-orgheadline27" class="outline-4">
-<h4 id="orgheadline27"><span class="section-number-4">3.9.1</span> Opening</h4>
-<div class="outline-text-4" id="text-3-9-1">
+<div id="outline-container-orgheadline29" class="outline-3">
+<h3 id="orgheadline29"><span class="section-number-3">3.8</span> Files</h3>
+<div class="outline-text-3" id="text-3-8">
+</div><div id="outline-container-orgheadline25" class="outline-4">
+<h4 id="orgheadline25"><span class="section-number-4">3.8.1</span> Opening</h4>
+<div class="outline-text-4" id="text-3-8-1">
 <p>
 It's useful to be able to quickly open files that we opened before. We
 load and configure a function for this:
@@ -1027,9 +949,9 @@ if we had a test copy of a project at some point.
 </div>
 </div>
 
-<div id="outline-container-orgheadline28" class="outline-4">
-<h4 id="orgheadline28"><span class="section-number-4">3.9.2</span> Dired</h4>
-<div class="outline-text-4" id="text-3-9-2">
+<div id="outline-container-orgheadline26" class="outline-4">
+<h4 id="orgheadline26"><span class="section-number-4">3.8.2</span> Dired</h4>
+<div class="outline-text-4" id="text-3-8-2">
 <p>
 Dired isn't very colourful by default, but <code>dired+</code> has helpful
 highlighting.
@@ -1045,9 +967,9 @@ highlighting.
 </div>
 </div>
 
-<div id="outline-container-orgheadline29" class="outline-4">
-<h4 id="orgheadline29"><span class="section-number-4">3.9.3</span> Deleting and Backups</h4>
-<div class="outline-text-4" id="text-3-9-3">
+<div id="outline-container-orgheadline27" class="outline-4">
+<h4 id="orgheadline27"><span class="section-number-4">3.8.3</span> Deleting and Backups</h4>
+<div class="outline-text-4" id="text-3-8-3">
 <p>
 When we delete a file, it should go to the recycle bin rather than
 just acting like <a href="rm">rm</a>.
@@ -1093,9 +1015,9 @@ we've modified.
 </div>
 </div>
 
-<div id="outline-container-orgheadline30" class="outline-4">
-<h4 id="orgheadline30"><span class="section-number-4">3.9.4</span> Scratch Files</h4>
-<div class="outline-text-4" id="text-3-9-4">
+<div id="outline-container-orgheadline28" class="outline-4">
+<h4 id="orgheadline28"><span class="section-number-4">3.8.4</span> Scratch Files</h4>
+<div class="outline-text-4" id="text-3-8-4">
 <p>
 It's often useful to create a throwaway file to write a minimal
 testcase for some language or library feature.
@@ -1153,12 +1075,12 @@ It's also useful to quickly generate a minimal HTML page to play with.
 </div>
 </div>
 
-<div id="outline-container-orgheadline34" class="outline-3">
-<h3 id="orgheadline34"><span class="section-number-3">3.10</span> As-you-type Checks</h3>
-<div class="outline-text-3" id="text-3-10">
-</div><div id="outline-container-orgheadline32" class="outline-4">
-<h4 id="orgheadline32"><span class="section-number-4">3.10.1</span> Flymake</h4>
-<div class="outline-text-4" id="text-3-10-1">
+<div id="outline-container-orgheadline32" class="outline-3">
+<h3 id="orgheadline32"><span class="section-number-3">3.9</span> As-you-type Checks</h3>
+<div class="outline-text-3" id="text-3-9">
+</div><div id="outline-container-orgheadline30" class="outline-4">
+<h4 id="orgheadline30"><span class="section-number-4">3.9.1</span> Flymake</h4>
+<div class="outline-text-4" id="text-3-9-1">
 <p>
 (Note that there's language-specific flymake configuration too.)
 </p>
@@ -1208,9 +1130,9 @@ I prefer my errors underlined.
 </div>
 </div>
 
-<div id="outline-container-orgheadline33" class="outline-4">
-<h4 id="orgheadline33"><span class="section-number-4">3.10.2</span> Flycheck</h4>
-<div class="outline-text-4" id="text-3-10-2">
+<div id="outline-container-orgheadline31" class="outline-4">
+<h4 id="orgheadline31"><span class="section-number-4">3.9.2</span> Flycheck</h4>
+<div class="outline-text-4" id="text-3-9-2">
 <p>
 Flycheck is an excellent on-the-fly checker that provides many
 additional features and languages. Flymake is part of stock Emacs,
@@ -1294,9 +1216,9 @@ I use a popup for the error at point.
 </div>
 </div>
 
-<div id="outline-container-orgheadline35" class="outline-3">
-<h3 id="orgheadline35"><span class="section-number-3">3.11</span> Undoing</h3>
-<div class="outline-text-3" id="text-3-11">
+<div id="outline-container-orgheadline33" class="outline-3">
+<h3 id="orgheadline33"><span class="section-number-3">3.10</span> Undoing</h3>
+<div class="outline-text-3" id="text-3-10">
 <p>
 Emacs' undo facility is excellent, but undo-tree is even better.
 </p>
@@ -1333,12 +1255,12 @@ it on the mode line. Hide it.
 </div>
 </div>
 
-<div id="outline-container-orgheadline42" class="outline-3">
-<h3 id="orgheadline42"><span class="section-number-3">3.12</span> Emacs Lisp</h3>
-<div class="outline-text-3" id="text-3-12">
-</div><div id="outline-container-orgheadline36" class="outline-4">
-<h4 id="orgheadline36"><span class="section-number-4">3.12.1</span> Shortcuts</h4>
-<div class="outline-text-4" id="text-3-12-1">
+<div id="outline-container-orgheadline40" class="outline-3">
+<h3 id="orgheadline40"><span class="section-number-3">3.11</span> Emacs Lisp</h3>
+<div class="outline-text-3" id="text-3-11">
+</div><div id="outline-container-orgheadline34" class="outline-4">
+<h4 id="orgheadline34"><span class="section-number-4">3.11.1</span> Shortcuts</h4>
+<div class="outline-text-4" id="text-3-11-1">
 <p>
 <code>eval-defun</code> is bound to <code>C-M-x</code>, but Gnome doesn't allow Emacs to
 receive that key sequence. When writing elisp, it's very useful, so we
@@ -1384,9 +1306,9 @@ expand the macros in our elisp file.
 </div>
 </div>
 
-<div id="outline-container-orgheadline37" class="outline-4">
-<h4 id="orgheadline37"><span class="section-number-4">3.12.2</span> Editing Parentheses</h4>
-<div class="outline-text-4" id="text-3-12-2">
+<div id="outline-container-orgheadline35" class="outline-4">
+<h4 id="orgheadline35"><span class="section-number-4">3.11.2</span> Editing Parentheses</h4>
+<div class="outline-text-4" id="text-3-11-2">
 <p>
 Paredit make editing code with parentheses wonderful and has been the
 gold standard for lisp coding for some time. Smartparens has recently
@@ -1403,9 +1325,9 @@ the time to set it up for lisp yet.
 </div>
 </div>
 
-<div id="outline-container-orgheadline38" class="outline-4">
-<h4 id="orgheadline38"><span class="section-number-4">3.12.3</span> Highlighting Parentheses</h4>
-<div class="outline-text-4" id="text-3-12-3">
+<div id="outline-container-orgheadline36" class="outline-4">
+<h4 id="orgheadline36"><span class="section-number-4">3.11.3</span> Highlighting Parentheses</h4>
+<div class="outline-text-4" id="text-3-11-3">
 <p>
 We colour each pair of parentheses according to their depth. This is
 useful for seeing similarly nested lines, such as conditions in a
@@ -1442,9 +1364,9 @@ unique colours until we're seven levels deep.
 </div>
 </div>
 
-<div id="outline-container-orgheadline39" class="outline-4">
-<h4 id="orgheadline39"><span class="section-number-4">3.12.4</span> Function Signatures</h4>
-<div class="outline-text-4" id="text-3-12-4">
+<div id="outline-container-orgheadline37" class="outline-4">
+<h4 id="orgheadline37"><span class="section-number-4">3.11.4</span> Function Signatures</h4>
+<div class="outline-text-4" id="text-3-11-4">
 <p>
 We use eldoc to show the signature of the function at point in the
 minibuffer.
@@ -1470,9 +1392,9 @@ We don't want this minor mode to be shown in the minibuffer, however.
 </div>
 </div>
 
-<div id="outline-container-orgheadline40" class="outline-4">
-<h4 id="orgheadline40"><span class="section-number-4">3.12.5</span> On-the-fly Checking</h4>
-<div class="outline-text-4" id="text-3-12-5">
+<div id="outline-container-orgheadline38" class="outline-4">
+<h4 id="orgheadline38"><span class="section-number-4">3.11.5</span> On-the-fly Checking</h4>
+<div class="outline-text-4" id="text-3-11-5">
 <p>
 It's really useful to use flycheck when coding elisp. It detects
 mistyped variables, deprecated functions (everything that
@@ -1499,9 +1421,9 @@ the way for quick throwaway elisp scripts, so we switch off checkdoc.
 </div>
 </div>
 
-<div id="outline-container-orgheadline41" class="outline-4">
-<h4 id="orgheadline41"><span class="section-number-4">3.12.6</span> Highlighting</h4>
-<div class="outline-text-4" id="text-3-12-6">
+<div id="outline-container-orgheadline39" class="outline-4">
+<h4 id="orgheadline39"><span class="section-number-4">3.11.6</span> Highlighting</h4>
+<div class="outline-text-4" id="text-3-11-6">
 <p>
 Emacs lisp highlighting works pretty well out of the box. However,
 dash.el provides addition highlighting for its functions and variables
@@ -1517,9 +1439,9 @@ used in its anaphoric macros (e.g. <code>it</code>).
 </div>
 </div>
 
-<div id="outline-container-orgheadline43" class="outline-3">
-<h3 id="orgheadline43"><span class="section-number-3">3.13</span> Python</h3>
-<div class="outline-text-3" id="text-3-13">
+<div id="outline-container-orgheadline41" class="outline-3">
+<h3 id="orgheadline41"><span class="section-number-3">3.12</span> Python</h3>
+<div class="outline-text-3" id="text-3-12">
 <p>
 We use pyflakes with flycheck to check for coding errors. Flycheck
 includes other Python checkers so we also disable those.
@@ -1568,9 +1490,9 @@ shortcut for inserting them.
 </div>
 </div>
 
-<div id="outline-container-orgheadline44" class="outline-3">
-<h3 id="orgheadline44"><span class="section-number-3">3.14</span> Haskell</h3>
-<div class="outline-text-3" id="text-3-14">
+<div id="outline-container-orgheadline42" class="outline-3">
+<h3 id="orgheadline42"><span class="section-number-3">3.13</span> Haskell</h3>
+<div class="outline-text-3" id="text-3-13">
 <p>
 Flycheck supports Haskell well, so we switch it on inside Haskell
 buffers.
@@ -1595,9 +1517,9 @@ indentation.
 </div>
 </div>
 
-<div id="outline-container-orgheadline45" class="outline-3">
-<h3 id="orgheadline45"><span class="section-number-3">3.15</span> Ruby</h3>
-<div class="outline-text-3" id="text-3-15">
+<div id="outline-container-orgheadline43" class="outline-3">
+<h3 id="orgheadline43"><span class="section-number-3">3.14</span> Ruby</h3>
+<div class="outline-text-3" id="text-3-14">
 <p>
 Vagrant files are Ruby, so use Ruby syntax highlighting for them.
 </p>
@@ -1610,9 +1532,9 @@ Vagrant files are Ruby, so use Ruby syntax highlighting for them.
 </div>
 </div>
 
-<div id="outline-container-orgheadline46" class="outline-3">
-<h3 id="orgheadline46"><span class="section-number-3">3.16</span> C/C++</h3>
-<div class="outline-text-3" id="text-3-16">
+<div id="outline-container-orgheadline44" class="outline-3">
+<h3 id="orgheadline44"><span class="section-number-3">3.15</span> C/C++</h3>
+<div class="outline-text-3" id="text-3-15">
 <p>
 Flycheck supports C, so we switch it on.
 </p>
@@ -1647,9 +1569,9 @@ non-whitespace character on C-d) when removing indentation.
 </div>
 </div>
 
-<div id="outline-container-orgheadline47" class="outline-3">
-<h3 id="orgheadline47"><span class="section-number-3">3.17</span> HTML</h3>
-<div class="outline-text-3" id="text-3-17">
+<div id="outline-container-orgheadline45" class="outline-3">
+<h3 id="orgheadline45"><span class="section-number-3">3.16</span> HTML</h3>
+<div class="outline-text-3" id="text-3-16">
 <p>
 I like to indent my HTML with tabs (company policy at the first web
 shop I worked at).
@@ -1826,9 +1748,9 @@ TODO: document the rest of our HTML configuration.
 </div>
 </div>
 
-<div id="outline-container-orgheadline48" class="outline-3">
-<h3 id="orgheadline48"><span class="section-number-3">3.18</span> CSS</h3>
-<div class="outline-text-3" id="text-3-18">
+<div id="outline-container-orgheadline46" class="outline-3">
+<h3 id="orgheadline46"><span class="section-number-3">3.17</span> CSS</h3>
+<div class="outline-text-3" id="text-3-17">
 <p>
 Typically I work on projects that use 4 spaces for CSS indenetation.
 </p>
@@ -1900,9 +1822,9 @@ for this.
 </div>
 </div>
 
-<div id="outline-container-orgheadline49" class="outline-3">
-<h3 id="orgheadline49"><span class="section-number-3">3.19</span> Less (CSS)</h3>
-<div class="outline-text-3" id="text-3-19">
+<div id="outline-container-orgheadline47" class="outline-3">
+<h3 id="orgheadline47"><span class="section-number-3">3.18</span> Less (CSS)</h3>
+<div class="outline-text-3" id="text-3-18">
 <p>
 The less compiler doesn't give much feedback, but it does gives us a
 syntax check.
@@ -1917,9 +1839,9 @@ syntax check.
 </div>
 </div>
 
-<div id="outline-container-orgheadline50" class="outline-3">
-<h3 id="orgheadline50"><span class="section-number-3">3.20</span> Org-mode</h3>
-<div class="outline-text-3" id="text-3-20">
+<div id="outline-container-orgheadline48" class="outline-3">
+<h3 id="orgheadline48"><span class="section-number-3">3.19</span> Org-mode</h3>
+<div class="outline-text-3" id="text-3-19">
 <p>
 We often use code snippets in org-mode files, so syntax highlight
 them.
@@ -1933,9 +1855,9 @@ them.
 </div>
 </div>
 
-<div id="outline-container-orgheadline51" class="outline-3">
-<h3 id="orgheadline51"><span class="section-number-3">3.21</span> Markdown</h3>
-<div class="outline-text-3" id="text-3-21">
+<div id="outline-container-orgheadline49" class="outline-3">
+<h3 id="orgheadline49"><span class="section-number-3">3.20</span> Markdown</h3>
+<div class="outline-text-3" id="text-3-20">
 <p>
 Markdown is essentially prose, so it's nice to automatically line-wrap
 (by inserting newlines) as we type.
@@ -1949,9 +1871,9 @@ Markdown is essentially prose, so it's nice to automatically line-wrap
 </div>
 </div>
 
-<div id="outline-container-orgheadline52" class="outline-3">
-<h3 id="orgheadline52"><span class="section-number-3">3.22</span> Performance</h3>
-<div class="outline-text-3" id="text-3-22">
+<div id="outline-container-orgheadline50" class="outline-3">
+<h3 id="orgheadline50"><span class="section-number-3">3.21</span> Performance</h3>
+<div class="outline-text-3" id="text-3-21">
 <p>
 Emacs will run garbage collection after <code>gc-cons-threshold</code> bytes of
 consing. The default value is 800,000 bytes, or ~ 0.7 MiB. By
@@ -1966,9 +1888,9 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </div>
 </div>
 
-<div id="outline-container-orgheadline53" class="outline-3">
-<h3 id="orgheadline53"><span class="section-number-3">3.23</span> Shut Down</h3>
-<div class="outline-text-3" id="text-3-23">
+<div id="outline-container-orgheadline51" class="outline-3">
+<h3 id="orgheadline51"><span class="section-number-3">3.22</span> Shut Down</h3>
+<div class="outline-text-3" id="text-3-22">
 <p>
 I rarely close Emacs, but using Zile means I use <code>C-x C-c</code> a lot. It's
 annoying to accidentally close Emacs, so warn first.
@@ -1982,9 +1904,9 @@ annoying to accidentally close Emacs, so warn first.
 </div>
 </div>
 
-<div id="outline-container-orgheadline54" class="outline-3">
-<h3 id="orgheadline54"><span class="section-number-3">3.24</span> Workarounds</h3>
-<div class="outline-text-3" id="text-3-24">
+<div id="outline-container-orgheadline52" class="outline-3">
+<h3 id="orgheadline52"><span class="section-number-3">3.23</span> Workarounds</h3>
+<div class="outline-text-3" id="text-3-23">
 <p>
 Don't try to reopen all files that are owned by other users.
 <a href="https://github.com/bbatsov/crux/issues/20">https://github.com/bbatsov/crux/issues/20</a>
@@ -1998,9 +1920,9 @@ Don't try to reopen all files that are owned by other users.
 </div>
 </div>
 
-<div id="outline-container-orgheadline55" class="outline-3">
-<h3 id="orgheadline55"><span class="section-number-3">3.25</span> Undocumented</h3>
-<div class="outline-text-3" id="text-3-25">
+<div id="outline-container-orgheadline53" class="outline-3">
+<h3 id="orgheadline53"><span class="section-number-3">3.24</span> Undocumented</h3>
+<div class="outline-text-3" id="text-3-24">
 <div class="org-src-container">
 
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">ui-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -2187,8 +2109,7 @@ Don't try to reopen all files that are owned by other users.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="author">Author: Hughes, Wilfred (London)</p>
-<p class="date">Created: 2016-09-22 Thu 15:42</p>
+<p class="date">Created: 2016-10-01 Sat 11:16</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
