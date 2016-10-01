@@ -3,6 +3,11 @@
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 1 October 2012
 
+;; Don't prompt "Keep current list of tags tables also? (y or n)"
+;; every time I switch to a new folder with its own TAGS file.
+;; http://emacs.stackexchange.com/q/14802/304
+(setq tags-add-tables nil)
+
 (use-package etags-select
   :bind (("<f6>" . etags-select-find-tag-at-point)
          ("M-." . etags-select-find-tag)
