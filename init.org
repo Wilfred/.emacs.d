@@ -69,15 +69,6 @@ I use pyflakes, which is available on PyPI. You can install it with:
   sudo pip install pyflakes
 #+END_SRC
 
-** JavaScript
-
-I use JSHint, which requires you to have node.js installed. To
-install JSHint, run:
-
-#+BEGIN_SRC sh
-  sudo npm install -g jshint
-#+END_SRC
-
 ** Less
 
 I use lessc to check the syntax of =.less= files. You can install it
