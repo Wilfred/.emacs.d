@@ -34,9 +34,20 @@
 (global-set-key (kbd "C-z") #'company-try-hard)
 (define-key company-active-map (kbd "C-z") #'company-try-hard)
 
+(defun wh/company-whole-line-with-activate ()
+  "Call `company-whole-line', temporarily enabling company-mode if necessary."
+  (interactive)
+  (if company-mode
+      (company-begin-backend 'company-whole-line)
+    (progn
+      (company-mode 1)
+      (company-begin-backend 'company-whole-line)
+      ;; TODO: deactivate
+      )))
+
 ;; Whole line completion is sufficiently useful that we give it a
 ;; separate keybinding.
-(global-set-key (kbd "C-\\") #'company-whole-line)
+(global-set-key (kbd "C-\\") #'wh/company-whole-line-with-activate)
 
 ;; Precise completion.
 
@@ -136,7 +147,6 @@
 (add-hook 'after-init-hook #'company-statistics-mode)
 
 (require 'company-jit)
-(add-hook 'python-mode-hook #'company-jit-mode)
 (add-hook 'css-mode-hook #'company-jit-mode)
 
 (require 'rust-mode)
