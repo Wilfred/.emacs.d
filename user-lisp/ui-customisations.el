@@ -2,7 +2,8 @@
 (setq scroll-step 1)
 
 ;; Show a scrollbar when moving.
-(global-yascroll-bar-mode)
+(unless (getenv "TRAVIS")
+  (global-yascroll-bar-mode))
 
 ;; always highlight matching parentheses
 (show-paren-mode 1)
