@@ -152,8 +152,6 @@ If it is split, repeat the current buffer in a vertical split."
       (delete-other-windows)
       (split-window-right))))
 
-(global-set-key (kbd "C-x 3") #'wh/split-window-or-repeat)
-
 ;; windmove allows S-<right> and S-<right> to switch between windows
 ;; instead of `C-x o'
 (when (fboundp 'windmove-default-keybindings)
