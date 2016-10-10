@@ -2,8 +2,8 @@ This is geiser.info, produced by makeinfo version 5.2 from geiser.texi.
 
 This manual documents Geiser, an Emacs environment to hack in Scheme.
 
-   Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015 Jose Antonio Ortega
-Ruiz
+   Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015, 2016 Jose Antonio
+Ortega Ruiz
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -28,8 +28,8 @@ Geiser
 
 This manual documents Geiser, an Emacs environment to hack in Scheme.
 
-   Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015 Jose Antonio Ortega
-Ruiz
+   Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015, 2016 Jose Antonio
+Ortega Ruiz
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -247,7 +247,7 @@ the goodies.
 
    ELPA packages live in repositories accessible via HTTP. You can find
 Geiser's package in either MELPA stable
-(http://melpa-stable.org/#/geiser) or, if you like living on the
+(http://stable.melpa.org/#/geiser) or, if you like living on the
 bleeding edge, MELPA (http://melpa.org/#/geiser) (directly from the git
 repo).  To tell Emacs that an ELPA repo exists, you add it to
 'package-archives':
@@ -257,7 +257,7 @@ repo).  To tell Emacs that an ELPA repo exists, you add it to
 
      (add-to-list 'package-archives
        ;; choose either the stable or the latest git version:
-       ;; '("melpa-stable" . "http://melpa-stable.org/packages/")
+       ;; '("melpa-stable" . "http://stable.melpa.org/packages/")
        '("melpa-unstable" . "http://melpa.org/packages/"))
 
      (package-initialize)
@@ -267,7 +267,7 @@ repo).  To tell Emacs that an ELPA repo exists, you add it to
      M-x package-install RET geiser RET
 
    Alternatively, you can manually download the package file
-(http://download-mirror.savannah.gnu.org/releases/geiser/packages/geiser-0.8.1.tar),
+(http://download-mirror.savannah.gnu.org/releases/geiser/packages/geiser-0.9.tar),
 and install from your local disk with 'M-x package-install-file'.
 
    If you plan to use Chicken, you'll need also to fire a terminal and
@@ -289,9 +289,9 @@ Downloading Geiser
 ..................
 
 The latest release tarball can be found here
-(http://download-mirror.savannah.gnu.org/releases/geiser/0.8.1/).  Just
-download geiser-0.8.1.tar.gz
-(http://download-mirror.savannah.gnu.org/releases/geiser/0.8.1/geiser-0.8.1.tar.gz)
+(http://download-mirror.savannah.gnu.org/releases/geiser/0.9/).  Just
+download geiser-0.9.tar.gz
+(http://download-mirror.savannah.gnu.org/releases/geiser/0.9/geiser-0.9.tar.gz)
 and untar it in a directory of your choice.
 
    If you feel like living on the bleeding edge, just grab Geiser from
@@ -1512,7 +1512,9 @@ File: geiser.info,  Node: No hacker is an island,  Next: Index,  Prev: Cheat she
 
 Dan Leslie, with the help of his three-months old daughter Freija,
 proved there's a smidgen of sense in this madness by adding support for
-Chicken to version 0.7 of Geiser, several years after it was born.
+Chicken to version 0.7 of Geiser, several years after it was born.  And
+Peter Feigl reinforced that feeling soon afterwards with his work on
+supporting GNU/MIT Scheme, Chib and Chez in one fell swoop.
 
    Andy Wingo, Geiser's first user, has been a continuous source of
 encouragement and suggestions, and keeps improving Guile and heeding my
@@ -1609,7 +1611,7 @@ Index
 * backtraces:                            To err perchance to debug.
                                                               (line   6)
 * bug tracker:                           No hacker is an island.
-                                                              (line  66)
+                                                              (line  68)
 * byte-compilation:                      From the source's mouth.
                                                               (line  49)
 * Chicken:                               The easy and quick way.
@@ -1648,7 +1650,7 @@ Index
 * geiser-mode:                           Activating Geiser.   (line   6)
 * geiser-mode commands:                  Activating Geiser.   (line  21)
 * gmane:                                 No hacker is an island.
-                                                              (line  56)
+                                                              (line  58)
 * Guile info nodes:                      Documentation helpers.
                                                               (line 120)
 * Guile's REPL server:                   Starting the REPL.   (line  48)
@@ -1671,18 +1673,18 @@ Index
 * incremental development, not evil:     To eval or not to eval.
                                                               (line  33)
 * IRC channel:                           No hacker is an island.
-                                                              (line  72)
+                                                              (line  74)
 * jump, at the REPL:                     Autodoc and friends. (line  51)
 * jumping customized:                    Jumping around.      (line  22)
 * jumping in scheme buffers:             Jumping around.      (line   6)
 * mailing list:                          No hacker is an island.
-                                                              (line  56)
+                                                              (line  58)
 * manual autodoc:                        Documentation helpers.
                                                               (line  22)
 * module exports:                        Autodoc and friends. (line  39)
 * modus operandi:                        Modus operandi.      (line   6)
 * news feed:                             No hacker is an island.
-                                                              (line  68)
+                                                              (line  70)
 * opening manual pages:                  Documentation helpers.
                                                               (line 128)
 * paredit:                               Friends.             (line   9)
@@ -1754,46 +1756,46 @@ Index
 
 
 Tag Table:
-Node: Top883
-Node: Introduction3339
-Node: Modus operandi3673
-Ref: current-module4328
-Node: Showing off5801
-Node: Installation7079
-Node: Must needs7292
-Node: The easy and quick way8325
-Node: From the source's mouth10103
-Node: Friends13816
-Ref: paredit14090
-Node: The REPL15502
-Ref: quick-start15621
-Node: Starting the REPL16012
-Node: First aids20393
-Node: Switching context22226
-Node: Completion and error handling24151
-Node: Autodoc and friends25788
-Ref: repl-mod27858
-Node: Seeing is believing28864
-Node: Customization and tips29876
-Ref: choosing-impl30605
-Ref: active-implementations30840
-Ref: impl-binary31222
-Node: Between the parens35329
-Node: Activating Geiser36391
-Node: The source and the REPL39001
-Ref: repl-association40045
-Ref: switching-repl-buff43313
-Node: Documentation helpers44998
-Ref: doc-browser49266
-Node: To eval or not to eval51993
-Node: To err perchance to debug55820
-Node: Jumping around58182
-Node: Geiser writes for you59459
-Node: Cheat sheet61619
-Node: Scheme buffers62003
-Node: REPL66249
-Node: Documentation browser68570
-Node: No hacker is an island69638
-Node: Index72823
+Node: Top889
+Node: Introduction3351
+Node: Modus operandi3685
+Ref: current-module4340
+Node: Showing off5813
+Node: Installation7091
+Node: Must needs7304
+Node: The easy and quick way8337
+Node: From the source's mouth10113
+Node: Friends13818
+Ref: paredit14092
+Node: The REPL15504
+Ref: quick-start15623
+Node: Starting the REPL16014
+Node: First aids20395
+Node: Switching context22228
+Node: Completion and error handling24153
+Node: Autodoc and friends25790
+Ref: repl-mod27860
+Node: Seeing is believing28866
+Node: Customization and tips29878
+Ref: choosing-impl30607
+Ref: active-implementations30842
+Ref: impl-binary31224
+Node: Between the parens35331
+Node: Activating Geiser36393
+Node: The source and the REPL39003
+Ref: repl-association40047
+Ref: switching-repl-buff43315
+Node: Documentation helpers45000
+Ref: doc-browser49268
+Node: To eval or not to eval51995
+Node: To err perchance to debug55822
+Node: Jumping around58184
+Node: Geiser writes for you59461
+Node: Cheat sheet61621
+Node: Scheme buffers62005
+Node: REPL66251
+Node: Documentation browser68572
+Node: No hacker is an island69640
+Node: Index72959
 
 End Tag Table

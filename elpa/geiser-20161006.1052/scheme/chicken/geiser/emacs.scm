@@ -27,8 +27,9 @@
    geiser-module-location
    geiser-module-completions
    geiser-macroexpand
-   geiser-use-debug-log
-   geiser-load-paths)
+   geiser-chicken-use-debug-log
+   geiser-chicken-load-paths
+   geiser-chicken-symbol-match-limit)
 
   (import chicken scheme)
   (use
@@ -51,6 +52,9 @@
 ;; Symbol lists
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+  (define geiser-chicken-symbol-match-limit
+    (make-parameter 20))
+  
   (define geiser-r4rs-symbols
     (make-parameter
      '(not boolean? eq? eqv? equal? pair? cons car cdr caar cadr cdar cddr
@@ -213,7 +217,7 @@
   ;; Utilities
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  (define geiser-use-debug-log (make-parameter #f))
+  (define geiser-chicken-use-debug-log (make-parameter #f))
 
   (define find-module ##sys#find-module)
   (define current-module ##sys#current-module)
@@ -245,13 +249,18 @@
 	    (apropos-information-list "" #:macros? #t)))))
 
   (define (find-symbol-information prefix)
+    (define (filter/limit pred? limit lst)
+      (cond
+       ((<= limit 0) '())
+       ((or (null? lst) (not (list? lst))) '())
+       ((pred? (car lst)) (cons (car lst) (filter/limit pred? (- limit 1) (cdr lst))))
+       (else (filter/limit pred? limit (cdr lst)))))
     (define (find-symbol-information* prefix skipped)
-      (let ((found (filter
+      (let ((found (filter/limit
 		    (lambda (info)
 		      (string-has-prefix? (car info) prefix))
-		    (symbol-information-list))))
-	;; (if (and (null? found) (< 1 (string-length prefix)))
-	;;     (find-symbol-information* (substring/shared prefix 1) (string-append skipped (substring prefix 0 1))))
+		    (geiser-chicken-symbol-match-limit)
+		    (symbol-information-list))))	
 	(cons found skipped)))
     (memoize
      `(find-symbol-information ,prefix)
@@ -260,7 +269,7 @@
   
   (define debug-log (make-parameter #f))
   (define (write-to-log form)
-    (when (geiser-use-debug-log)
+    (when (geiser-chicken-use-debug-log)
       (when (not (debug-log))
 	(debug-log (file-open "geiser.log" (+ open/wronly open/append open/text open/creat)))
 	(set-file-position! (debug-log) 0 seek/end))
@@ -508,7 +517,7 @@
 	     geiser-autodoc geiser-object-signature geiser-symbol-location
 	     geiser-symbol-documentation geiser-module-exports
 	     geiser-module-path geiser-module-location
-	     geiser-module-completions geiser-use-debug-log)))
+	     geiser-module-completions geiser-chicken-use-debug-log)))
     
     (define (form-has-any-geiser? form)
       (string-has-prefix? (->string (car form)) "geiser-"))
@@ -637,11 +646,11 @@
 ;; File and Buffer Operations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  (define geiser-load-paths (make-parameter '("" ".")))
+  (define geiser-chicken-load-paths (make-parameter '("" ".")))
 
   (define (geiser-find-file file . rest)
     (when file
-      (let ((paths (geiser-load-paths)))
+      (let ((paths (geiser-chicken-load-paths)))
 	(define (try-find file paths)
 	  (cond
 	   ((null? paths) #f)
@@ -660,7 +669,7 @@
       (call-with-result #f
        (lambda ()
          (when (directory-exists? directory)
-           (geiser-load-paths (cons directory (geiser-load-paths))))))))
+           (geiser-chicken-load-paths (cons directory (geiser-chicken-load-paths))))))))
 
   (define (geiser-compile-file file . rest)
     (let* ((file (if (symbol? file) (symbol->string file) file))

@@ -104,6 +104,11 @@ this variable to t."
   :type 'boolean
   :group 'geiser-chicken)
 
+(geiser-custom--defcustom geiser-chicken-match-limit 20
+  "The limit on the number of matching symbols that Chicken will provide to Geiser."
+  :type 'integer
+  :group 'geiser-chicken)
+
 (defvar geiser-chicken--required-modules
   (list "chicken-doc" "apropos" "data-structures" "extras" "ports" "posix" "srfi-1" "srfi-13" "srfi-14" "srfi-18" "srfi-69" "tcp" "utils"))
 
@@ -258,10 +263,7 @@ This function uses `geiser-chicken-init-file' if it exists."
 (defconst geiser-chicken-minimum-version "4.8.0.0")
 
 (defun geiser-chicken--version (binary)
-  (shell-command-to-string
-   (format "%s -e %s"
-           (shell-quote-argument binary)
-           (shell-quote-argument "(display (chicken-version))"))))
+  (car (process-lines binary "-e" "(display (chicken-version))")))
 
 (defun connect-to-chicken ()
   "Start a Chicken REPL connected to a remote process."
@@ -277,17 +279,19 @@ This function uses `geiser-chicken-init-file' if it exists."
         (suppression-prefix
          "(define geiser-stdout (current-output-port))(current-output-port (make-output-port (lambda a #f) (lambda a #f)))")
         (suppression-postfix
-         "(current-output-port geiser-stdout)"))
+         "(current-output-port geiser-stdout)")
+	(match-limit-set
+	 (format "(geiser-chicken-symbol-match-limit %s)" geiser-chicken-match-limit)))
     (let ((load-sequence
            (cond
             (force-load
-             (format "(load \"%s\")\n(import geiser)\n" source))
+             (format "(load \"%s\")\n(import geiser)%s\n" source match-limit-set))
             ((file-exists-p target)
-             (format "%s(load \"%s\")(import geiser)%s\n"
-                     suppression-prefix target suppression-postfix))
+             (format "%s(load \"%s\")(import geiser)%s%s\n"
+                     suppression-prefix target match-limit-set suppression-postfix))
             (t
-             (format "%s(use utils)(compile-file \"%s\" options: '(\"-O3\" \"-s\") output-file: \"%s\" load: #t)(import geiser)%s\n"
-                     suppression-prefix source target suppression-postfix)))))
+             (format "%s(use utils)(compile-file \"%s\" options: '(\"-O3\" \"-s\") output-file: \"%s\" load: #t)(import geiser)%s%s\n"
+                     suppression-prefix source target match-limit-set suppression-postfix)))))
       (geiser-eval--send/wait load-sequence))))
 
 (defun geiser-chicken--startup (remote)
