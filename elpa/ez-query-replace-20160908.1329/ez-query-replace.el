@@ -4,8 +4,8 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 21 August 2013
-;; Version: 20140810.517
-;; X-Original-Version: 0.4
+;; Version: 0.4
+;; Package-Version: 20160908.1329
 ;; Package-Requires: ((dash "1.2.0"))
 
 ;;; Commentary:
@@ -115,7 +115,7 @@ to the symbol at point."
 
     (deactivate-mark)
     (perform-replace from-string to-string
-                     t nil nil)))
+                   t nil nil)))
 
 (provide 'ez-query-replace)
 ;;; ez-query-replace.el ends here

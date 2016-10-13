@@ -1,10 +1,10 @@
 ;;; ez-query-replace-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
+(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "ez-query-replace" "ez-query-replace.el" (21589
-;;;;;;  30834 350390 862000))
+;;;### (autoloads nil "ez-query-replace" "ez-query-replace.el" (22526
+;;;;;;  58019 677102 14000))
 ;;; Generated autoloads from ez-query-replace.el
 
 (autoload 'ez-query-replace "ez-query-replace" "\
