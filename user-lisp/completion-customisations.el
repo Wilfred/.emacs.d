@@ -47,7 +47,7 @@
 
 ;; Whole line completion is sufficiently useful that we give it a
 ;; separate keybinding.
-(global-set-key (kbd "C-\\") #'wh/company-whole-line-with-activate)
+(global-set-key (kbd "C-c M-/") #'wh/company-whole-line-with-activate)
 
 ;; Precise completion.
 
