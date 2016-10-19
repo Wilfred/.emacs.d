@@ -40,6 +40,7 @@
         sp-backward-delete-char
         sp-backward-kill-word
         sp-forward-sexp
+        sp-kill-word
         sp-remove-active-pair-overlay
         sp-slurp-hybrid-sexp
         special-digit-argument
