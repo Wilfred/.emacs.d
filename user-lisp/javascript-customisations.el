@@ -4,7 +4,7 @@
 
 (defun wh/js-setup-indentation ()
   (setq indent-tabs-mode nil)
-  (setq js2-basic-offset 2))
+  (setq js2-basic-offset 4))
 
 (dolist (hook '(js-mode-hook js2-mode-hook js-jsx-mode-hook js2-jsx-mode-hook))
   (add-hook hook #'wh/js-setup-indentation)
