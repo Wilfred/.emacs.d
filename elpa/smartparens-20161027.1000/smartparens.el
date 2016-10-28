@@ -365,7 +365,11 @@ Maximum length of opening or closing pair is
   ;; executes them, then reset the "counter".
   delayed-hook
   ;; TODO
-  delayed-insertion)
+  delayed-insertion
+  ;; The last point checked by sp--syntax-ppss and its result, used for
+  ;; memoization
+  last-syntax-ppss-point
+  last-syntax-ppss-result)
 
 (defvar sp-state nil
   "Smartparens state for the current buffer.")
@@ -444,18 +448,25 @@ expressions, they can potentially be of arbitrary length.  This
 settings solves the problem where the parser would decide to
 backtrack the entire buffer which would lock up Emacs.")
 
-(defvar sp-pairs '((t
-                    .
-                    ((:open "\\\\(" :close "\\\\)" :actions (insert wrap autoskip navigate))
-                     (:open "\\{"   :close "\\}"   :actions (insert wrap autoskip navigate))
-                     (:open "\\("   :close "\\)"   :actions (insert wrap autoskip navigate))
-                     (:open "\\\""  :close "\\\""  :actions (insert wrap autoskip navigate))
-                     (:open "\""    :close "\""    :actions (insert wrap autoskip navigate))
-                     (:open "'"     :close "'"     :actions (insert wrap autoskip navigate))
-                     (:open "("     :close ")"     :actions (insert wrap autoskip navigate))
-                     (:open "["     :close "]"     :actions (insert wrap autoskip navigate))
-                     (:open "{"     :close "}"     :actions (insert wrap autoskip navigate))
-                     (:open "`"     :close "`"     :actions (insert wrap autoskip navigate)))))
+(defvar sp-pairs
+  '((t
+     .
+     ((:open "\\\\(" :close "\\\\)" :actions (insert wrap autoskip navigate))
+      (:open "\\{"   :close "\\}"   :actions (insert wrap autoskip navigate))
+      (:open "\\("   :close "\\)"   :actions (insert wrap autoskip navigate))
+      (:open "\\\""  :close "\\\""  :actions (insert wrap autoskip navigate))
+      (:open "\""    :close "\""
+       :actions (insert wrap autoskip navigate escape)
+       :unless (sp-in-string-quotes-p)
+       :post-handlers (sp-escape-wrapped-region sp-escape-quotes-after-insert))
+      (:open "'"     :close "'"
+       :actions (insert wrap autoskip navigate escape)
+       :unless (sp-in-string-quotes-p sp-point-after-word-p)
+       :post-handlers (sp-escape-wrapped-region sp-escape-quotes-after-insert))
+      (:open "("     :close ")"     :actions (insert wrap autoskip navigate))
+      (:open "["     :close "]"     :actions (insert wrap autoskip navigate))
+      (:open "{"     :close "}"     :actions (insert wrap autoskip navigate))
+      (:open "`"     :close "`"     :actions (insert wrap autoskip navigate)))))
   "List of pair definitions.
 
 Maximum length of opening or closing pair is
@@ -505,7 +516,19 @@ Symbol is defined as a chunk of text recognized by
                            slime-repl-mode
                            stumpwm-mode
                            )
-  "List of Lisp modes."
+  "List of Lisp-related modes."
+  :type '(repeat symbol)
+  :group 'smartparens)
+
+(defcustom sp-clojure-modes '(
+                              cider-repl-mode
+                              clojure-mode
+                              clojurec-mode
+                              clojurescript-mode
+                              clojurex-mode
+                              inf-clojure-mode
+                              )
+  "List of Clojure-related modes."
   :type '(repeat symbol)
   :group 'smartparens)
 
@@ -951,24 +974,15 @@ position (before or after the region)."
   :group 'smartparens)
 
 ;; escaping custom
-(defcustom sp-autoescape-string-quote t
-  "If non-nil, autoescape string quotes if typed inside string."
+(defcustom sp-escape-wrapped-region t
+  "If non-nil, escape special chars inside the just wrapped region."
   :type 'boolean
   :group 'smartparens)
-(make-obsolete-variable 'sp-autoescape-string-quote "smartparens' global autoescape system was removed." "2015-02-07")
 
-(defcustom sp-autoescape-string-quote-if-empty '(
-                                                 python-mode
-                                                 )
-  "List of modes where the string quotes aren't escaped if the string is empty.
-
-You can list modes where multiple quote characters are used for
-multi-line strings, such as `python-mode' to make the insertion
-less annoying (that is, three times pressing \" would insert
-\"\"\"|\"\"\" instead of \"\\\"\\\"|\\\"\\\"\")."
-  :type '(repeat symbol)
+(defcustom sp-escape-quotes-after-insert t
+  "If non-nil, escape string quotes if typed inside string."
+  :type 'boolean
   :group 'smartparens)
-(make-obsolete-variable 'sp-autoescape-string-quote-if-empty "smartparens' global autoescape system was removed." "2015-02-07")
 
 ;; navigation & manip custom
 (defcustom sp-navigate-consider-sgml-tags '(
@@ -1010,9 +1024,6 @@ where PARENT-MODE is checked using `derived-mode-p'."
                     (const derived)
                     (symbol :tag "Parent major mode name"))))
   :group 'smartparens)
-
-(defvaralias 'sp-nagivate-use-textmode-stringlike-parser 'sp-navigate-use-textmode-stringlike-parser)
-;; For backward compatibility?
 
 (defcustom sp-navigate-consider-symbols t
   "If non-nil, consider symbols outside balanced expressions as such.
@@ -1298,8 +1309,10 @@ This can be used with `sp-local-pair' calls to automatically
 insert the modes."
   (declare (indent 1)
            (debug (form body)))
-  `(progn
-     ,@(mapcar (lambda (form) (append (list (car form) arg) (cdr form))) forms)))
+  (let ((modes (make-symbol "modes")))
+    `(let ((,modes ,arg))
+       (progn
+         ,@(mapcar (lambda (form) (append (list (car form) modes) (cdr form))) forms)))))
 
 (font-lock-add-keywords 'emacs-lisp-mode `((,(concat "("
                                                      (regexp-opt '("sp-with-modes"
@@ -1307,6 +1320,19 @@ insert the modes."
                                                                    "sp-compare-sexps") t)
                                                      "\\_>")
                                             (1 font-lock-keyword-face))))
+
+(defmacro sp--with-case-sensitive (&rest body)
+  "Ensure that all searches done within BODY are case-sensitive.
+
+Bind case-fold-search to nil if it is not already and avoid the bind if it is
+already. Any function that needs to use any of the sp--looking-* functions more
+than once should wrap them all in sp--with-case-sensitive."
+  (declare (indent 0)
+           (debug (body)))
+  `(if case-fold-search
+       (let ((case-fold-search nil))
+         ,@body)
+     ,@body))
 
 (defun sp--evil-normal-state-p ()
   "Checks to see if the current `evil-state' is in normal mode."
@@ -1319,10 +1345,6 @@ insert the modes."
 (defun sp--evil-visual-state-p ()
   "Checks to see if the current `evil-state' is in visual mode."
   (and (fboundp 'evil-visual-state-p) (evil-visual-state-p)))
-
-(defun sp--reverse-string (str)
-  "Reverse the string STR."
-  (concat (reverse (append str nil))))
 
 (defun sp-point-in-blank-line (&optional p)
   "Return non-nil if line at point is blank (whitespace only).
@@ -1347,13 +1369,35 @@ sexp, otherwise the call may be very slow."
                    "\\`[ \t\n]*\\'"
                    (buffer-substring-no-properties :beg-in :end-in))))))
 
+(defun sp-char-is-escaped-p (&optional point)
+  "Test if the char at POINT is escaped or not.
+
+POINT defaults to `point'."
+  (setq point (or point (point)))
+  (save-match-data
+    (when (save-excursion
+            (goto-char point)
+            (looking-back (concat sp-escape-char sp-escape-char "+") nil t))
+      (eq (logand (length (match-string 0)) 1) 1))))
+
+(defun sp--syntax-ppss (&optional p)
+  "Memoize the last result of syntax-ppss."
+  (let ((p (or p (point))))
+    (if (eq p (sp-state-last-syntax-ppss-point sp-state))
+        (sp-state-last-syntax-ppss-result sp-state)
+      ;; Add hook to reset memoization if necessary
+      (unless (sp-state-last-syntax-ppss-point sp-state)
+        (add-hook 'before-change-functions 'sp--reset-memoization t t))
+      (setf (sp-state-last-syntax-ppss-point sp-state) p
+            (sp-state-last-syntax-ppss-result sp-state) (syntax-ppss p)))))
+
 (defun sp-point-in-string (&optional p)
   "Return non-nil if point is inside string or documentation string.
 
 If optional argument P is present test this instead of point."
   (ignore-errors
     (save-excursion
-      (nth 3 (syntax-ppss p)))))
+      (nth 3 (sp--syntax-ppss p)))))
 
 (defun sp-point-in-comment (&optional p)
   "Return non-nil if point is inside comment.
@@ -1362,7 +1406,7 @@ If optional argument P is present test this instead off point."
   (setq p (or p (point)))
   (ignore-errors
     (save-excursion
-      (or (nth 4 (syntax-ppss p))
+      (or (nth 4 (sp--syntax-ppss p))
           ;; this also test opening and closing comment delimiters... we
           ;; need to chack that it is not newline, which is in "comment
           ;; ender" class in elisp-mode, but we just want it to be
@@ -1399,7 +1443,8 @@ are in either word or symbol class."
   (setq p (or p (point)))
   (save-excursion
     (goto-char p)
-    (and (memq (char-syntax (following-char)) '(?w ?_))
+    (and (/= 0 (following-char))
+         (memq (char-syntax (following-char)) '(?w ?_))
          (memq (char-syntax (preceding-char)) '(?w ?_)))))
 
 (defun sp--single-key-description (event)
@@ -1412,13 +1457,6 @@ TODO: fix this!"
      ((string-match-p "<.*?>" original) "ň")
      ((string-match-p "SPC" original) " ")
      (t original))))
-
-(defun sp--split-string (string by)
-  "Split STRING on BY.  This simply calls `split-string' and if it
-returns a list of length one, empty string is inserted to the
-beginning."
-  (let ((sp (split-string string by)))
-    (if (not (cdr sp)) (cons "" sp) sp)))
 
 ;; see https://github.com/Fuco1/smartparens/issues/125#issuecomment-20356176
 (defun sp--current-indentation ()
@@ -1947,6 +1985,7 @@ this pair.  Possible values are:
   characters in order.
 - navigate - enable this pair for navigation/highlight and strictness
   checks
+- escape - allow autoescaping of this delimiter in string contexts
 
 If the ACTIONS argument has value :rem, the pair is removed.
 This can be used to remove default pairs you don't want to use.
@@ -2128,7 +2167,7 @@ definition, this will override the global closing delimiter.
 
 The list arguments can optionally be of form starting with
 \":add\" or \":rem\" when these mean \"add to the global list\"
-and \"remove from the global list\" respectivelly.  Otherwise,
+and \"remove from the global list\" respectively.  Otherwise,
 the global list is replaced.  If you wish to both add and remove
 things with single call, use \"((:add ...) (:rem ...))\" as an
 argument.  Therefore,
@@ -2283,19 +2322,31 @@ string and the action."
 
 (defface sp-wrap-overlay-face
   '((t (:inherit sp-pair-overlay-face)))
-  "The face used to highlight wrap overlays."
+  "The face used to highlight wrap overlays.
+
+When the user wraps a region with multi-character pair a special
+insertion mode is entered.  This face is used for the overlays
+where the possible wrappings are displayed.
+
+The opening and closing delimiters use
+`sp-wrap-overlay-opening-pair' and `sp-wrap-overlay-closing-pair'
+respectively."
   :group 'smartparens)
 
 (defface sp-wrap-overlay-opening-pair
   '((t (:inherit sp-wrap-overlay-face
         :foreground "green")))
-  "The face used to highlight wrap overlays."
+  "The face used to highlight opening pairs for wrapping.
+
+See `sp-wrap-overlay-face'."
   :group 'smartparens)
 
 (defface sp-wrap-overlay-closing-pair
   '((t (:inherit sp-wrap-overlay-face
         :foreground "red")))
-  "The face used to highlight wrap overlays."
+  "The face used to highlight closing pairs for wrapping.
+
+See `sp-wrap-overlay-face'."
   :group 'smartparens)
 
 (defface sp-wrap-tag-overlay-face
@@ -2428,6 +2479,11 @@ are of zero length, or if point moved backwards."
   (when sp-pair-overlay-list
     (setq sp-previous-point (point))))
 
+(defun sp--reset-memoization (&rest ignored)
+  "Reset memoization as a safety precaution."
+  (setf (sp-state-last-syntax-ppss-point sp-state) nil
+        (sp-state-last-syntax-ppss-result sp-state) nil))
+
 (defun sp-remove-active-pair-overlay ()
   "Deactivate the active overlay.  See `sp--get-active-overlay'."
   (interactive)
@@ -2467,6 +2523,20 @@ are of zero length, or if point moved backwards."
 (defun sp-in-string-p (id action context)
   "Return t if point is inside string or comment, nil otherwise."
   (eq context 'string))
+
+(defun sp-in-string-quotes-p (id action context)
+  "Special string test for quotes.
+
+On insert action, test the string context one character back from
+point.  Return nil at `bobp'.
+
+On escape action use the value of CONTEXT."
+  (cond
+   ((eq action 'insert)
+    (if (bobp) nil
+      (save-excursion (backward-char 1) (sp-point-in-string))))
+   ((eq action 'escape)
+    (eq context 'string))))
 
 (defun sp-in-docstring-p (id action context)
   "Return t if point is inside elisp docstring, nil otherwise."
@@ -2525,7 +2595,8 @@ This predicate is only tested on \"insert\" action."
 (defun sp-point-after-word-p (id action context)
   "Return t if point is after a word, nil otherwise.
 This predicate is only tested on \"insert\" action."
-  (when (eq action 'insert)
+  ;; TODO: remove condition with sp-defpair
+  (when (memq action '(insert escape))
     (sp--looking-back-p (concat "\\(\\sw\\|\\s_\\)" (regexp-quote id)))))
 
 (defun sp-point-before-same-p (id action context)
@@ -2677,94 +2748,95 @@ see `sp-pair' for description."
 
 ;; TODO: add a test for a symbol property that would tell this handler
 ;; not to re=set `sp-last-operation'. Useful for example in "macro
-;; funcions" like `my-wrap-with-paren'.
+;; functions" like `my-wrap-with-paren'.
 (defun sp--post-command-hook-handler ()
   "Handle the situation after some command has executed."
-  (when (sp--special-self-insert-command-p)
-    (sp--post-self-insert-hook-handler))
-  (ignore-errors
-    (when smartparens-mode
-      ;; handle the wrap overlays
-      (when sp-wrap-overlays
-        (let* ((overlay (car sp-wrap-overlays))
-               (start (overlay-start overlay))
-               (end (overlay-end overlay))
-               (p (point)))
-          (when (or (< p sp-previous-point)
-                    (> p end)
-                    (< p start))
-            (sp-wrap-cancel))))
-      (when sp-wrap-overlays
-        (setq sp-previous-point (point)))
+  (sp--with-case-sensitive
+    (when (sp--special-self-insert-command-p)
+      (sp--post-self-insert-hook-handler))
+    (ignore-errors
+      (when smartparens-mode
+        ;; handle the wrap overlays
+        (when sp-wrap-overlays
+          (let* ((overlay (car sp-wrap-overlays))
+                 (start (overlay-start overlay))
+                 (end (overlay-end overlay))
+                 (p (point)))
+            (when (or (< p sp-previous-point)
+                      (> p end)
+                      (< p start))
+              (sp-wrap-cancel))))
+        (when sp-wrap-overlays
+          (setq sp-previous-point (point)))
 
-      ;; Here we run the delayed hooks. See issue #80
-      (cond
-       ((eq (car-safe (sp-state-delayed-hook sp-state)) :next)
-        (setf (car (sp-state-delayed-hook sp-state)) :this))
-       ((eq (car-safe (sp-state-delayed-hook sp-state)) :this)
-        (let* ((pair (cdr (sp-state-delayed-hook sp-state)))
-               (hooks (sp-get-pair pair :post-handlers-cond)))
-          (--each hooks
-            (let ((fun (car it))
-                  (conds (cdr it)))
-              (when (or (--any? (eq this-command it) conds)
-                        (--any? (equal (single-key-description last-command-event) it) conds))
-                (sp--run-function-or-insertion
-                 fun pair 'insert
-                 (sp--get-handler-context :post-handlers)))))
-          (setf (sp-state-delayed-hook sp-state) nil)
-          (setq sp-last-inserted-pair nil))))
+        ;; Here we run the delayed hooks. See issue #80
+        (cond
+         ((eq (car-safe (sp-state-delayed-hook sp-state)) :next)
+          (setf (car (sp-state-delayed-hook sp-state)) :this))
+         ((eq (car-safe (sp-state-delayed-hook sp-state)) :this)
+          (let* ((pair (cdr (sp-state-delayed-hook sp-state)))
+                 (hooks (sp-get-pair pair :post-handlers-cond)))
+            (--each hooks
+              (let ((fun (car it))
+                    (conds (cdr it)))
+                (when (or (--any? (eq this-command it) conds)
+                          (--any? (equal (single-key-description last-command-event) it) conds))
+                  (sp--run-function-or-insertion
+                   fun pair 'insert
+                   (sp--get-handler-context :post-handlers)))))
+            (setf (sp-state-delayed-hook sp-state) nil)
+            (setq sp-last-inserted-pair nil))))
 
-      ;; Here we run the delayed insertion. Some details in issue #113
-      (when (and (not (eq sp-last-operation 'sp-insert-pair-delayed))
-                 sp-delayed-pair)
-        (let* ((pair (car sp-delayed-pair))
-               (beg (cdr sp-delayed-pair))
-               (conds (sp-get-pair pair :when-cond))
-               (open-pair pair)
-               (close-pair (sp-get-pair pair :close)))
-          (when (and conds
-                     (--any? (cond
-                              ((and (commandp it)
-                                    (not (stringp it)))
-                               (eq this-command it))
-                              ((stringp it)
-                               (equal (single-key-description last-command-event) it))
-                              ((ignore-errors (funcall it pair 'insert (sp--get-handler-context :post-handlers))))) conds))
-            ;; TODO: refactor this and the same code in
-            ;; `sp-insert-pair' to a separate function
-            (sp--run-hook-with-args open-pair :pre-handlers 'insert)
-            (insert close-pair)
-            (backward-char (length close-pair))
-            (sp--pair-overlay-create beg
-                                     (+ (point) (length close-pair))
-                                     open-pair)
-            ;; no auto-escape here? Should be fairly safe
-            (sp--run-hook-with-args open-pair :post-handlers 'insert)
-            (setq sp-last-inserted-pair open-pair)
-            ;; TODO: this is probably useless
-            (setq sp-last-operation 'sp-insert-pair)))
-        (setq sp-delayed-pair nil))
+        ;; Here we run the delayed insertion. Some details in issue #113
+        (when (and (not (eq sp-last-operation 'sp-insert-pair-delayed))
+                   sp-delayed-pair)
+          (let* ((pair (car sp-delayed-pair))
+                 (beg (cdr sp-delayed-pair))
+                 (conds (sp-get-pair pair :when-cond))
+                 (open-pair pair)
+                 (close-pair (sp-get-pair pair :close)))
+            (when (and conds
+                       (--any? (cond
+                                ((and (commandp it)
+                                      (not (stringp it)))
+                                 (eq this-command it))
+                                ((stringp it)
+                                 (equal (single-key-description last-command-event) it))
+                                ((ignore-errors (funcall it pair 'insert (sp--get-handler-context :post-handlers))))) conds))
+              ;; TODO: refactor this and the same code in
+              ;; `sp-insert-pair' to a separate function
+              (sp--run-hook-with-args open-pair :pre-handlers 'insert)
+              (insert close-pair)
+              (backward-char (length close-pair))
+              (sp--pair-overlay-create beg
+                                       (+ (point) (length close-pair))
+                                       open-pair)
+              ;; no auto-escape here? Should be fairly safe
+              (sp--run-hook-with-args open-pair :post-handlers 'insert)
+              (setq sp-last-inserted-pair open-pair)
+              ;; TODO: this is probably useless
+              (setq sp-last-operation 'sp-insert-pair)))
+          (setq sp-delayed-pair nil))
 
-      (when (eq sp-last-operation 'sp-insert-pair-delayed)
-        (setq sp-last-operation nil))
+        (when (eq sp-last-operation 'sp-insert-pair-delayed)
+          (setq sp-last-operation nil))
 
-      (unless (or (sp--self-insert-command-p)
-                  (sp--special-self-insert-command-p))
-        ;; unless the last command was a self-insert, remove the
-        ;; information about the last wrapped region.  It is only used
-        ;; for: 1. deleting the wrapping immediately after the wrap,
-        ;; 2. re-wrapping region immediatelly after a sucessful wrap.
-        ;; Therefore, the deletion should have no ill-effect.  If the
-        ;; necessity will arise, we can add a different flag.
-        (setq sp-last-wrapped-region nil)
-        (setq sp-last-operation nil))
+        (unless (or (sp--self-insert-command-p)
+                    (sp--special-self-insert-command-p))
+          ;; unless the last command was a self-insert, remove the
+          ;; information about the last wrapped region.  It is only used
+          ;; for: 1. deleting the wrapping immediately after the wrap,
+          ;; 2. re-wrapping region immediatelly after a sucessful wrap.
+          ;; Therefore, the deletion should have no ill-effect.  If the
+          ;; necessity will arise, we can add a different flag.
+          (setq sp-last-wrapped-region nil)
+          (setq sp-last-operation nil))
 
-      (when show-smartparens-mode
-        (if (member this-command sp-show-enclosing-pair-commands)
-            (sp-show--pair-enc-function)
-          (when (not (eq this-command 'sp-highlight-current-sexp))
-            (sp-show--pair-delete-enc-overlays)))))))
+        (when show-smartparens-mode
+          (if (member this-command sp-show-enclosing-pair-commands)
+              (sp-show--pair-enc-function)
+            (when (not (eq this-command 'sp-highlight-current-sexp))
+              (sp-show--pair-delete-enc-overlays))))))))
 
 (defmacro sp--setaction (action &rest forms)
   (declare (debug (form body)))
@@ -2777,30 +2849,47 @@ see `sp-pair' for description."
 (defun sp--post-self-insert-hook-handler ()
   (with-demoted-errors "sp--post-self-insert-hook-handler: %S"
     (when smartparens-mode
-      (let (op action)
-        (setq op sp-last-operation)
-        (when (region-active-p)
-          (sp-wrap--initialize))
-        (cond
-         (sp-wrap-overlays
-          (sp-wrap))
-         (t
-          ;; TODO: this does not pick correct pair!! it uses insert and not wrapping code
-          (sp--setaction action (-when-let ((_ . open-pairs) (sp--all-pairs-to-insert nil 'wrap))
-                                  (catch 'done
-                                    (-each open-pairs
-                                      (-lambda ((&keys :open open :close close))
-                                        (--when-let (sp--wrap-repeat-last (cons open close))
-                                          (throw 'done it)))))))
-          (sp--setaction action (sp-insert-pair))
-          (sp--setaction action (sp-skip-closing-pair))
-          ;; if nothing happened, we just inserted a character, so
-          ;; set the apropriate operation.  We also need to check
-          ;; for `sp--self-insert-no-escape' not to overwrite
-          ;; it.  See `sp-autoinsert-quote-if-followed-by-closing-pair'.
-          (when (and (not action)
-                     (not (eq sp-last-operation 'sp-self-insert-no-escape)))
-            (setq sp-last-operation 'sp-self-insert))))))))
+      (sp--with-case-sensitive
+        (catch 'done
+          (let (op action)
+            (setq op sp-last-operation)
+            (when (region-active-p)
+              (condition-case err
+                  (sp-wrap--initialize)
+                (user-error
+                 (message (error-message-string err))
+                 ;; we need to remove the undo record of the insertion
+                 (unless (eq buffer-undo-list t)
+                   ;; pop all undo info until we hit an insertion node
+                   (sp--undo-pop-to-last-insertion-node)
+                   ;; get rid of it and insert an undo boundary marker
+                   (pop buffer-undo-list)
+                   (undo-boundary))
+                 (restore-buffer-modified-p sp-buffer-modified-p)
+                 (throw 'done nil))))
+            (cond
+             (sp-wrap-overlays
+              (sp-wrap))
+             (t
+              ;; TODO: this does not pick correct pair!! it uses insert and not wrapping code
+              (sp--setaction
+               action
+               (-when-let ((_ . open-pairs) (sp--all-pairs-to-insert nil 'wrap))
+                 (catch 'done
+                   (-each open-pairs
+                     (-lambda ((&keys :open open :close close))
+                       (--when-let (sp--wrap-repeat-last (cons open close))
+                         (throw 'done it)))))))
+              (sp--setaction action (sp-insert-pair))
+              (sp--setaction action (sp-skip-closing-pair))
+              (unless action (sp-escape-open-delimiter))
+              ;; if nothing happened, we just inserted a character, so
+              ;; set the apropriate operation.  We also need to check
+              ;; for `sp--self-insert-no-escape' not to overwrite
+              ;; it.  See `sp-autoinsert-quote-if-followed-by-closing-pair'.
+              (when (and (not action)
+                         (not (eq sp-last-operation 'sp-self-insert-no-escape)))
+                (setq sp-last-operation 'sp-self-insert))))))))))
 
 ;; Unfortunately, some modes rebind "inserting" keys to their own
 ;; handlers but do not hand over the insertion back to
@@ -2876,20 +2965,22 @@ extra boundary conditions depending on parens."
 (defun sp--strict-regexp-opt (strings &optional ignored)
   "Like regexp-opt, but with extra boundary conditions to ensure
 that the strings are not matched in-symbol."
-  (with-syntax-table
-      ;; HACK: this is a terrible hack to make ' be treated as a
-      ;; punctuation.  Many text modes set it as word character which
-      ;; messes up the regexps
-      (let ((table (make-syntax-table (syntax-table))))
-        (modify-syntax-entry ?' "." table)
-        table)
-    (--> strings
-      (-group-by (lambda (string)
-                   (list (and (string-match-p "\\`\\<" string) t)
-                         (and (string-match-p "\\>\\'" string) t)))
-                 it)
-      (mapconcat (lambda (g) (apply 'sp--regexp-for-group g)) it "\\|")
-      (concat "\\(?:" it "\\)"))))
+  (if strings
+      (with-syntax-table
+          ;; HACK: this is a terrible hack to make ' be treated as a
+          ;; punctuation.  Many text modes set it as word character which
+          ;; messes up the regexps
+          (let ((table (make-syntax-table (syntax-table))))
+            (modify-syntax-entry ?' "." table)
+            table)
+        (--> strings
+             (-group-by (lambda (string)
+                          (list (and (string-match-p "\\`\\<" string) t)
+                                (and (string-match-p "\\>\\'" string) t)))
+                        it)
+             (mapconcat (lambda (g) (apply 'sp--regexp-for-group g)) it "\\|")
+             (concat "\\(?:" it "\\)")))
+    ""))
 
 (defun sp--strict-regexp-quote (string)
   "Like regexp-quote, but make sure that the string is not
@@ -2913,9 +3004,6 @@ delimiter for any pair allowed in current context."
 
 (cl-defun sp--get-stringlike-regexp (&optional (pair-list (sp--get-allowed-stringlike-list)))
   (regexp-opt (--map (car it) pair-list)))
-
-(defun sp-pair-is-stringlike-p (delim)
-  (--first (equal delim (car it)) (sp--get-allowed-stringlike-list)))
 
 (defun sp--get-last-wraped-region (beg end open close)
   "Return `sp-get-sexp' style plist about the last wrapped region.
@@ -2993,6 +3081,44 @@ overlay."
       ;; TODO: get rid of the following variables
       (setq sp-wrap-point (- (point) inserted-string-length))
       (setq sp-wrap-mark (mark))
+      ;; balance check
+      (with-silent-modifications
+        (let ((inserted-string
+               (prog1 (delete-and-extract-region sp-wrap-point (point))
+                 ;; HACK: in modes with string fences, the insertion
+                 ;; of the delimiter causes `syntax-propertize' to
+                 ;; fire, but the above deletion doesn't re-run it
+                 ;; because the cache tells it the state is OK.  We
+                 ;; need to destroy the cache and re-run the
+                 ;; `syntax-propertize' on the buffer.  This might be
+                 ;; expensive, but we only done this on wrap-init so
+                 ;; it's fine, I guess.
+                 (setq syntax-propertize--done -1)
+                 (syntax-propertize (point-max))))
+              (point-string-context (sp-get-quoted-string-bounds sp-wrap-point))
+              (mark-string-context (sp-get-quoted-string-bounds (mark))))
+          ;; If point and mark are inside the same string, we don't
+          ;; need to check if the region is OK.  If both are outisde
+          ;; strings, we have to.  If one is inside and the other is
+          ;; not, no matter what we would break, so we exit.
+          (cond
+           ;; inside the same string
+           ((and point-string-context mark-string-context
+                 (eq (car point-string-context)
+                     (car mark-string-context))))
+           ;; neither is inside string
+           ((and (not point-string-context)
+                 (not mark-string-context))
+            (unless (sp-region-ok-p sp-wrap-point (mark))
+              (user-error "Mismatched sexp state: wrapping would break structure")))
+           ;; one is in and the other isn't
+           ((if point-string-context (not mark-string-context) mark-string-context)
+            (user-error "Mismatched string state: point %sin string, mark %sin string"
+                        (if (car-safe point-string-context) "" "not ")
+                        (if (car-safe mark-string-context) "" "not ")))
+           ;; both are in but in different strings
+           (t (user-error "Mismatched string state: point and mark are inside different strings")))
+          (insert inserted-string)))
       ;; if point > mark, we need to move point to mark and reinsert the
       ;; just inserted character.
       (when (> (point) (mark))
@@ -3077,6 +3203,67 @@ programatically.  Use `sp-wrap-with-pair' instead."
      (t
       (sp-wrap-cancel)))))
 
+(defun sp--escape-region (chars-to-escape beg end)
+  "Escape instances of CHARS-TO-ESCAPE between BEG and END.
+
+Return non-nil if at least one escaping was performed."
+  (save-excursion
+    (goto-char beg)
+    (let ((pattern (regexp-opt chars-to-escape))
+          (end-marker (set-marker (make-marker) end))
+          (re nil))
+      (while (re-search-forward pattern end-marker t)
+        (setq re t)
+        (save-excursion
+          (goto-char (match-beginning 0))
+          (insert sp-escape-char)))
+      re)))
+
+(defun sp-escape-wrapped-region (id action context)
+  "Escape quotes and special chars when a region is wrapped."
+  (when (and sp-escape-wrapped-region
+             (eq action 'wrap))
+    (sp-get sp-last-wrapped-region
+      (let* ((parent-delim (save-excursion
+                             (goto-char :beg)
+                             (sp-get (sp-get-string)
+                               (when (and (< :beg (point))
+                                          (< (point) :end))
+                                 :op)))))
+        (cond
+         ((equal parent-delim id)
+          (sp--escape-region (list id sp-escape-char) :beg :end))
+         (parent-delim
+          (sp--escape-region (list id) :beg-in :end-in))
+         (t
+          (sp--escape-region (list id sp-escape-char) :beg-in :end-in)))))))
+
+(defun sp-escape-quotes-after-insert (id action context)
+  "Escape quotes inserted via `sp-insert-pair'."
+  (when (and sp-escape-quotes-after-insert
+             (eq action 'insert)
+             ;; we test not being inside string because if we were
+             ;; before inserting the "" pair it is now split into two
+             ;; -> which moves us outside the pair
+             (not (eq context 'string))
+             ;; the inserted character must have string syntax, otherwise no "context" flip happens
+             (eq (char-syntax (aref id 0)) ?\"))
+    (let ((open id)
+          (close (sp-get-pair id :close)))
+      (sp--escape-region (list open close)
+                         (- (point) (length open))
+                         (+ (point) (length close))))))
+
+(defun sp-escape-open-delimiter ()
+  "Escape just inserted opening pair if `sp-insert-pair' was skipped.
+
+This is useful for escaping of \" inside strings when its pairing
+is disabled.  This way, we can control autoescape and closing
+delimiter insertion separately."
+  (-when-let (open (plist-get (sp--pair-to-insert 'escape) :open))
+    (when (sp--do-action-p open 'escape)
+      (sp--escape-region (list open) (- (point) (length open)) (point)))))
+
 ;; kept to not break people's config... remove later
 (defun sp-match-sgml-tags (tag)
   "Split the html tag TAG at the first space and return its name."
@@ -3124,11 +3311,6 @@ include separate pair node."
             (append (list nil second-action nil first-action)
                     previous-undo-actions)))))
 
-(defun sp--string-empty-p (delimeter)
-  "Return t if point is inside an empty string."
-  (and (equal (char-after (1+ (point))) delimeter)
-       (equal (char-after (- (point) 2)) delimeter)))
-
 ;; TODO: remove ACTION argument and make the selection process more
 ;; unified (see also sp--pair-to-wrap which depends on buffer state
 ;; among other things)
@@ -3174,14 +3356,14 @@ the upcoming version."
       (not (and (string-prefix-p (plist-get b :close) (plist-get a :close))
                 (sp--looking-at-p (plist-get b :close))))))))
 
-(defun sp--pair-to-insert ()
+(defun sp--pair-to-insert (&optional action)
   "Return pair that can be inserted at point.
 
 Return nil if such pair does not exist.
 
 If more triggers or opening pairs are possible select the
 shortest one."
-  (-when-let ((property . pairs) (sp--all-pairs-to-insert))
+  (-when-let ((property . pairs) (sp--all-pairs-to-insert nil action))
     (car (--sort (sp--pair-to-insert-comparator property it other) pairs))))
 
 (defun sp--longest-prefix-to-insert ()
@@ -3235,96 +3417,97 @@ setting `sp-autoinsert-pair' to nil.
 You can globally disable insertion of closing pair if point is
 followed by the matching opening pair.  It is disabled by
 default."
-  (-let* ((active-pair (unwind-protect
-                           ;; This fake insertion manufactures proper
-                           ;; context for the tests below... in effect
-                           ;; we must make it look as if the user
-                           ;; typed in the opening part themselves
-                           ;; TODO: it is duplicated in the test
-                           ;; below, maybe it wouldn't hurt to
-                           ;; restructure this function a bit
-                           (progn
-                             (when pair (insert pair))
-                             (sp--pair-to-insert))
-                         (when pair (delete-char (- (length pair))))))
-          ((open-pair close-pair trig) (sp--insert-pair-get-pair-info active-pair)))
-    (if (not (unwind-protect
-                 (progn
-                   (when pair (insert pair))
-                   ;; TODO: all these tests must go into `sp--pair-to-insert'
-                   (and sp-autoinsert-pair
-                        active-pair
-                        (if (memq sp-autoskip-closing-pair '(always always-end))
-                            (or (not (equal open-pair close-pair))
-                                (not (sp-skip-closing-pair nil t)))
-                          t)
-                        (sp--do-action-p open-pair 'insert t)
-                        (if sp-autoinsert-quote-if-followed-by-closing-pair t
-                          (if (and (eq (char-syntax (preceding-char)) ?\")
-                                   ;; this is called *after* the character is
-                                   ;; inserted.  Therefore, if we are not in string, it
-                                   ;; must have been closed just now
-                                   (not (sp-point-in-string)))
-                              (let ((pattern (sp--get-closing-regexp)))
-                                ;; If we simply insert closing ", we also
-                                ;; don't want to escape it.  Therefore, we
-                                ;; need to set `sp-last-operation'
-                                ;; accordingly to be checked in
-                                ;; `self-insert-command' advice.
-                                (if (sp--looking-at pattern)
-                                    (progn (setq sp-last-operation 'sp-self-insert-no-escape) nil)
-                                  t))
-                            t))
-                        ;; was sp-autoinsert-if-followed-by-same
-                        (or (not (sp--get-active-overlay 'pair))
-                            (not (sp--looking-at (sp--strict-regexp-quote open-pair)))
-                            (and (equal open-pair close-pair)
-                                 (eq sp-last-operation 'sp-insert-pair)
-                                 (save-excursion
-                                   (backward-char (length trig))
-                                   (sp--looking-back (sp--strict-regexp-quote open-pair))))
-                            (not (equal open-pair close-pair)))))
-               (when pair (delete-char (- (length pair))))))
-        ;; if this pair could not be inserted, we try the procedure
-        ;; again with this pair removed from sp-pair-list to give
-        ;; chance to other pairs sharing a common suffix (for
-        ;; example \[ and [)
-        (let ((new-sp-pair-list (--remove (equal (car it) open-pair) sp-pair-list))
-              (new-sp-local-pairs (--remove (equal (plist-get it :open) open-pair) sp-local-pairs)))
-          (when (> (length sp-pair-list) (length new-sp-pair-list))
-            (let ((sp-pair-list new-sp-pair-list)
-                  (sp-local-pairs new-sp-local-pairs))
-              (sp-insert-pair))))
-      ;; setup the delayed insertion here.
-      (if (sp-get-pair open-pair :when-cond)
-          (progn
-            (setq sp-delayed-pair (cons open-pair (- (point) (length open-pair))))
-            (setq sp-last-operation 'sp-insert-pair-delayed))
-        (unless pair (delete-char (- (length trig))))
-        (insert open-pair)
-        (sp--run-hook-with-args open-pair :pre-handlers 'insert)
-        (--when-let (sp--pair-to-uninsert)
-          (let ((cl (plist-get it :close)))
-            (when (and (sp--looking-at-p (sp--strict-regexp-quote cl))
-                       (not (string-prefix-p cl close-pair)))
-              (delete-char (length cl)))))
-        (insert close-pair)
-        (backward-char (length close-pair))
-        (sp--pair-overlay-create (- (point) (length open-pair))
-                                 (+ (point) (length close-pair))
-                                 open-pair)
-        (when sp-undo-pairs-separately
-          (sp--split-last-insertion-undo (+ (length open-pair) (length close-pair)))
-          ;; TODO: abc\{abc\} undo undo \{asd\} . next undo removes the
-          ;; entire \{asd\} if we do not insert two nils here.
-          ;; Normally, repeated nils are ignored so it shouldn't
-          ;; matter.  It would still be useful to inspect further.
-          (push nil buffer-undo-list)
-          (push nil buffer-undo-list))
-        (sp--run-hook-with-args open-pair :post-handlers 'insert)
-        (setq sp-last-inserted-pair open-pair)
-        (setf (sp-state-delayed-hook sp-state) (cons :next open-pair))
-        (setq sp-last-operation 'sp-insert-pair)))))
+  (sp--with-case-sensitive
+    (-let* ((active-pair (unwind-protect
+                             ;; This fake insertion manufactures proper
+                             ;; context for the tests below... in effect
+                             ;; we must make it look as if the user
+                             ;; typed in the opening part themselves
+                             ;; TODO: it is duplicated in the test
+                             ;; below, maybe it wouldn't hurt to
+                             ;; restructure this function a bit
+                             (progn
+                               (when pair (insert pair))
+                               (sp--pair-to-insert))
+                           (when pair (delete-char (- (length pair))))))
+            ((open-pair close-pair trig) (sp--insert-pair-get-pair-info active-pair)))
+      (if (not (unwind-protect
+                   (progn
+                     (when pair (insert pair))
+                     ;; TODO: all these tests must go into `sp--pair-to-insert'
+                     (and sp-autoinsert-pair
+                          active-pair
+                          (if (memq sp-autoskip-closing-pair '(always always-end))
+                              (or (not (equal open-pair close-pair))
+                                  (not (sp-skip-closing-pair nil t)))
+                            t)
+                          (sp--do-action-p open-pair 'insert t)
+                          (if sp-autoinsert-quote-if-followed-by-closing-pair t
+                            (if (and (eq (char-syntax (preceding-char)) ?\")
+                                     ;; this is called *after* the character is
+                                     ;; inserted.  Therefore, if we are not in string, it
+                                     ;; must have been closed just now
+                                     (not (sp-point-in-string)))
+                                (let ((pattern (sp--get-closing-regexp)))
+                                  ;; If we simply insert closing ", we also
+                                  ;; don't want to escape it.  Therefore, we
+                                  ;; need to set `sp-last-operation'
+                                  ;; accordingly to be checked in
+                                  ;; `self-insert-command' advice.
+                                  (if (sp--looking-at pattern)
+                                      (progn (setq sp-last-operation 'sp-self-insert-no-escape) nil)
+                                    t))
+                              t))
+                          ;; was sp-autoinsert-if-followed-by-same
+                          (or (not (sp--get-active-overlay 'pair))
+                              (not (sp--looking-at (sp--strict-regexp-quote open-pair)))
+                              (and (equal open-pair close-pair)
+                                   (eq sp-last-operation 'sp-insert-pair)
+                                   (save-excursion
+                                     (backward-char (length trig))
+                                     (sp--looking-back (sp--strict-regexp-quote open-pair))))
+                              (not (equal open-pair close-pair)))))
+                 (when pair (delete-char (- (length pair))))))
+          ;; if this pair could not be inserted, we try the procedure
+          ;; again with this pair removed from sp-pair-list to give
+          ;; chance to other pairs sharing a common suffix (for
+          ;; example \[ and [)
+          (let ((new-sp-pair-list (--remove (equal (car it) open-pair) sp-pair-list))
+                (new-sp-local-pairs (--remove (equal (plist-get it :open) open-pair) sp-local-pairs)))
+            (when (> (length sp-pair-list) (length new-sp-pair-list))
+              (let ((sp-pair-list new-sp-pair-list)
+                    (sp-local-pairs new-sp-local-pairs))
+                (sp-insert-pair))))
+        ;; setup the delayed insertion here.
+        (if (sp-get-pair open-pair :when-cond)
+            (progn
+              (setq sp-delayed-pair (cons open-pair (- (point) (length open-pair))))
+              (setq sp-last-operation 'sp-insert-pair-delayed))
+          (unless pair (delete-char (- (length trig))))
+          (insert open-pair)
+          (sp--run-hook-with-args open-pair :pre-handlers 'insert)
+          (--when-let (sp--pair-to-uninsert)
+            (let ((cl (plist-get it :close)))
+              (when (and (sp--looking-at-p (sp--strict-regexp-quote cl))
+                         (not (string-prefix-p cl close-pair)))
+                (delete-char (length cl)))))
+          (insert close-pair)
+          (backward-char (length close-pair))
+          (sp--pair-overlay-create (- (point) (length open-pair))
+                                   (+ (point) (length close-pair))
+                                   open-pair)
+          (when sp-undo-pairs-separately
+            (sp--split-last-insertion-undo (+ (length open-pair) (length close-pair)))
+            ;; TODO: abc\{abc\} undo undo \{asd\} . next undo removes the
+            ;; entire \{asd\} if we do not insert two nils here.
+            ;; Normally, repeated nils are ignored so it shouldn't
+            ;; matter.  It would still be useful to inspect further.
+            (push nil buffer-undo-list)
+            (push nil buffer-undo-list))
+          (sp--run-hook-with-args open-pair :post-handlers 'insert)
+          (setq sp-last-inserted-pair open-pair)
+          (setf (sp-state-delayed-hook sp-state) (cons :next open-pair))
+          (setq sp-last-operation 'sp-insert-pair))))))
 
 (defun sp--wrap-repeat-last (active-pair)
   "If the last operation was a wrap and `sp-wrap-repeat-last' is
@@ -3405,112 +3588,113 @@ Additionally, this behaviour can be selectively disabled for
 specific pairs by removing their \"autoskip\" action.  You can
 achieve this by using `sp-pair' or `sp-local-pair' with
 \":actions '(:rem autoskip)\"."
-  (when (or (and (eq sp-autoskip-closing-pair t)
-                 sp-pair-overlay-list
-                 (sp--get-active-overlay 'pair))
-            (memq sp-autoskip-closing-pair '(always always-end)))
-    ;; TODO: ugly hack to override 'navigate with 'autoskip.  Each of
-    ;; these submodules should set-up their own environment somehow
-    ;; and thread it through the entire computation
-    (cl-letf (((symbol-function 'sp--get-allowed-stringlike-list)
-               (lambda ()
-                 (--filter (and (sp--do-action-p (car it) 'autoskip)
-                                (equal (car it) (cdr it))) sp-pair-list))))
-      ;; these two are pretty hackish ~_~
-      (cl-labels ((get-sexp
-                   ()
-                   (delete-char -1)
-                   (insert " ")
-                   (prog1 (sp-get-sexp)
+  (sp--with-case-sensitive
+    (when (or (and (eq sp-autoskip-closing-pair t)
+                   sp-pair-overlay-list
+                   (sp--get-active-overlay 'pair))
+              (memq sp-autoskip-closing-pair '(always always-end)))
+      ;; TODO: ugly hack to override 'navigate with 'autoskip.  Each of
+      ;; these submodules should set-up their own environment somehow
+      ;; and thread it through the entire computation
+      (cl-letf (((symbol-function 'sp--get-allowed-stringlike-list)
+                 (lambda ()
+                   (--filter (and (sp--do-action-p (car it) 'autoskip)
+                                  (equal (car it) (cdr it))) sp-pair-list))))
+        ;; these two are pretty hackish ~_~
+        (cl-labels ((get-sexp
+                     ()
                      (delete-char -1)
-                     (insert last)))
-                  (get-enclosing-sexp
-                   ()
-                   (delete-char -1)
-                   (insert " ")
-                   (prog1 (sp-get-enclosing-sexp)
+                     (insert " ")
+                     (prog1 (sp-get-sexp)
+                       (delete-char -1)
+                       (insert last)))
+                    (get-enclosing-sexp
+                     ()
                      (delete-char -1)
-                     (insert last))))
-        (let ((last (or last (sp--single-key-description last-command-event))))
-          (-when-let (active-sexp
-                      (cond
-                       ((-when-let* ((ov (sp--get-active-overlay 'pair))
-                                     (op (overlay-get ov 'pair-id))
-                                     (cl (cdr (assoc op sp-pair-list))))
-                          ;; if the sexp is active, we are inside it.
-                          (when (and (= 1 (length op))
-                                     (equal last cl))
-                            (list :beg (overlay-start ov)
-                                  :end (overlay-end ov)
-                                  :op op
-                                  :cl cl
-                                  :prefix ""
-                                  :suffix ""))))
-                       ((sp--char-is-part-of-stringlike last)
-                        ;; a part of closing delimiter is typed. There are four
-                        ;; options now:
-                        ;; - we are inside the sexp, at its end
-                        ;; - we are inside the sexp, somewhere in the middle
-                        ;; - we are outside, in front of a sexp
-                        ;; - we are outside, somewhere between sexps
+                     (insert " ")
+                     (prog1 (sp-get-enclosing-sexp)
+                       (delete-char -1)
+                       (insert last))))
+          (let ((last (or last (sp--single-key-description last-command-event))))
+            (-when-let (active-sexp
                         (cond
-                         ((and (sp--looking-at (sp--get-stringlike-regexp))
-                               (not (sp--skip-match-p (match-string-no-properties 0)
-                                                      (match-beginning 0)
-                                                      (match-end 0))))
-                          ;; if we're looking at the delimiter, and it is valid in
-                          ;; current context, get the sexp.
-                          (get-sexp))
-                         ;; here comes the feature when we're somewhere in the
-                         ;; middle of the sexp (or outside), if ever supported.
-                         ))
-                       ((sp--char-is-part-of-closing last)
-                        (cond
-                         ((and (sp--looking-at (sp--get-closing-regexp))
-                               (not (sp--skip-match-p (match-string-no-properties 0)
-                                                      (match-beginning 0)
-                                                      (match-end 0))))
-                          (get-sexp))
-                         ((eq sp-autoskip-closing-pair 'always)
-                          (get-enclosing-sexp))))))
-            (when (and active-sexp
-                       (equal (sp-get active-sexp :cl) last)
-                       (sp--do-action-p (sp-get active-sexp :op) 'autoskip)
-                       ;; if the point is inside string and preceded
-                       ;; by an odd number of `sp-escape-char's, we
-                       ;; should not skip as that would leave the
-                       ;; string broken.
-                       (or (not (sp-point-in-string))
-                           (if (save-excursion
-                                 (backward-char 1)
-                                 (sp--search-backward-regexp
-                                  (concat sp-escape-char sp-escape-char "+") nil t))
-                               (eq (logand (length (match-string 0)) 1) 0) ;; even? = we can skip
-                             t)))
-              (-when-let (re (cond
-                              ((= (point) (sp-get active-sexp :beg))
-                               ;; we are in front of a string-like sexp
-                               (when sp-autoskip-opening-pair
+                         ((-when-let* ((ov (sp--get-active-overlay 'pair))
+                                       (op (overlay-get ov 'pair-id))
+                                       (cl (cdr (assoc op sp-pair-list))))
+                            ;; if the sexp is active, we are inside it.
+                            (when (and (= 1 (length op))
+                                       (equal last cl))
+                              (list :beg (overlay-start ov)
+                                    :end (overlay-end ov)
+                                    :op op
+                                    :cl cl
+                                    :prefix ""
+                                    :suffix ""))))
+                         ((sp--char-is-part-of-stringlike last)
+                          ;; a part of closing delimiter is typed. There are four
+                          ;; options now:
+                          ;; - we are inside the sexp, at its end
+                          ;; - we are inside the sexp, somewhere in the middle
+                          ;; - we are outside, in front of a sexp
+                          ;; - we are outside, somewhere between sexps
+                          (cond
+                           ((and (sp--looking-at (sp--get-stringlike-regexp))
+                                 (not (sp--skip-match-p (match-string-no-properties 0)
+                                                        (match-beginning 0)
+                                                        (match-end 0))))
+                            ;; if we're looking at the delimiter, and it is valid in
+                            ;; current context, get the sexp.
+                            (get-sexp))
+                           ;; here comes the feature when we're somewhere in the
+                           ;; middle of the sexp (or outside), if ever supported.
+                           ))
+                         ((sp--char-is-part-of-closing last)
+                          (cond
+                           ((and (sp--looking-at (sp--get-closing-regexp))
+                                 (not (sp--skip-match-p (match-string-no-properties 0)
+                                                        (match-beginning 0)
+                                                        (match-end 0))))
+                            (get-sexp))
+                           ((eq sp-autoskip-closing-pair 'always)
+                            (get-enclosing-sexp))))))
+              (when (and active-sexp
+                         (equal (sp-get active-sexp :cl) last)
+                         (sp--do-action-p (sp-get active-sexp :op) 'autoskip)
+                         ;; if the point is inside string and preceded
+                         ;; by an odd number of `sp-escape-char's, we
+                         ;; should not skip as that would leave the
+                         ;; string broken.
+                         (or (not (sp-point-in-string))
+                             (if (save-excursion
+                                   (backward-char 1)
+                                   (sp--search-backward-regexp
+                                    (concat sp-escape-char sp-escape-char "+") nil t))
+                                 (eq (logand (length (match-string 0)) 1) 0) ;; even? = we can skip
+                               t)))
+                (-when-let (re (cond
+                                ((= (point) (sp-get active-sexp :beg))
+                                 ;; we are in front of a string-like sexp
+                                 (when sp-autoskip-opening-pair
+                                   (if test-only t
+                                     (delete-char -1)
+                                     (forward-char)
+                                     (setq sp-last-operation 'sp-skip-closing-pair))))
+                                ((= (point) (sp-get active-sexp :end-in))
+                                 (if test-only t
+                                   (delete-char 1)
+                                   (setq sp-last-operation 'sp-skip-closing-pair)))
+                                ((sp-get active-sexp
+                                   (and (> (point) :beg-in)
+                                        (< (point) :end-in)))
                                  (if test-only t
                                    (delete-char -1)
-                                   (forward-char)
-                                   (setq sp-last-operation 'sp-skip-closing-pair))))
-                              ((= (point) (sp-get active-sexp :end-in))
-                               (if test-only t
-                                 (delete-char 1)
-                                 (setq sp-last-operation 'sp-skip-closing-pair)))
-                              ((sp-get active-sexp
-                                 (and (> (point) :beg-in)
-                                      (< (point) :end-in)))
-                               (if test-only t
-                                 (delete-char -1)
-                                 (sp-up-sexp)))))
-                (unless (or test-only
-                            sp-buffer-modified-p)
-                  (set-buffer-modified-p nil))
-                (unless test-only
-                  (sp--run-hook-with-args (sp-get active-sexp :op) :post-handlers 'skip-closing-pair))
-                re))))))))
+                                   (sp-up-sexp)))))
+                  (unless (or test-only
+                              sp-buffer-modified-p)
+                    (set-buffer-modified-p nil))
+                  (unless test-only
+                    (sp--run-hook-with-args (sp-get active-sexp :op) :post-handlers 'skip-closing-pair))
+                  re)))))))))
 
 (defun sp-delete-pair (&optional arg)
   "Automatically delete opening or closing pair, or both, depending on
@@ -3534,75 +3718,76 @@ is remove the just added wrapping."
   ;; only activate if argument is 1 (this is 0-th argument of the
   ;; delete-backward-char), otherwise the user wants to delete
   ;; multiple character, so let him do that
-  (when (and (= arg 1)
-             smartparens-mode)
-    (if (and sp-autodelete-wrap
-             (eq sp-last-operation 'sp-wrap-region))
+  (sp--with-case-sensitive
+    (when (and (= arg 1)
+               smartparens-mode)
+      (if (and sp-autodelete-wrap
+               (eq sp-last-operation 'sp-wrap-region))
+          (let ((p (point))
+                (b (sp-get sp-last-wrapped-region :beg))
+                (e (sp-get sp-last-wrapped-region :end))
+                (o (sp-get sp-last-wrapped-region :op-l))
+                (c (sp-get sp-last-wrapped-region :cl-l)))
+            ;; if the last operation was `sp-wrap-region', and we are at
+            ;; the position of either opening or closing pair, delete the
+            ;; just-inserted pair
+            (when (or (= p (+ b o))
+                      (= p e))
+              (insert "x") ;dummy char to account for the regularly deleted one
+              (save-excursion
+                (goto-char e)
+                (delete-char (- c))
+                (goto-char b)
+                (delete-char o))
+              (setq sp-last-operation 'sp-delete-pair-wrap)))
         (let ((p (point))
-              (b (sp-get sp-last-wrapped-region :beg))
-              (e (sp-get sp-last-wrapped-region :end))
-              (o (sp-get sp-last-wrapped-region :op-l))
-              (c (sp-get sp-last-wrapped-region :cl-l)))
-          ;; if the last operation was `sp-wrap-region', and we are at
-          ;; the position of either opening or closing pair, delete the
-          ;; just-inserted pair
-          (when (or (= p (+ b o))
-                    (= p e))
-            (insert "x") ;dummy char to account for the regularly deleted one
-            (save-excursion
-              (goto-char e)
-              (delete-char (- c))
-              (goto-char b)
-              (delete-char o))
-            (setq sp-last-operation 'sp-delete-pair-wrap)))
-      (let ((p (point))
-            (inside-pair (--first (and (sp--looking-back (sp--strict-regexp-quote (car it)))
-                                       (sp--looking-at (concat "[ \n\t]*" (sp--strict-regexp-quote (cdr it)))))
-                                  sp-pair-list))
-            (behind-pair (--first (sp--looking-back (sp--strict-regexp-quote (cdr it))) sp-pair-list))
-            (opening-pair (--first (sp--looking-back (sp--strict-regexp-quote (car it))) sp-pair-list)))
+              (inside-pair (--first (and (sp--looking-back (sp--strict-regexp-quote (car it)))
+                                         (sp--looking-at (concat "[ \n\t]*" (sp--strict-regexp-quote (cdr it)))))
+                                    sp-pair-list))
+              (behind-pair (--first (sp--looking-back (sp--strict-regexp-quote (cdr it))) sp-pair-list))
+              (opening-pair (--first (sp--looking-back (sp--strict-regexp-quote (car it))) sp-pair-list)))
 
-        (cond
-         ;; we're just before the closing quote of a string.  If there
-         ;; is an opening or closing pair behind the point, remove
-         ;; it.  This is only really relevant if the pair ends in the
-         ;; same character as string quote.  We almost never want to
-         ;; delete it as an autopair (it would "open up the string").
-         ;; So, word\"|" and <backspace> should produce word\|" or
-         ;; word|" (if \" is autopair) instead of word\|.
-         ((and (sp-point-in-string)
-               (not (sp-point-in-string (1+ p)))
-               (sp-point-in-string (1- p))) ;; the string isn't empty
-          (cond ;; oh, you ugly duplication :/
+          (cond
+           ;; we're just before the closing quote of a string.  If there
+           ;; is an opening or closing pair behind the point, remove
+           ;; it.  This is only really relevant if the pair ends in the
+           ;; same character as string quote.  We almost never want to
+           ;; delete it as an autopair (it would "open up the string").
+           ;; So, word\"|" and <backspace> should produce word\|" or
+           ;; word|" (if \" is autopair) instead of word\|.
+           ((and (sp-point-in-string)
+                 (not (sp-point-in-string (1+ p)))
+                 (sp-point-in-string (1- p))) ;; the string isn't empty
+            (cond ;; oh, you ugly duplication :/
+             ((and behind-pair sp-autodelete-closing-pair)
+              (delete-char (- (1- (length (car behind-pair)))))
+              (setq sp-last-operation 'sp-delete-pair-closing))
+             ((and opening-pair sp-autodelete-opening-pair)
+              (delete-char (- (1- (length (car opening-pair)))))
+              (setq sp-last-operation 'sp-delete-pair-opening))))
+           ;; we're inside a pair
+           ((and inside-pair sp-autodelete-pair)
+            (let* ((end (save-excursion
+                          (search-forward (cdr inside-pair))))
+                   (cs (sp--get-context p))
+                   (ce (sp--get-context end))
+                   (current-sexp (sp-get-sexp)))
+              (when (and (or (not (eq cs 'comment)) ;; a => b <=> ~a v b
+                             (eq ce 'comment))
+                         (eq end (sp-get current-sexp :end))
+                         (equal (sp-get current-sexp :op) (car inside-pair))
+                         (equal (sp-get current-sexp :cl) (cdr inside-pair)))
+                (delete-char (- end p))
+                (delete-char (- (1- (length (car inside-pair)))))
+                (setq sp-last-operation 'sp-delete-pair))))
+           ;; we're behind a closing pair
            ((and behind-pair sp-autodelete-closing-pair)
-            (delete-char (- (1- (length (car behind-pair)))))
+            (delete-char (- (1- (length (cdr behind-pair)))))
             (setq sp-last-operation 'sp-delete-pair-closing))
+           ;; we're behind an opening pair and there's no closing pair
            ((and opening-pair sp-autodelete-opening-pair)
             (delete-char (- (1- (length (car opening-pair)))))
-            (setq sp-last-operation 'sp-delete-pair-opening))))
-         ;; we're inside a pair
-         ((and inside-pair sp-autodelete-pair)
-          (let* ((end (save-excursion
-                        (search-forward (cdr inside-pair))))
-                 (cs (sp--get-context p))
-                 (ce (sp--get-context end))
-                 (current-sexp (sp-get-sexp)))
-            (when (and (or (not (eq cs 'comment)) ;; a => b <=> ~a v b
-                           (eq ce 'comment))
-                       (eq end (sp-get current-sexp :end))
-                       (equal (sp-get current-sexp :op) (car inside-pair))
-                       (equal (sp-get current-sexp :cl) (cdr inside-pair)))
-              (delete-char (- end p))
-              (delete-char (- (1- (length (car inside-pair)))))
-              (setq sp-last-operation 'sp-delete-pair))))
-         ;; we're behind a closing pair
-         ((and behind-pair sp-autodelete-closing-pair)
-          (delete-char (- (1- (length (cdr behind-pair)))))
-          (setq sp-last-operation 'sp-delete-pair-closing))
-         ;; we're behind an opening pair and there's no closing pair
-         ((and opening-pair sp-autodelete-opening-pair)
-          (delete-char (- (1- (length (car opening-pair)))))
-          (setq sp-last-operation 'sp-delete-pair-opening)))))))
+            (setq sp-last-operation 'sp-delete-pair-opening))))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -3610,12 +3795,12 @@ is remove the just added wrapping."
 
 (defun sp--looking-at (regexp)
   "Like `looking-at', but always case sensitive."
-  (let ((case-fold-search nil))
+  (sp--with-case-sensitive
     (looking-at regexp)))
 
 (defun sp--looking-at-p (regexp)
   "Like `looking-at-p', but always case sensitive."
-  (let ((case-fold-search nil))
+  (sp--with-case-sensitive
     (looking-at-p regexp)))
 
 (defun sp--looking-back (regexp &optional limit not-greedy)
@@ -3627,23 +3812,26 @@ backward.  If LIMIT is nil, default to `sp-max-pair-length'.
 If optional argument NON-GREEDY is t search for any matching
 sequence, not necessarily the longest possible."
   (setq limit (or limit sp-max-pair-length))
-  (let ((case-fold-search nil)
-        (from (max 1 (- (point) limit)))
-        (to (point))
-        (greedy (not not-greedy))
-        has-match)
-    (set-match-data '(0 0))
-    (if greedy
-        (save-excursion
-          (goto-char from)
-          (while (and (not has-match) (< (point) to))
-            (sp--looking-at regexp)
-            (if (= (match-end 0) to)
-                (setq has-match t)
-              (forward-char 1)))
+  (sp--with-case-sensitive
+    (let ((from (max 1 (- (point) limit)))
+          (to (point))
+          (greedy (not not-greedy))
           has-match)
-      (save-excursion
-        (not (null (search-backward-regexp (concat "\\(?:" regexp "\\)\\=") from t)))))))
+      (if greedy
+          (save-excursion
+            (goto-char from)
+            (save-match-data
+              (while (and (not has-match) (< (point) to))
+                ;; don't use looking-at because we can't limit that search
+                (if (and (save-excursion (re-search-forward regexp to t))
+                         (= (match-end 0) to))
+                    (setq has-match (match-data))
+                  (forward-char 1))))
+            (when has-match
+              (set-match-data has-match)
+              t))
+        (save-excursion
+          (not (null (search-backward-regexp (concat "\\(?:" regexp "\\)\\=") from t))))))))
 
 (defun sp--looking-back-p (regexp &optional limit not-greedy)
   "Same as `sp--looking-back' but do not change the match data."
@@ -3660,34 +3848,41 @@ This is an internal function.  Only use this for searching for
 pairs!"
   (setq count (or count 1))
   (setq bound (or (sp--get-backward-bound) bound))
-  (let ((case-fold-search nil) r)
-    (while (> count 0)
-      (when (search-backward-regexp regexp bound noerror)
-        (goto-char (match-end 0))
-        (sp--looking-back regexp)
-        (setq r (goto-char (match-beginning 0))))
-      (setq count (1- count)))
-    r))
+  (sp--with-case-sensitive
+    (let (r)
+      (while (> count 0)
+        (when (search-backward-regexp regexp bound noerror)
+          (goto-char (match-end 0))
+          (if (sp--looking-back regexp)
+              (setq r (goto-char (match-beginning 0)))
+            (if noerror nil (error "Search failed: %s" regexp))))
+        (setq count (1- count)))
+      r)))
 
 (defun sp--search-forward-regexp (regexp &optional bound noerror count)
   "Just like `search-forward-regexp', but always case sensitive."
   (setq bound (or (sp--get-forward-bound) bound))
-  (let ((case-fold-search nil))
+  (sp--with-case-sensitive
     (search-forward-regexp regexp bound noerror count)))
 
-(defun sp-get-quoted-string-bounds ()
-  "Return the bounds of the string around point.
+(defun sp-get-quoted-string-bounds (&optional point)
+  "Return the bounds of the string around POINT.
+
+POINT defaults to `point'.
 
 If the point is not inside a quoted string, return nil."
-  (let ((parse-data (syntax-ppss)))
-    (when (nth 3 parse-data)
-      (let* ((open (nth 8 parse-data))
-             (close (save-excursion
-                      (parse-partial-sexp
-                       (point) (point-max)
-                       nil nil parse-data 'syntax-table)
-                      (point))))
-        (cons open close)))))
+  (setq point (or point (point)))
+  (save-excursion
+    (goto-char point)
+    (let ((parse-data (syntax-ppss)))
+      (when (nth 3 parse-data)
+        (let* ((open (nth 8 parse-data))
+               (close (save-excursion
+                        (parse-partial-sexp
+                         (point) (point-max)
+                         nil nil parse-data 'syntax-table)
+                        (point))))
+          (cons open close))))))
 
 ;; TODO: the repeated conditions are ugly, refactor this!
 (defun sp-get-comment-bounds ()
@@ -3805,203 +4000,204 @@ Non-nil return value means to skip the result."
 
 The expressions considered are those delimited by pairs on
 `sp-pair-list'."
-  (save-excursion
-    (let* ((search-fn (if (not back) 'sp--search-forward-regexp 'sp--search-backward-regexp))
-           (global-skip-fn (cdr (--first (memq major-mode (car it)) sp-navigate-skip-match)))
-           (pair-list (sp--get-allowed-pair-list))
-           ;; TODO UGLY HACK!!!  When the situation is:
-           ;; ..)|;; comment
-           ;; the context the point gets is the comment.  But if we
-           ;; are searching backward, that is incorrect, because in
-           ;; that case we want the context of the closing pair.
-           ;; Therefore, if the direction is backward, we need to move
-           ;; one point backward, then test the comment/string thing,
-           ;; then compute the correct bounds, and then restore the
-           ;; point so the search will pick up the )
+  (sp--with-case-sensitive
+    (save-excursion
+      (let* ((search-fn (if (not back) 'sp--search-forward-regexp 'sp--search-backward-regexp))
+             (global-skip-fn (cdr (--first (memq major-mode (car it)) sp-navigate-skip-match)))
+             (pair-list (sp--get-allowed-pair-list))
+             ;; TODO UGLY HACK!!!  When the situation is:
+             ;; ..)|;; comment
+             ;; the context the point gets is the comment.  But if we
+             ;; are searching backward, that is incorrect, because in
+             ;; that case we want the context of the closing pair.
+             ;; Therefore, if the direction is backward, we need to move
+             ;; one point backward, then test the comment/string thing,
+             ;; then compute the correct bounds, and then restore the
+             ;; point so the search will pick up the )
 
-           ;; However, we need to distinguish the cases where we are
-           ;; in comment and trying to get out, and when we are in any
-           ;; context and we jump into string (in that case, we should
-           ;; report code context!).  For example:
-           ;;   "foo"|;bar
-           ;; or
-           ;;   "foo"|bar
-           ;; should both report code context
-           ;; and "|(foo)" should report string context.
+             ;; However, we need to distinguish the cases where we are
+             ;; in comment and trying to get out, and when we are in any
+             ;; context and we jump into string (in that case, we should
+             ;; report code context!).  For example:
+             ;;   "foo"|;bar
+             ;; or
+             ;;   "foo"|bar
+             ;; should both report code context
+             ;; and "|(foo)" should report string context.
 
-           ;; Beware the case when we have a string inside a comment, like
-           ;;   (foo) ;; bar "baz"| qux
-           ;; In this case we want to report comment context even when
-           ;; backing into the "" (which however is commented)
+             ;; Beware the case when we have a string inside a comment, like
+             ;;   (foo) ;; bar "baz"| qux
+             ;; In this case we want to report comment context even when
+             ;; backing into the "" (which however is commented)
 
-           ;; Yet another case is when we are not in a comment but
-           ;; directly after one and we search backwards, consider:
-           ;;   /* foo bar */|
-           ;; in C-like language.  In this case, we want to report the
-           ;; context as comment.
+             ;; Yet another case is when we are not in a comment but
+             ;; directly after one and we search backwards, consider:
+             ;;   /* foo bar */|
+             ;; in C-like language.  In this case, we want to report the
+             ;; context as comment.
 
-           ;; In some languages, special paren syntax with a prefix
-           ;; serves to mark strings.  This means that regular
-           ;; delimiters, like () are used to delimit strings.  For
-           ;; example, in ruby the sequence %w(...) signifies a
-           ;; string.  If the point is after such a sequence and we
-           ;; are searching back, we must use the string context,
-           ;; because the paren is now a string delimiter.  This is
-           ;; usually implemented with "string fence" syntax, so we
-           ;; will simply check for that.
+             ;; In some languages, special paren syntax with a prefix
+             ;; serves to mark strings.  This means that regular
+             ;; delimiters, like () are used to delimit strings.  For
+             ;; example, in ruby the sequence %w(...) signifies a
+             ;; string.  If the point is after such a sequence and we
+             ;; are searching back, we must use the string context,
+             ;; because the paren is now a string delimiter.  This is
+             ;; usually implemented with "string fence" syntax, so we
+             ;; will simply check for that.
 
-           ;; Thanks for being consistent at handling syntax bounds Emacs!
-           (in-string-or-comment (if back
-                                     (let ((in-comment (sp-point-in-comment))
-                                           (in-string (sp-point-in-string)))
-                                       (save-excursion
-                                         (unless (= (point) (point-min))
-                                           (backward-char)
-                                           (cond
-                                            ((eq (car (syntax-after (point))) 15) (point))
-                                            (in-comment (when (sp-point-in-comment) (1+ (point))))
-                                            ((and (not in-comment) (sp-point-in-comment)) (1+ (point)))
-                                            ((or in-comment in-string) (1+ (point)))))))
-                                   (when (sp-point-in-string-or-comment) (point))))
-           (string-bounds (and in-string-or-comment
-                               (progn
-                                 (goto-char in-string-or-comment)
-                                 (sp--get-string-or-comment-bounds))))
-           (fw-bound (if in-string-or-comment (cdr string-bounds) (point-max)))
-           (bw-bound (if in-string-or-comment (car string-bounds) (point-min)))
-           s e active-pair forward mb me ms r done
-           possible-pairs possible-interfering-pairs possible-ops possible-cls)
-      (while (and (not done)
-                  (sp--search-and-save-match
-                   search-fn
-                   ;; #556 The regexp we use here might exclude or
-                   ;; include extra pairs in case the next match is in
-                   ;; a different context.  There's no way to know
-                   ;; beforehand where we land, so we need to consider
-                   ;; *all* pairs in the search and then re-check with
-                   ;; a regexp based on the context of the found pair
-                   (sp--get-allowed-regexp
-                    ;; use all the pairs!
-                    (sp--get-pair-list))
-                   (if back bw-bound fw-bound)
-                   r mb me ms))
-        ;; search for the first opening pair.  Here, only consider tags
-        ;; that are allowed in the current context.
-        (unless (or (not (save-excursion
-                           (if back
-                               (progn
-                                 (goto-char me)
-                                 (sp--looking-back-p (sp--get-allowed-regexp)))
-                             (goto-char mb)
-                             (sp--looking-at-p (sp--get-allowed-regexp)))))
-                    (sp--skip-match-p ms mb me :global-skip global-skip-fn))
-          ;; if the point originally wasn't inside of a string or comment
-          ;; but now is, jump out of the string/comment and only search
-          ;; the code.  This ensures that the comments and strings are
-          ;; skipped if we search inside code.
-          (if (and (not in-string-or-comment)
-                   (if back
-                       ;; When searching back, the point lands on the
-                       ;; first character of whatever pair we've found
-                       ;; and it is in the proper context, for example
-                       ;; "|(foo)"
-                       (sp-point-in-string-or-comment)
-                     ;; However, when searching forward, the point
-                     ;; lands after the last char of the pair so to get
-                     ;; its context we must back up one character
-                     (sp-point-in-string-or-comment (1- (point)))))
-              (-if-let (bounds (sp--get-string-or-comment-bounds))
-                  (let ((jump-to (if back (car bounds) (cdr bounds))))
-                    (goto-char jump-to)
-                    ;; Can't move out of comment because eob, #427
-                    (when (eobp)
-                      (setq done t)))
-                (setq done t))
-            (setq done t))))
-      (when r
-        (setq possible-pairs (--filter (or (equal ms (car it))
-                                           (equal ms (cdr it)))
-                                       pair-list))
-        (setq possible-ops (-map 'car possible-pairs))
-        (setq possible-cls (-map 'cdr possible-pairs))
-        (setq pair-list (-difference pair-list possible-pairs))
-        (setq possible-interfering-pairs pair-list)
-        (while possible-interfering-pairs
-          (setq possible-interfering-pairs
-                (--filter (or (-contains? possible-ops (car it))
-                              (-contains? possible-cls (cdr it)))
-                          pair-list))
-          (setq pair-list (-difference pair-list possible-interfering-pairs))
-          (setq possible-ops (append possible-ops (-map 'car possible-interfering-pairs)))
-          (setq possible-cls (append possible-cls (-map 'cdr possible-interfering-pairs))))
-        (when (--any? (equal ms it) possible-ops)
-          (setq forward t)
-          (setq s mb)
-          (when back
-            (forward-char (length ms))))
-        (when (--any? (equal ms it) possible-cls)
-          (setq forward nil)
-          (setq e me)
-          (when (not back)
-            (backward-char (length ms))))
-        (let* ((opens (if forward possible-ops possible-cls))
-               (closes (if forward possible-cls possible-ops))
-               (needle (sp--strict-regexp-opt (append possible-ops possible-cls)))
-               (search-fn (if forward 'sp--search-forward-regexp 'sp--search-backward-regexp))
-               (depth 1)
-               (eof (if forward 'eobp 'bobp))
-               (b (if forward fw-bound bw-bound))
-               (open (substring-no-properties ms))
-               (close (substring-no-properties ms))
-               (failure (funcall eof))
-               (skip-match-pair-fns (->> possible-ops
-                                         (--mapcat (-when-let (smf (sp-get-pair it :skip-match))
-                                                     (list (cons it smf) (cons (sp-get-pair it :close) smf)))))))
-          (while (and (> depth 0) (not (funcall eof)))
-            (sp--search-and-save-match search-fn needle b r mb me ms)
-            (if r
-                (unless (or (and (not in-string-or-comment)
-                                 (if forward (save-excursion
-                                               (backward-char)
-                                               (sp-point-in-string-or-comment))
-                                   (sp-point-in-string-or-comment)))
-                            ;; check the individual pair skipper.  We
-                            ;; need to test all the possible-ops,
-                            ;; which makes it a bit ugly :/
-                            (let ((skip-match-pair-fn
-                                   (cdr (--first (equal (car it) ms) skip-match-pair-fns))))
-                              (sp--skip-match-p ms mb me :global-skip global-skip-fn :pair-skip skip-match-pair-fn)))
-                  (when (--any? (equal ms it) opens) (setq depth (1+ depth)))
-                  (when (--any? (equal ms it) closes) (setq depth (1- depth))))
-              (unless (minibufferp)
-                (sp-message :unmatched-expression))
-              (setq depth -1)
-              (setq failure t)))
-          (if forward
-              (setq e me)
-            (setq s mb))
-          (setq close (substring-no-properties ms))
-          (if (or failure
-                  (/= depth 0))
-              (progn
+             ;; Thanks for being consistent at handling syntax bounds Emacs!
+             (in-string-or-comment (if back
+                                       (let ((in-comment (sp-point-in-comment))
+                                             (in-string (sp-point-in-string)))
+                                         (save-excursion
+                                           (unless (= (point) (point-min))
+                                             (backward-char)
+                                             (cond
+                                              ((eq (car (syntax-after (point))) 15) (point))
+                                              (in-comment (when (sp-point-in-comment) (1+ (point))))
+                                              ((and (not in-comment) (sp-point-in-comment)) (1+ (point)))
+                                              ((or in-comment in-string) (1+ (point)))))))
+                                     (when (sp-point-in-string-or-comment) (point))))
+             (string-bounds (and in-string-or-comment
+                                 (progn
+                                   (goto-char in-string-or-comment)
+                                   (sp--get-string-or-comment-bounds))))
+             (fw-bound (if in-string-or-comment (cdr string-bounds) (point-max)))
+             (bw-bound (if in-string-or-comment (car string-bounds) (point-min)))
+             s e active-pair forward mb me ms r done
+             possible-pairs possible-interfering-pairs possible-ops possible-cls)
+        (while (and (not done)
+                    (sp--search-and-save-match
+                     search-fn
+                     ;; #556 The regexp we use here might exclude or
+                     ;; include extra pairs in case the next match is in
+                     ;; a different context.  There's no way to know
+                     ;; beforehand where we land, so we need to consider
+                     ;; *all* pairs in the search and then re-check with
+                     ;; a regexp based on the context of the found pair
+                     (sp--get-allowed-regexp
+                      ;; use all the pairs!
+                      (sp--get-pair-list))
+                     (if back bw-bound fw-bound)
+                     r mb me ms))
+          ;; search for the first opening pair.  Here, only consider tags
+          ;; that are allowed in the current context.
+          (unless (or (not (save-excursion
+                             (if back
+                                 (progn
+                                   (goto-char me)
+                                   (sp--looking-back-p (sp--get-allowed-regexp)))
+                               (goto-char mb)
+                               (sp--looking-at-p (sp--get-allowed-regexp)))))
+                      (sp--skip-match-p ms mb me :global-skip global-skip-fn))
+            ;; if the point originally wasn't inside of a string or comment
+            ;; but now is, jump out of the string/comment and only search
+            ;; the code.  This ensures that the comments and strings are
+            ;; skipped if we search inside code.
+            (if (and (not in-string-or-comment)
+                     (if back
+                         ;; When searching back, the point lands on the
+                         ;; first character of whatever pair we've found
+                         ;; and it is in the proper context, for example
+                         ;; "|(foo)"
+                         (sp-point-in-string-or-comment)
+                       ;; However, when searching forward, the point
+                       ;; lands after the last char of the pair so to get
+                       ;; its context we must back up one character
+                       (sp-point-in-string-or-comment (1- (point)))))
+                (-if-let (bounds (sp--get-string-or-comment-bounds))
+                    (let ((jump-to (if back (car bounds) (cdr bounds))))
+                      (goto-char jump-to)
+                      ;; Can't move out of comment because eob, #427
+                      (when (eobp)
+                        (setq done t)))
+                  (setq done t))
+              (setq done t))))
+        (when r
+          (setq possible-pairs (--filter (or (equal ms (car it))
+                                             (equal ms (cdr it)))
+                                         pair-list))
+          (setq possible-ops (-map 'car possible-pairs))
+          (setq possible-cls (-map 'cdr possible-pairs))
+          (setq pair-list (-difference pair-list possible-pairs))
+          (setq possible-interfering-pairs pair-list)
+          (while possible-interfering-pairs
+            (setq possible-interfering-pairs
+                  (--filter (or (-contains? possible-ops (car it))
+                                (-contains? possible-cls (cdr it)))
+                            pair-list))
+            (setq pair-list (-difference pair-list possible-interfering-pairs))
+            (setq possible-ops (append possible-ops (-map 'car possible-interfering-pairs)))
+            (setq possible-cls (append possible-cls (-map 'cdr possible-interfering-pairs))))
+          (when (--any? (equal ms it) possible-ops)
+            (setq forward t)
+            (setq s mb)
+            (when back
+              (forward-char (length ms))))
+          (when (--any? (equal ms it) possible-cls)
+            (setq forward nil)
+            (setq e me)
+            (when (not back)
+              (backward-char (length ms))))
+          (let* ((opens (if forward possible-ops possible-cls))
+                 (closes (if forward possible-cls possible-ops))
+                 (needle (sp--strict-regexp-opt (append possible-ops possible-cls)))
+                 (search-fn (if forward 'sp--search-forward-regexp 'sp--search-backward-regexp))
+                 (depth 1)
+                 (eof (if forward 'eobp 'bobp))
+                 (b (if forward fw-bound bw-bound))
+                 (open (substring-no-properties ms))
+                 (close (substring-no-properties ms))
+                 (failure (funcall eof))
+                 (skip-match-pair-fns (->> possible-ops
+                                           (--mapcat (-when-let (smf (sp-get-pair it :skip-match))
+                                                       (list (cons it smf) (cons (sp-get-pair it :close) smf)))))))
+            (while (and (> depth 0) (not (funcall eof)))
+              (sp--search-and-save-match search-fn needle b r mb me ms)
+              (if r
+                  (unless (or (and (not in-string-or-comment)
+                                   (if forward (save-excursion
+                                                 (backward-char)
+                                                 (sp-point-in-string-or-comment))
+                                     (sp-point-in-string-or-comment)))
+                              ;; check the individual pair skipper.  We
+                              ;; need to test all the possible-ops,
+                              ;; which makes it a bit ugly :/
+                              (let ((skip-match-pair-fn
+                                     (cdr (--first (equal (car it) ms) skip-match-pair-fns))))
+                                (sp--skip-match-p ms mb me :global-skip global-skip-fn :pair-skip skip-match-pair-fn)))
+                    (when (--any? (equal ms it) opens) (setq depth (1+ depth)))
+                    (when (--any? (equal ms it) closes) (setq depth (1- depth))))
                 (unless (minibufferp)
                   (sp-message :unmatched-expression))
-                nil)
-            (let ((end-in-cos (sp-point-in-string-or-comment (1- e)))) ;; fix the "point on comment" issue
-              (cond
-               ((or (and (sp-point-in-string-or-comment s) (not end-in-cos))
-                    (and (not (sp-point-in-string-or-comment s)) end-in-cos))
-                (unless (minibufferp)
-                  (sp-message :delimiter-in-string))
-                nil)
-               (t
-                (let* ((op (if forward open close)))
-                  (list :beg s
-                        :end e
-                        :op op
-                        :cl (if forward close open)
-                        :prefix (sp--get-prefix s op)
-                        :suffix (sp--get-suffix e op))))))))))))
+                (setq depth -1)
+                (setq failure t)))
+            (if forward
+                (setq e me)
+              (setq s mb))
+            (setq close (substring-no-properties ms))
+            (if (or failure
+                    (/= depth 0))
+                (progn
+                  (unless (minibufferp)
+                    (sp-message :unmatched-expression))
+                  nil)
+              (let ((end-in-cos (sp-point-in-string-or-comment (1- e)))) ;; fix the "point on comment" issue
+                (cond
+                 ((or (and (sp-point-in-string-or-comment s) (not end-in-cos))
+                      (and (not (sp-point-in-string-or-comment s)) end-in-cos))
+                  (unless (minibufferp)
+                    (sp-message :delimiter-in-string))
+                  nil)
+                 (t
+                  (let* ((op (if forward open close)))
+                    (list :beg s
+                          :end e
+                          :op op
+                          :cl (if forward close open)
+                          :prefix (sp--get-prefix s op)
+                          :suffix (sp--get-suffix e op)))))))))))))
 
 ;; TODO: this does not consider unbalanced quotes in comments!!!
 (defun sp--find-next-stringlike-delimiter (needle search-fn-f &optional limit skip-fn)
@@ -4029,38 +4225,39 @@ and the skip-match predicate."
 
 String-like expression is expression enclosed with the same
 opening and closing delimiter, such as *...*, \"...\", `...` etc."
-  (save-excursion
-    (let ((needle (sp--get-stringlike-regexp))
-          (search-fn-f (if (not back) 'sp--search-forward-regexp 'sp--search-backward-regexp))
-          (search-fn-b (if back 'sp--search-forward-regexp 'sp--search-backward-regexp))
-          (count 0)
-          m b e skip-match-fn limit ok)
-      (when (not (equal needle ""))
-        (when (sp--find-next-stringlike-delimiter needle search-fn-f)
-          ;; assumes \ is always the escape... bad?
-          (setq m (match-string-no-properties 0))
-          (setq needle (regexp-quote m))
-          (setq skip-match-fn (sp-get-pair m :skip-match))
-          (cond
-           ((sp-point-in-string)
-            (setq limit (sp-get-quoted-string-bounds)))
-           ((sp-point-in-comment)
-            (setq limit (sp-get-comment-bounds))))
-          (save-excursion
-            (while (sp--find-next-stringlike-delimiter needle 'search-backward-regexp (car limit) skip-match-fn)
-              (setq count (1+ count))))
-          (when (= (mod count 2) 0)
-            (sp--find-next-stringlike-delimiter needle search-fn-b nil))
-          (save-excursion
-            (setq ok (sp--find-next-stringlike-delimiter needle 'sp--search-backward-regexp (car limit)))
-            (setq e (match-beginning 0)))
-          (setq ok (and ok (sp--find-next-stringlike-delimiter needle 'search-forward-regexp (cdr limit))))
-          (setq b (match-end 0))
-          (when ok
-            (let ((mb b) (me e))
-              (setq b (min mb me))
-              (setq e (max mb me)))
-            (list :beg b :end e :op m :cl m :prefix (sp--get-prefix b m) :suffix (sp--get-suffix e m))))))))
+  (sp--with-case-sensitive
+    (save-excursion
+      (let ((needle (sp--get-stringlike-regexp))
+            (search-fn-f (if (not back) 'sp--search-forward-regexp 'sp--search-backward-regexp))
+            (search-fn-b (if back 'sp--search-forward-regexp 'sp--search-backward-regexp))
+            (count 0)
+            m b e skip-match-fn limit ok)
+        (when (not (equal needle ""))
+          (when (sp--find-next-stringlike-delimiter needle search-fn-f)
+            ;; assumes \ is always the escape... bad?
+            (setq m (match-string-no-properties 0))
+            (setq needle (regexp-quote m))
+            (setq skip-match-fn (sp-get-pair m :skip-match))
+            (cond
+             ((sp-point-in-string)
+              (setq limit (sp-get-quoted-string-bounds)))
+             ((sp-point-in-comment)
+              (setq limit (sp-get-comment-bounds))))
+            (save-excursion
+              (while (sp--find-next-stringlike-delimiter needle 'search-backward-regexp (car limit) skip-match-fn)
+                (setq count (1+ count))))
+            (when (= (mod count 2) 0)
+              (sp--find-next-stringlike-delimiter needle search-fn-b nil))
+            (save-excursion
+              (setq ok (sp--find-next-stringlike-delimiter needle 'sp--search-backward-regexp (car limit)))
+              (setq e (match-beginning 0)))
+            (setq ok (and ok (sp--find-next-stringlike-delimiter needle 'search-forward-regexp (cdr limit))))
+            (setq b (match-end 0))
+            (when ok
+              (let ((mb b) (me e))
+                (setq b (min mb me))
+                (setq e (max mb me)))
+              (list :beg b :end e :op m :cl m :prefix (sp--get-prefix b m) :suffix (sp--get-suffix e m)))))))))
 
 (defun sp--textmode-stringlike-regexp (delimiters &optional direction)
   "Get a regexp matching text-mode string-like DELIMITERS.
@@ -4206,17 +4403,19 @@ For markup and text modes a special, more efficient stringlike
 parser is available, see `sp-get-textmode-stringlike-expression'.
 By default, this is enabled in all modes derived from
 `text-mode'.  You can change it by customizing
-`sp-nagivate-use-textmode-stringlike-parser'."
+`sp-navigate-use-textmode-stringlike-parser'."
   (let ((pre (sp--get-allowed-regexp))
         (sre (sp--get-stringlike-regexp))
         (search-fn (if (not back) 'sp--search-forward-regexp 'sp--search-backward-regexp))
         (ps (if back (1- (point-min)) (1+ (point-max))))
         (ss (if back (1- (point-min)) (1+ (point-max))))
         (string-delim nil))
-    (setq ps (or (save-excursion (funcall search-fn pre nil t)) ps))
-    (setq ss (or (--when-let (save-excursion (funcall search-fn sre nil t))
-                   (setq string-delim (match-string 0))
-                   it) ss))
+    (setq ps (if (equal pre "") ps
+               (or (save-excursion (funcall search-fn pre nil t)) ps)))
+    (setq ss (if (equal sre "") ss
+               (or (--when-let (save-excursion (funcall search-fn sre nil t))
+                     (setq string-delim (match-string 0))
+                     it) ss)))
     ;; TODO: simplify this logic somehow... (this really depends
     ;; on a rewrite of the core parser logic: separation of "find
     ;; the valid opening" and "parse it")
@@ -4236,25 +4435,22 @@ By default, this is enabled in all modes derived from
                                 (and back (> ps ss)))
                             (cons :regular (sp-get-paired-expression back))
                           (cons :string (sp-get-stringlike-or-textmode-expression back string-delim)))))
-      (if re
-          (sp-get re
-            (cond
-             ;; If the returned sexp is regular, but the
-             ;; to-be-tried-string-expression is before it, we try
-             ;; to parse it as well, it might be a complete sexp in
-             ;; which case it should be returned.
-             ((and (eq type :regular)
-                   (or (and (not back) (< ss :beg))
-                       (and back (> ss :end))))
-              (or (sp-get-stringlike-or-textmode-expression back string-delim) re))
-             ((and (eq type :string)
-                   (or (and (not back) (< ps :beg))
-                       (and back (> ps :end))))
-              (or (sp-get-paired-expression back) re))
-             (t re)))
-        (if (eq type :regular)
-            (sp-get-stringlike-or-textmode-expression back string-delim)
-          (sp-get-paired-expression back))))))
+      (when re
+        (sp-get re
+          (cond
+           ;; If the returned sexp is regular, but the
+           ;; to-be-tried-string-expression is before it, we try
+           ;; to parse it as well, it might be a complete sexp in
+           ;; which case it should be returned.
+           ((and (eq type :regular)
+                 (or (and (not back) (< ss :beg))
+                     (and back (> ss :end))))
+            (or (sp-get-stringlike-or-textmode-expression back string-delim) re))
+           ((and (eq type :string)
+                 (or (and (not back) (< ps :beg))
+                     (and back (> ps :end))))
+            (or (sp-get-paired-expression back) re))
+           (t re)))))))
 
 (defun sp-get-sexp (&optional back)
   "Find the nearest balanced expression that is after (before) point.
@@ -4285,44 +4481,46 @@ The return value is a plist with following keys:
   :op     - opening delimiter
   :cl     - closing delimiter
   :prefix - expression prefix
+  :suffix - expression suffix
 
 However, you should never access this structure directly as it is
 subject to change.  Instead, use the macro `sp-get' which also
 provide shortcuts for many commonly used queries (such as length
 of opening/closing delimiter or prefix)."
   (sp--maybe-init)
-  (cond
-   (sp-prefix-tag-object
-    (sp-get-sgml-tag back))
-   (sp-prefix-pair-object
-    (sp-get-paired-expression back))
-   ((memq major-mode sp-navigate-consider-sgml-tags)
-    (let ((paired (sp-get-expression back)))
-      (if (and paired
-               (equal "<" (sp-get paired :op)))
-          ;; if the point is inside the tag delimiter, return the pair.
-          (if (sp-get paired (and (<= :beg-in (point)) (>= :end-in (point))))
-              paired
-            ;; if the tag can't be completed, we can at least return
-            ;; the <> pair
-            (or (sp-get-sgml-tag back) paired))
-        ;; we can still try the tag if the first < or > is closer than
-        ;; the pair.  This is a bit too complicated... seems like a
-        ;; more clever solution would be needed in the future, esp if
-        ;; we add the python hack.
-        (cond
-         ((and (not back)
-               (< (save-excursion
-                    (or (search-forward "<" nil t) (point-max)))
-                  (or (sp-get paired :beg) (point-max))))
-          (or (sp-get-sgml-tag) paired))
-         ((and back
-               (> (save-excursion
-                    (or (search-backward ">" nil t) (point-min)))
-                  (or (sp-get paired :end) (point-max))))
-          (or (sp-get-sgml-tag t) paired))
-         (t paired)))))
-   (t (sp-get-expression back))))
+  (sp--with-case-sensitive
+    (cond
+     (sp-prefix-tag-object
+      (sp-get-sgml-tag back))
+     (sp-prefix-pair-object
+      (sp-get-paired-expression back))
+     ((memq major-mode sp-navigate-consider-sgml-tags)
+      (let ((paired (sp-get-expression back)))
+        (if (and paired
+                 (equal "<" (sp-get paired :op)))
+            ;; if the point is inside the tag delimiter, return the pair.
+            (if (sp-get paired (and (<= :beg-in (point)) (>= :end-in (point))))
+                paired
+              ;; if the tag can't be completed, we can at least return
+              ;; the <> pair
+              (or (sp-get-sgml-tag back) paired))
+          ;; we can still try the tag if the first < or > is closer than
+          ;; the pair.  This is a bit too complicated... seems like a
+          ;; more clever solution would be needed in the future, esp if
+          ;; we add the python hack.
+          (cond
+           ((and (not back)
+                 (< (save-excursion
+                      (or (search-forward "<" nil t) (point-max)))
+                    (or (sp-get paired :beg) (point-max))))
+            (or (sp-get-sgml-tag) paired))
+           ((and back
+                 (> (save-excursion
+                      (or (search-backward ">" nil t) (point-min)))
+                    (or (sp-get paired :end) (point-max))))
+            (or (sp-get-sgml-tag t) paired))
+           (t paired)))))
+     (t (sp-get-expression back)))))
 
 (defun sp--get-hybrid-sexp-beg ()
   "Get the beginning of hybrid sexp.
@@ -4519,23 +4717,24 @@ and the prefix is searched backwards.
 
 If the prefix property is defined for OP, the associated regexp
 is used to retrieve the prefix instead of the global setting."
-  (let ((pref (sp-get-pair op :prefix)))
-    (save-excursion
-      (goto-char p)
-      (if pref
-          (when (sp--looking-back pref sp-max-prefix-length)
-            (match-string-no-properties 0))
-        (-if-let (mmode-prefix (cdr (assoc major-mode sp-sexp-prefix)))
-            (cond
-             ((and (eq (car mmode-prefix) 'regexp)
-                   (sp--looking-back (cadr mmode-prefix)))
+  (sp--with-case-sensitive
+    (let ((pref (sp-get-pair op :prefix)))
+      (save-excursion
+        (goto-char p)
+        (if pref
+            (when (sp--looking-back pref sp-max-prefix-length)
               (match-string-no-properties 0))
-             ((eq (car mmode-prefix) 'syntax)
-              (skip-syntax-backward (cadr mmode-prefix))
-              (buffer-substring-no-properties (point) p))
-             (t ""))
-          (skip-syntax-backward "'")
-          (buffer-substring-no-properties (point) p))))))
+          (-if-let (mmode-prefix (cdr (assoc major-mode sp-sexp-prefix)))
+              (cond
+               ((and (eq (car mmode-prefix) 'regexp)
+                     (sp--looking-back (cadr mmode-prefix)))
+                (match-string-no-properties 0))
+               ((eq (car mmode-prefix) 'syntax)
+                (skip-syntax-backward (cadr mmode-prefix))
+                (buffer-substring-no-properties (point) p))
+               (t ""))
+            (skip-syntax-backward "'")
+            (buffer-substring-no-properties (point) p)))))))
 
 (cl-defun sp--get-suffix (&optional (p (point)) op)
   "Get the suffix of EXPR.
@@ -4547,23 +4746,24 @@ See `sp-sexp-suffix'.
 
 If the suffix property is defined for OP, the associated regexp
 is used to retrieve the suffix instead of the global setting."
-  (let ((suff (sp-get-pair op :suffix)))
-    (save-excursion
-      (goto-char p)
-      (if suff
-          (when (sp--looking-at suff)
-            (match-string-no-properties 0))
-        (-if-let (mmode-suffix (cdr (assoc major-mode sp-sexp-suffix)))
-            (cond
-             ((and (eq (car mmode-suffix) 'regexp)
-                   (sp--looking-at (cadr mmode-suffix)))
+  (sp--with-case-sensitive
+    (let ((suff (sp-get-pair op :suffix)))
+      (save-excursion
+        (goto-char p)
+        (if suff
+            (when (sp--looking-at suff)
               (match-string-no-properties 0))
-             ((eq (car mmode-suffix) 'syntax)
-              (skip-syntax-forward (cadr mmode-suffix))
-              (buffer-substring-no-properties p (point)))
-             (t ""))
-          (skip-syntax-forward ".")
-          (buffer-substring-no-properties p (point)))))))
+          (-if-let (mmode-suffix (cdr (assoc major-mode sp-sexp-suffix)))
+              (cond
+               ((and (eq (car mmode-suffix) 'regexp)
+                     (sp--looking-at (cadr mmode-suffix)))
+                (match-string-no-properties 0))
+               ((eq (car mmode-suffix) 'syntax)
+                (skip-syntax-forward (cadr mmode-suffix))
+                (buffer-substring-no-properties p (point)))
+               (t ""))
+            (skip-syntax-forward ".")
+            (buffer-substring-no-properties p (point))))))))
 
 (defun sp-get-symbol (&optional back)
   "Find the nearest symbol that is after point, or before point if BACK is non-nil.
@@ -4664,60 +4864,60 @@ and newline."
 
 (defun sp-get-sgml-tag (&optional back)
   (sp--maybe-init)
-  (save-excursion
-    (let ((search-fn (if (not back) 'sp--search-forward-regexp 'search-backward-regexp))
-          (case-fold-search nil)
-          tag tag-name needle
-          open-start open-end
-          close-start close-end)
-      (when (and (funcall search-fn "</?.*?\\s-?.*?>" nil t)
-                 (progn
-                   (setq tag (substring-no-properties (match-string 0)))
-                   (setq tag-name (sp--sgml-get-tag-name tag))
-                   (not (sp--sgml-ignore-tag tag-name))))
-        (setq needle (concat "</?" tag-name))
-        (let* ((forward (sp--sgml-opening-p tag))
-               (search-fn (if forward 'sp--search-forward-regexp 'search-backward-regexp))
-               (depth 1))
-          (save-excursion
-            (if (not back)
-                (progn
-                  (setq open-end (point))
-                  (search-backward-regexp "<" nil t)
-                  (setq open-start (point)))
-              (setq open-start (point))
-              (search-forward-regexp ">" nil t)
-              (setq open-end (point))))
-          (cond
-           ((and (not back) (not forward))
-            (goto-char (match-beginning 0)))
-           ((and back forward)
-            (goto-char (match-end 0))))
-          (while (> depth 0)
-            (if (funcall search-fn needle nil t)
-                (if (sp--sgml-opening-p (match-string 0))
-                    (if forward (setq depth (1+ depth)) (setq depth (1- depth)))
-                  (if forward (setq depth (1- depth)) (setq depth (1+ depth))))
-              (setq depth -1)))
-          (if (eq depth -1)
-              (progn (sp-message :no-matching-tag) nil)
+  (sp--with-case-sensitive
+    (save-excursion
+      (let ((search-fn (if (not back) 'sp--search-forward-regexp 'search-backward-regexp))
+            tag tag-name needle
+            open-start open-end
+            close-start close-end)
+        (when (and (funcall search-fn "</?.*?\\s-?.*?>" nil t)
+                   (progn
+                     (setq tag (substring-no-properties (match-string 0)))
+                     (setq tag-name (sp--sgml-get-tag-name tag))
+                     (not (sp--sgml-ignore-tag tag-name))))
+          (setq needle (concat "</?" tag-name))
+          (let* ((forward (sp--sgml-opening-p tag))
+                 (search-fn (if forward 'sp--search-forward-regexp 'search-backward-regexp))
+                 (depth 1))
             (save-excursion
-              (if forward
+              (if (not back)
                   (progn
-                    (setq close-start (match-beginning 0))
-                    (search-forward-regexp ">" nil t)
-                    (setq close-end (point)))
-                (setq close-start (point))
+                    (setq open-end (point))
+                    (search-backward-regexp "<" nil t)
+                    (setq open-start (point)))
+                (setq open-start (point))
                 (search-forward-regexp ">" nil t)
-                (setq close-end (point))))
-            (let ((op (buffer-substring-no-properties open-start open-end))
-                  (cl (buffer-substring-no-properties close-start close-end)))
-              (list :beg (if forward open-start close-start)
-                    :end (if forward close-end open-end)
-                    :op (if forward op cl)
-                    :cl (if forward cl op)
-                    :prefix ""
-                    :suffix ""))))))))
+                (setq open-end (point))))
+            (cond
+             ((and (not back) (not forward))
+              (goto-char (match-beginning 0)))
+             ((and back forward)
+              (goto-char (match-end 0))))
+            (while (> depth 0)
+              (if (funcall search-fn needle nil t)
+                  (if (sp--sgml-opening-p (match-string 0))
+                      (if forward (setq depth (1+ depth)) (setq depth (1- depth)))
+                    (if forward (setq depth (1- depth)) (setq depth (1+ depth))))
+                (setq depth -1)))
+            (if (eq depth -1)
+                (progn (sp-message :no-matching-tag) nil)
+              (save-excursion
+                (if forward
+                    (progn
+                      (setq close-start (match-beginning 0))
+                      (search-forward-regexp ">" nil t)
+                      (setq close-end (point)))
+                  (setq close-start (point))
+                  (search-forward-regexp ">" nil t)
+                  (setq close-end (point))))
+              (let ((op (buffer-substring-no-properties open-start open-end))
+                    (cl (buffer-substring-no-properties close-start close-end)))
+                (list :beg (if forward open-start close-start)
+                      :end (if forward close-end open-end)
+                      :op (if forward op cl)
+                      :cl (if forward cl op)
+                      :prefix ""
+                      :suffix "")))))))))
 
 (defun sp--end-delimiter-closure (pairs pair-list)
   "Compute the \"end-delimiter\" closure of set PAIRS.
@@ -4906,84 +5106,102 @@ string (`sp-get-string') or balanced expression recognized by
 If `sp-navigate-consider-symbols' is nil, only balanced
 expressions are considered."
   (sp--maybe-init)
-  (cond
-   (sp-prefix-tag-object (sp-get-sgml-tag back))
-   (sp-prefix-pair-object (sp-get-paired-expression back))
-   (sp-prefix-symbol-object (sp-get-symbol back))
-   (t
-    (if back
+  (sp--with-case-sensitive
+    (cond
+     (sp-prefix-tag-object (sp-get-sgml-tag back))
+     (sp-prefix-pair-object (sp-get-paired-expression back))
+     (sp-prefix-symbol-object (sp-get-symbol back))
+     (t
+      (if back
+          (if (not sp-navigate-consider-symbols)
+              (sp-get-sexp t)
+            (save-excursion
+              (cond
+               ((sp-point-in-empty-string)
+                (sp-get-string t))
+               (t
+                (sp-skip-backward-to-symbol t nil t)
+                (cond
+                 ;; this is an optimization, we do not need to look up
+                 ;; the "pair" expression first. If this fails, follow
+                 ;; up with regular sexps
+                 ((and (memq major-mode sp-navigate-consider-sgml-tags)
+                       (sp--looking-back ">")
+                       (sp-get-sgml-tag t)))
+                 ((sp--valid-initial-delimiter-p (sp--looking-back (sp--get-closing-regexp (sp--get-allowed-pair-list)) nil))
+                  (sp-get-sexp t))
+                 ((sp--valid-initial-delimiter-p (sp--looking-back (sp--get-opening-regexp (sp--get-allowed-pair-list)) nil))
+                  (sp-get-sexp t))
+                 ((and (eq (char-syntax (preceding-char)) 34)
+                       (not (sp-char-is-escaped-p (1- (point)))))
+                  (sp-get-string t))
+                 ((sp--valid-initial-delimiter-p (sp--looking-back (sp--get-stringlike-regexp) nil))
+                  (sp-get-expression t))
+                 ;; We might be somewhere inside the prefix of the
+                 ;; sexp after the point.  Since the prefix can be
+                 ;; specified as regexp and not syntax class, it might
+                 ;; itself by a symbol which would invalidly get
+                 ;; picked here.
+                 (t (-when-let (sym (sp-get-symbol t))
+                      (save-excursion
+                        (sp-get sym (goto-char :end))
+                        (if (sp--valid-initial-delimiter-p (sp--looking-at (sp--get-opening-regexp (sp--get-allowed-pair-list))))
+                            (let* ((ms (match-string 0))
+                                   (pref (sp--get-prefix (point) ms)))
+                              (if (and pref
+                                       (not (equal pref "")))
+                                  (sp-get-sexp t)
+                                sym))
+                          sym)))))))))
         (if (not sp-navigate-consider-symbols)
-            (sp-get-sexp t)
+            (sp-get-sexp nil)
           (save-excursion
             (cond
              ((sp-point-in-empty-string)
-              (sp-get-string t))
-             (t
-              (sp-skip-backward-to-symbol t nil t)
-              (cond
-               ;; this is an optimization, we do not need to look up
-               ;; the "pair" expression first. If this fails, follow
-               ;; up with regular sexps
-               ((and (memq major-mode sp-navigate-consider-sgml-tags)
-                     (sp--looking-back ">")
-                     (sp-get-sgml-tag t)))
-               ((sp--valid-initial-delimiter-p (sp--looking-back (sp--get-closing-regexp (sp--get-allowed-pair-list)) nil))
-                (sp-get-sexp t))
-               ((sp--valid-initial-delimiter-p (sp--looking-back (sp--get-opening-regexp (sp--get-allowed-pair-list)) nil))
-                (sp-get-sexp t))
-               ((eq (char-syntax (preceding-char)) 34)
-                (sp-get-string t))
-               ((and (sp--valid-initial-delimiter-p (sp--looking-back (sp--get-stringlike-regexp) nil))
-                     (sp-get-expression t)))
-               (t (sp-get-symbol t)))))))
-      (if (not sp-navigate-consider-symbols)
-          (sp-get-sexp nil)
-        (save-excursion
-          (cond
-           ((sp-point-in-empty-string)
-            (sp-get-string nil))
-           (t
-            (sp-skip-forward-to-symbol t nil t)
-            (cond
-             ((and (memq major-mode sp-navigate-consider-sgml-tags)
-                   (looking-at "<")
-                   (sp-get-sgml-tag)))
-             ((sp--valid-initial-delimiter-p (sp--looking-at (sp--get-opening-regexp (sp--get-allowed-pair-list))))
-              (sp-get-sexp nil))
-             ((sp--valid-initial-delimiter-p (sp--looking-at (sp--get-closing-regexp (sp--get-allowed-pair-list))))
-              (sp-get-sexp nil))
-             ((eq (char-syntax (following-char)) 34)
               (sp-get-string nil))
-             ((and (sp--valid-initial-delimiter-p (sp--looking-at (sp--get-stringlike-regexp)))
-                   (sp-get-expression nil)))
-             ;; it can still be that we are looking at a /prefix/ of a
-             ;; sexp.  We should skip a symbol forward and check if it
-             ;; is a sexp, and then maybe readjust the output.
-             (t (let* ((sym (sp-get-symbol nil))
-                       (sym-string (and sym (sp-get sym (buffer-substring-no-properties :beg :end))))
-                       (point-before-prefix (point)))
-                  (when sym-string
-                    (if (sp--valid-initial-delimiter-p (sp--search-forward-regexp (sp--get-opening-regexp (sp--get-allowed-pair-list)) nil t))
-                        (let* ((ms (match-string 0))
-                               (pref (progn
-                                       ;; need to move before the
-                                       ;; opening, so (point) evals
-                                       ;; there.
-                                       (backward-char (length ms))
-                                       (sp--get-prefix (point) ms))))
-                          ;; We use >= because the first skip to
-                          ;; symbol might have skipped some prefix
-                          ;; chars which make prefix of the symbol
-                          ;; which together make prefix of a sexp.
-                          ;; For example \foo{} in latex, where \ is
-                          ;; prefix of symbol foo and \foo is prefix
-                          ;; of {
-                          (if (and pref
-                                   (not (equal pref ""))
-                                   (>= point-before-prefix (- (point) (length pref))))
-                              (sp-get-sexp nil)
-                            sym))
-                      sym)))))))))))))
+             (t
+              (sp-skip-forward-to-symbol t nil t)
+              (cond
+               ((and (memq major-mode sp-navigate-consider-sgml-tags)
+                     (looking-at "<")
+                     (sp-get-sgml-tag)))
+               ((sp--valid-initial-delimiter-p (sp--looking-at (sp--get-opening-regexp (sp--get-allowed-pair-list))))
+                (sp-get-sexp nil))
+               ((sp--valid-initial-delimiter-p (sp--looking-at (sp--get-closing-regexp (sp--get-allowed-pair-list))))
+                (sp-get-sexp nil))
+               ((and (eq (char-syntax (following-char)) 34)
+                     (not (sp-char-is-escaped-p)))
+                (sp-get-string nil))
+               ((sp--valid-initial-delimiter-p (sp--looking-at (sp--get-stringlike-regexp)))
+                (sp-get-expression nil))
+               ;; it can still be that we are looking at a /prefix/ of a
+               ;; sexp.  We should skip a symbol forward and check if it
+               ;; is a sexp, and then maybe readjust the output.
+               (t (let* ((sym (sp-get-symbol nil))
+                         (sym-string (and sym (sp-get sym (buffer-substring-no-properties :beg :end))))
+                         (point-before-prefix (point)))
+                    (when sym-string
+                      (if (sp--valid-initial-delimiter-p (sp--search-forward-regexp (sp--get-opening-regexp (sp--get-allowed-pair-list)) nil t))
+                          (let* ((ms (match-string 0))
+                                 (pref (progn
+                                         ;; need to move before the
+                                         ;; opening, so (point) evals
+                                         ;; there.
+                                         (backward-char (length ms))
+                                         (sp--get-prefix (point) ms))))
+                            ;; We use >= because the first skip to
+                            ;; symbol might have skipped some prefix
+                            ;; chars which make prefix of the symbol
+                            ;; which together make prefix of a sexp.
+                            ;; For example \foo{} in latex, where \ is
+                            ;; prefix of symbol foo and \foo is prefix
+                            ;; of {
+                            (if (and pref
+                                     (not (equal pref ""))
+                                     (>= point-before-prefix (- (point) (length pref))))
+                                (sp-get-sexp nil)
+                              sym))
+                        sym))))))))))))))
 
 (defun sp-narrow-to-sexp (arg)
   "Make text outside current balanced expression invisible.
@@ -5421,6 +5639,11 @@ Examples:
 
 (put 'sp-end-of-previous-sexp 'CUA 'move)
 
+;; TODO: split the reindent code so we can call it inside strings on
+;; sexps like [foo ]... We can't reindent that by default because it
+;; can be a regular expression or something where the whitespace
+;; matters.  For now, disable reindent in strings if the sexp is not
+;; the string quote itself.
 (defun sp-up-sexp (&optional arg interactive)
   "Move forward out of one level of parentheses.
 
@@ -5448,65 +5671,72 @@ Examples:
   (foo  |(bar baz)           -> (foo)| (bar baz) ;; close unbalanced expr."
   (interactive "^p\np")
   (setq arg (or arg 1))
-  (let ((ok (sp-get-enclosing-sexp (abs arg))))
-    (if ok
-        (progn
-          (if (> arg 0)
-              (goto-char (sp-get ok :end))
-            (goto-char (sp-get ok :beg)))
-          (when (and (= (abs arg) 1)
-                     (not (equal (sp-get ok :prefix) sp-comment-char))
-                     (or (memq major-mode (assq 'always sp-navigate-reindent-after-up))
-                         (and (memq major-mode (assq 'interactive sp-navigate-reindent-after-up))
-                              interactive))
-                     (if sp-navigate-reindent-after-up-in-string
-                         t
-                       (save-excursion
-                         (sp-get ok
-                           (goto-char :end-in)
-                           (not (sp-point-in-string))))))
-            ;; TODO: this needs different indent rules for different
-            ;; modes.  Should we concern with such things?  Lisp rules are
-            ;; funny in HTML... :/
+  (sp--with-case-sensitive
+    (let ((ok (sp-get-enclosing-sexp (abs arg))))
+      (if ok
+          (progn
+            (if (> arg 0)
+                (goto-char (sp-get ok :end))
+              (goto-char (sp-get ok :beg)))
+            (when (and (= (abs arg) 1)
+                       (not (equal (sp-get ok :prefix) sp-comment-char))
+                       (or (memq major-mode (assq 'always sp-navigate-reindent-after-up))
+                           (and (memq major-mode (assq 'interactive sp-navigate-reindent-after-up))
+                                interactive))
+                       (or sp-navigate-reindent-after-up-in-string
+                           (sp-get ok (not (sp-point-in-string :end-in))))
+                       ;; if the sexp to be reindented is not a string
+                       ;; but is inside a string, we should rather do
+                       ;; nothing than break semantics (in e.g. regexp
+                       ;; [...])
+                       (let ((str (sp-point-in-string)))
+                         (or (not str)
+                             ;; op must be the delimiter of the string we're in
+                             (eq (sp-get ok :op)
+                                 (or (eq str t)
+                                     (char-to-string str))))))
+              ;; TODO: this needs different indent rules for different
+              ;; modes.  Should we concern with such things?  Lisp rules are
+              ;; funny in HTML... :/
+              (save-excursion
+                (if (> arg 0)
+                    (progn
+                      (goto-char (sp-get ok :end-in))
+                      (let ((prev (sp-get-thing t)))
+                        ;; if the expression is empty remove everything inside
+                        (if (sp-compare-sexps ok prev)
+                            (sp-get ok (delete-region :beg-in :end-in))
+                          (when (save-excursion
+                                  (skip-chars-backward " \t\n")
+                                  (= (point) (sp-get prev :end-suf)))
+                            (delete-region (sp-get prev :end-suf) (point))))))
+                  (goto-char (sp-get ok :beg-in))
+                  (let ((next (sp-get-thing)))
+                    (if (sp-compare-sexps ok next)
+                        (sp-get ok (delete-region :beg-in :end-in))
+                      (when (save-excursion
+                              (skip-chars-forward " \t\n")
+                              (= (point) (sp-get next :beg-prf)))
+                        (delete-region (point) (sp-get next :beg-prf)))))))))
+        ;; on forward up, we can detect that the pair was not closed.
+        ;; Therefore, jump sexps backwards until we hit the error, then
+        ;; extract the opening pair and insert it at point.  Only works
+        ;; for pairs defined in `sp-pair-list'.
+        (when (and (> arg 0)
+                   sp-navigate-close-if-unbalanced)
+          (let (active-pair)
             (save-excursion
-              (if (> arg 0)
-                  (progn
-                    (goto-char (sp-get ok :end-in))
-                    (let ((prev (sp-get-thing t)))
-                      ;; if the expression is empty remove everything inside
-                      (if (sp-compare-sexps ok prev)
-                          (sp-get ok (delete-region :beg-in :end-in))
-                        (when (save-excursion
-                                (skip-chars-backward " \t\n")
-                                (= (point) (sp-get prev :end-suf)))
-                          (delete-region (sp-get prev :end-suf) (point))))))
-                (goto-char (sp-get ok :beg-in))
-                (let ((next (sp-get-thing)))
-                  (if (sp-compare-sexps ok next)
-                      (sp-get ok (delete-region :beg-in :end-in))
-                    (when (save-excursion
-                            (skip-chars-forward " \t\n")
-                            (= (point) (sp-get next :beg-prf)))
-                      (delete-region (point) (sp-get next :beg-prf)))))))))
-      ;; on forward up, we can detect that the pair was not closed.
-      ;; Therefore, jump sexps backwards until we hit the error, then
-      ;; extract the opening pair and insert it at point.  Only works
-      ;; for pairs defined in `sp-pair-list'.
-      (when (and (> arg 0)
-                 sp-navigate-close-if-unbalanced)
-        (let (active-pair)
-          (save-excursion
-            ;; add support for SGML tags here
-            (while (sp-backward-sexp))
-            (sp-skip-backward-to-symbol t)
-            (when (sp--looking-back (sp--get-opening-regexp))
-              (let* ((op (match-string 0)))
-                (setq active-pair (assoc op sp-pair-list)))))
-          (when active-pair
-            (sp-backward-sexp)
-            (sp-forward-sexp)
-            (insert (cdr active-pair))))))
-    ok))
+              ;; add support for SGML tags here
+              (while (sp-backward-sexp))
+              (sp-skip-backward-to-symbol t)
+              (when (sp--looking-back (sp--get-opening-regexp))
+                (let* ((op (match-string 0)))
+                  (setq active-pair (assoc op sp-pair-list)))))
+            (when active-pair
+              (sp-backward-sexp)
+              (sp-forward-sexp)
+              (insert (cdr active-pair))))))
+      ok)))
 
 (put 'sp-up-sexp 'CUA 'move)
 
@@ -6466,8 +6696,10 @@ Examples:
                             (and stop-inside-string
                                  (sp-point-in-string)
                                  (not (sp-point-in-string (,inc (point)))))
-                            (,looking allowed-pairs)
-                            (,looking allowed-strings)))
+                            (and (,looking allowed-pairs)
+                                 (or in-comment (not (sp-point-in-comment))))
+                            (and (,looking allowed-strings)
+                                 (or in-comment (not (sp-point-in-comment))))))
                    (or (member (char-syntax (,next-char-fn)) '(?< ?> ?! ?| ?\ ?\\ ?\" ?' ?.))
                        (unless in-comment (sp-point-in-comment))))
          (when (and (not in-comment)
@@ -6550,35 +6782,36 @@ Examples:
   |foo (bar (baz) quux) -> foo (bar (baz) quux|) ;; 4"
   (interactive "^p")
   (setq arg (or arg 1))
-  (let* ((n (abs arg))
-         (fw (> arg 0))
-         (allowed (sp--get-allowed-pair-list))
-         (open (sp--get-opening-regexp allowed))
-         (close (sp--get-closing-regexp allowed)))
-    (if fw
-        (while (> n 0)
-          ;; First we need to get to the beginning of a symbol.  This means
-          ;; skipping all whitespace and pair delimiters until we hit
-          ;; something in \sw or \s_
-          (while (cond
-                  ((eobp) nil)
-                  ((not (memq (char-syntax (following-char)) '(?w ?_)))
-                   (forward-char)
-                   t)
-                  ;; if allowed is empty, the regexp matches anything
-                  ;; and we go into infinite loop, cf. Issue #400
-                  ((and allowed (sp--valid-initial-delimiter-p (sp--looking-at open)))
-                   (goto-char (match-end 0)))
-                  ((and allowed (sp--valid-initial-delimiter-p (sp--looking-at close)))
-                   (goto-char (match-end 0)))))
-          (while (and (not (eobp))
-                      (or (not allowed)
-                          (not (or (sp--valid-initial-delimiter-p (sp--looking-at open))
-                                   (sp--valid-initial-delimiter-p (sp--looking-at close)))))
-                      (memq (char-syntax (following-char)) '(?w ?_)))
-            (forward-char))
-          (setq n (1- n)))
-      (sp-backward-symbol n))))
+  (sp--with-case-sensitive
+    (let* ((n (abs arg))
+           (fw (> arg 0))
+           (allowed (sp--get-allowed-pair-list))
+           (open (sp--get-opening-regexp allowed))
+           (close (sp--get-closing-regexp allowed)))
+      (if fw
+          (while (> n 0)
+            ;; First we need to get to the beginning of a symbol.  This means
+            ;; skipping all whitespace and pair delimiters until we hit
+            ;; something in \sw or \s_
+            (while (cond
+                    ((eobp) nil)
+                    ((not (memq (char-syntax (following-char)) '(?w ?_)))
+                     (forward-char)
+                     t)
+                    ;; if allowed is empty, the regexp matches anything
+                    ;; and we go into infinite loop, cf. Issue #400
+                    ((and allowed (sp--valid-initial-delimiter-p (sp--looking-at open)))
+                     (goto-char (match-end 0)))
+                    ((and allowed (sp--valid-initial-delimiter-p (sp--looking-at close)))
+                     (goto-char (match-end 0)))))
+            (while (and (not (eobp))
+                        (or (not allowed)
+                            (not (or (sp--valid-initial-delimiter-p (sp--looking-at open))
+                                     (sp--valid-initial-delimiter-p (sp--looking-at close)))))
+                        (memq (char-syntax (following-char)) '(?w ?_)))
+              (forward-char))
+            (setq n (1- n)))
+        (sp-backward-symbol n)))))
 
 (put 'sp-forward-symbol 'CUA 'move)
 
@@ -6605,28 +6838,29 @@ Examples:
   (quux ((foo) bar) baz)| -> (|quux ((foo) bar) baz) ;; 4"
   (interactive "^p")
   (setq arg (or arg 1))
-  (let ((n (abs arg))
-        (fw (> arg 0))
-        (open (sp--get-opening-regexp (sp--get-allowed-pair-list)))
-        (close (sp--get-closing-regexp (sp--get-allowed-pair-list))))
-    (if fw
-        (while (> n 0)
-          (while (cond
-                  ((bobp) nil)
-                  ((not (memq (char-syntax (preceding-char)) '(?w ?_)))
-                   (backward-char)
-                   t)
-                  ((sp--valid-initial-delimiter-p (sp--looking-back open))
-                   (goto-char (match-beginning 0)))
-                  ((sp--valid-initial-delimiter-p (sp--looking-back close))
-                   (goto-char (match-beginning 0)))))
-          (while (and (not (bobp))
-                      (not (or (sp--valid-initial-delimiter-p (sp--looking-back open))
-                               (sp--valid-initial-delimiter-p (sp--looking-back close))))
-                      (memq (char-syntax (preceding-char)) '(?w ?_)))
-            (backward-char))
-          (setq n (1- n)))
-      (sp-forward-symbol n))))
+  (sp--with-case-sensitive
+    (let ((n (abs arg))
+          (fw (> arg 0))
+          (open (sp--get-opening-regexp (sp--get-allowed-pair-list)))
+          (close (sp--get-closing-regexp (sp--get-allowed-pair-list))))
+      (if fw
+          (while (> n 0)
+            (while (cond
+                    ((bobp) nil)
+                    ((not (memq (char-syntax (preceding-char)) '(?w ?_)))
+                     (backward-char)
+                     t)
+                    ((sp--valid-initial-delimiter-p (sp--looking-back open))
+                     (goto-char (match-beginning 0)))
+                    ((sp--valid-initial-delimiter-p (sp--looking-back close))
+                     (goto-char (match-beginning 0)))))
+            (while (and (not (bobp))
+                        (not (or (sp--valid-initial-delimiter-p (sp--looking-back open))
+                                 (sp--valid-initial-delimiter-p (sp--looking-back close))))
+                        (memq (char-syntax (preceding-char)) '(?w ?_)))
+              (backward-char))
+            (setq n (1- n)))
+        (sp-forward-symbol n)))))
 
 (put 'sp-backward-symbol 'CUA 'move)
 
@@ -7171,41 +7405,42 @@ expressions up until the start of enclosing list."
   ;; out a way to make it smoother.
   (interactive "P")
   (sp-select-next-thing arg)
-  (let ((enc (sp-get-enclosing-sexp))
-        (dws 0) ;length of deleted whitespace
-        save-text b e nl)
-    (save-excursion
-      (setq b (region-beginning))
-      (setq e (region-end))
-      (goto-char (sp-get enc :end-in))
-      (if (looking-back "\n[ \t]*")
+  (sp--with-case-sensitive
+    (let ((enc (sp-get-enclosing-sexp))
+          (dws 0)                       ;length of deleted whitespace
+          save-text b e nl)
+      (save-excursion
+        (setq b (region-beginning))
+        (setq e (region-end))
+        (goto-char (sp-get enc :end-in))
+        (if (looking-back "\n[ \t]*")
+            (let ((whitespace (sp-get-whitespace)))
+              (sp-get whitespace
+                (when (= :beg e)
+                  (delete-region :beg :end)
+                  (setq dws (- :end :beg)))))
+          (setq nl t))
+        (setq save-text (delete-and-extract-region b e))
+        (when nl
           (let ((whitespace (sp-get-whitespace)))
-            (sp-get whitespace
-              (when (= :beg e)
-                (delete-region :beg :end)
-                (setq dws (- :end :beg)))))
-        (setq nl t))
-      (setq save-text (delete-and-extract-region b e))
-      (when nl
+            (sp-get whitespace (delete-region :beg :end))
+            (sp-get whitespace (setq dws (+ dws (- :end :beg))))))
+        (sp-get enc (goto-char (- :end (length save-text) dws)))
+        (insert "\n" save-text)
+        (sp-get enc (sp--indent-region :beg-prf :end))
+        (setq e (point)))
+      ;; if we're at an empty line, remove it
+      (setq dws 0)                      ; variable reuse, ugly :/
+      (when (string-match-p "^[\n\t ]+\\'" (thing-at-point 'line))
+        (let ((b (bounds-of-thing-at-point 'line)))
+          (delete-region (car b) (cdr b))
+          (setq dws (- (cdr b) (car b)))))
+      (when (sp--looking-back (sp--get-opening-regexp) nil t)
         (let ((whitespace (sp-get-whitespace)))
-          (sp-get whitespace (delete-region :beg :end))
-          (sp-get whitespace (setq dws (+ dws (- :end :beg))))))
-      (sp-get enc (goto-char (- :end (length save-text) dws)))
-      (insert "\n" save-text)
-      (sp-get enc (sp--indent-region :beg-prf :end))
-      (setq e (point)))
-    ;; if we're at an empty line, remove it
-    (setq dws 0) ; variable reuse, ugly :/
-    (when (string-match-p "^[\n\t ]+\\'" (thing-at-point 'line))
-      (let ((b (bounds-of-thing-at-point 'line)))
-        (delete-region (car b) (cdr b))
-        (setq dws (- (cdr b) (car b)))))
-    (when (sp--looking-back (sp--get-opening-regexp) nil t)
-      (let ((whitespace (sp-get-whitespace)))
-        (sp-get whitespace
-          (delete-region :beg :end)
-          (setq dws (- :end :beg)))))
-    (goto-char (- e dws))))
+          (sp-get whitespace
+            (delete-region :beg :end)
+            (setq dws (- :end :beg)))))
+      (goto-char (- e dws)))))
 
 (defun sp-forward-whitespace (&optional arg)
   "Skip forward past the whitespace characters.
@@ -7615,48 +7850,49 @@ Examples:
 
  |(foo bar) -> (|foo bar)"
   (interactive "P")
-  (let* ((raw (sp--raw-argument-p arg))
-         ;; if you edit 10 gigabyte files in Emacs, you're gonna have
-         ;; a bad time.
-         (n (if raw 100000000
-              (prefix-numeric-value arg))))
-    (cond
-     ((> n 0)
-      (while (> n 0)
-        (cond
-         ((let ((ok (sp-point-in-empty-sexp)))
-            (when ok
-              (backward-char (length (car ok)))
-              (delete-char (+ (length (car ok)) (length (cdr ok)))))
-            ok)
-          ;; make this customizable
-          (setq n (1- n)))
-         ((and (sp-point-in-string)
-               (save-excursion (forward-char) (not (sp-point-in-string))))
-          (setq n 0))
-         ((sp--looking-at (sp--get-opening-regexp (sp--get-pair-list-context 'navigate)))
-          (if (save-match-data (sp-get-thing))
-              (goto-char (match-end 0))
-            (delete-char (length (match-string 0))))
-          ;; make this customizable
-          (setq n (1- n)))
-         ((and (not (sp-point-in-string))
-               (save-excursion (forward-char) (sp-point-in-string)))
-          (forward-char)
-          ;; make this customizable
-          (setq n (1- n)))
-         ((sp--looking-at (sp--get-closing-regexp (sp--get-pair-list-context 'navigate)))
-          (if (save-match-data (sp-get-thing))
-              ;; make this customizable -- maybe we want to skip and
-              ;; continue deleting
-              (setq n 0)
-            (delete-char (length (match-string 0)))
-            (setq n (1- n))))
-         (t
-          (delete-char 1)
-          (setq n (1- n))))))
-     ((= n 0) (delete-char 1))
-     (t (sp-backward-delete-char (sp--negate-argument arg))))))
+  (sp--with-case-sensitive
+    (let* ((raw (sp--raw-argument-p arg))
+           ;; if you edit 10 gigabyte files in Emacs, you're gonna have
+           ;; a bad time.
+           (n (if raw 100000000
+                (prefix-numeric-value arg))))
+      (cond
+       ((> n 0)
+        (while (> n 0)
+          (cond
+           ((let ((ok (sp-point-in-empty-sexp)))
+              (when ok
+                (backward-char (length (car ok)))
+                (delete-char (+ (length (car ok)) (length (cdr ok)))))
+              ok)
+            ;; make this customizable
+            (setq n (1- n)))
+           ((and (sp-point-in-string)
+                 (save-excursion (forward-char) (not (sp-point-in-string))))
+            (setq n 0))
+           ((sp--looking-at (sp--get-opening-regexp (sp--get-pair-list-context 'navigate)))
+            (if (save-match-data (sp-get-thing))
+                (goto-char (match-end 0))
+              (delete-char (length (match-string 0))))
+            ;; make this customizable
+            (setq n (1- n)))
+           ((and (not (sp-point-in-string))
+                 (save-excursion (forward-char) (sp-point-in-string)))
+            (forward-char)
+            ;; make this customizable
+            (setq n (1- n)))
+           ((sp--looking-at (sp--get-closing-regexp (sp--get-pair-list-context 'navigate)))
+            (if (save-match-data (sp-get-thing))
+                ;; make this customizable -- maybe we want to skip and
+                ;; continue deleting
+                (setq n 0)
+              (delete-char (length (match-string 0)))
+              (setq n (1- n))))
+           (t
+            (delete-char 1)
+            (setq n (1- n))))))
+       ((= n 0) (delete-char 1))
+       (t (sp-backward-delete-char (sp--negate-argument arg)))))))
 
 (defun sp-backward-delete-char (&optional arg)
   "Delete a character backward or move backward over a delimiter.
@@ -7690,48 +7926,49 @@ Examples:
 
  (foo bar)| -> (foo bar|)"
   (interactive "P")
-  (let* ((raw (sp--raw-argument-p arg))
-         ;; if you edit 10 gigabyte files in Emacs, you're gonna have
-         ;; a bad time.
-         (n (if raw 100000000
-              (prefix-numeric-value arg))))
-    (cond
-     ((> n 0)
-      (while (> n 0)
-        (cond
-         ((let ((ok (sp-point-in-empty-sexp)))
-            (when ok
-              (backward-char (length (car ok)))
-              (delete-char (+ (length (car ok)) (length (cdr ok)))))
-            ok)
-          ;; make this customizable
-          (setq n (1- n)))
-         ((and (sp-point-in-string)
-               (save-excursion (backward-char) (not (sp-point-in-string))))
-          (setq n 0))
-         ((sp--looking-back (sp--get-closing-regexp (sp--get-pair-list-context 'navigate)))
-          (if (save-match-data (sp-get-thing t))
-              (goto-char (match-beginning 0))
-            (delete-char (- (length (match-string 0)))))
-          ;; make this customizable
-          (setq n (1- n)))
-         ((and (not (sp-point-in-string))
-               (save-excursion (backward-char) (sp-point-in-string)))
-          (backward-char)
-          ;; make this customizable
-          (setq n (1- n)))
-         ((sp--looking-back (sp--get-opening-regexp (sp--get-pair-list-context 'navigate)))
-          (if (save-match-data (sp-get-thing t))
-              ;; make this customizable -- maybe we want to skip and
-              ;; continue deleting
-              (setq n 0)
-            (delete-char (- (length (match-string 0))))
-            (setq n (1- n))))
-         (t
-          (delete-char -1)
-          (setq n (1- n))))))
-     ((= n 0) (delete-char -1))
-     (t (sp-delete-char (sp--negate-argument arg))))))
+  (sp--with-case-sensitive
+    (let* ((raw (sp--raw-argument-p arg))
+           ;; if you edit 10 gigabyte files in Emacs, you're gonna have
+           ;; a bad time.
+           (n (if raw 100000000
+                (prefix-numeric-value arg))))
+      (cond
+       ((> n 0)
+        (while (> n 0)
+          (cond
+           ((let ((ok (sp-point-in-empty-sexp)))
+              (when ok
+                (backward-char (length (car ok)))
+                (delete-char (+ (length (car ok)) (length (cdr ok)))))
+              ok)
+            ;; make this customizable
+            (setq n (1- n)))
+           ((and (sp-point-in-string)
+                 (save-excursion (backward-char) (not (sp-point-in-string))))
+            (setq n 0))
+           ((sp--looking-back (sp--get-closing-regexp (sp--get-pair-list-context 'navigate)))
+            (if (save-match-data (sp-get-thing t))
+                (goto-char (match-beginning 0))
+              (delete-char (- (length (match-string 0)))))
+            ;; make this customizable
+            (setq n (1- n)))
+           ((and (not (sp-point-in-string))
+                 (save-excursion (backward-char) (sp-point-in-string)))
+            (backward-char)
+            ;; make this customizable
+            (setq n (1- n)))
+           ((sp--looking-back (sp--get-opening-regexp (sp--get-pair-list-context 'navigate)))
+            (if (save-match-data (sp-get-thing t))
+                ;; make this customizable -- maybe we want to skip and
+                ;; continue deleting
+                (setq n 0)
+              (delete-char (- (length (match-string 0))))
+              (setq n (1- n))))
+           (t
+            (delete-char -1)
+            (setq n (1- n))))))
+       ((= n 0) (delete-char -1))
+       (t (sp-delete-char (sp--negate-argument arg)))))))
 
 (put 'sp-backward-delete-char 'delete-selection 'supersede)
 (put 'sp-delete-char 'delete-selection 'supersede)
@@ -7751,7 +7988,7 @@ delimiter enclosing this sexp."
      ((sp-point-in-empty-string pos)))))
 
 (defun sp-point-in-empty-string (&optional pos)
-  "Return non-nil if point is in empty sexp or string.
+  "Return non-nil if point is in empty string.
 
 The return value is actually cons pair of opening and closing
 string delimiter enclosing this string."
@@ -7763,16 +8000,6 @@ string delimiter enclosing this string."
       (let* ((syntax (nth 3 (syntax-ppss pos)))
              (c (char-to-string (if (eq syntax t) (following-char) syntax))))
         (cons c c)))))
-
-(defun sp-zap-syntax (syntax &optional back)
-  "Delete characters forward until they match syntax class SYNTAX.
-
-If BACK is non-nil, delete backward."
-  (let ((p (point)))
-    (if back
-        (skip-syntax-backward syntax)
-      (skip-syntax-forward syntax))
-    (delete-region p (point))))
 
 (defun sp--use-subword ()
   "Return non-nil if word killing commands should kill subwords.
@@ -7815,27 +8042,28 @@ backward direction.
 
 See `sp-forward-symbol' for what constitutes a symbol."
   (interactive "p")
-  (if (> arg 0)
-      (while (> arg 0)
-        (if (and word (sp-point-in-symbol))
-            (sp--kill-word 1)
-          (let ((s (sp-get-symbol))
-                (p (point)))
-            (when s
-              (sp-get s
-                (let ((delims (buffer-substring :beg-prf p)))
-                  (if (string-match-p "\\`\\(\\s.\\|\\s-\\)*\\'" delims)
-                      (if word
-                          (kill-region p (save-excursion (sp--forward-word) (point)))
-                        (kill-region p :end))
-                    (let ((kill-from (if (> p :beg-prf) :beg :beg-prf)))
-                      (goto-char kill-from)
-                      (if word
-                          (kill-region kill-from (save-excursion (sp--forward-word) (point)))
-                        (kill-region kill-from :end)))))))))
-        (sp--cleanup-after-kill)
-        (setq arg (1- arg)))
-    (sp-backward-kill-symbol (sp--negate-argument arg) word)))
+  (sp--with-case-sensitive
+    (if (> arg 0)
+        (while (> arg 0)
+          (if (and word (sp-point-in-symbol))
+              (sp--kill-word 1)
+            (let ((s (sp-get-symbol))
+                  (p (point)))
+              (when s
+                (sp-get s
+                  (let ((delims (buffer-substring :beg-prf p)))
+                    (if (string-match-p "\\`\\(\\s.\\|\\s-\\)*\\'" delims)
+                        (if word
+                            (kill-region p (save-excursion (sp--forward-word) (point)))
+                          (kill-region p :end))
+                      (let ((kill-from (if (> p :beg-prf) :beg :beg-prf)))
+                        (goto-char kill-from)
+                        (if word
+                            (kill-region kill-from (save-excursion (sp--forward-word) (point)))
+                          (kill-region kill-from :end)))))))))
+          (sp--cleanup-after-kill)
+          (setq arg (1- arg)))
+      (sp-backward-kill-symbol (sp--negate-argument arg) word))))
 
 (defun sp-kill-word (&optional arg)
   "Kill a word forward, skipping over intervening delimiters.
@@ -7857,26 +8085,32 @@ forward direction.
 
 See `sp-backward-symbol' for what constitutes a symbol."
   (interactive "p")
-  (if (> arg 0)
-      (while (> arg 0)
-        (if (and word (sp-point-in-symbol))
-            (sp--kill-word -1)
-          (let ((s (sp-get-symbol t))
-                (p (point)))
-            (when s
-              (sp-get s
-                (let ((delims (buffer-substring :end p)))
-                  (if (string-match-p "\\`\\(\\s.\\|\\s-\\)*\\'" delims)
+  (sp--with-case-sensitive
+    (if (> arg 0)
+        (while (> arg 0)
+          (if (and word (sp-point-in-symbol))
+              (sp--kill-word -1)
+            (let ((s (sp-get-symbol t))
+                  (p (point)))
+              (when s
+                (sp-get s
+                  (let ((delims (buffer-substring :end p)))
+                    (if (string-match-p "\\`\\(\\s.\\|\\s-\\)*\\'" delims)
+                        ;; Note: the arguments to kill-region are
+                        ;; "reversed" (end before beg) so that the
+                        ;; successive kills are prepended in the kill
+                        ;; ring. See the implementation of
+                        ;; `kill-region' for more info
+                        (if word
+                            (kill-region p (save-excursion (sp--backward-word) (point)))
+                          (kill-region p :beg-prf))
+                      (goto-char :end)
                       (if word
-                          (kill-region (save-excursion (sp--backward-word) (point)) p)
-                        (kill-region :beg-prf p))
-                    (goto-char :end)
-                    (if word
-                        (kill-region (save-excursion (sp--backward-word) (point)) :end)
-                      (kill-region :beg-prf :end))))))))
-        (sp--cleanup-after-kill)
-        (setq arg (1- arg)))
-    (sp-kill-symbol (sp--negate-argument arg) word)))
+                          (kill-region :end (save-excursion (sp--backward-word) (point)))
+                        (kill-region :end :beg-prf))))))))
+          (sp--cleanup-after-kill)
+          (setq arg (1- arg)))
+      (sp-kill-symbol (sp--negate-argument arg) word))))
 
 (defun sp-backward-kill-word (&optional arg)
   "Kill a word backward, skipping over intervening delimiters.
@@ -7917,8 +8151,8 @@ of the point."
      (t (= string-or-comment-count normal-count 0)))))
 
 (cl-defun sp-region-ok-p (start end)
-  (save-restriction
-    (save-excursion
+  (save-excursion
+    (save-restriction
       (narrow-to-region start end)
       (when (ignore-errors (scan-sexps (point-min) (point-max)) t)
         (let ((count (list 0 0))
@@ -7975,39 +8209,40 @@ comment."
       (if (= 1 (length (single-key-description last-command-event))) ;; pretty hacky
           (insert (single-key-description last-command-event))
         (insert comment-start))
-    (let ((old-point (point))
-          (column (current-column))
-          (indentation (sp--current-indentation))
-          (old-line (line-number-at-pos))
-          (hsexp (sp-get-hybrid-sexp))
-          (newline-inserted 0))
-      (goto-char (sp-get hsexp :end))
-      (if (and (sp--looking-at-p (concat "\\s-*" (sp--get-closing-regexp)))
-               (= old-line (line-number-at-pos)))
-          (progn
-            (setq old-point (point))
+    (sp--with-case-sensitive
+      (let ((old-point (point))
+            (column (current-column))
+            (indentation (sp--current-indentation))
+            (old-line (line-number-at-pos))
+            (hsexp (sp-get-hybrid-sexp))
+            (newline-inserted 0))
+        (goto-char (sp-get hsexp :end))
+        (if (and (sp--looking-at-p (concat "\\s-*" (sp--get-closing-regexp)))
+                 (= old-line (line-number-at-pos)))
+            (progn
+              (setq old-point (point))
+              (newline)
+              (setq newline-inserted (1+ (- (line-end-position) (point)))))
+          (when (/= old-line (line-number-at-pos))
+            (sp-backward-sexp)
+            (setq old-point (+ old-point (skip-syntax-backward " ")))
             (newline)
-            (setq newline-inserted (1+ (- (line-end-position) (point)))))
-        (when (/= old-line (line-number-at-pos))
-          (sp-backward-sexp)
-          (setq old-point (+ old-point (skip-syntax-backward " ")))
-          (newline)
-          (setq newline-inserted (- (line-end-position) (point)))))
-      ;; @{ indenting madness
-      (goto-char old-point)
-      (sp-get hsexp (sp--indent-region :beg (+ :end newline-inserted)))
-      (sp--back-to-indentation column indentation)
-      ;; @}
-      (let ((comment-delim (or (cdr (--first (memq major-mode (car it)) sp-comment-string))
-                               comment-start)))
-        (when (and (/= 0 (current-column))
-                   (not (sp--looking-back-p "\\s-")))
-          (insert " "))
-        (insert comment-delim)
-        (when (/= newline-inserted 0)
-          (save-excursion
-            (forward-line 1)
-            (indent-according-to-mode)))))))
+            (setq newline-inserted (- (line-end-position) (point)))))
+        ;; @{ indenting madness
+        (goto-char old-point)
+        (sp-get hsexp (sp--indent-region :beg (+ :end newline-inserted)))
+        (sp--back-to-indentation column indentation)
+        ;; @}
+        (let ((comment-delim (or (cdr (--first (memq major-mode (car it)) sp-comment-string))
+                                 comment-start)))
+          (when (and (/= 0 (current-column))
+                     (not (sp--looking-back-p "\\s-")))
+            (insert " "))
+          (insert comment-delim)
+          (when (/= newline-inserted 0)
+            (save-excursion
+              (forward-line 1)
+              (indent-according-to-mode))))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -8117,48 +8352,49 @@ support custom pairs."
 (defun sp-show--pair-function ()
   "Display the show pair overlays."
   (when show-smartparens-mode
-    (save-match-data
-      (cl-labels ((scan-and-place-overlays
-                   (match &optional back)
-                   ;; we can use `sp-get-thing' here because we *are* at some
-                   ;; pair opening, and so only the tag or the sexp can trigger.
-                   (-if-let (ok (sp-get-thing back))
-                       (sp-get ok
-                         (when (and (<= :beg (point)) (<= (point) :end))
-                           (sp-show--pair-create-overlays :beg :end :op-l :cl-l)))
-                     (if back
-                         (sp-show--pair-create-mismatch-overlay (- (point) (length match))
-                                                                (length match))
-                       (sp-show--pair-create-mismatch-overlay (point) (length match))))))
-        (let* ((pair-list (sp--get-allowed-pair-list))
-               (opening (sp--get-opening-regexp pair-list))
-               (closing (sp--get-closing-regexp pair-list))
-               (allowed (and sp-show-pair-from-inside (sp--get-allowed-regexp)))
-               match)
-          (cond
-           ;; if we are in a situation "()|", we should highlight the
-           ;; regular pair and not the string pair "from inside"
-           ((and (not (sp--evil-normal-state-p))
-                 (not (sp--evil-motion-state-p))
-                 (not (sp--evil-visual-state-p))
-                 (sp--looking-back (if sp-show-pair-from-inside allowed closing)))
-            (scan-and-place-overlays (match-string 0) :back))
-           ((or (and (or (sp--evil-normal-state-p)
-                         (sp--evil-motion-state-p)
-                         (sp--evil-visual-state-p))
-                     (sp--looking-at (sp--get-allowed-regexp)))
-                (sp--looking-at (if sp-show-pair-from-inside allowed opening))
-                (looking-at (sp--get-stringlike-regexp))
-                (and (memq major-mode sp-navigate-consider-sgml-tags)
-                     (looking-at "<")))
-            (scan-and-place-overlays (match-string 0)))
-           ((or (sp--looking-back (if sp-show-pair-from-inside allowed closing))
-                (sp--looking-back (sp--get-stringlike-regexp))
-                (and (memq major-mode sp-navigate-consider-sgml-tags)
-                     (sp--looking-back ">")))
-            (scan-and-place-overlays (match-string 0) :back))
-           (sp-show-pair-overlays
-            (sp-show--pair-delete-overlays))))))))
+    (sp--with-case-sensitive
+      (save-match-data
+        (cl-labels ((scan-and-place-overlays
+                     (match &optional back)
+                     ;; we can use `sp-get-thing' here because we *are* at some
+                     ;; pair opening, and so only the tag or the sexp can trigger.
+                     (-if-let (ok (sp-get-thing back))
+                         (sp-get ok
+                           (when (and (<= :beg (point)) (<= (point) :end))
+                             (sp-show--pair-create-overlays :beg :end :op-l :cl-l)))
+                       (if back
+                           (sp-show--pair-create-mismatch-overlay (- (point) (length match))
+                                                                  (length match))
+                         (sp-show--pair-create-mismatch-overlay (point) (length match))))))
+          (let* ((pair-list (sp--get-allowed-pair-list))
+                 (opening (sp--get-opening-regexp pair-list))
+                 (closing (sp--get-closing-regexp pair-list))
+                 (allowed (and sp-show-pair-from-inside (sp--get-allowed-regexp)))
+                 match)
+            (cond
+             ;; if we are in a situation "()|", we should highlight the
+             ;; regular pair and not the string pair "from inside"
+             ((and (not (sp--evil-normal-state-p))
+                   (not (sp--evil-motion-state-p))
+                   (not (sp--evil-visual-state-p))
+                   (sp--looking-back (if sp-show-pair-from-inside allowed closing)))
+              (scan-and-place-overlays (match-string 0) :back))
+             ((or (and (or (sp--evil-normal-state-p)
+                           (sp--evil-motion-state-p)
+                           (sp--evil-visual-state-p))
+                       (sp--looking-at (sp--get-allowed-regexp)))
+                  (sp--looking-at (if sp-show-pair-from-inside allowed opening))
+                  (looking-at (sp--get-stringlike-regexp))
+                  (and (memq major-mode sp-navigate-consider-sgml-tags)
+                       (looking-at "<")))
+              (scan-and-place-overlays (match-string 0)))
+             ((or (sp--looking-back (if sp-show-pair-from-inside allowed closing))
+                  (sp--looking-back (sp--get-stringlike-regexp))
+                  (and (memq major-mode sp-navigate-consider-sgml-tags)
+                       (sp--looking-back ">")))
+              (scan-and-place-overlays (match-string 0) :back))
+             (sp-show-pair-overlays
+              (sp-show--pair-delete-overlays)))))))))
 
 (defun sp-show--pair-enc-function (&optional thing)
   "Display the show pair overlays for enclosing expression."
