@@ -24,6 +24,8 @@
 (global-set-key (kbd "C-.") #'diff-hl-next-hunk)
 (global-set-key (kbd "C-,") #'diff-hl-previous-hunk)
 
+(add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
+
 ;; Include 'x' in the magit popup.
 ;; From https://github.com/magit/magit/issues/2141
 (magit-define-popup-action 'magit-dispatch-popup
