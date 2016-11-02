@@ -21,3 +21,6 @@
 ;;
 ;; Consider only offering autoloaded/required functions in the current
 ;; file.
+;;
+;; Offer sensible completion inside (declare ...) forms and
+;; (interactive ...) forms.
