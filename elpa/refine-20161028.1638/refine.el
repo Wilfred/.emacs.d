@@ -1,14 +1,12 @@
 ;;; refine.el --- interactive value editing         -*- lexical-binding: t; -*-
 
 ;; TODO: prompt the user to choose between local and global variables
-;; TODO: Link to help for that variable
-;; TODO: Link to variable definition, if known
 
 ;; Copyright (C) 2016  
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
-;; Version: 0.2
-;; Package-Version: 20160722.645
+;; Version: 0.4
+;; Package-Version: 20161028.1638
 ;; Keywords: convenience
 ;; Package-Requires: ((emacs "24.3") (s "1.11.0") (dash "2.12.0") (list-utils "0.4.4") (loop "1.2"))
 
@@ -77,10 +75,12 @@ Returns nil if SYMBOL is not a custom variable."
   "Return a list of the possible values SYMBOL can have.
 Returns nil if SYMBOL is not a custom variable."
   (when (custom-variable-p symbol)
-    ;; If custom-type takes the form '(choice (...))) or '(radio (...))
-    (-let [(kind . choices) (get symbol 'custom-type)]
-      (when (or (eq kind 'choice) (eq kind 'radio))
-        (refine--custom-values choices)))))
+    (let ((custom-type (get symbol 'custom-type)))
+      ;; If custom-type takes the form '(choice (...))) or '(radio (...))
+      (when (consp custom-type)
+        (-let [(kind . choices) custom-type]
+          (when (or (eq kind 'choice) (eq kind 'radio))
+            (refine--custom-values choices)))))))
 
 (defun refine--pretty-format (value)
   "Pretty print VALUE as a string."
@@ -149,7 +149,10 @@ return a pretty, propertized string."
   "Given an elisp VALUE, return a pretty propertized
 string listing the elements.
 
-VALUE may be a list, string, vector or symbol."
+VALUE may be a list, string, vector or symbol.
+
+If VALUE is a list or vector, show each list item along with its
+index."
   (cond
    ((vectorp value)
     (refine--format-with-index (refine--vector->list value)))
@@ -184,21 +187,58 @@ VALUE may be a list, string, vector or symbol."
                            formatted-elements)))
       (s-join "\n" propertized-elements)))))
 
+(define-button-type 'refine-help-button
+  'action 'refine--open-help
+  'follow-link t
+  'help-echo "View in *Help* buffer")
+
+(defun refine--open-help (button)
+  (describe-variable (button-get button 'symbol)))
+
+(defun refine--help-button (symbol)
+  "Return a button that opens a help buffer for SYMBOL."
+  (with-temp-buffer
+    (insert-text-button
+     "Help"
+     :type 'refine-help-button
+     'symbol symbol)
+    (buffer-string)))
+
+(define-button-type 'refine-definition-button
+  'action 'refine--go-to-definition
+  'follow-link t
+  'help-echo "Go to definition")
+
+(defun refine--go-to-definition (button)
+  (find-variable (button-get button 'symbol)))
+
+(defun refine--definition-button (symbol)
+  "Return a button that navigates to the definition of SYMBOL."
+  (with-temp-buffer
+    (insert-text-button
+     "Definition"
+     :type 'refine-definition-button
+     'symbol symbol)
+    (buffer-string)))
+
 (defun refine--update (buffer symbol)
   "Update BUFFER with the current value of SYMBOL."
-  (with-current-buffer buffer
-    (let* ((value (symbol-value symbol))
-           (current-line (line-number-at-pos))
-           (current-column (current-column))
-           buffer-read-only)
-      (erase-buffer)
-      (insert (format "%s:\n\n" (refine--describe symbol value)))
-      (insert (refine--format-with-index value))
-      ;; We can't use `save-excursion' because we erased the whole
-      ;; buffer. Go back to the previous position.
-      (goto-char (point-min))
-      (forward-line (1- current-line))
-      (forward-char current-column))))
+  (let ((orig-buffer (current-buffer))
+        (value (symbol-value symbol)))
+    (with-current-buffer buffer
+      (let* ((current-line (line-number-at-pos))
+             (current-column (current-column))
+             buffer-read-only)
+        (erase-buffer)
+        (insert (format "%s:\n\n" (refine--describe symbol value orig-buffer)))
+        (insert (refine--format-with-index value))
+        (insert "\n\n")
+        (insert (refine--help-button symbol) " " (refine--definition-button symbol))
+        ;; We can't use `save-excursion' because we erased the whole
+        ;; buffer. Go back to the previous position.
+        (goto-char (point-min))
+        (forward-line (1- current-line))
+        (forward-char current-column)))))
 
 (defvar-local refine--symbol nil
   "The symbol being inspected in the current buffer.")
@@ -369,7 +409,10 @@ Equivalent to interactive \"X\"."
 When called with a prefix, move that many positions."
   (interactive "p")
   ;; Move the element.
-  (refine--move-element (refine--index-at-point) arg)
+  (let ((index (refine--index-at-point)))
+    (if (numberp index)
+        (refine--move-element (symbol-value refine--symbol) index arg)
+      (user-error "No list element here")))
   (refine-update)
   ;; Move point to match.
   (refine-next arg))
@@ -439,15 +482,16 @@ If DISTANCE is negative, move backwards."
 ;; TODO: it would be nice for variables like `racer-cmd' (custom
 ;; variables for file paths) to be editable here too.
 (defun refine-edit (new-value)
-  "Edit the current item in the list."
+  "Edit the current item in the list or vector."
   (interactive
    (let* ((lst (symbol-value refine--symbol))
           (index (refine--index-at-point))
           (prompt (format "Set value at %s: " index))
-          (current-value (nth index lst)))
+          (current-value (elt lst index)))
      (list (refine--read-element refine--symbol prompt
                                  (refine--pretty-format current-value)))))
-  (setf (nth (refine--index-at-point) (symbol-value refine--symbol)) new-value)
+  (setf (elt (symbol-value refine--symbol) (refine--index-at-point))
+        new-value)
   (refine-update))
 
 (defun refine-next (arg)
@@ -493,14 +537,14 @@ If CURRENT is at the end, or not present, use the first item."
        (not (consp (cdr value))) (not (null (cdr value)))))
 
 ;; TODO: support hash maps
-(defun refine--describe (symbol value)
-  "Return a human-readable description for SYMBOL set to VALUE."
+(defun refine--describe (symbol value buffer)
+  "Return a human-readable description for SYMBOL set to VALUE in BUFFER."
   (let ((pretty-symbol
          (propertize (format "%s" symbol)
                      'face 'font-lock-variable-name-face))
         (symbol-descripton
          (if (local-variable-p symbol)
-             (format "a local variable in buffer %s" (current-buffer))
+             (format "a local variable in buffer %s" buffer)
            "a global variable"))
         (type-description
          (cond
@@ -530,7 +574,8 @@ If CURRENT is at the end, or not present, use the first item."
 For booleans, toggle nil/t."
   (interactive)
   (let ((value (symbol-value refine--symbol))
-        (index (refine--index-at-point)))
+        (index (refine--index-at-point))
+        (possible-values (refine--possible-values refine--symbol)))
     (cond
      ;; If we're on a list element of a `defcustom', try to cycle
      ;; the element.
@@ -538,18 +583,16 @@ For booleans, toggle nil/t."
       (unless index
         (user-error "No list element at point"))
       ;; Find the values that an element can take.
-      (let ((values (refine--possible-elements refine--symbol))
+      (let ((possible-elements (refine--possible-elements refine--symbol))
             (element-value (nth index value)))
-        (if values
+        (if possible-elements
             ;; Set this element to the next possible value.
-            (setf (nth index value) (refine--next-item element-value values))
+            (setf (nth index value) (refine--next-item element-value possible-elements))
           (user-error "I don't know what values elements of '%s can take" refine--symbol))))
      ;; For other `defcustom' values, cycle the whole variable.
-     ((custom-variable-p refine--symbol)
-      (-if-let (values (refine--possible-values refine--symbol))
-          ;; Set to the next value.
-          (set refine--symbol (refine--next-item value values))
-        (user-error "I don't know what values '%s can take" refine--symbol)))
+     ((and (custom-variable-p refine--symbol) possible-values)
+      ;; Set to the next value.
+      (set refine--symbol (refine--next-item value possible-values)))
      ;; Toggle booleans.
      ((null value)
       (set refine--symbol t))
@@ -557,16 +600,20 @@ For booleans, toggle nil/t."
       (set refine--symbol nil))
      ;; Otherwise, we don't know what to do.
      (t
-      (user-error "'%s is not a custom variable, so cannot cycle it" refine--symbol)))
+      (user-error "I don't know what values '%s can take" refine--symbol)))
     (refine-update)))
 
 ;;;###autoload
 (defun refine (symbol)
   "Interactively edit the value of a symbol \(usually a list\)."
-  (interactive (list (read (completing-read "Variable: " (refine--variables)))))
+  (interactive (list (read (completing-read "Variable: " (refine--variables)
+                                            nil nil nil nil
+                                            (-if-let (variable (variable-at-point))
+                                                (and (symbolp variable) (symbol-name variable)))))))
   (let* ((buf (refine--buffer symbol)))
     (refine--update buf symbol)
-    (switch-to-buffer buf)))
+    (switch-to-buffer buf)
+    (goto-char (point-min))))
 
 (define-derived-mode refine-mode fundamental-mode "Refine"
   "A major mode for interactively editing elisp values."
@@ -581,7 +628,11 @@ For booleans, toggle nil/t."
 ;; Modifying the list.
 (define-key refine-mode-map (kbd "e") #'refine-edit)
 (define-key refine-mode-map (kbd "RET") #'refine-edit)
+
 (define-key refine-mode-map (kbd "c") #'refine-cycle)
+;; another mnemonic for cycling is toggling, when the current value is a boolean.
+(define-key refine-mode-map (kbd "t") #'refine-cycle)
+
 (define-key refine-mode-map (kbd "k") #'refine-delete)
 (define-key refine-mode-map (kbd "a") #'refine-insert-after)
 (define-key refine-mode-map (kbd "i") #'refine-insert)
