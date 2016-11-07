@@ -1,10 +1,10 @@
 ;;; counsel-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
+(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "counsel" "counsel.el" (22442 32973 340794
-;;;;;;  735000))
+;;;### (autoloads nil "counsel" "counsel.el" (22560 50412 968764
+;;;;;;  668000))
 ;;; Generated autoloads from counsel.el
 
 (autoload 'counsel-el "counsel" "\
@@ -49,12 +49,12 @@ input corresponding to the chosen variable.
 \(fn)" t nil)
 
 (autoload 'counsel-info-lookup-symbol "counsel" "\
-Forward to (`info-describe-symbol' SYMBOL MODE) with ivy completion.
+Forward to (`info-lookup-symbol' SYMBOL MODE) with ivy completion.
 
 \(fn SYMBOL &optional MODE)" t nil)
 
 (autoload 'counsel-bookmark "counsel" "\
-Forward to `bookmark-jump'.
+Forward to `bookmark-jump' or `bookmark-set' if bookmark doesn't exist.
 
 \(fn)" t nil)
 
@@ -112,11 +112,26 @@ When INITIAL-INPUT is non-nil, use it in the minibuffer during completion.
 
 \(fn &optional INITIAL-INPUT)" t nil)
 
+(autoload 'counsel-recentf "counsel" "\
+Find a file on `recentf-list'.
+
+\(fn)" t nil)
+
 (autoload 'counsel-locate "counsel" "\
 Call the \"locate\" shell command.
 INITIAL-INPUT can be given as the initial minibuffer input.
 
 \(fn &optional INITIAL-INPUT)" t nil)
+
+(autoload 'counsel-dpkg "counsel" "\
+Call the \"dpkg\" shell command.
+
+\(fn)" t nil)
+
+(autoload 'counsel-rpm "counsel" "\
+Call the \"rpm\" shell command.
+
+\(fn)" t nil)
 
 (autoload 'counsel-file-jump "counsel" "\
 Jump to a file from a list of all files directories
@@ -148,7 +163,7 @@ Grep for a string in the current directory using pt.
 This uses `counsel-ag' with `counsel-pt-base-command' replacing
 `counsel-ag-base-command'.
 
-\(fn)" t nil)
+\(fn &optional INITIAL-INPUT)" t nil)
 
 (autoload 'counsel-grep "counsel" "\
 Grep for a string in the current file.
@@ -199,6 +214,11 @@ And insert it into the minibuffer. Useful during
 
 \(fn)" t nil)
 
+(autoload 'counsel-shell-command-history "counsel" "\
+
+
+\(fn)" t nil)
+
 (autoload 'counsel-esh-history "counsel" "\
 Browse Eshell history.
 
@@ -226,7 +246,8 @@ Complete using `company-candidates'.
 
 (defvar counsel-mode nil "\
 Non-nil if Counsel mode is enabled.
-See the command `counsel-mode' for a description of this minor mode.
+See the `counsel-mode' command
+for a description of this minor mode.
 Setting this variable directly does not take effect;
 either customize it (see the info node `Easy Customization')
 or call the function `counsel-mode'.")

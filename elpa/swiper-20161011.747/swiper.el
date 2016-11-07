@@ -4,7 +4,7 @@
 
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 ;; URL: https://github.com/abo-abo/swiper
-;; Package-Version: 20160808.645
+;; Package-Version: 20161011.747
 ;; Version: 0.8.0
 ;; Package-Requires: ((emacs "24.1") (ivy "0.8.0"))
 ;; Keywords: matching
@@ -115,6 +115,28 @@
            (perform-replace from to
                             t t nil)))))))
 
+(defun swiper-all-query-replace ()
+  "Start `query-replace' with string to replace from last search string."
+  (interactive)
+  (if (null (window-minibuffer-p))
+      (user-error
+       "Should only be called in the minibuffer through `swiper-all-map'")
+    (let* ((enable-recursive-minibuffers t)
+           (from (ivy--regex ivy-text))
+           (to (query-replace-read-to from "Query replace" t)))
+      (swiper--cleanup)
+      (ivy-exit-with-action
+       (lambda (_)
+         (let ((wnd-conf (current-window-configuration))
+               (inhibit-message t))
+           (unwind-protect
+                (dolist (cand ivy--old-cands)
+                  (let ((buffer (get-text-property 0 'buffer cand)))
+                    (switch-to-buffer buffer)
+                    (goto-char (point-min))
+                    (perform-replace from to t t nil)))
+             (set-window-configuration wnd-conf))))))))
+
 (defvar avy-background)
 (defvar avy-all-windows)
 (defvar avy-style)
@@ -206,7 +228,8 @@
     (recenter-top-bottom arg)))
 
 (defvar swiper-font-lock-exclude
-  '(package-menu-mode
+  '(bookmark-bmenu-mode
+    package-menu-mode
     gnus-summary-mode
     gnus-article-mode
     gnus-group-mode
@@ -336,6 +359,7 @@ When non-nil, INITIAL-INPUT is the initial search pattern."
   (swiper--ivy (swiper--candidates) initial-input))
 
 (declare-function string-trim-right "subr-x")
+(defvar swiper--current-window-start nil)
 
 (defun swiper-occur (&optional revert)
   "Generate a custom occur buffer for `swiper'.
@@ -371,6 +395,7 @@ When REVERT is non-nil, regenerate the current *ivy-occur* buffer."
     (unless (eq major-mode 'ivy-occur-grep-mode)
       (ivy-occur-grep-mode)
       (font-lock-mode -1))
+    (setq swiper--current-window-start nil)
     (insert (format "-*- mode:grep; default-directory: %S -*-\n\n\n"
                     default-directory))
     (insert (format "%d candidates:\n" (length cands)))
@@ -383,7 +408,7 @@ When REVERT is non-nil, regenerate the current *ivy-occur* buffer."
 
 (ivy-set-occur 'swiper 'swiper-occur)
 
-(declare-function evil-jumper--set-jump "ext:evil-jumper")
+(declare-function evil-set-jump "ext:evil-jumps")
 
 (defvar swiper--current-line nil)
 (defvar swiper--current-match-start nil)
@@ -392,9 +417,10 @@ When REVERT is non-nil, regenerate the current *ivy-occur* buffer."
   "Perform initialization common to both completion methods."
   (setq swiper--current-line nil)
   (setq swiper--current-match-start nil)
+  (setq swiper--current-window-start nil)
   (setq swiper--opoint (point))
-  (when (bound-and-true-p evil-jumper-mode)
-    (evil-jumper--set-jump)))
+  (when (bound-and-true-p evil-mode)
+    (evil-set-jump)))
 
 (defun swiper--re-builder (str)
   "Transform STR into a swiper regex.
@@ -416,6 +442,8 @@ line numbers. For the buffer, use `ivy--regex' instead."
                       (prog1 (format "^ ?\\(%s\\)" re)
                         (setq ivy--subexps 1))
                     (format "^ %s" re))))
+               ((eq (bound-and-true-p search-default-mode) 'char-fold-to-regexp)
+                (mapconcat #'char-fold-to-regexp (ivy--split str) ".*"))
                (t
                 (funcall re-builder str)))))
     (cond ((stringp re)
@@ -552,7 +580,8 @@ Matched candidates should have `swiper-invocation-face'."
                                      (line-end-position))
             (unless (and (>= (point) (window-start))
                          (<= (point) (window-end (ivy-state-window ivy-last) t)))
-              (recenter))))
+              (recenter))
+            (setq swiper--current-window-start (window-start))))
         (swiper--add-overlays re)))))
 
 (defun swiper--add-overlays (re &optional beg end wnd)
@@ -587,24 +616,32 @@ WND, when specified is the window."
           ;; RE can become an invalid regexp
           (while (and (ignore-errors (re-search-forward re end t))
                       (> (- (match-end 0) (match-beginning 0)) 0))
-            (let ((i 0))
-              (while (<= i ivy--subexps)
-                (when (match-beginning i)
-                  (let ((overlay (make-overlay (match-beginning i)
-                                               (match-end i)))
-                        (face
-                         (cond ((zerop ivy--subexps)
-                                (cadr swiper-faces))
-                               ((zerop i)
-                                (car swiper-faces))
-                               (t
-                                (nth (1+ (mod (+ i 2) (1- (length swiper-faces))))
-                                     swiper-faces)))))
-                    (push overlay swiper--overlays)
-                    (overlay-put overlay 'face face)
-                    (overlay-put overlay 'window wnd)
-                    (overlay-put overlay 'priority i)))
-                (cl-incf i)))))))))
+            (swiper--add-overlay (match-beginning 0) (match-end 0)
+                                 (if (zerop ivy--subexps)
+                                     (cadr swiper-faces)
+                                   (car swiper-faces))
+                                 wnd 0)
+            (let ((i 1)
+                  (j 0))
+              (while (<= (cl-incf j) ivy--subexps)
+                (let ((bm (match-beginning j))
+                      (em (match-end j)))
+                  (while (and (< j ivy--subexps)
+                              (= em (match-beginning (+ j 1))))
+                    (setq em (match-end (cl-incf j))))
+                  (swiper--add-overlay
+                   bm em
+                   (nth (1+ (mod (+ i 2) (1- (length swiper-faces))))
+                        swiper-faces)
+                   wnd i)
+                  (cl-incf i))))))))))
+
+(defun swiper--add-overlay (beg end face wnd priority)
+  (let ((overlay (make-overlay beg end)))
+    (push overlay swiper--overlays)
+    (overlay-put overlay 'face face)
+    (overlay-put overlay 'window wnd)
+    (overlay-put overlay 'priority priority)))
 
 (defcustom swiper-action-recenter nil
   "When non-nil, recenter after exiting `swiper'."
@@ -629,8 +666,10 @@ WND, when specified is the window."
                  ln)
         (re-search-forward re (line-end-position) t)
         (swiper--ensure-visible)
-        (when swiper-action-recenter
-          (recenter))
+        (cond (swiper-action-recenter
+               (recenter))
+              (swiper--current-window-start
+               (set-window-start (selected-window) swiper--current-window-start)))
         (when (/= (point) swiper--opoint)
           (unless (and transient-mark-mode mark-active)
             (when (eq ivy-exit 'done)
@@ -641,7 +680,6 @@ WND, when specified is the window."
          re
          regexp-search-ring-max)))))
 
-;; (define-key isearch-mode-map (kbd "C-o") 'swiper-from-isearch)
 (defun swiper-from-isearch ()
   "Invoke `swiper' from isearch."
   (interactive)
@@ -666,9 +704,10 @@ WND, when specified is the window."
 Run `swiper' for those buffers."
   (interactive)
   (setq swiper-multi-buffers nil)
-  (ivy-read (swiper-multi-prompt)
-            'internal-complete-buffer
-            :action 'swiper-multi-action-1)
+  (let ((ivy-use-virtual-buffers nil))
+    (ivy-read (swiper-multi-prompt)
+              'internal-complete-buffer
+              :action 'swiper-multi-action-1))
   (ivy-read "Swiper: " swiper-multi-candidates
             :action 'swiper-multi-action-2
             :unwind #'swiper--cleanup
@@ -690,7 +729,8 @@ Run `swiper' for those buffers."
                (swiper--multi-candidates
                 (mapcar #'get-buffer swiper-multi-buffers))))
         ((eq this-command 'ivy-call)
-         (delete-minibuffer-contents))))
+         (with-selected-window (active-minibuffer-window)
+           (delete-minibuffer-contents)))))
 
 (defun swiper-multi-action-2 (x)
   (when (> (length x) 0)
@@ -719,10 +759,13 @@ Run `swiper' for those buffers."
                            (eq (with-current-buffer b
                                  major-mode) 'dired-mode)))
                      (buffer-list)))
-           (re (funcall ivy--regex-function str))
-           (re (if (consp re) (caar re) re))
-           cands
-           match)
+           (re-full (funcall ivy--regex-function str))
+           re re-tail
+           cands match)
+      (if (stringp re-full)
+          (setq re re-full)
+        (setq re (caar re-full))
+        (setq re-tail (cdr re-full)))
       (dolist (buffer buffers)
         (with-current-buffer buffer
           (save-excursion
@@ -740,14 +783,17 @@ Run `swiper' for those buffers."
                (buffer-name)
                match)
               (put-text-property 0 1 'point (point) match)
-              (push match cands)))))
-      (setq ivy--old-re nil)
+              (when (or (null re-tail) (ivy-re-match re-tail match))
+                (push match cands))))))
+      (setq ivy--old-re re-full)
       (if (null cands)
           (list "")
         (setq ivy--old-cands (nreverse cands))))))
 
+(defvar swiper-window-width 80)
+
 (defun swiper--all-format-function (cands)
-  (let* ((ww (window-width))
+  (let* ((ww swiper-window-width)
          (col2 1)
          (cands-with-buffer
           (mapcar (lambda (s)
@@ -776,16 +822,24 @@ Run `swiper' for those buffers."
      cands
      "\n")))
 
+(defvar swiper-all-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "M-q") 'swiper-all-query-replace)
+    map)
+  "Keymap for `swiper-all'.")
+
 (defun swiper-all ()
   "Run `swiper' for all opened buffers."
   (interactive)
-  (let ((ivy-format-function #'swiper--all-format-function))
-    (ivy-read "Swiper: " 'swiper-all-function
+  (let* ((swiper-window-width (- (frame-width) (if (display-graphic-p) 0 1)))
+         (ivy-format-function #'swiper--all-format-function))
+    (ivy-read "swiper-all: " 'swiper-all-function
               :action 'swiper-all-action
               :unwind #'swiper--cleanup
               :update-fn (lambda ()
                            (swiper-all-action ivy--current))
               :dynamic-collection t
+              :keymap swiper-all-map
               :caller 'swiper-multi)))
 
 (defun swiper-all-action (x)
