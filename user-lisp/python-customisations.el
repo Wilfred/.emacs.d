@@ -107,7 +107,7 @@ This means `pop-mark' can take us back to our previous position."
 
 ;; Sometimes it's still useful to find tags, even when we're using
 ;; anaconda. Provide a fallback keybinding.
-(define-key anaconda-mode-map (kbd "C-c M-.") #'etags-select-find-tag)
+(define-key anaconda-mode-map (kbd "C-c M-.") #'xref-find-definitions)
 
 (require 'company)
 (defun wh/company-in-python-mode ()
