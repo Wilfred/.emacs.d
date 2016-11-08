@@ -51,5 +51,20 @@
 
 (define-key with-editor-mode-map (kbd "<C-f12>") #'wh/commit-and-push)
 
-(provide 'git-customisations)
+(defun wh/magit-branch-from-current-and-checkout (branch)
+  "Create and checkout BRANCH from the current branch."
+  (interactive (list (magit-read-string-ns "Branch name")))
+  (let ((start-point (magit-get-current-branch)))
+    (if (string-match-p "^stash@{[0-9]+}$" start-point)
+        (magit-run-git "stash" "branch" branch start-point)
+      (magit-call-git "checkout" "-b" branch start-point)
+      (--when-let (and (magit-get-upstream-branch branch)
+                       (magit-get-indirect-upstream-branch start-point))
+        (magit-call-git "branch" (concat "--set-upstream-to=" it) branch))
+      (magit-refresh))))
 
+(magit-define-popup-action 'magit-branch-popup
+  ?f "new branch From current" #'wh/magit-branch-from-current-and-checkout)
+
+
+(provide 'git-customisations)
