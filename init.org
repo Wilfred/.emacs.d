@@ -671,12 +671,29 @@ advice to fix that.
 #+END_SRC
 
 Since I like using the minibuffer for eldoc, showing flycheck errors
-in the minibuffer just causes it to jump around. As suggested at
-https://www.reddit.com/r/emacs/comments/4yhvt7/eldoc_and_flycheck_constantly_fighting_for_the/,
-I use a popup for the error at point.
+in the minibuffer just causes it to jump around. I've played with
+flycheck-pos-tip, but I find the popup hides code, or covers company
+popups.
+
+Instead, I show the flycheck error in the title bar of the window if
+there's an error at point.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (add-hook 'flycheck-mode-hook #'flycheck-pos-tip-mode)
+  (defvar wh/original-frame-title-format "%b - emacs")
+
+  (defun wh/flycheck-or-frame-title ()
+    "If there's a flycheck error at point, show that, otherwise use the previous value
+  of `frame-title-format'."
+    (let* ((flycheck-errs (flycheck-overlay-errors-at (point)))
+           (first-err (car flycheck-errs))
+           )
+      (if first-err
+          (let* ((pretty-err (flycheck-error-format-message-and-id first-err))
+                 (first-line (-first-item (s-lines pretty-err))))
+            (format "FlyC: %s" first-line))
+        (format-mode-line wh/original-frame-title-format))))
+
+  (setq frame-title-format `(:eval (wh/flycheck-or-frame-title)))
 #+END_SRC
 
 ** Undoing
