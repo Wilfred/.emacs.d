@@ -483,17 +483,6 @@ a lot and it's right next to =C-x C-f=.
   (global-set-key (kbd "C-x C-g") 'projectile-find-file)
 #+END_SRC
 
-Sometimes projectile remembers projects that we don't want, especially
-if we had a test copy of a project at some point.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (defun wh/projectile-forget-project (project)
-    "Remove a project from `projectile-known-projects'."
-    (interactive (list (completing-read "Forget project: "
-                                        projectile-known-projects)))
-    (delete project projectile-known-projects))
-#+END_SRC
-
 *** Dired
 
 Dired isn't very colourful by default, but ~dired+~ has helpful
