@@ -73,15 +73,6 @@
 (eval-after-load 'flycheck
   '(add-hook 'flycheck-mode-hook #'flycheck-cask-setup))
 
-;; A handy command for jumping to elisp function definitions. Rather
-;; than using TAGS (which require updating), it simply uses Emacs'
-;; knowledge of where the function is defined.
-(use-package elisp-slime-nav
-  :diminish ""
-  :config
-  (dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook))
-    (add-hook hook 'elisp-slime-nav-mode)))
-
 (add-hook 'ielm-mode-hook #'company-mode)
 (add-hook 'ielm-mode-hook #'eldoc-mode)
 
