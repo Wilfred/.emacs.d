@@ -483,6 +483,13 @@ a lot and it's right next to =C-x C-f=.
   (global-set-key (kbd "C-x C-g") 'projectile-find-file)
 #+END_SRC
 
+Don't bother showing projectile in the minibuffer, I have enough in
+there already.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (diminish #'projectile-mode)
+#+END_SRC
+
 *** Dired
 
 Dired isn't very colourful by default, but ~dired+~ has helpful
