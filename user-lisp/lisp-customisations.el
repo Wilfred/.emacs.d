@@ -226,4 +226,13 @@ Handy for ielm."
   (move-end-of-line 0)
   (insert (format "\n%s" x)))
 
+;; Inspired by elisp-slime-nav-describe-elisp-thing-at-point.
+(defun wh/describe-symbol-at-point ()
+  "Open a Help buffer for the symbol at point."
+  (interactive)
+  (describe-symbol (symbol-at-point)))
+
+(define-key emacs-lisp-mode-map (kbd "C-c C-d")
+  #'wh/describe-symbol-at-point)
+
 (provide 'lisp-customisations)
