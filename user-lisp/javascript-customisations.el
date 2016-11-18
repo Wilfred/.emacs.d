@@ -2,12 +2,18 @@
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 (add-to-list 'auto-mode-alist '("\\.jsx$" . js2-jsx-mode))
 
-(defun wh/js-setup-indentation ()
+(defun wh/js-use-tabs ()
+  (interactive)
+  (setq indent-tabs-mode t)
+  (setq js2-basic-offset 8))
+
+(defun wh/js-use-4-spaces ()
+  (interactive)
   (setq indent-tabs-mode nil)
   (setq js2-basic-offset 4))
 
 (dolist (hook '(js-mode-hook js2-mode-hook js-jsx-mode-hook js2-jsx-mode-hook))
-  (add-hook hook #'wh/js-setup-indentation)
+  (add-hook hook #'wh/js-use-4-spaces)
   (add-hook hook #'tern-mode)
   (add-hook hook #'flycheck-mode))
 
