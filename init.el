@@ -186,7 +186,7 @@ the start of the line."
   (let ((start-position (point)))
     ;; Move to the first non-whitespace character.
     (back-to-indentation)
-    
+
     ;; If we haven't moved position, go to start of the line.
     (when (= (point) start-position)
       (move-beginning-of-line nil))))
@@ -394,11 +394,7 @@ If a prefix argument is given, don't change the kill-ring."
 
 (global-set-key (kbd "C-x C-g") 'projectile-find-file)
 
-(defun wh/projectile-forget-project (project)
-  "Remove a project from `projectile-known-projects'."
-  (interactive (list (completing-read "Forget project: "
-                                      projectile-known-projects)))
-  (delete project projectile-known-projects))
+(diminish #'projectile-mode)
 
 ;; Dired
 
@@ -581,12 +577,16 @@ Visit the file after creation."
 
 
 ;; Since I like using the minibuffer for eldoc, showing flycheck errors
-;; in the minibuffer just causes it to jump around. As suggested at
-;; https://www.reddit.com/r/emacs/comments/4yhvt7/eldoc_and_flycheck_constantly_fighting_for_the/,
-;; I use a popup for the error at point.
+;; in the minibuffer just causes it to jump around. I've played with
+;; flycheck-pos-tip, but I find the popup hides code, or covers company
+;; popups.
+
+;; Instead, I show the flycheck error in the title bar of the window if
+;; there's an error at point.
 
 
-(add-hook 'flycheck-mode-hook #'flycheck-pos-tip-mode)
+(with-eval-after-load 'flycheck
+  (flycheck-title-mode))
 
 ;; Undoing
 
