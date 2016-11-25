@@ -10,6 +10,8 @@
 (add-hook 'rust-mode-hook #'wh/rust-company-settings)
 
 (require 'rust-mode)
+;; TODO: send a rust-mode patch to search this directory too.
+(setq rust-rustfmt-bin (expand-file-name "~/.cargo/bin/rustfmt"))
 (add-hook 'rust-mode-hook #'eldoc-mode)
 (define-key rust-mode-map (kbd "M-.") #'racer-find-definition)
 
