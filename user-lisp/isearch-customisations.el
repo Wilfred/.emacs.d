@@ -57,6 +57,8 @@ This is useful when followed by an immediate kill."
 
 ;; TODO: this doesn't work for searching for exclamation marks. Not sure why.
 (global-set-key (kbd "<f12>") #'swiper)
+(global-set-key (kbd "C-c <f12>") #'swiper-all)
+
 ;; Show the index of the current match in addition to the total
 ;; matches with ivy (used by swiper). Anzu style.
 (require 'ivy)
