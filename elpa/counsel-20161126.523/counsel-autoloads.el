@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "counsel" "counsel.el" (22560 50412 968764
-;;;;;;  668000))
+;;;### (autoloads nil "counsel" "counsel.el" (22588 46745 123177
+;;;;;;  397000))
 ;;; Generated autoloads from counsel.el
 
 (autoload 'counsel-el "counsel" "\
@@ -66,6 +66,12 @@ Optional INITIAL-INPUT is the initial input in the minibuffer.
 
 (autoload 'counsel-load-library "counsel" "\
 Load a selected the Emacs Lisp library.
+The libraries are offered from `load-path'.
+
+\(fn)" t nil)
+
+(autoload 'counsel-find-library "counsel" "\
+Visit a selected the Emacs Lisp library.
 The libraries are offered from `load-path'.
 
 \(fn)" t nil)
@@ -164,6 +170,15 @@ This uses `counsel-ag' with `counsel-pt-base-command' replacing
 `counsel-ag-base-command'.
 
 \(fn &optional INITIAL-INPUT)" t nil)
+
+(autoload 'counsel-rg "counsel" "\
+Grep for a string in the current directory using rg.
+INITIAL-INPUT can be given as the initial minibuffer input.
+INITIAL-DIRECTORY, if non-nil, is used as the root directory for search.
+EXTRA-RG-ARGS string, if non-nil, is appended to `counsel-rg-base-command'.
+RG-PROMPT, if non-nil, is passed as `ivy-read' prompt argument. 
+
+\(fn &optional INITIAL-INPUT INITIAL-DIRECTORY EXTRA-RG-ARGS RG-PROMPT)" t nil)
 
 (autoload 'counsel-grep "counsel" "\
 Grep for a string in the current file.
