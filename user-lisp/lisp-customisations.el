@@ -121,6 +121,12 @@
   (define-key lispy-mode-map (kbd "M-n") nil)
   (define-key lispy-mode-map (kbd "M-p") nil)
 
+  ;; Lispy will insert a space before a colon, but I find this
+  ;; annoying when contributing to projects that use : to delimit the
+  ;; package namespace.
+  (define-key lispy-mode-map (kbd ":") nil)
+  (define-key lispy-mode-map-lispy (kbd ":") nil)
+
   ;; lispy-underscore has some extra smarts, but they're only for
   ;; Clojure. I like using _ with `nameless-mode'.
   (define-key lispy-mode-map (kbd "_") nil)
