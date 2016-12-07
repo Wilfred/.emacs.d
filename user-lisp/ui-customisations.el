@@ -195,6 +195,24 @@ If it is split, repeat the current buffer in a vertical split."
 ;; Just kill the current buffer rather than prompting.
 (global-set-key (kbd "C-x k") #'kill-this-buffer)
 
+;; http://emacs.stackexchange.com/a/10444/304
+;; http://blog.vivekhaldar.com/post/4809065853/dotemacs-extract-interactively-change-font-size
+(defun wh/zoom-in ()
+  "Increase font size by 10 points"
+  (interactive)
+  (set-face-attribute 'default nil
+                      :height
+                      (+ (face-attribute 'default :height)
+                         10)))
+
+(defun wh/zoom-out ()
+  "Decrease font size by 10 points"
+  (interactive)
+  (set-face-attribute 'default nil
+                      :height
+                      (- (face-attribute 'default :height)
+                         10)))
+
 ;;; Mode-line.
 
 ;; I want a minimalistic mode line. It should only have:
