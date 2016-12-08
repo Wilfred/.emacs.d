@@ -8,6 +8,10 @@
 ;; http://emacs.stackexchange.com/q/14802/304
 (setq tags-add-tables t)
 
+;; Tags operations should be case sensitive. Otherwise
+;; xref-find-definitions can find definitions that we don't want.
+(setq tags-case-fold-search nil)
+
 (global-set-key (kbd "M-.") #'xref-find-definitions)
 (global-set-key (kbd "C-c M-.") #'xref-find-definitions-other-window)
 (global-set-key (kbd "M-,") #'xref-pop-marker-stack)
