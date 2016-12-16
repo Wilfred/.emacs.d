@@ -75,8 +75,11 @@
 ;; To be consistent with our paredit keybindings, use super for syntatic movement.
 (define-key python-mode-map (kbd "s-n") 'python-nav-forward-statement)
 (define-key python-mode-map (kbd "s-p") 'python-nav-backward-statement)
-(define-key python-mode-map (kbd "s-f") #'python-nav-forward-sexp)
-(define-key python-mode-map (kbd "s-b") #'python-nav-backward-sexp)
+
+(define-key python-mode-map (kbd "s-f") #'sp-forward-sexp)
+(define-key python-mode-map (kbd "C-M-f") #'sp-forward-sexp)
+(define-key python-mode-map (kbd "s-b") #'sp-backward-sexp)
+(define-key python-mode-map (kbd "C-M-b") #'sp-backward-sexp)
 
 (define-key python-mode-map (kbd "s-u") 'python-nav-backward-up-list)
 ;; TODO: this is only necessary because the above keybinding is
