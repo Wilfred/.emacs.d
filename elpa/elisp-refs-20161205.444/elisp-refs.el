@@ -3,8 +3,8 @@
 ;; Copyright (C) 2016  
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
-;; Version: 1.1
-;; Package-Version: 20161001.1123
+;; Version: 1.2
+;; Package-Version: 20161205.444
 ;; Keywords: lisp
 ;; Package-Requires: ((dash "2.12.0") (f "0.18.2") (list-utils "0.4.4") (loop "2.1") (s "1.11.0"))
 
@@ -54,7 +54,7 @@
      (s-join "," parts))))
 
 (defsubst elisp-refs--start-pos (end-pos)
-  "Find the start position of form ending at END-FORM
+  "Find the start position of form ending at END-POS
 in the current buffer."
   (scan-sexps end-pos -1))
 
@@ -252,6 +252,12 @@ We consider parameters to be variables too."
   (cond
    ((consp form)
     nil)
+   ;; Ignore (defun _ (SYMBOL ...) ...)
+   ((or (equal (car path) '(defsubst . 1))
+        (equal (car path) '(defun . 1))
+        (equal (car path) '(defmacro . 1))
+        (equal (car path) '(cl-defun . 1)))
+    nil)
    ;; (let (SYMBOL ...) ...) is a variable, not a function call.
    ((or
      (equal (cl-second path) '(let . 1))
@@ -314,18 +320,10 @@ positions of SYMBOL."
                   (push symbol symbols))))
     symbols))
 
-(defun elisp-refs--macros ()
-  "Return a list of all symbols that are macros."
-  (let (symbols)
-    (mapatoms (lambda (symbol)
-                (when (macrop symbol)
-                  (push symbol symbols))))
-    symbols))
-
 (defun elisp-refs--loaded-files ()
   "Return a list of all files that have been loaded in Emacs.
 Where the file was a .elc, return the path to the .el file instead."
-  (let ((elc-paths (mapcar #'-first-item load-history)))
+  (let ((elc-paths (-non-nil (mapcar #'-first-item load-history))))
     (-non-nil
      (--map
       (let ((el-name (format "%s.el" (f-no-ext it)))
@@ -472,25 +470,65 @@ propertize them."
      'path path)
     (buffer-string)))
 
-(defun elisp-refs--format-count (symbol ref-count file-count)
-  (let ((ref-count-str
-         (if (equal ref-count 1)
-             "1 reference"
-           (format "%s references" (elisp-refs--format-int ref-count))))
-        (file-count-str
-         (cond
-          ((zerop file-count)
-           "")
-          ((equal file-count 1)
-           " in 1 file")
+(defun elisp-refs--describe (button)
+  "Show *Help* for the symbol referenced by BUTTON."
+  (let ((symbol (button-get button 'symbol))
+        (kind (button-get button 'kind)))
+    (cond ((eq kind 'symbol)
+           (describe-symbol symbol))
+          ((eq kind 'variable)
+           (describe-variable symbol))
           (t
-           (format " in %s files" (elisp-refs--format-int file-count))))))
-    (format "Found %s to %s%s." ref-count-str symbol file-count-str)))
+           ;; Emacs uses `describe-function' for functions, macros and
+           ;; special forms.
+           (describe-function symbol)))))
+
+(define-button-type 'elisp-refs-describe-button
+  'action 'elisp-refs--describe
+  'follow-link t
+  'help-echo "Describe")
+
+(defun elisp-refs--describe-button (symbol kind)
+  "Return a button that shows *Help* for SYMBOL.
+KIND should be 'function, 'macro, 'variable, 'special or 'symbol."
+  (with-temp-buffer
+    (insert (symbol-name kind) " ")
+    (insert-text-button
+     (symbol-name symbol)
+     :type 'elisp-refs-describe-button
+     'symbol symbol
+     'kind kind)
+    (buffer-string)))
+
+(defun elisp-refs--pluralize (number thing)
+  "Human-friendly description of NUMBER occurrences of THING."
+  (format "%s %s%s"
+          (elisp-refs--format-int number)
+          thing
+          (if (equal number 1) "" "s")))
+
+(defun elisp-refs--format-count (symbol ref-count file-count
+                                        searched-file-count prefix)
+  (let* ((file-str (if (zerop file-count)
+                       ""
+                     (format " in %s" (elisp-refs--pluralize file-count "file"))))
+         (found-str (format "Found %s to %s%s."
+                            (elisp-refs--pluralize ref-count "reference")
+                            symbol
+                            file-str))
+         (searched-str (if prefix
+                           (format "Searched %s in %s."
+                                   (elisp-refs--pluralize searched-file-count "loaded file")
+                                   (elisp-refs--path-button (file-name-as-directory prefix)))
+                         (format "Searched all %s loaded in Emacs."
+                                 (elisp-refs--pluralize searched-file-count "file")))))
+    (s-word-wrap 70 (format "%s %s" found-str searched-str))))
 
 ;; TODO: if we have multiple matches on one line, we repeatedly show
-;; that line. That's slighly confusing.
-(defun elisp-refs--show-results (symbol description results)
-  "Given a list where each element takes the form \(forms . buffer\),
+;; that line. That's slightly confusing.
+(defun elisp-refs--show-results (symbol description results
+                                        searched-file-count prefix)
+  "Given a RESULTS list where each element takes the form \(forms . buffer\),
 render a friendly results buffer."
   (let ((buf (get-buffer-create (format "*refs: %s*" symbol))))
     (switch-to-buffer buf)
@@ -501,7 +539,9 @@ render a friendly results buffer."
      (elisp-refs--format-count
       description
       (-sum (--map (length (car it)) results))
-      (length results))
+      (length results)
+      searched-file-count
+      prefix)
      "\n\n")
     ;; Insert the results.
     (--each results
@@ -522,8 +562,10 @@ render a friendly results buffer."
     ;; Cleanup buffers created when highlighting results.
     (kill-buffer elisp-refs--highlighting-buffer)))
 
-(defun elisp-refs--search (symbol description match-fn)
+(defun elisp-refs--search (symbol description match-fn &optional path-prefix)
   "Search for references to SYMBOL in all loaded files, by calling MATCH-FN on each buffer.
+If PATH-PREFIX is given, limit to loaded files whose path starts with that prefix.
+
 Display the results in a hyperlinked buffer.
 
 MATCH-FN should return a list where each element takes the form:
@@ -532,8 +574,11 @@ MATCH-FN should return a list where each element takes the form:
          ;; performance improves if we GC less frequently.
          (gc-cons-percentage 0.8)
          (loaded-paths (elisp-refs--loaded-files))
-         (total-paths (length loaded-paths))
-         (loaded-src-bufs (mapcar #'elisp-refs--contents-buffer loaded-paths)))
+         (matching-paths (if path-prefix
+                             (--filter (s-starts-with? path-prefix it) loaded-paths)
+                           loaded-paths))
+         (total-paths (length matching-paths))
+         (loaded-src-bufs (mapcar #'elisp-refs--contents-buffer matching-paths)))
     ;; Use unwind-protect to ensure we always cleanup temporary
     ;; buffers, even if the user hits C-g.
     (unwind-protect
@@ -549,97 +594,104 @@ MATCH-FN should return a list where each element takes the form:
               ;; Give feedback to the user on our progress, because
               ;; searching takes several seconds.
               (when (zerop (mod searched 10))
-                (message "Searched %s/%s files on load-path" searched total-paths))
+                (message "Searched %s/%s files" searched total-paths))
               (cl-incf searched)))
-          (message "Searched %s/%s files on load-path" total-paths total-paths)
-          (elisp-refs--show-results symbol description forms-and-bufs))
+          (message "Searched %s/%s files" total-paths total-paths)
+          (elisp-refs--show-results symbol description forms-and-bufs
+                                    total-paths path-prefix))
       ;; Clean up temporary buffers.
       (--each loaded-src-bufs (kill-buffer it)))))
 
+(defun elisp-refs--completing-read-symbol (prompt &optional filter)
+  "Read an interned symbol from the minibuffer,
+defaulting to the symbol at point. PROMPT is the string to prompt
+with.
+
+If FILTER is given, only offer symbols where (FILTER sym) returns
+t."
+  (let ((filter (or filter (lambda (_) t))))
+    (read
+     (completing-read prompt
+                      (elisp-refs--filter-obarray filter)
+                      nil nil nil nil
+                      (-if-let (sym (thing-at-point 'symbol))
+                          (when (funcall filter (read sym))
+                            sym))))))
+
 ;;;###autoload
-(defun elisp-refs-function (symbol)
+(defun elisp-refs-function (symbol &optional path-prefix)
   "Display all the references to function SYMBOL, in all loaded
-elisp files."
+elisp files.
+
+If called with a prefix, prompt for a directory to limit the search."
   (interactive
-   ;; TODO: default to function at point.
-   (list (read (completing-read
-                "Function: "
-                (elisp-refs--filter-obarray #'functionp)))))
+   (list (elisp-refs--completing-read-symbol "Function: " #'functionp)
+         (when current-prefix-arg
+           (read-directory-name "Limit search to loaded files in: "))))
   (elisp-refs--search symbol
-                      (format "function %s"
-                              (propertize
-                               (symbol-name symbol)
-                               'face 'font-lock-function-name-face))
+                      (elisp-refs--describe-button symbol 'function)
                       (lambda (buf)
-                        (elisp-refs--read-and-find buf symbol #'elisp-refs--function-p))))
+                        (elisp-refs--read-and-find buf symbol #'elisp-refs--function-p))
+                      path-prefix))
 
 ;;;###autoload
-(defun elisp-refs-macro (symbol)
+(defun elisp-refs-macro (symbol &optional path-prefix)
   "Display all the references to macro SYMBOL, in all loaded
-elisp files."
+elisp files.
+
+If called with a prefix, prompt for a directory to limit the search."
   (interactive
-   (list (read (completing-read
-                "Macro: "
-                (elisp-refs--filter-obarray #'macrop)))))
+   (list (elisp-refs--completing-read-symbol "Macro: " #'macrop)
+         (when current-prefix-arg
+           (read-directory-name "Limit search to loaded files in: "))))
   (elisp-refs--search symbol
-                      (format "macro %s"
-                              (propertize
-                               (symbol-name symbol)
-                               'face 'font-lock-function-name-face))
+                      (elisp-refs--describe-button symbol 'macro)
                       (lambda (buf)
-                        (elisp-refs--read-and-find buf symbol #'elisp-refs--macro-p))))
+                        (elisp-refs--read-and-find buf symbol #'elisp-refs--macro-p))
+                      path-prefix))
 
 ;;;###autoload
-(defun elisp-refs-special (symbol)
+(defun elisp-refs-special (symbol &optional path-prefix)
   "Display all the references to special form SYMBOL, in all loaded
-elisp files."
+elisp files.
+
+If called with a prefix, prompt for a directory to limit the search."
   (interactive
-   (list (read (completing-read
-                "Macro: "
-                (elisp-refs--filter-obarray #'special-form-p)))))
+   (list (elisp-refs--completing-read-symbol "Special form: " #'special-form-p)
+         (when current-prefix-arg
+           (read-directory-name "Limit search to loaded files in: "))))
   (elisp-refs--search symbol
-                      (format "special form %s"
-                              (propertize
-                               (symbol-name symbol)
-                               'face 'font-lock-keyword-face))
+                      (elisp-refs--describe-button symbol 'special-form)
                       (lambda (buf)
-                        (elisp-refs--read-and-find buf symbol #'elisp-refs--special-p))))
+                        (elisp-refs--read-and-find buf symbol #'elisp-refs--special-p))
+                      path-prefix))
 
 ;;;###autoload
-(defun elisp-refs-variable (symbol)
+(defun elisp-refs-variable (symbol &optional path-prefix)
   "Display all the references to variable SYMBOL, in all loaded
 elisp files."
   (interactive
-   (list (read
-          (completing-read
-           "Variable: "
-           (elisp-refs--filter-obarray
-            ;; This is awkward. We don't want to just offer defvar
-            ;; variables, because then we can't such for users who
-            ;; have used `let' to bind other symbols. There doesn't
-            ;; seem to be good way to only offer variables that have
-            ;; been bound at some point.
-            (lambda (_) t))))))
+   ;; This is awkward. We don't want to just offer defvar variables,
+   ;; because then we can't search for code which uses `let' to bind
+   ;; symbols. There doesn't seem to be a good way to only offer
+   ;; variables that have been bound at some point.
+   (list (elisp-refs--completing-read-symbol "Variable: " )))
   (elisp-refs--search symbol
-                      (format "variable %s"
-                              (propertize
-                               (symbol-name symbol)
-                               'face 'font-lock-variable-name-face))
+                      (elisp-refs--describe-button symbol 'variable)
                       (lambda (buf)
-                        (elisp-refs--read-and-find buf symbol #'elisp-refs--variable-p))))
+                        (elisp-refs--read-and-find buf symbol #'elisp-refs--variable-p))
+                      path-prefix))
 
 ;;;###autoload
-(defun elisp-refs-symbol (symbol)
+(defun elisp-refs-symbol (symbol &optional path-prefix)
   "Display all the references to SYMBOL in all loaded elisp files."
   (interactive
-   (list (read (completing-read
-                "Symbol: "
-                (elisp-refs--filter-obarray (lambda (_) t))))))
+   (list (elisp-refs--completing-read-symbol "Symbol: " )))
   (elisp-refs--search symbol
-                      (format "symbol %s"
-                              (symbol-name symbol))
+                      (elisp-refs--describe-button symbol 'symbol)
                       (lambda (buf)
-                        (elisp-refs--read-and-find-symbol buf symbol))))
+                        (elisp-refs--read-and-find-symbol buf symbol))
+                      path-prefix))
 
 (define-derived-mode elisp-refs-mode special-mode "Refs"
   "Major mode for refs results buffers.")
