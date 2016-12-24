@@ -1,5 +1,6 @@
 (require 'racer)
 (setq racer-rust-src-path "/home/wilfred/src/rustc-1.10.0/src")
+(setq racer-cmd (f-expand "~/.cargo/bin/racer"))
 
 (require 'company)
 
