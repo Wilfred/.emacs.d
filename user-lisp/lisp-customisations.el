@@ -133,7 +133,7 @@
 
   ;; I find myself going up a lot, and M-/ is already convenient to
   ;; type. Use u for going up.
-  (define-key lispy-mode-map (kbd "u") #'paredit-backward-up)
+  ;; (define-key lispy-mode-map (kbd "u") #'paredit-backward-up)
 
   ;; `lispy-move-beginning-of-line' adds nothing over
   ;; `move-beginning-of-line-dwim', but goes to column 1 first. I prefer
