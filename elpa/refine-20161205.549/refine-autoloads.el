@@ -3,7 +3,7 @@
 ;;; Code:
 (add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "refine" "refine.el" (22554 35707 452585 156000))
+;;;### (autoloads nil "refine" "refine.el" (22625 23999 675897 140000))
 ;;; Generated autoloads from refine.el
 
 (autoload 'refine "refine" "\
