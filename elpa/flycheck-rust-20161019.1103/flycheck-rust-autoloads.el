@@ -1,10 +1,10 @@
 ;;; flycheck-rust-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
+(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "flycheck-rust" "flycheck-rust.el" (22398 4282
-;;;;;;  772653 532000))
+;;;### (autoloads nil "flycheck-rust" "flycheck-rust.el" (22625 23563
+;;;;;;  521353 501000))
 ;;; Generated autoloads from flycheck-rust.el
 
 (autoload 'flycheck-rust-setup "flycheck-rust" "\
