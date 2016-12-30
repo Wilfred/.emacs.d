@@ -1,7 +1,10 @@
-(require 'racer)
-
 (require 'f)
+
 (add-to-list 'exec-path (f-expand "~/.cargo/bin"))
+
+(use-package racer
+  :config
+  (setq racer-cmd (f-expand "~/.cargo/bin/racer")))
 
 (setq racer-rust-src-path "/home/wilfred/src/rustc-1.10.0/src")
 
