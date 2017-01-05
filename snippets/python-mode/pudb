@@ -1,0 +1,5 @@
+# -*- mode: Snippet; coding: utf-8; -*-
+# name: pudb
+# key: pudb
+# --
+import pudb; pudb.set_trace()
