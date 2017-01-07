@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: mangle
+# key: mangle
+# --
+#[no_mangle]
