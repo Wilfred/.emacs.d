@@ -76,9 +76,11 @@
 (add-hook 'ielm-mode-hook #'company-mode)
 (add-hook 'ielm-mode-hook #'eldoc-mode)
 
-(add-hook 'clojure-mode-hook 'rainbow-delimiters-mode)
-(add-hook 'scheme-mode-hook 'rainbow-delimiters-mode)
-(add-hook 'lisp-mode-hook 'rainbow-delimiters-mode)
+(dolist (hook '(clojure-mode-hook
+                scheme-mode-hook
+                lisp-mode-hook
+                ielm-mode-hook))
+  (add-hook hook #'rainbow-delimiters-mode))
 
 (autoload 'clojure-mode "clojure-mode")
 
