@@ -172,7 +172,7 @@ are interchanged."
          ("C-c M-%" . ez-query-replace-repeat)))
 
 ;; open line and indent is a frequent and useful operation
-;; so we can go from this (where `|` represents the cursor:
+;; so we can go from this (where `|` represents the cursor):
 ;;    foo("bar", {|})
 ;; to this:
 ;;    foo("bar", {
