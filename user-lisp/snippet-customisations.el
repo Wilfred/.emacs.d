@@ -25,4 +25,9 @@ Taken from http://stackoverflow.com/a/25532190/509706."
 (global-set-key (kbd "s-w") #'aya-create)
 (global-set-key (kbd "s-y") #'aya-expand)
 
+;; `auto-insert-alist' (used by `auto-insert' when generating skeleton
+;; elisp files) depends on these variables.
+(setq user-mail-address "me@wilfred.me.uk")
+(setq user-full-name "Wilfred Hughes")
+
 (provide 'snippet-customisations)
