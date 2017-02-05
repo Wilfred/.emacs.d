@@ -1,4 +1,4 @@
-; csv mode stuff, since it's used extensively in GBBO
+;; csv mode stuff, since it's used extensively in GBBO
 (autoload 'csv-mode "csv-mode")
 
 ;; JSON
