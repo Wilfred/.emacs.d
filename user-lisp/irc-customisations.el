@@ -12,7 +12,7 @@
   :config
   (setq rcirc-default-nick "wilfredh")
   (setq rcirc-server-alist
-        '(("irc.freenode.net" :channels ("#emacs" "#guile"))
+        '(("irc.freenode.net" :channels ("#emacs"))
           ("irc.mozilla.org" :channels ("#rust"))))
   ;; Keep history.
   (setq rcirc-log-flag t)
