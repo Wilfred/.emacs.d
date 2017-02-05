@@ -1,6 +1,9 @@
 ;; csv mode stuff, since it's used extensively in GBBO
 (autoload 'csv-mode "csv-mode")
 
+;; latex
+(add-hook 'latex-mode-hook #'smartparens-mode)
+
 ;; JSON
 (add-hook 'json-mode-hook
           (lambda ()
