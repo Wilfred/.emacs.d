@@ -127,6 +127,8 @@ This means `pop-mark' can take us back to our previous position."
 
 (add-hook 'python-mode-hook #'wh/company-in-python-mode)
 
+(add-hook 'python-mode-hook #'subword-mode)
+
 ;; Use ipython, if available.
 ;; from http://emacs.stackexchange.com/q/4161
 (when (executable-find "ipython")
