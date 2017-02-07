@@ -213,6 +213,37 @@ If it is split, repeat the current buffer in a vertical split."
                       (- (face-attribute 'default :height)
                          10)))
 
+(defun wh/switch-major-mode-buffer (major-mode)
+  (interactive
+   (list
+    (read
+     (completing-read
+      "Major mode: "
+      (elisp-refs--filter-obarray #'commandp)))))
+  (let* ((bufs (buffer-list))
+         (matching-bufs (--filter (eq major-mode (with-current-buffer it major-mode)) bufs))
+         (bufs-with-paths (--map (cons (buffer-file-name it) it) matching-bufs))
+         (chosen-buf
+          (cdr (assoc (completing-read "Buffer: " bufs-with-paths)
+                      bufs-with-paths))))
+    (switch-to-buffer chosen-buf)))
+
+(defun wh/switch-magit-status-buffer ()
+  "Allow switching between open magit status buffers."
+  (interactive)
+  (let* ((buffers (--filter (eq #'magit-status-mode (with-current-buffer it major-mode))
+                            (buffer-list)))
+         (bufs-with-names (--map (cons (buffer-name it) it) buffers))
+         (chosen-buf
+          (cdr (assoc (completing-read "Buffer: " bufs-with-names)
+                      bufs-with-names))))
+    (switch-to-buffer chosen-buf)))
+
+;; Since `C-x b' is for switching buffers, use `C-x m' (mnemonic:
+;; Magit) to switch magit status buffers.  This clobbers the
+;; keybinding for `compose-mail', which I don't use.
+(global-set-key (kbd "C-x m") #'wh/switch-magit-status-buffer)
+
 ;;; Mode-line.
 
 ;; I want a minimalistic mode line. It should only have:
