@@ -1092,6 +1092,7 @@ Visit the file after creation."
 (require 'lisp-customisations)
 (require 'makefile-customisations)
 (require 'python-customisations)
+(require 'groovy-customisations)
 (require 'rust-customisations)
 (require 'llvm-customisations)
 (require 'sh-customisations)

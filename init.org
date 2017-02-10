@@ -1207,6 +1207,7 @@ https://github.com/bbatsov/crux/issues/20
   (require 'lisp-customisations)
   (require 'makefile-customisations)
   (require 'python-customisations)
+  (require 'groovy-customisations)
   (require 'rust-customisations)
   (require 'llvm-customisations)
   (require 'sh-customisations)

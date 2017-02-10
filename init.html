@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<!-- 2016-12-26 Mon 18:19 -->
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 2017-02-10 Fri 11:56 -->
+<meta  charset="utf-8">
+<meta  name="viewport" content="width=device-width, initial-scale=1">
 <title></title>
-<meta name="generator" content="Org mode">
+<meta  name="generator" content="Org-mode">
+<meta  name="author" content="Hughes, Wilfred (London)">
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   .title  { text-align: center;
@@ -50,97 +51,13 @@
     border: 1px solid black;
   }
   pre.src:hover:before { display: inline;}
-  /* Languages per Org manual */
-  pre.src-asymptote:before { content: 'Asymptote'; }
-  pre.src-awk:before { content: 'Awk'; }
-  pre.src-C:before { content: 'C'; }
-  /* pre.src-C++ doesn't work in CSS */
-  pre.src-clojure:before { content: 'Clojure'; }
-  pre.src-css:before { content: 'CSS'; }
-  pre.src-D:before { content: 'D'; }
-  pre.src-ditaa:before { content: 'ditaa'; }
-  pre.src-dot:before { content: 'Graphviz'; }
-  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
   pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
-  pre.src-fortran:before { content: 'Fortran'; }
-  pre.src-gnuplot:before { content: 'gnuplot'; }
-  pre.src-haskell:before { content: 'Haskell'; }
-  pre.src-java:before { content: 'Java'; }
-  pre.src-js:before { content: 'Javascript'; }
-  pre.src-latex:before { content: 'LaTeX'; }
-  pre.src-ledger:before { content: 'Ledger'; }
-  pre.src-lisp:before { content: 'Lisp'; }
-  pre.src-lilypond:before { content: 'Lilypond'; }
-  pre.src-lua:before { content: 'Lua'; }
-  pre.src-matlab:before { content: 'MATLAB'; }
-  pre.src-mscgen:before { content: 'Mscgen'; }
-  pre.src-ocaml:before { content: 'Objective Caml'; }
-  pre.src-octave:before { content: 'Octave'; }
-  pre.src-org:before { content: 'Org mode'; }
-  pre.src-oz:before { content: 'OZ'; }
-  pre.src-plantuml:before { content: 'Plantuml'; }
-  pre.src-processing:before { content: 'Processing.js'; }
-  pre.src-python:before { content: 'Python'; }
-  pre.src-R:before { content: 'R'; }
-  pre.src-ruby:before { content: 'Ruby'; }
-  pre.src-sass:before { content: 'Sass'; }
-  pre.src-scheme:before { content: 'Scheme'; }
-  pre.src-screen:before { content: 'Gnu Screen'; }
-  pre.src-sed:before { content: 'Sed'; }
-  pre.src-sh:before { content: 'shell'; }
-  pre.src-sql:before { content: 'SQL'; }
-  pre.src-sqlite:before { content: 'SQLite'; }
-  /* additional languages in org.el's org-babel-load-languages alist */
-  pre.src-forth:before { content: 'Forth'; }
-  pre.src-io:before { content: 'IO'; }
-  pre.src-J:before { content: 'J'; }
-  pre.src-makefile:before { content: 'Makefile'; }
-  pre.src-maxima:before { content: 'Maxima'; }
-  pre.src-perl:before { content: 'Perl'; }
-  pre.src-picolisp:before { content: 'Pico Lisp'; }
-  pre.src-scala:before { content: 'Scala'; }
-  pre.src-shell:before { content: 'Shell Script'; }
-  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
-  /* additional language identifiers per "defun org-babel-execute"
-       in ob-*.el */
-  pre.src-cpp:before  { content: 'C++'; }
-  pre.src-abc:before  { content: 'ABC'; }
-  pre.src-coq:before  { content: 'Coq'; }
-  pre.src-groovy:before  { content: 'Groovy'; }
-  /* additional language identifiers from org-babel-shell-names in
-     ob-shell.el: ob-shell is the only babel language using a lambda to put
-     the execution function name together. */
-  pre.src-bash:before  { content: 'bash'; }
-  pre.src-csh:before  { content: 'csh'; }
-  pre.src-ash:before  { content: 'ash'; }
-  pre.src-dash:before  { content: 'dash'; }
-  pre.src-ksh:before  { content: 'ksh'; }
-  pre.src-mksh:before  { content: 'mksh'; }
-  pre.src-posh:before  { content: 'posh'; }
-  /* Additional Emacs modes also supported by the LaTeX listings package */
-  pre.src-ada:before { content: 'Ada'; }
-  pre.src-asm:before { content: 'Assembler'; }
-  pre.src-caml:before { content: 'Caml'; }
-  pre.src-delphi:before { content: 'Delphi'; }
-  pre.src-html:before { content: 'HTML'; }
-  pre.src-idl:before { content: 'IDL'; }
-  pre.src-mercury:before { content: 'Mercury'; }
-  pre.src-metapost:before { content: 'MetaPost'; }
-  pre.src-modula-2:before { content: 'Modula-2'; }
-  pre.src-pascal:before { content: 'Pascal'; }
-  pre.src-ps:before { content: 'PostScript'; }
-  pre.src-prolog:before { content: 'Prolog'; }
-  pre.src-simula:before { content: 'Simula'; }
-  pre.src-tcl:before { content: 'tcl'; }
-  pre.src-tex:before { content: 'TeX'; }
-  pre.src-plain-tex:before { content: 'Plain TeX'; }
-  pre.src-verilog:before { content: 'Verilog'; }
-  pre.src-vhdl:before { content: 'VHDL'; }
-  pre.src-xml:before { content: 'XML'; }
-  pre.src-nxml:before { content: 'XML'; }
-  /* add a generic configuration mode; LaTeX export needs an additional
-     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
-  pre.src-conf:before { content: 'Configuration File'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
 
   table { border-collapse:collapse; }
   caption.t-above { caption-side: top; }
@@ -173,7 +90,6 @@
     { font-size: 10px; font-weight: bold; white-space: nowrap; }
   .org-info-js_search-highlight
     { background-color: #ffff00; color: #000000; font-weight: bold; }
-  .org-svg { width: 90%; }
   /*]]>*/-->
 </style>
 <link rel="stylesheet" type="text/css" href="init.css" />
@@ -230,101 +146,101 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orga0af36a">1. Introduction</a>
+<li><a href="#orgheadline4">1. Introduction</a>
 <ul>
-<li><a href="#org8733125">1.1. Licensing</a></li>
-<li><a href="#org08b7910">1.2. Reading This Document</a></li>
-<li><a href="#org2cdc773">1.3. Generating This Document</a></li>
+<li><a href="#orgheadline1">1.1. Licensing</a></li>
+<li><a href="#orgheadline2">1.2. Reading This Document</a></li>
+<li><a href="#orgheadline3">1.3. Generating This Document</a></li>
 </ul>
 </li>
-<li><a href="#org3c3b98d">2. Installing locally</a>
+<li><a href="#orgheadline9">2. Installing locally</a>
 <ul>
-<li><a href="#orgd2db74b">2.1. The Git Repository</a></li>
-<li><a href="#org676762e">2.2. Emacs 25</a></li>
-<li><a href="#org605e358">2.3. Python</a></li>
-<li><a href="#org10e9d72">2.4. Less</a></li>
+<li><a href="#orgheadline5">2.1. The Git Repository</a></li>
+<li><a href="#orgheadline6">2.2. Emacs 25</a></li>
+<li><a href="#orgheadline7">2.3. Python</a></li>
+<li><a href="#orgheadline8">2.4. Less</a></li>
 </ul>
 </li>
-<li><a href="#orgcb3c172">3. Contents</a>
+<li><a href="#orgheadline54">3. Contents</a>
 <ul>
-<li><a href="#org1fb852f">3.1. Folder Structure</a></li>
-<li><a href="#org3de8df5">3.2. Packages</a></li>
-<li><a href="#org9e7fb2b">3.3. UI</a>
+<li><a href="#orgheadline10">3.1. Folder Structure</a></li>
+<li><a href="#orgheadline11">3.2. Packages</a></li>
+<li><a href="#orgheadline15">3.3. UI</a>
 <ul>
-<li><a href="#orge6aba88">3.3.1. Theme</a></li>
-<li><a href="#orgb8314e5">3.3.2. Visibility of UI Elements</a></li>
-<li><a href="#org85df689">3.3.3. Recursive Editing</a></li>
+<li><a href="#orgheadline12">3.3.1. Theme</a></li>
+<li><a href="#orgheadline13">3.3.2. Visibility of UI Elements</a></li>
+<li><a href="#orgheadline14">3.3.3. Recursive Editing</a></li>
 </ul>
 </li>
-<li><a href="#org8cfb72a">3.4. Moving Around</a>
+<li><a href="#orgheadline20">3.4. Moving Around</a>
 <ul>
-<li><a href="#org4e05e5b">3.4.1. By Symbol</a></li>
-<li><a href="#org7cf2cca">3.4.2. By indentation</a></li>
-<li><a href="#org8cc23ea">3.4.3. By Character</a></li>
-<li><a href="#orga1d7e85">3.4.4. Measuring Movement</a></li>
+<li><a href="#orgheadline16">3.4.1. By Symbol</a></li>
+<li><a href="#orgheadline17">3.4.2. By indentation</a></li>
+<li><a href="#orgheadline18">3.4.3. By Character</a></li>
+<li><a href="#orgheadline19">3.4.4. Measuring Movement</a></li>
 </ul>
 </li>
-<li><a href="#org6e62a2a">3.5. Inserting</a></li>
-<li><a href="#org4b795f3">3.6. Killing</a></li>
-<li><a href="#orgfdbef9e">3.7. Modifying and Editing</a>
+<li><a href="#orgheadline21">3.5. Inserting</a></li>
+<li><a href="#orgheadline22">3.6. Killing</a></li>
+<li><a href="#orgheadline24">3.7. Modifying and Editing</a>
 <ul>
-<li><a href="#org46de448">3.7.1. Matched Pairs</a></li>
+<li><a href="#orgheadline23">3.7.1. Matched Pairs</a></li>
 </ul>
 </li>
-<li><a href="#org1dad7cf">3.8. Files</a>
+<li><a href="#orgheadline29">3.8. Files</a>
 <ul>
-<li><a href="#orgc4ff404">3.8.1. Opening</a></li>
-<li><a href="#org566ca30">3.8.2. Dired</a></li>
-<li><a href="#org74d4bbd">3.8.3. Deleting and Backups</a></li>
-<li><a href="#org1e27c81">3.8.4. Scratch Files</a></li>
+<li><a href="#orgheadline25">3.8.1. Opening</a></li>
+<li><a href="#orgheadline26">3.8.2. Dired</a></li>
+<li><a href="#orgheadline27">3.8.3. Deleting and Backups</a></li>
+<li><a href="#orgheadline28">3.8.4. Scratch Files</a></li>
 </ul>
 </li>
-<li><a href="#org4801f1a">3.9. As-you-type Checks</a>
+<li><a href="#orgheadline32">3.9. As-you-type Checks</a>
 <ul>
-<li><a href="#orgfdbb90f">3.9.1. Flymake</a></li>
-<li><a href="#orgb878473">3.9.2. Flycheck</a></li>
+<li><a href="#orgheadline30">3.9.1. Flymake</a></li>
+<li><a href="#orgheadline31">3.9.2. Flycheck</a></li>
 </ul>
 </li>
-<li><a href="#org6938fe6">3.10. Undoing</a></li>
-<li><a href="#orgb59735c">3.11. Emacs Lisp</a>
+<li><a href="#orgheadline33">3.10. Undoing</a></li>
+<li><a href="#orgheadline40">3.11. Emacs Lisp</a>
 <ul>
-<li><a href="#org1403773">3.11.1. Shortcuts</a></li>
-<li><a href="#org616232c">3.11.2. Editing Parentheses</a></li>
-<li><a href="#org2acd06d">3.11.3. Highlighting Parentheses</a></li>
-<li><a href="#org3d13f56">3.11.4. Function Signatures</a></li>
-<li><a href="#org45d147a">3.11.5. On-the-fly Checking</a></li>
-<li><a href="#orgf8c0ef9">3.11.6. Highlighting</a></li>
+<li><a href="#orgheadline34">3.11.1. Shortcuts</a></li>
+<li><a href="#orgheadline35">3.11.2. Editing Parentheses</a></li>
+<li><a href="#orgheadline36">3.11.3. Highlighting Parentheses</a></li>
+<li><a href="#orgheadline37">3.11.4. Function Signatures</a></li>
+<li><a href="#orgheadline38">3.11.5. On-the-fly Checking</a></li>
+<li><a href="#orgheadline39">3.11.6. Highlighting</a></li>
 </ul>
 </li>
-<li><a href="#org62c5a6d">3.12. Python</a></li>
-<li><a href="#org732abbf">3.13. Haskell</a></li>
-<li><a href="#org8fe5034">3.14. Ruby</a></li>
-<li><a href="#orgeffb502">3.15. C/C++</a></li>
-<li><a href="#orga6a532f">3.16. HTML</a></li>
-<li><a href="#org4b1f8bb">3.17. CSS</a></li>
-<li><a href="#orga429344">3.18. Less (CSS)</a></li>
-<li><a href="#org0123582">3.19. Org-mode</a></li>
-<li><a href="#org4be9d65">3.20. Markdown</a></li>
-<li><a href="#orgd66e48c">3.21. Performance</a></li>
-<li><a href="#orgab28e09">3.22. Shut Down</a></li>
-<li><a href="#org7f8adb6">3.23. Workarounds</a></li>
-<li><a href="#orgc435ba0">3.24. Undocumented</a></li>
+<li><a href="#orgheadline41">3.12. Python</a></li>
+<li><a href="#orgheadline42">3.13. Haskell</a></li>
+<li><a href="#orgheadline43">3.14. Ruby</a></li>
+<li><a href="#orgheadline44">3.15. C/C++</a></li>
+<li><a href="#orgheadline45">3.16. HTML</a></li>
+<li><a href="#orgheadline46">3.17. CSS</a></li>
+<li><a href="#orgheadline47">3.18. Less (CSS)</a></li>
+<li><a href="#orgheadline48">3.19. Org-mode</a></li>
+<li><a href="#orgheadline49">3.20. Markdown</a></li>
+<li><a href="#orgheadline50">3.21. Performance</a></li>
+<li><a href="#orgheadline51">3.22. Shut Down</a></li>
+<li><a href="#orgheadline52">3.23. Workarounds</a></li>
+<li><a href="#orgheadline53">3.24. Undocumented</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-orga0af36a" class="outline-2">
-<h2 id="orga0af36a"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-orgheadline4" class="outline-2">
+<h2 id="orgheadline4"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 This is the Emacs environment I (Wilfred Hughes) use for development.
 </p>
 </div>
 
-<div id="outline-container-org8733125" class="outline-3">
-<h3 id="org8733125"><span class="section-number-3">1.1</span> Licensing</h3>
+<div id="outline-container-orgheadline1" class="outline-3">
+<h3 id="orgheadline1"><span class="section-number-3">1.1</span> Licensing</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 Code I've written (init.el and files under <code>user-lisp/</code>) is BSD
@@ -333,8 +249,8 @@ licensed, see <a href="COPYING">COPYING</a>.
 </div>
 </div>
 
-<div id="outline-container-org08b7910" class="outline-3">
-<h3 id="org08b7910"><span class="section-number-3">1.2</span> Reading This Document</h3>
+<div id="outline-container-orgheadline2" class="outline-3">
+<h3 id="orgheadline2"><span class="section-number-3">1.2</span> Reading This Document</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 This file is a literate programming document written with org-mode and
@@ -344,13 +260,13 @@ init.org in Emacs.
 
 <p>
 You can edit any code block by putting point inside the block and
-pressing <code>C-c '</code> (press <code>C-c '</code> again to escape).
+pressing =C-c '= (press =C-c '= again to escape).
 </p>
 </div>
 </div>
 
-<div id="outline-container-org2cdc773" class="outline-3">
-<h3 id="org2cdc773"><span class="section-number-3">1.3</span> Generating This Document</h3>
+<div id="outline-container-orgheadline3" class="outline-3">
+<h3 id="orgheadline3"><span class="section-number-3">1.3</span> Generating This Document</h3>
 <div class="outline-text-3" id="text-1-3">
 <p>
 init.org is the source file that I edit, and init.el and init.html are
@@ -358,6 +274,7 @@ generated from it. We define a convenience function to generate these files.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">wh/export-init-org</span> <span class="org-rainbow-delimiters-depth-2">()</span>
   <span class="org-doc">"Generate init.html and init.html from the current init.org file."</span>
   <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span><span class="org-rainbow-delimiters-depth-2">)</span>
@@ -373,8 +290,8 @@ generated from it. We define a convenience function to generate these files.
 </div>
 </div>
 
-<div id="outline-container-org3c3b98d" class="outline-2">
-<h2 id="org3c3b98d"><span class="section-number-2">2</span> Installing locally</h2>
+<div id="outline-container-orgheadline9" class="outline-2">
+<h2 id="orgheadline9"><span class="section-number-2">2</span> Installing locally</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 This repository seeks to be as self-contained as possible. Generally,
@@ -384,14 +301,15 @@ require:
 </p>
 </div>
 
-<div id="outline-container-orgd2db74b" class="outline-3">
-<h3 id="orgd2db74b"><span class="section-number-3">2.1</span> The Git Repository</h3>
+<div id="outline-container-orgheadline5" class="outline-3">
+<h3 id="orgheadline5"><span class="section-number-3">2.1</span> The Git Repository</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 Remove any existing .emacs.d configuration (or move elsewhere):
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-sh">rm -r ~/.emacs.d
 </pre>
 </div>
@@ -401,14 +319,15 @@ Clone the repo:
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-sh">git clone git://github.com/Wilfred/.emacs.d.git
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org676762e" class="outline-3">
-<h3 id="org676762e"><span class="section-number-3">2.2</span> Emacs 25</h3>
+<div id="outline-container-orgheadline6" class="outline-3">
+<h3 id="orgheadline6"><span class="section-number-3">2.2</span> Emacs 25</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
 I use this repository with Emacs 25. Older Emacsen are used
@@ -417,22 +336,23 @@ occasionally, but will probably have bugs.
 </div>
 </div>
 
-<div id="outline-container-org605e358" class="outline-3">
-<h3 id="org605e358"><span class="section-number-3">2.3</span> Python</h3>
+<div id="outline-container-orgheadline7" class="outline-3">
+<h3 id="orgheadline7"><span class="section-number-3">2.3</span> Python</h3>
 <div class="outline-text-3" id="text-2-3">
 <p>
 I use pyflakes, which is available on PyPI. You can install it with:
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-sh">sudo pip install pyflakes
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org10e9d72" class="outline-3">
-<h3 id="org10e9d72"><span class="section-number-3">2.4</span> Less</h3>
+<div id="outline-container-orgheadline8" class="outline-3">
+<h3 id="orgheadline8"><span class="section-number-3">2.4</span> Less</h3>
 <div class="outline-text-3" id="text-2-4">
 <p>
 I use lessc to check the syntax of <code>.less</code> files. You can install it
@@ -440,6 +360,7 @@ with:
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-sh">sudo npm install -g less
 </pre>
 </div>
@@ -447,11 +368,11 @@ with:
 </div>
 </div>
 
-<div id="outline-container-orgcb3c172" class="outline-2">
-<h2 id="orgcb3c172"><span class="section-number-2">3</span> Contents</h2>
+<div id="outline-container-orgheadline54" class="outline-2">
+<h2 id="orgheadline54"><span class="section-number-2">3</span> Contents</h2>
 <div class="outline-text-2" id="text-3">
-</div><div id="outline-container-org1fb852f" class="outline-3">
-<h3 id="org1fb852f"><span class="section-number-3">3.1</span> Folder Structure</h3>
+</div><div id="outline-container-orgheadline10" class="outline-3">
+<h3 id="orgheadline10"><span class="section-number-3">3.1</span> Folder Structure</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
 Code I've written lives in user-lisp. This includes packages that I
@@ -466,6 +387,7 @@ files named <code>FOO-utils.el</code>.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-to-list <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">load-path</span> <span class="org-string">"~/.emacs.d/user-lisp/"</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -477,6 +399,7 @@ and faces:
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> custom-file <span class="org-string">"~/.emacs.d/user-lisp/customized.el"</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>load custom-file<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -488,14 +411,15 @@ should ultimately disappear once all these packages live in <a href="http://melp
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-to-list <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">load-path</span> <span class="org-string">"~/.emacs.d/third-party-lisp/"</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org3de8df5" class="outline-3">
-<h3 id="org3de8df5"><span class="section-number-3">3.2</span> Packages</h3>
+<div id="outline-container-orgheadline11" class="outline-3">
+<h3 id="orgheadline11"><span class="section-number-3">3.2</span> Packages</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
 I use ELPA packages heavily for functionality, primarily the MELPA
@@ -504,6 +428,7 @@ later.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">package</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> package-archives
       <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span><span class="org-rainbow-delimiters-depth-3">(</span><span class="org-string">"gnu"</span> . <span class="org-string">"https://elpa.gnu.org/packages/"</span><span class="org-rainbow-delimiters-depth-3">)</span>
@@ -516,11 +441,11 @@ later.
 </div>
 </div>
 
-<div id="outline-container-org9e7fb2b" class="outline-3">
-<h3 id="org9e7fb2b"><span class="section-number-3">3.3</span> UI</h3>
+<div id="outline-container-orgheadline15" class="outline-3">
+<h3 id="orgheadline15"><span class="section-number-3">3.3</span> UI</h3>
 <div class="outline-text-3" id="text-3-3">
-</div><div id="outline-container-orge6aba88" class="outline-4">
-<h4 id="orge6aba88"><span class="section-number-4">3.3.1</span> Theme</h4>
+</div><div id="outline-container-orgheadline12" class="outline-4">
+<h4 id="orgheadline12"><span class="section-number-4">3.3.1</span> Theme</h4>
 <div class="outline-text-4" id="text-3-3-1">
 <p>
 I like the tangotango theme. It has very contrasting colours and uses
@@ -533,16 +458,18 @@ TODO: I would also prefer zig-zag underlines for flycheck.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>load-theme <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">tangotango</span> t<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgb8314e5" class="outline-4">
-<h4 id="orgb8314e5"><span class="section-number-4">3.3.2</span> Visibility of UI Elements</h4>
+<div id="outline-container-orgheadline13" class="outline-4">
+<h4 id="orgheadline13"><span class="section-number-4">3.3.2</span> Visibility of UI Elements</h4>
 <div class="outline-text-4" id="text-3-3-2">
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;; </span><span class="org-comment">hide toolbar and scrollbar</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>tool-bar-mode 0<span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>scroll-bar-mode 0<span class="org-rainbow-delimiters-depth-1">)</span>
@@ -554,8 +481,8 @@ TODO: I would also prefer zig-zag underlines for flycheck.
 </div>
 </div>
 
-<div id="outline-container-org85df689" class="outline-4">
-<h4 id="org85df689"><span class="section-number-4">3.3.3</span> Recursive Editing</h4>
+<div id="outline-container-orgheadline14" class="outline-4">
+<h4 id="orgheadline14"><span class="section-number-4">3.3.3</span> Recursive Editing</h4>
 <div class="outline-text-4" id="text-3-3-3">
 <p>
 We can make the minibuffer much more useful by enabling recursive
@@ -564,6 +491,7 @@ commands that require the minibuffer.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> enable-recursive-minibuffers t<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -574,6 +502,7 @@ not. We display the recursion level in the minibuffer to avoid confusion.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>minibuffer-depth-indicate-mode 1<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -586,8 +515,8 @@ want. ESC ESC ESC will close the minibuffer.
 </div>
 </div>
 
-<div id="outline-container-org8cfb72a" class="outline-3">
-<h3 id="org8cfb72a"><span class="section-number-3">3.4</span> Moving Around</h3>
+<div id="outline-container-orgheadline20" class="outline-3">
+<h3 id="orgheadline20"><span class="section-number-3">3.4</span> Moving Around</h3>
 <div class="outline-text-3" id="text-3-4">
 <p>
 C-v and M-v don't undo each other, because the point position isn't
@@ -595,13 +524,14 @@ preservered. Fix that.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> scroll-preserve-screen-position <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">always</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
 
-<div id="outline-container-org4e05e5b" class="outline-4">
-<h4 id="org4e05e5b"><span class="section-number-4">3.4.1</span> By Symbol</h4>
+<div id="outline-container-orgheadline16" class="outline-4">
+<h4 id="orgheadline16"><span class="section-number-4">3.4.1</span> By Symbol</h4>
 <div class="outline-text-4" id="text-3-4-1">
 <p>
 It's extremely useful to be able to move between different occurrences
@@ -609,6 +539,7 @@ of the same symbol.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>define-key prog-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-n"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-next</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key prog-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-p"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-prev</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
@@ -644,6 +575,7 @@ where a symbol was imported.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">highlight-symbol-first</span> <span class="org-rainbow-delimiters-depth-2">()</span>
   <span class="org-doc">"Jump to the first location of symbol at point."</span>
   <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span><span class="org-rainbow-delimiters-depth-2">)</span>
@@ -667,6 +599,7 @@ a symbol.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">highlight-symbol-last</span> <span class="org-rainbow-delimiters-depth-2">()</span>
   <span class="org-doc">"Jump to the last location of symbol at point."</span>
   <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span><span class="org-rainbow-delimiters-depth-2">)</span>
@@ -685,8 +618,8 @@ a symbol.
 </div>
 </div>
 
-<div id="outline-container-org7cf2cca" class="outline-4">
-<h4 id="org7cf2cca"><span class="section-number-4">3.4.2</span> By indentation</h4>
+<div id="outline-container-orgheadline17" class="outline-4">
+<h4 id="orgheadline17"><span class="section-number-4">3.4.2</span> By indentation</h4>
 <div class="outline-text-4" id="text-3-4-2">
 <p>
 <a href="(describe-key%20(kbd%20"C-a"))">C-a</a> normally moves us to the beginning of the line unconditionally
@@ -697,6 +630,7 @@ positions.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">beginning-of-line-dwim</span> <span class="org-rainbow-delimiters-depth-2">()</span>
   <span class="org-doc">"Toggles between moving point to the first non-whitespace character, and</span>
 <span class="org-doc">the start of the line."</span>
@@ -715,8 +649,8 @@ positions.
 </div>
 </div>
 
-<div id="outline-container-org8cc23ea" class="outline-4">
-<h4 id="org8cc23ea"><span class="section-number-4">3.4.3</span> By Character</h4>
+<div id="outline-container-orgheadline18" class="outline-4">
+<h4 id="orgheadline18"><span class="section-number-4">3.4.3</span> By Character</h4>
 <div class="outline-text-4" id="text-3-4-3">
 <p>
 Vim has a handy command where you can type <code>f</code> to jump to the next
@@ -732,6 +666,7 @@ redundant.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">jump-char</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span>global-set-key <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-m"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">jump-char-forward</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -741,8 +676,8 @@ redundant.
 </div>
 </div>
 
-<div id="outline-container-orga1d7e85" class="outline-4">
-<h4 id="orga1d7e85"><span class="section-number-4">3.4.4</span> Measuring Movement</h4>
+<div id="outline-container-orgheadline19" class="outline-4">
+<h4 id="orgheadline19"><span class="section-number-4">3.4.4</span> Measuring Movement</h4>
 <div class="outline-text-4" id="text-3-4-4">
 <p>
 Since movement commands tend to be used more than any others, it's
@@ -752,6 +687,7 @@ or different keybindings for common commands.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>keyfreq-mode 1<span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>keyfreq-autosave-mode 1<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -760,8 +696,8 @@ or different keybindings for common commands.
 </div>
 </div>
 
-<div id="outline-container-org6e62a2a" class="outline-3">
-<h3 id="org6e62a2a"><span class="section-number-3">3.5</span> Inserting</h3>
+<div id="outline-container-orgheadline21" class="outline-3">
+<h3 id="orgheadline21"><span class="section-number-3">3.5</span> Inserting</h3>
 <div class="outline-text-3" id="text-3-5">
 <p>
 It's often useful to start a new line of code that's above or below
@@ -770,6 +706,7 @@ the current line. This code is based on
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">crux</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span>global-set-key <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"M-o"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">crux-smart-open-line</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -780,14 +717,15 @@ the current line. This code is based on
 </div>
 </div>
 
-<div id="outline-container-org4b795f3" class="outline-3">
-<h3 id="org4b795f3"><span class="section-number-3">3.6</span> Killing</h3>
+<div id="outline-container-orgheadline22" class="outline-3">
+<h3 id="orgheadline22"><span class="section-number-3">3.6</span> Killing</h3>
 <div class="outline-text-3" id="text-3-6">
 <p>
 It's handy to also delete the trailing newline when using <a href="(describe-key%20(kbd%20"C-k"))">C-k</a>.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defadvice</span> <span class="org-function-name">kill-line</span> <span class="org-rainbow-delimiters-depth-2">(</span>around kill-line-remove-newline activate<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">let</span> <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-rainbow-delimiters-depth-4">(</span>kill-whole-line t<span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span>
     ad-do-it<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -801,6 +739,7 @@ type <code>C-u C-w</code> to delete the region, whilst <code>C-w</code> works as
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">kill-or-delete-region</span> <span class="org-rainbow-delimiters-depth-2">(</span>beg end prefix<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-doc">"Delete the region, storing it in the kill-ring.</span>
 <span class="org-doc">If a prefix argument is given, don't change the kill-ring."</span>
@@ -815,8 +754,8 @@ type <code>C-u C-w</code> to delete the region, whilst <code>C-w</code> works as
 </div>
 </div>
 
-<div id="outline-container-orgfdbef9e" class="outline-3">
-<h3 id="orgfdbef9e"><span class="section-number-3">3.7</span> Modifying and Editing</h3>
+<div id="outline-container-orgheadline24" class="outline-3">
+<h3 id="orgheadline24"><span class="section-number-3">3.7</span> Modifying and Editing</h3>
 <div class="outline-text-3" id="text-3-7">
 <p>
 Modifying text is fundamental to Emacs, and I use many utilites to
@@ -824,8 +763,8 @@ make life easier. Most of these are still in user-lisp/editing-customisations.el
 </p>
 </div>
 
-<div id="outline-container-org46de448" class="outline-4">
-<h4 id="org46de448"><span class="section-number-4">3.7.1</span> Matched Pairs</h4>
+<div id="outline-container-orgheadline23" class="outline-4">
+<h4 id="orgheadline23"><span class="section-number-4">3.7.1</span> Matched Pairs</h4>
 <div class="outline-text-4" id="text-3-7-1">
 <p>
 Smartparens is an excellent way of editing pairs of brackets, quotes
@@ -840,6 +779,7 @@ commands with the command <code>sp-cheat-sheet</code>.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">smartparens</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-comment-delimiter">;; </span><span class="org-comment">(foo bar) -&gt; foo bar</span>
@@ -895,6 +835,7 @@ to type. I use super (usually the windows key) keybindings too (so
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>define-key smartparens-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"s-f"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">sp-forward-sexp</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key smartparens-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"s-b"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">sp-backward-sexp</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
@@ -913,6 +854,7 @@ produces <code>foo(1, |)</code>.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">smartparens-config</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">smartparens-html</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">prog-mode-hook</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">smartparens-strict-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -925,6 +867,7 @@ prefer normal smartparens-mode.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">yaml-mode-hook</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">smartparens-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">sqlplus-mode-hook</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">smartparens-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -933,11 +876,11 @@ prefer normal smartparens-mode.
 </div>
 </div>
 
-<div id="outline-container-org1dad7cf" class="outline-3">
-<h3 id="org1dad7cf"><span class="section-number-3">3.8</span> Files</h3>
+<div id="outline-container-orgheadline29" class="outline-3">
+<h3 id="orgheadline29"><span class="section-number-3">3.8</span> Files</h3>
 <div class="outline-text-3" id="text-3-8">
-</div><div id="outline-container-orgc4ff404" class="outline-4">
-<h4 id="orgc4ff404"><span class="section-number-4">3.8.1</span> Opening</h4>
+</div><div id="outline-container-orgheadline25" class="outline-4">
+<h4 id="orgheadline25"><span class="section-number-4">3.8.1</span> Opening</h4>
 <div class="outline-text-4" id="text-3-8-1">
 <p>
 It's useful to be able to quickly open files that we opened before. We
@@ -945,6 +888,7 @@ load and configure a function for this:
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">recentf</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-comment-delimiter">;; </span><span class="org-comment">offer recently accessed files from the menu</span>
@@ -965,6 +909,7 @@ as read only with <code>read-only-mode</code>, mapped to <code>C-x C-q</code>.)
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>global-set-key <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"C-x C-r"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">crux-recentf-ido-find-file</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -984,6 +929,7 @@ actively maintained and featureful.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">projectile</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>projectile-global-mode<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -995,24 +941,15 @@ a lot and it's right next to <code>C-x C-f</code>.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>global-set-key <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"C-x C-g"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">projectile-find-file</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
-
-<p>
-Don't bother showing projectile in the minibuffer, I have enough in
-there already.
-</p>
-
-<div class="org-src-container">
-<pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>diminish <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">projectile-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
-</pre>
-</div>
 </div>
 </div>
 
-<div id="outline-container-org566ca30" class="outline-4">
-<h4 id="org566ca30"><span class="section-number-4">3.8.2</span> Dired</h4>
+<div id="outline-container-orgheadline26" class="outline-4">
+<h4 id="orgheadline26"><span class="section-number-4">3.8.2</span> Dired</h4>
 <div class="outline-text-4" id="text-3-8-2">
 <p>
 Dired isn't very colourful by default, but <code>dired+</code> has helpful
@@ -1020,6 +957,7 @@ highlighting.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">use-package</span> <span class="org-constant">dired+</span>
   <span class="org-builtin">:init</span>
   <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">setq</span> diredp-hide-details-initially-flag nil<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -1028,8 +966,8 @@ highlighting.
 </div>
 </div>
 
-<div id="outline-container-org74d4bbd" class="outline-4">
-<h4 id="org74d4bbd"><span class="section-number-4">3.8.3</span> Deleting and Backups</h4>
+<div id="outline-container-orgheadline27" class="outline-4">
+<h4 id="orgheadline27"><span class="section-number-4">3.8.3</span> Deleting and Backups</h4>
 <div class="outline-text-4" id="text-3-8-3">
 <p>
 When we delete a file, it should go to the recycle bin rather than
@@ -1037,6 +975,7 @@ just acting like <a href="rm">rm</a>.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> delete-by-moving-to-trash t<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1048,6 +987,7 @@ store all our backups in <code>~/.saves</code>.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span>
    backup-by-copying t      <span class="org-comment-delimiter">; </span><span class="org-comment">don't clobber symlinks</span>
    backup-directory-alist
@@ -1066,6 +1006,7 @@ we've modified.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">backup-each-save</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">after-save-hook</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">backup-each-save</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -1073,8 +1014,8 @@ we've modified.
 </div>
 </div>
 
-<div id="outline-container-org1e27c81" class="outline-4">
-<h4 id="org1e27c81"><span class="section-number-4">3.8.4</span> Scratch Files</h4>
+<div id="outline-container-orgheadline28" class="outline-4">
+<h4 id="orgheadline28"><span class="section-number-4">3.8.4</span> Scratch Files</h4>
 <div class="outline-text-4" id="text-3-8-4">
 <p>
 It's often useful to create a throwaway file to write a minimal
@@ -1082,6 +1023,7 @@ testcase for some language or library feature.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">start--file</span> <span class="org-rainbow-delimiters-depth-2">(</span>path<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-doc">"Create a file at PATH, creating any containing directories as necessary.</span>
 <span class="org-doc">Visit the file after creation."</span>
@@ -1105,6 +1047,7 @@ It's also useful to quickly generate a minimal HTML page to play with.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">wh/start-scratch-html-file</span> <span class="org-rainbow-delimiters-depth-2">(</span>file-name<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-doc">"Create a test HTML file in ~/scratch to play around with."</span>
   <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">interactive</span> <span class="org-string">"sName of scratch HTML file: "</span><span class="org-rainbow-delimiters-depth-2">)</span>
@@ -1131,11 +1074,11 @@ It's also useful to quickly generate a minimal HTML page to play with.
 </div>
 </div>
 
-<div id="outline-container-org4801f1a" class="outline-3">
-<h3 id="org4801f1a"><span class="section-number-3">3.9</span> As-you-type Checks</h3>
+<div id="outline-container-orgheadline32" class="outline-3">
+<h3 id="orgheadline32"><span class="section-number-3">3.9</span> As-you-type Checks</h3>
 <div class="outline-text-3" id="text-3-9">
-</div><div id="outline-container-orgfdbb90f" class="outline-4">
-<h4 id="orgfdbb90f"><span class="section-number-4">3.9.1</span> Flymake</h4>
+</div><div id="outline-container-orgheadline30" class="outline-4">
+<h4 id="orgheadline30"><span class="section-number-4">3.9.1</span> Flymake</h4>
 <div class="outline-text-4" id="text-3-9-1">
 <p>
 (Note that there's language-specific flymake configuration too.)
@@ -1148,6 +1091,7 @@ keys, they're easy to find.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">flymake</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>global-set-key <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"&lt;f8&gt;"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">flymake-goto-prev-error</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>global-set-key <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"&lt;f9&gt;"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">flymake-goto-next-error</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -1160,6 +1104,7 @@ that line in the minibuffer.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defun</span> <span class="org-function-name">flymake-error-at-point</span> <span class="org-rainbow-delimiters-depth-2">()</span>
   <span class="org-doc">"Show the flymake error in the minibuffer when point is on an invalid line."</span>
   <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">when</span> <span class="org-rainbow-delimiters-depth-3">(</span>get-char-property <span class="org-rainbow-delimiters-depth-4">(</span>point<span class="org-rainbow-delimiters-depth-4">)</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">flymake-overlay</span><span class="org-rainbow-delimiters-depth-3">)</span>
@@ -1175,6 +1120,7 @@ I prefer my errors underlined.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>custom-set-faces
  <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span>flymake-errline <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-rainbow-delimiters-depth-4">(</span><span class="org-rainbow-delimiters-depth-5">(</span><span class="org-rainbow-delimiters-depth-6">(</span>class color<span class="org-rainbow-delimiters-depth-6">)</span><span class="org-rainbow-delimiters-depth-5">)</span> <span class="org-rainbow-delimiters-depth-5">(</span><span class="org-builtin">:underline</span> <span class="org-string">"Red"</span><span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span>
  <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span>flymake-warnline <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-rainbow-delimiters-depth-4">(</span><span class="org-rainbow-delimiters-depth-5">(</span><span class="org-rainbow-delimiters-depth-6">(</span>class color<span class="org-rainbow-delimiters-depth-6">)</span><span class="org-rainbow-delimiters-depth-5">)</span> <span class="org-rainbow-delimiters-depth-5">(</span><span class="org-builtin">:underline</span> <span class="org-string">"Orange"</span><span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -1183,8 +1129,8 @@ I prefer my errors underlined.
 </div>
 </div>
 
-<div id="outline-container-orgb878473" class="outline-4">
-<h4 id="orgb878473"><span class="section-number-4">3.9.2</span> Flycheck</h4>
+<div id="outline-container-orgheadline31" class="outline-4">
+<h4 id="orgheadline31"><span class="section-number-4">3.9.2</span> Flycheck</h4>
 <div class="outline-text-4" id="text-3-9-2">
 <p>
 Flycheck is an excellent on-the-fly checker that provides many
@@ -1200,6 +1146,7 @@ highlight the whole line, as it's much faster. See
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> flycheck-highlighting-mode <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">lines</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1209,6 +1156,7 @@ Style flycheck errors consistently with flymake.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>custom-set-faces
  <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span>flycheck-error <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-rainbow-delimiters-depth-4">(</span><span class="org-rainbow-delimiters-depth-5">(</span><span class="org-rainbow-delimiters-depth-6">(</span>class color<span class="org-rainbow-delimiters-depth-6">)</span><span class="org-rainbow-delimiters-depth-5">)</span> <span class="org-rainbow-delimiters-depth-5">(</span><span class="org-builtin">:underline</span> <span class="org-string">"Red"</span><span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span>
  <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span>flycheck-warning <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-rainbow-delimiters-depth-4">(</span><span class="org-rainbow-delimiters-depth-5">(</span><span class="org-rainbow-delimiters-depth-6">(</span>class color<span class="org-rainbow-delimiters-depth-6">)</span><span class="org-rainbow-delimiters-depth-5">)</span> <span class="org-rainbow-delimiters-depth-5">(</span><span class="org-builtin">:underline</span> <span class="org-string">"Orange"</span><span class="org-rainbow-delimiters-depth-5">)</span><span class="org-rainbow-delimiters-depth-4">)</span><span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -1220,6 +1168,7 @@ We use the same movement keys for flycheck as we do for flymake.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">flycheck</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key flycheck-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"&lt;f8&gt;"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">flycheck-previous-error</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key flycheck-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"&lt;f9&gt;"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">flycheck-next-error</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -1232,6 +1181,7 @@ to <code>C-c ! f</code>. This is tricky to type, so we use our own keybinding.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>define-key flycheck-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"C-c f"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">flycheck-list-errors</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1243,6 +1193,7 @@ advice to fix that.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defadvice</span> <span class="org-function-name">flycheck-next-error</span> <span class="org-rainbow-delimiters-depth-2">(</span>before wh/flycheck-next-error-push-mark activate<span class="org-rainbow-delimiters-depth-2">)</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>push-mark<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -1261,6 +1212,7 @@ there's an error at point.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">with-eval-after-load</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">flycheck</span>
   <span class="org-rainbow-delimiters-depth-2">(</span>flycheck-title-mode<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -1269,14 +1221,15 @@ there's an error at point.
 </div>
 </div>
 
-<div id="outline-container-org6938fe6" class="outline-3">
-<h3 id="org6938fe6"><span class="section-number-3">3.10</span> Undoing</h3>
+<div id="outline-container-orgheadline33" class="outline-3">
+<h3 id="orgheadline33"><span class="section-number-3">3.10</span> Undoing</h3>
 <div class="outline-text-3" id="text-3-10">
 <p>
 Emacs' undo facility is excellent, but undo-tree is even better.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">undo-tree</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>global-undo-tree-mode<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -1288,6 +1241,7 @@ when the edit occurred.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> undo-tree-visualizer-timestamps t<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1298,6 +1252,7 @@ it on the mode line. Hide it.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">diminish</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>diminish <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">undo-tree-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -1305,11 +1260,11 @@ it on the mode line. Hide it.
 </div>
 </div>
 
-<div id="outline-container-orgb59735c" class="outline-3">
-<h3 id="orgb59735c"><span class="section-number-3">3.11</span> Emacs Lisp</h3>
+<div id="outline-container-orgheadline40" class="outline-3">
+<h3 id="orgheadline40"><span class="section-number-3">3.11</span> Emacs Lisp</h3>
 <div class="outline-text-3" id="text-3-11">
-</div><div id="outline-container-org1403773" class="outline-4">
-<h4 id="org1403773"><span class="section-number-4">3.11.1</span> Shortcuts</h4>
+</div><div id="outline-container-orgheadline34" class="outline-4">
+<h4 id="orgheadline34"><span class="section-number-4">3.11.1</span> Shortcuts</h4>
 <div class="outline-text-4" id="text-3-11-1">
 <p>
 <code>eval-defun</code> is bound to <code>C-M-x</code>, but Gnome doesn't allow Emacs to
@@ -1325,6 +1280,7 @@ prefix.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">edebug</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key emacs-lisp-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"C-c e"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">edebug-eval-defun</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -1336,6 +1292,7 @@ developing, and it doesn't have have any keybinding.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>define-key emacs-lisp-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"C-c d"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">toggle-debug-on-error</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1347,14 +1304,15 @@ expand the macros in our elisp file.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>define-key emacs-lisp-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"C-c m"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">macrostep-expand</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org616232c" class="outline-4">
-<h4 id="org616232c"><span class="section-number-4">3.11.2</span> Editing Parentheses</h4>
+<div id="outline-container-orgheadline35" class="outline-4">
+<h4 id="orgheadline35"><span class="section-number-4">3.11.2</span> Editing Parentheses</h4>
 <div class="outline-text-4" id="text-3-11-2">
 <p>
 Paredit make editing code with parentheses wonderful and has been the
@@ -1364,6 +1322,7 @@ the time to set it up for lisp yet.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">emacs-lisp-mode-hook</span>
           <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">lambda</span> <span class="org-rainbow-delimiters-depth-3">()</span> <span class="org-rainbow-delimiters-depth-3">(</span>paredit-mode 1<span class="org-rainbow-delimiters-depth-3">)</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -1371,8 +1330,8 @@ the time to set it up for lisp yet.
 </div>
 </div>
 
-<div id="outline-container-org2acd06d" class="outline-4">
-<h4 id="org2acd06d"><span class="section-number-4">3.11.3</span> Highlighting Parentheses</h4>
+<div id="outline-container-orgheadline36" class="outline-4">
+<h4 id="orgheadline36"><span class="section-number-4">3.11.3</span> Highlighting Parentheses</h4>
 <div class="outline-text-4" id="text-3-11-3">
 <p>
 We colour each pair of parentheses according to their depth. This is
@@ -1381,6 +1340,7 @@ cond expression.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">emacs-lisp-mode-hook</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">rainbow-delimiters-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1392,6 +1352,7 @@ unique colours until we're seven levels deep.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">rainbow-delimiters</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>set-face-foreground <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">rainbow-delimiters-depth-1-face</span> <span class="org-string">"white"</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>set-face-foreground <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">rainbow-delimiters-depth-2-face</span> <span class="org-string">"cyan"</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -1408,8 +1369,8 @@ unique colours until we're seven levels deep.
 </div>
 </div>
 
-<div id="outline-container-org3d13f56" class="outline-4">
-<h4 id="org3d13f56"><span class="section-number-4">3.11.4</span> Function Signatures</h4>
+<div id="outline-container-orgheadline37" class="outline-4">
+<h4 id="orgheadline37"><span class="section-number-4">3.11.4</span> Function Signatures</h4>
 <div class="outline-text-4" id="text-3-11-4">
 <p>
 We use eldoc to show the signature of the function at point in the
@@ -1417,6 +1378,7 @@ minibuffer.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">emacs-lisp-mode-hook</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">eldoc-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1426,6 +1388,7 @@ We don't want this minor mode to be shown in the minibuffer, however.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">diminish</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">eldoc</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>diminish <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">eldoc-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -1434,8 +1397,8 @@ We don't want this minor mode to be shown in the minibuffer, however.
 </div>
 </div>
 
-<div id="outline-container-org45d147a" class="outline-4">
-<h4 id="org45d147a"><span class="section-number-4">3.11.5</span> On-the-fly Checking</h4>
+<div id="outline-container-orgheadline38" class="outline-4">
+<h4 id="orgheadline38"><span class="section-number-4">3.11.5</span> On-the-fly Checking</h4>
 <div class="outline-text-4" id="text-3-11-5">
 <p>
 It's really useful to use flycheck when coding elisp. It detects
@@ -1444,6 +1407,7 @@ byte-compilation checks).
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">emacs-lisp-mode-hook</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">flycheck-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1454,6 +1418,7 @@ the way for quick throwaway elisp scripts, so we switch off checkdoc.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">flycheck</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> flycheck-checkers <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">--remove</span> <span class="org-rainbow-delimiters-depth-3">(</span>eq <span class="org-variable-name">it</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">emacs-lisp-checkdoc</span><span class="org-rainbow-delimiters-depth-3">)</span> flycheck-checkers<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -1461,8 +1426,8 @@ the way for quick throwaway elisp scripts, so we switch off checkdoc.
 </div>
 </div>
 
-<div id="outline-container-orgf8c0ef9" class="outline-4">
-<h4 id="orgf8c0ef9"><span class="section-number-4">3.11.6</span> Highlighting</h4>
+<div id="outline-container-orgheadline39" class="outline-4">
+<h4 id="orgheadline39"><span class="section-number-4">3.11.6</span> Highlighting</h4>
 <div class="outline-text-4" id="text-3-11-6">
 <p>
 Emacs lisp highlighting works pretty well out of the box. However,
@@ -1471,6 +1436,7 @@ used in its anaphoric macros (e.g. <code>it</code>).
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>eval-after-load <span class="org-string">"dash"</span> <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span>dash-enable-font-lock<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1478,8 +1444,8 @@ used in its anaphoric macros (e.g. <code>it</code>).
 </div>
 </div>
 
-<div id="outline-container-org62c5a6d" class="outline-3">
-<h3 id="org62c5a6d"><span class="section-number-3">3.12</span> Python</h3>
+<div id="outline-container-orgheadline41" class="outline-3">
+<h3 id="orgheadline41"><span class="section-number-3">3.12</span> Python</h3>
 <div class="outline-text-3" id="text-3-12">
 <p>
 We use pyflakes with flycheck to check for coding errors. Flycheck
@@ -1487,6 +1453,7 @@ includes other Python checkers so we also disable those.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">flycheck-pyflakes</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">python-mode-hook</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">flycheck-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
@@ -1503,6 +1470,7 @@ always valid doctests, so we switch off doctest checks.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>setenv <span class="org-string">"PYFLAKES_NODOCTEST"</span> <span class="org-string">"y"</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1513,6 +1481,7 @@ shortcut for inserting them.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">python</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">define-skeleton</span> <span class="org-function-name">python-insert-docstring</span>
@@ -1526,8 +1495,8 @@ shortcut for inserting them.
 </div>
 </div>
 
-<div id="outline-container-org732abbf" class="outline-3">
-<h3 id="org732abbf"><span class="section-number-3">3.13</span> Haskell</h3>
+<div id="outline-container-orgheadline42" class="outline-3">
+<h3 id="orgheadline42"><span class="section-number-3">3.13</span> Haskell</h3>
 <div class="outline-text-3" id="text-3-13">
 <p>
 Flycheck supports Haskell well, so we switch it on inside Haskell
@@ -1535,6 +1504,7 @@ buffers.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">haskell-mode-hook</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">flycheck-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1545,34 +1515,37 @@ indentation.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">haskell-mode-hook</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">turn-on-haskell-indentation</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org8fe5034" class="outline-3">
-<h3 id="org8fe5034"><span class="section-number-3">3.14</span> Ruby</h3>
+<div id="outline-container-orgheadline43" class="outline-3">
+<h3 id="orgheadline43"><span class="section-number-3">3.14</span> Ruby</h3>
 <div class="outline-text-3" id="text-3-14">
 <p>
 Vagrant files are Ruby, so use Ruby syntax highlighting for them.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-to-list <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">auto-mode-alist</span> <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span><span class="org-string">"Vagrantfile"</span> . ruby-mode<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgeffb502" class="outline-3">
-<h3 id="orgeffb502"><span class="section-number-3">3.15</span> C/C++</h3>
+<div id="outline-container-orgheadline44" class="outline-3">
+<h3 id="orgheadline44"><span class="section-number-3">3.15</span> C/C++</h3>
 <div class="outline-text-3" id="text-3-15">
 <p>
 Flycheck supports C, so we switch it on.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">c-mode-common-hook</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">flycheck-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1582,6 +1555,7 @@ Always indent with 4 spaces, in the Linux kernel style.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq-default</span> c-default-style <span class="org-string">"linux"</span>
               c-basic-offset 4<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -1593,14 +1567,15 @@ non-whitespace character on C-d) when removing indentation.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq-default</span> c-hungry-delete-key t<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orga6a532f" class="outline-3">
-<h3 id="orga6a532f"><span class="section-number-3">3.16</span> HTML</h3>
+<div id="outline-container-orgheadline45" class="outline-3">
+<h3 id="orgheadline45"><span class="section-number-3">3.16</span> HTML</h3>
 <div class="outline-text-3" id="text-3-16">
 <p>
 I like to indent my HTML with tabs (company policy at the first web
@@ -1608,6 +1583,7 @@ shop I worked at).
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">sgml-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-comment-delimiter">; </span><span class="org-comment">indent html with tabs only</span>
@@ -1625,6 +1601,7 @@ Automatically close &lt; and " character inside HTML using smartparens.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">smartparens-config</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">html-mode-hook</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">smartparens-strict-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -1636,6 +1613,7 @@ filenames, so use html-mode for those files.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-to-list <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">auto-mode-alist</span> <span class="org-highlight-quoted-quote">'</span><span class="org-rainbow-delimiters-depth-2">(</span><span class="org-string">"\\.dtml$"</span> . html-mode<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1646,6 +1624,7 @@ font faces and use them if we see Django syntax.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;; </span><span class="org-comment">Define coloured faces for Django syntax.</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">defvar</span> <span class="org-variable-name">django-tag-face</span> <span class="org-rainbow-delimiters-depth-2">(</span>make-face <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">django-tag-face</span><span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>set-face-foreground <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">django-tag-face</span> <span class="org-string">"Orange"</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -1674,6 +1653,7 @@ TODO: document the rest of our HTML configuration.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-comment-delimiter">; </span><span class="org-comment">skeletons for Django template tags</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">define-skeleton</span> <span class="org-function-name">template-tag-skeleton</span>
   <span class="org-doc">"Insert a {% foo %} template tag"</span>
@@ -1773,14 +1753,15 @@ TODO: document the rest of our HTML configuration.
 </div>
 </div>
 
-<div id="outline-container-org4b1f8bb" class="outline-3">
-<h3 id="org4b1f8bb"><span class="section-number-3">3.17</span> CSS</h3>
+<div id="outline-container-orgheadline46" class="outline-3">
+<h3 id="orgheadline46"><span class="section-number-3">3.17</span> CSS</h3>
 <div class="outline-text-3" id="text-3-17">
 <p>
 Typically I work on projects that use 4 spaces for CSS indenetation.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">css-mode-hook</span>
           <span class="org-rainbow-delimiters-depth-2">(</span><span class="org-keyword">function</span>
            <span class="org-rainbow-delimiters-depth-3">(</span><span class="org-keyword">lambda</span> <span class="org-rainbow-delimiters-depth-4">()</span>
@@ -1796,6 +1777,7 @@ they represent.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">css-mode-hook</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">rainbow-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1806,6 +1788,7 @@ brackets.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">css-mode-hook</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">smartparens-strict-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1815,6 +1798,7 @@ Highlight symbols, so we can see repeated tag names and classes.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">css-mode-hook</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">highlight-symbol-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1824,6 +1808,7 @@ Company does a great job with completion for CSS, so use it here.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">css-mode-hook</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">company-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
@@ -1834,6 +1819,7 @@ for this.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">css-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>define-key css-mode-map <span class="org-rainbow-delimiters-depth-2">(</span>kbd <span class="org-string">"C-c i"</span><span class="org-rainbow-delimiters-depth-2">)</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">emr-css-toggle-important</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -1841,8 +1827,8 @@ for this.
 </div>
 </div>
 
-<div id="outline-container-orga429344" class="outline-3">
-<h3 id="orga429344"><span class="section-number-3">3.18</span> Less (CSS)</h3>
+<div id="outline-container-orgheadline47" class="outline-3">
+<h3 id="orgheadline47"><span class="section-number-3">3.18</span> Less (CSS)</h3>
 <div class="outline-text-3" id="text-3-18">
 <p>
 The less compiler doesn't give much feedback, but it does gives us a
@@ -1850,6 +1836,7 @@ syntax check.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">less-css-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">less-css-mode-hook</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">flymake-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
@@ -1857,8 +1844,8 @@ syntax check.
 </div>
 </div>
 
-<div id="outline-container-org0123582" class="outline-3">
-<h3 id="org0123582"><span class="section-number-3">3.19</span> Org-mode</h3>
+<div id="outline-container-orgheadline48" class="outline-3">
+<h3 id="orgheadline48"><span class="section-number-3">3.19</span> Org-mode</h3>
 <div class="outline-text-3" id="text-3-19">
 <p>
 We often use code snippets in org-mode files, so syntax highlight
@@ -1866,14 +1853,15 @@ them.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> org-src-fontify-natively t<span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org4be9d65" class="outline-3">
-<h3 id="org4be9d65"><span class="section-number-3">3.20</span> Markdown</h3>
+<div id="outline-container-orgheadline49" class="outline-3">
+<h3 id="orgheadline49"><span class="section-number-3">3.20</span> Markdown</h3>
 <div class="outline-text-3" id="text-3-20">
 <p>
 Markdown is essentially prose, so it's nice to automatically line-wrap
@@ -1881,14 +1869,15 @@ Markdown is essentially prose, so it's nice to automatically line-wrap
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>add-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">markdown-mode-hook</span> <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">auto-fill-mode</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgd66e48c" class="outline-3">
-<h3 id="orgd66e48c"><span class="section-number-3">3.21</span> Performance</h3>
+<div id="outline-container-orgheadline50" class="outline-3">
+<h3 id="orgheadline50"><span class="section-number-3">3.21</span> Performance</h3>
 <div class="outline-text-3" id="text-3-21">
 <p>
 Emacs will run garbage collection after <code>gc-cons-threshold</code> bytes of
@@ -1897,14 +1886,15 @@ increasing to 10 MiB we reduce the number of pauses due to garbage collection.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> gc-cons-threshold <span class="org-rainbow-delimiters-depth-2">(</span>* 10 1024 1024<span class="org-rainbow-delimiters-depth-2">)</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgab28e09" class="outline-3">
-<h3 id="orgab28e09"><span class="section-number-3">3.22</span> Shut Down</h3>
+<div id="outline-container-orgheadline51" class="outline-3">
+<h3 id="orgheadline51"><span class="section-number-3">3.22</span> Shut Down</h3>
 <div class="outline-text-3" id="text-3-22">
 <p>
 I rarely close Emacs, but using Zile means I use <code>C-x C-c</code> a lot. It's
@@ -1912,14 +1902,15 @@ annoying to accidentally close Emacs, so warn first.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">setq</span> confirm-kill-emacs <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">y-or-n-p</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org7f8adb6" class="outline-3">
-<h3 id="org7f8adb6"><span class="section-number-3">3.23</span> Workarounds</h3>
+<div id="outline-container-orgheadline52" class="outline-3">
+<h3 id="orgheadline52"><span class="section-number-3">3.23</span> Workarounds</h3>
 <div class="outline-text-3" id="text-3-23">
 <p>
 Don't try to reopen all files that are owned by other users.
@@ -1927,16 +1918,18 @@ Don't try to reopen all files that are owned by other users.
 </p>
 
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span>remove-hook <span class="org-highlight-quoted-quote">'</span><span class="org-highlight-quoted-symbol">find-file-hook</span> <span class="org-highlight-quoted-quote">#'</span><span class="org-highlight-quoted-symbol">crux-reopen-as-root</span><span class="org-rainbow-delimiters-depth-1">)</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgc435ba0" class="outline-3">
-<h3 id="orgc435ba0"><span class="section-number-3">3.24</span> Undocumented</h3>
+<div id="outline-container-orgheadline53" class="outline-3">
+<h3 id="orgheadline53"><span class="section-number-3">3.24</span> Undocumented</h3>
 <div class="outline-text-3" id="text-3-24">
 <div class="org-src-container">
+
 <pre class="src src-emacs-lisp"><span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">ui-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
 
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">file-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -1969,6 +1962,7 @@ Don't try to reopen all files that are owned by other users.
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">lisp-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">makefile-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">python-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
+<span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">groovy-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">rust-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">llvm-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
 <span class="org-rainbow-delimiters-depth-1">(</span><span class="org-keyword">require</span> <span class="org-highlight-quoted-quote">'</span><span class="org-constant">sh-customisations</span><span class="org-rainbow-delimiters-depth-1">)</span>
@@ -2085,7 +2079,8 @@ Don't try to reopen all files that are owned by other users.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2016-12-26 Mon 18:19</p>
+<p class="author">Author: Hughes, Wilfred (London)</p>
+<p class="date">Created: 2017-02-10 Fri 11:56</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
