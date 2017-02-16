@@ -8,6 +8,9 @@
 ;; http://emacs.stackexchange.com/q/14802/304
 (setq tags-add-tables t)
 
+;; Don't prompt "Tags file ... has changed, read new contents?""
+(setq tags-revert-without-query t)
+
 ;; Tags operations should be case sensitive. Otherwise
 ;; xref-find-definitions can find definitions that we don't want.
 (setq tags-case-fold-search nil)
