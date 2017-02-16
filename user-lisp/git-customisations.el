@@ -30,6 +30,12 @@
 
 (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
 
+;; Magit has auto reverting of buffers. This is neat, but slow when
+;; you have a lot of buffers open. Switching from a feature branch to
+;; master, then pulling your merged branch ends up reverting all the
+;; changes files twice1
+(global-auto-revert-mode -1)
+
 ;; Include 'x' in the magit popup.
 ;; From https://github.com/magit/magit/issues/2141
 (magit-define-popup-action 'magit-dispatch-popup
