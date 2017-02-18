@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "counsel" "counsel.el" (22588 46745 123177
-;;;;;;  397000))
+;;;### (autoloads nil "counsel" "counsel.el" (22696 19866 793543
+;;;;;;  957000))
 ;;; Generated autoloads from counsel.el
 
 (autoload 'counsel-el "counsel" "\
@@ -25,7 +25,7 @@ Clojure completion at point.
 (autoload 'counsel-unicode-char "counsel" "\
 Insert a Unicode character at point.
 
-\(fn)" t nil)
+\(fn &optional COUNT)" t nil)
 
 (autoload 'counsel-describe-variable "counsel" "\
 Forward to `describe-variable'.
@@ -157,10 +157,10 @@ root directory for search.
 
 (autoload 'counsel-ag "counsel" "\
 Grep for a string in the current directory using ag.
-INITIAL-INPUT can be given as the initial minibuffer input.
-INITIAL-DIRECTORY, if non-nil, is used as the root directory for search.
-EXTRA-AG-ARGS string, if non-nil, is appended to `counsel-ag-base-command'.
-AG-PROMPT, if non-nil, is passed as `ivy-read' prompt argument. 
+  INITIAL-INPUT can be given as the initial minibuffer input.
+  INITIAL-DIRECTORY, if non-nil, is used as the root directory for search.
+  EXTRA-AG-ARGS string, if non-nil, is appended to `counsel-ag-base-command'.
+  AG-PROMPT, if non-nil, is passed as `ivy-read' prompt argument. 
 
 \(fn &optional INITIAL-INPUT INITIAL-DIRECTORY EXTRA-AG-ARGS AG-PROMPT)" t nil)
 
@@ -256,6 +256,27 @@ Launch a Linux desktop application, similar to Alt-<F2>.
 
 (autoload 'counsel-company "counsel" "\
 Complete using `company-candidates'.
+
+\(fn)" t nil)
+
+(autoload 'counsel-colors-emacs "counsel" "\
+Show a list of all supported colors for a particular frame.
+
+You can insert or kill the name or the hexadecimal rgb value of the
+selected candidate.
+
+\(fn)" t nil)
+
+(autoload 'counsel-colors-web "counsel" "\
+Show a list of all W3C web colors for use in CSS.
+
+You can insert or kill the name or the hexadecimal rgb value of the
+selected candidate.
+
+\(fn)" t nil)
+
+(autoload 'counsel-org-agenda-headlines "counsel" "\
+Choose from headers of `org-mode' files in the agenda.
 
 \(fn)" t nil)
 
