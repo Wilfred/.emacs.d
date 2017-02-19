@@ -6,10 +6,6 @@
 ;; Don't prompt when first line of commit is over 50 chars.
 (setq git-commit-finish-query-functions '())
 
-;; When creating a new branch B from branch A, we don't want B to
-;; track origin/A.
-(setq magit-branch-arguments (remove "--track" magit-branch-arguments))
-
 ;; The default magit section highlighting is almost invisible on tangotango, so
 ;; use a darker grey (we're using the same as hl-line here).
 ;; TODO: send a patch to tangotango.
