@@ -14,6 +14,9 @@
   ;; Syntax highlight org code snippets.
   (setq org-src-fontify-natively t)
 
+  ;; Show *foo* and /foo/ without org markers, just the formatting.
+  (setq org-hide-emphasis-markers t)
+
   ;; Allow running code in sh and python
   (require 'ob-sh)
   (require 'ob-python)
