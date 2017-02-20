@@ -3,6 +3,8 @@
 ;; Work around https://github.com/flycheck/flycheck-rust/issues/47
 (setq flycheck-rust-check-tests nil)
 
+(add-hook 'rust-mode-hook #'flycheck-mode)
+
 (add-to-list 'exec-path (f-expand "~/.cargo/bin"))
 
 (use-package racer
