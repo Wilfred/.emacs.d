@@ -75,6 +75,10 @@
 (define-key ivy-minibuffer-map (kbd "C-j") #'ivy-immediate-done)
 (define-key ivy-minibuffer-map (kbd "RET") #'ivy-alt-done)
 
+;; Use C-RET as the same as RET, because I tend to accidentally press
+;; C-RET.
+(define-key ivy-minibuffer-map (kbd "<C-return>") #'ivy-alt-done)
+
 (global-set-key (kbd "M-x") 'counsel-M-x)
 (global-set-key (kbd "C-x C-f") 'counsel-find-file)
 
