@@ -1,6 +1,7 @@
 (setq projectile-svn-command
       "find . -type f | grep -v '/.svn/' | tr '\\n' '\\0'")
 
+(diminish-undo #'projectile-mode)
 (setq projectile-mode-line
       '(:eval
         (if
