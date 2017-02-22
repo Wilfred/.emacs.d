@@ -233,7 +233,11 @@ If it is split, repeat the current buffer in a vertical split."
   (interactive)
   (let* ((buffers (--filter (eq #'magit-status-mode (with-current-buffer it major-mode))
                             (buffer-list)))
-         (bufs-with-names (--map (cons (buffer-name it) it) buffers))
+         (bufs-with-names (--map (cons
+                                  (with-current-buffer it
+                                    (projectile-project-name))
+                                  it)
+                                 buffers))
          (chosen-buf
           (cdr (assoc (completing-read "Buffer: " bufs-with-names)
                       bufs-with-names))))
