@@ -20,7 +20,6 @@
 (add-hook 'rust-mode-hook #'wh/rust-company-settings)
 
 (require 'rust-mode)
-(add-hook 'rust-mode-hook #'eldoc-mode)
 (define-key rust-mode-map (kbd "M-.") #'racer-find-definition)
 
 (defun wh/rust-toggle-visibility ()
