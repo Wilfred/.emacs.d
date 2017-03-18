@@ -31,7 +31,7 @@
 (add-to-list 'company-backends 'company-tern)
 
 (defun wh/company-in-js2-mode ()
-  (setq-local company-backends (list #'company-keywords #'company-tern #'company-dabbrev-code))
+  (setq-local company-backends (list #'company-tern #'company-keywords))
   (setq-local company-idle-delay 0.2))
 
 (add-hook 'js2-mode-hook #'wh/company-in-js2-mode)
