@@ -72,5 +72,9 @@
 (magit-define-popup-action 'magit-branch-popup
   ?f "new branch From current" #'wh/magit-branch-from-current-and-checkout)
 
+;; I keep typing P (for push) instead of p. Set up an alias.
+(magit-define-popup-action 'magit-push-popup
+  ?P "push alias" #'magit-push-current-to-upstream)
+
 
 (provide 'git-customisations)
