@@ -9,6 +9,21 @@
 (show-paren-mode 1)
 (setq show-paren-when-point-inside-paren t)
 
+;; Don't show the git branch on the line.
+(setq mode-line-format
+      '("%e"
+        mode-line-front-space
+        mode-line-mule-info
+        mode-line-client
+        mode-line-modified
+        mode-line-remote
+        mode-line-frame-identification
+        mode-line-buffer-identification
+        "   "
+        mode-line-position
+        mode-line-modes
+        mode-line-misc-info))
+
 ;; always highlight line that cursor is on, unless a mode requests
 ;; otherwise.
 (defvar use-hl-line t
