@@ -254,7 +254,7 @@ If it is split, repeat the current buffer in a vertical split."
                                   it)
                                  buffers))
          (chosen-buf
-          (cdr (assoc (completing-read "Buffer: " bufs-with-names)
+          (cdr (assoc (completing-read "Git project: " bufs-with-names)
                       bufs-with-names))))
     (switch-to-buffer chosen-buf)))
 
