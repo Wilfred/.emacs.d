@@ -247,4 +247,17 @@ Handy for ielm."
 (define-key emacs-lisp-mode-map (kbd "C-c C-d")
   #'wh/describe-symbol-at-point)
 
+;; http://emacs.stackexchange.com/a/2302/304
+(defun wh/eval-buffer ()
+  "Execute the current buffer as Lisp code.
+Top-level forms are evaluated with `eval-defun' so that `defvar'
+and `defcustom' forms reset their default values."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (not (eobp))
+      (forward-sexp)
+      (eval-defun nil)))
+  nil)
+
 (provide 'lisp-customisations)
