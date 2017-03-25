@@ -263,6 +263,13 @@ If it is split, repeat the current buffer in a vertical split."
 ;; keybinding for `compose-mail', which I don't use.
 (global-set-key (kbd "C-x m") #'wh/switch-magit-status-buffer)
 
+;; Loosely based on `erc-remove-text-properties-region'.
+(defun wh/remove-text-properties-region ()
+  "Remove all text properties from the current buffer."
+  (interactive)
+  (let ((inhibit-read-only t))
+    (set-text-properties (point-min) (point-max) nil)))
+
 ;;; Mode-line.
 
 ;; I want a minimalistic mode line. It should only have:
