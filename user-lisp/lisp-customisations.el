@@ -260,4 +260,8 @@ and `defcustom' forms reset their default values."
       (eval-defun nil)))
   nil)
 
+;; Although this is a language agnostic tool, I only really use it in
+;; elisp (and it works best there).
+(global-set-key (kbd "C-c C-r") #'emr-show-refactor-menu)
+
 (provide 'lisp-customisations)
