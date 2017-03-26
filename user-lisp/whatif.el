@@ -93,7 +93,9 @@ parts of FORM could not be simplified."
         (list 'unknown
               `(unless ,(cl-second cond)
                  ,@(mapcar #'cl-second body))))))
-    ;; TODO: quote.
+    ;; TODO: backquote.
+    (`(quote ,sym)
+     (list 'value sym))
     (`(,fn . ,args)
      (if (fboundp fn)
          (let ((simple-args
@@ -139,6 +141,12 @@ parts of FORM could not be simplified."
    (equal
     (whatif--simplify 'x '((x . 42)))
     (list 'value 42))))
+
+(ert-deftest simplify--quoted-symbol ()
+  (should
+   (equal
+    (whatif--simplify ''x nil)
+    (list 'value 'x))))
 
 (ert-deftest simplify--if-by-condition ()
   "We should discard then THEN or the ELSE case
