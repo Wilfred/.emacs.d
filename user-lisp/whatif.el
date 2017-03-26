@@ -20,18 +20,20 @@ Loops are not executed and side-effecting functions are not run."
          (list 'value (alist-get form bindings))
        (list 'unknown form)))
     (`(if ,cond ,then ,else)
+     (setq cond (whatif--simplify cond bindings))
      (setq then (whatif--simplify then bindings))
      (setq else (whatif--simplify else bindings))
-     ;; If we can evaluate the if condition, then simplify to just the
-     ;; THEN or the ELSE.
-     (pcase (whatif--simplify cond bindings)
+     (pcase cond
+       ;; If we can evaluate the if condition, then simplify to just the
+       ;; THEN or the ELSE.
        (`(value ,value)
         (if value then
           else))
-       ;; Return if with simplified arms.
+       ;; Otherwise, return the if where we have simplified as much as
+       ;; we can.
        (`(unknown ,_)
         (list 'unknown
-              `(if ,cond ,(cl-second then) ,(cl-second else))))))
+              `(if ,(cl-second cond) ,(cl-second then) ,(cl-second else))))))
     ;; Remove pointless values in progn, e.g.
     ;; (progn nil (foo) (bar)) -> (progn (foo) (bar))
     (`(progn . ,exprs)
@@ -121,6 +123,13 @@ if we can evaluate the condition."
   (should
    (equal
     (whatif--simplify '(if x y z) '((y . 42) (z . 41)))
+    (list 'unknown '(if x 42 41)))))
+
+(ert-deftest simplify--if-condition ()
+  "We should always simplify the COND."
+  (should
+   (equal
+    (whatif--simplify '(if (if t x a) y z) '((y . 42) (z . 41)))
     (list 'unknown '(if x 42 41)))))
 
 (ert-deftest simplify--progn ()
