@@ -116,6 +116,7 @@
         wh/decrement-number-decimal
         wh/increment-number-decimal
         wh/kill-symbol
+        wh/toggle-case-next-char
         yaml-electric-backspace
         yaml-electric-dash-and-dot
         yas-expand
