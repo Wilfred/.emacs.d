@@ -1,4 +1,4 @@
-
+(require 'cl-lib)
 
 (defun whatif--simplify (form bindings)
   "Simplify FORM in the context of BINDINGS using partial application.
@@ -20,13 +20,18 @@ Loops are not executed and side-effecting functions are not run."
          (list 'value (alist-get form bindings))
        (list 'unknown form)))
     (`(if ,cond ,then ,else)
-     ;; If we can evaluate the if condition, then simplify to the THEN
-     ;; or ELSE of the if.
+     (setq then (whatif--simplify then bindings))
+     (setq else (whatif--simplify else bindings))
+     ;; If we can evaluate the if condition, then simplify to just the
+     ;; THEN or the ELSE.
      (pcase (whatif--simplify cond bindings)
        (`(value ,value)
-        (if value (whatif--simplify then bindings)
-          (whatif--simplify else bindings)))
-       (`(unknown ,_) (list 'unknown form))))
+        (if value then
+          else))
+       ;; Return if with simplified arms.
+       (`(unknown ,_)
+        (list 'unknown
+              `(if ,cond ,(cl-second then) ,(cl-second else))))))
     ;; Remove pointless values in progn, e.g.
     ;; (progn nil (foo) (bar)) -> (progn (foo) (bar))
     (`(progn . ,exprs)
@@ -48,7 +53,7 @@ Loops are not executed and side-effecting functions are not run."
 
        (if (eq 1 (length simplified-exprs))
            (car simplified-exprs)
-         (list 'unknown `(progn ,@(--map (nth 1 it) simplified-exprs))))))
+         (list 'unknown `(progn ,@(mapcar #'cl-second simplified-exprs))))))
     
     ;; Eliminate or simplify a when statement if we can evaluate the
     ;; condition.
@@ -99,7 +104,9 @@ Loops are not executed and side-effecting functions are not run."
     (whatif--simplify 'x '((x . 42)))
     (list 'value 42))))
 
-(ert-deftest simplify--if ()
+(ert-deftest simplify--if-by-condition ()
+  "We should discard then THEN or the ELSE case
+if we can evaluate the condition."
   (should
    (equal
     (whatif--simplify '(if x y z) nil)
@@ -108,6 +115,13 @@ Loops are not executed and side-effecting functions are not run."
    (equal
     (whatif--simplify '(if x y z) '((x . 42)))
     (list 'unknown 'y))))
+
+(ert-deftest simplify--if-body ()
+  "We should always simplify the THEN and ELSE."
+  (should
+   (equal
+    (whatif--simplify '(if x y z) '((y . 42) (z . 41)))
+    (list 'unknown '(if x 42 41)))))
 
 (ert-deftest simplify--progn ()
   (should
