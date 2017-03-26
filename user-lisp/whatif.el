@@ -93,8 +93,14 @@ parts of FORM could not be simplified."
         (list 'unknown
               `(unless ,(cl-second cond)
                  ,@(mapcar #'cl-second body))))))
-    ;; Default case: we don't know how to evaluate it.
-    (_ (list 'unknown form))))
+    ;; TODO: quote.
+    (`(,fn . ,args)
+     (if (fboundp fn)
+         (let ((simple-args
+                (whatif--simplify-progn-body args bindings)))
+           (list 'unknown `(,fn ,@(mapcar #'cl-second simple-args))))
+       (list 'unknown form)))
+    (_ (error "Don't know how to simplify: %s" form))))
 
 (ert-deftest simplify--bool ()
   (should
@@ -211,3 +217,18 @@ if we can evaluate the condition."
    (equal
     (whatif--simplify '(unless x y) '((y . 1)))
     (list 'unknown '(unless x 1)))))
+
+(ert-deftest simplify--known-fn-call ()
+  "If we know we're calling a function, we should simplify its
+arguments."
+  (should
+   (equal
+    (whatif--simplify '(message x) '((x . 1)))
+    (list 'unknown '(message 1)))))
+
+(ert-deftest simplify--unknown-fn-call ()
+  "If we don't recognise the symbol, do nothing."
+  (should
+   (equal
+    (whatif--simplify '(foo x) '((x . 1)))
+    (list 'unknown '(foo x)))))
