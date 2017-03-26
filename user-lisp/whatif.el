@@ -1,5 +1,25 @@
 (require 'cl-lib)
 
+(defun whatif--simplify-progn-body (forms bindings)
+  "Simplify all the forms in FORMS using partial application.
+If any form evaluates to a simple value, discard it unless
+it is is the final form."
+  (let (simplified-exprs current)
+    ;; Evaluate every expression in the progn body.
+    (dolist (form forms)
+      (setq current (whatif--simplify form bindings))
+      ;; If we evaluated the expression to a value, just throw it
+      ;; away.
+      (pcase current
+        (`(unknown ,subform)
+         (push (list 'unknown subform) simplified-exprs))))
+    ;; If the last expression was a value, we still need to return
+    ;; it.
+    (pcase current
+      (`(value ,value)
+       (push (list 'value value) simplified-exprs)))
+    (nreverse simplified-exprs)))
+
 (defun whatif--simplify (form bindings)
   "Simplify FORM in the context of BINDINGS using partial application.
 Loops are not executed and side-effecting functions are not run.
@@ -7,6 +27,7 @@ Loops are not executed and side-effecting functions are not run.
 Returns a list ('value VALUE) if we could simplify the entire
 FORM to an expression, or a list ('unknown NEW-FORM) if some
 parts of FORM could not be simplified."
+  ;; TODO: replace 'unknown with 'incomplete or something similar.
   (pcase form
     ;; nil and t evaluate to themselves.
     (`nil (list 'value nil))
@@ -43,35 +64,36 @@ parts of FORM could not be simplified."
     ;; Remove pointless values in progn, e.g.
     ;; (progn nil (foo) (bar)) -> (progn (foo) (bar))
     (`(progn . ,exprs)
-     (let (simplified-exprs current)
-       ;; Evaluate every expression in the progn body.
-       (dolist (expr exprs)
-         (setq current (whatif--simplify expr bindings))
-         ;; If we evaluated the expression to a value, just throw it
-         ;; away.
-         (pcase current
-           (`(unknown ,subform)
-            (push (list 'unknown subform) simplified-exprs))))
-       ;; If the last expression was a value, we still need to return
-       ;; it.
-       (pcase current
-         (`(value ,value)
-          (push (list 'value value) simplified-exprs)))
-       (setq simplified-exprs (nreverse simplified-exprs))
-
-       (if (eq 1 (length simplified-exprs))
-           (car simplified-exprs)
-         (list 'unknown `(progn ,@(mapcar #'cl-second simplified-exprs))))))
+     (setq exprs (whatif--simplify-progn-body exprs bindings))
+     (if (eq 1 (length exprs))
+         (cl-first exprs)
+       (list 'unknown `(progn ,@(mapcar #'cl-second exprs)))))
     
-    ;; Eliminate or simplify a when statement if we can evaluate the
-    ;; condition.
     (`(when ,cond . ,body)
-     (pcase (whatif--simplify cond bindings)
+     (setq cond (whatif--simplify cond bindings))
+     (setq body (whatif--simplify-progn-body body bindings))
+     (pcase cond
        (`(value ,value)
-        (if value (whatif--simplify (cons 'progn body) bindings)
+        (if value
+            (list 'unknown `(progn ,@(mapcar #'cl-second body)))
           (list 'value nil)))
-       (`(unknown ,_) (list 'unknown form))))
-    
+       (`(unknown ,_)
+        (list 'unknown
+              `(when ,(cl-second cond)
+                 ,@(mapcar #'cl-second body))))))
+    (`(unless ,cond . ,body)
+     (setq cond (whatif--simplify cond bindings))
+     (setq body (whatif--simplify-progn-body body bindings))
+     (pcase cond
+       (`(value ,value)
+        (if value
+            (list 'value nil)
+          (list 'unknown `(progn ,@(mapcar #'cl-second body)))))
+       (`(unknown ,_)
+        (list 'unknown
+              `(unless ,(cl-second cond)
+                 ,@(mapcar #'cl-second body))))))
+    ;; Default case: we don't know how to evaluate it.
     (_ (list 'unknown form))))
 
 (ert-deftest simplify--bool ()
@@ -170,4 +192,22 @@ if we can evaluate the condition."
   (should
    (equal
     (whatif--simplify '(when t x y) nil)
-    (list 'unknown '(progn x y)))))
+    (list 'unknown '(progn x y))))
+  (should
+   (equal
+    (whatif--simplify '(when x y) '((y . 1)))
+    (list 'unknown '(when x 1)))))
+
+(ert-deftest simplify--unless ()
+  (should
+   (equal
+    (whatif--simplify '(unless nil x y) nil)
+    (list 'unknown '(progn x y))))
+  (should
+   (equal
+    (whatif--simplify '(unless t x y) nil)
+    (list 'value nil)))
+  (should
+   (equal
+    (whatif--simplify '(unless x y) '((y . 1)))
+    (list 'unknown '(unless x 1)))))
