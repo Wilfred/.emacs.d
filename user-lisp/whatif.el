@@ -2,7 +2,11 @@
 
 (defun whatif--simplify (form bindings)
   "Simplify FORM in the context of BINDINGS using partial application.
-Loops are not executed and side-effecting functions are not run."
+Loops are not executed and side-effecting functions are not run.
+
+Returns a list ('value VALUE) if we could simplify the entire
+FORM to an expression, or a list ('unknown NEW-FORM) if some
+parts of FORM could not be simplified."
   (pcase form
     ;; nil and t evaluate to themselves.
     (`nil (list 'value nil))
@@ -19,6 +23,8 @@ Loops are not executed and side-effecting functions are not run."
      (if (assoc form bindings)
          (list 'value (alist-get form bindings))
        (list 'unknown form)))
+    (`(if ,cond ,then)
+     (whatif--simplify `(if ,cond ,then nil) bindings))
     (`(if ,cond ,then ,else)
      (setq cond (whatif--simplify cond bindings))
      (setq then (whatif--simplify then bindings))
@@ -29,7 +35,7 @@ Loops are not executed and side-effecting functions are not run."
        (`(value ,value)
         (if value then
           else))
-       ;; Otherwise, return the if where we have simplified as much as
+       ;; Otherwise, return an if where we have simplified as much as
        ;; we can.
        (`(unknown ,_)
         (list 'unknown
@@ -131,6 +137,16 @@ if we can evaluate the condition."
    (equal
     (whatif--simplify '(if (if t x a) y z) '((y . 42) (z . 41)))
     (list 'unknown '(if x 42 41)))))
+
+(ert-deftest simplify--if-without-else ()
+  (should
+   (equal
+    (whatif--simplify '(if t y) nil)
+    (list 'unknown 'y)))
+  (should
+   (equal
+    (whatif--simplify '(if nil y) nil)
+    (list 'value nil))))
 
 (ert-deftest simplify--progn ()
   (should
