@@ -61,12 +61,6 @@ Loops are not executed and side-effecting functions are not run."
     
     (_ (list 'unknown form))))
 
-(whatif--simplify '(if 1 2 3) nil)
-
-(whatif--simplify 'x nil)
-
-(whatif--simplify 1 nil)
-
 (ert-deftest simplify--bool ()
   (should
    (equal
@@ -127,4 +121,14 @@ Loops are not executed and side-effecting functions are not run."
   (should
    (equal
     (whatif--simplify '(progn x nil y) nil)
+    (list 'unknown '(progn x y)))))
+
+(ert-deftest simplify--when ()
+  (should
+   (equal
+    (whatif--simplify '(when nil x y) nil)
+    (list 'value nil)))
+  (should
+   (equal
+    (whatif--simplify '(when t x y) nil)
     (list 'unknown '(progn x y)))))
