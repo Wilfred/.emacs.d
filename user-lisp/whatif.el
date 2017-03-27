@@ -130,12 +130,37 @@ parts of FORM could not be simplified."
     ;; TODO: backquote.
     (`(quote ,sym)
      (list 'value sym))
+    
     ;; TODO: update `bindings' after setq.
     (`(setq ,sym ,val)
      (setq val (whatif--simplify val bindings))
      ;; TODO: it would be nice to support
      ;; (setq x (setq y foo)) when foo is known.
      (list 'unknown `(setq ,sym ,(cl-second val))))
+
+    (`(or . ,exprs)
+     (let (simple-exprs
+           current)
+       (cl-block 'result
+         (dolist (expr exprs)
+           (setq current (whatif--simplify expr bindings))
+           (pcase current
+             (`(value ,value)
+              (when value
+                ;; If the first value is truthy, we can simplify.
+                ;; (or 123 x y) => 123
+                (if (null simple-exprs)
+                    (cl-return-from 'result (list 'value value))
+                  ;; Otherwise, we will need to build up a list of
+                  ;; arguments to `or'.
+                  (push value simple-exprs))))
+             ;; If we couldn't fully evaluate it, we need to preserve it.
+             (`(unknown ,expr)
+              (push expr simple-exprs))))
+         (pcase (nreverse simple-exprs)
+           (`() (list 'value nil))
+           (`(,expr) (list 'unknown expr))
+           (`,exprs (list 'unknown `(or ,@exprs)))))))
     (`(,fn . ,args)
      (if (functionp fn)
          (let ((simple-args
@@ -289,3 +314,32 @@ arguments."
    (equal
     (whatif--simplify '(let ((x 1) (y 2)) x) nil)
     (list 'unknown '(let ((x 1) (y 2)) x)))))
+
+(ert-deftest simplify--setq ()
+  "Ensure we only evaluate the second argument."
+  (should
+   (equal
+    (whatif--simplify '(setq x y) '((x . 1) (y . 2)))
+    (list 'unknown '(setq x 2)))))
+
+(ert-deftest simplify--or ()
+  ;; Remove nil values.
+  (should
+   (equal
+    (whatif--simplify '(or nil x y z) '((x . nil)))
+    (list 'unknown '(or y z))))
+  ;; Simplify a single value.
+  (should
+   (equal
+    (whatif--simplify '(or x y) '((x . nil)))
+    (list 'unknown 'y)))
+  ;; Stop on first truthy value.
+  (should
+   (equal
+    (whatif--simplify '(or x y) '((x . "foo")))
+    (list 'value "foo")))
+  ;; All falsy values
+  (should
+   (equal
+    (whatif--simplify '(or x y) '((x . nil) (y . nil)))
+    (list 'value nil))))
