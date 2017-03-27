@@ -24,6 +24,7 @@
         lispy-braces
         lispy-brackets
         lispy-delete
+        lispy-delete-backward
         lispy-kill
         lispy-parens
         lispy-quotes
