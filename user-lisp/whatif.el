@@ -19,10 +19,10 @@
          (src (whatif--source sym))
          (fn-name (cl-second src))
          (fn-args (cl-third src))
-         (fn-body (-slice src 3))
+         (fn-body `(progn ,@(-slice src 3)))
          (simple-body
           (cl-second (whatif--simplify fn-body whatif-bindings)))
-         (simple-fn `(defun ,fn-name ,fn-args ,@simple-body)))
+         (simple-fn `(defun ,fn-name ,fn-args ,@(cdr simple-body))))
     (with-current-buffer buf
       (let ((inhibit-read-only t))
         (erase-buffer)
