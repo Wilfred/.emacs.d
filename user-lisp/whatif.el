@@ -134,8 +134,6 @@ parts of FORM could not be simplified."
     ;; TODO: update `bindings' after setq.
     (`(setq ,sym ,val)
      (setq val (whatif--simplify val bindings))
-     ;; TODO: it would be nice to support
-     ;; (setq x (setq y foo)) when foo is known.
      (list 'unknown `(setq ,sym ,(cl-second val))))
 
     (`(or . ,exprs)
