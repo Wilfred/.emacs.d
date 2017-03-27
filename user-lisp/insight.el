@@ -31,7 +31,7 @@
       (erase-buffer)
       (insert "Symbol: nthcdr
 Type: Function
-Defnition: C source code
+Definition: C source code
 
 * Description
 foo bar
@@ -43,9 +43,15 @@ baz
 * Advice
 None
 
+* Symbol Properties
+None
+
 * Callers
 foo-bar (foo.el:21)
 foo-baz (foo.el:31)
+
+* Tools
+\(edebug) (edebug once) (trace) (forget)
 ")
       (outline-mode))
     (switch-to-buffer buf)))
