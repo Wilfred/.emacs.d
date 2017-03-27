@@ -97,10 +97,12 @@ parts of FORM could not be simplified."
     (`(quote ,sym)
      (list 'value sym))
     (`(,fn . ,args)
-     (if (fboundp fn)
+     (if (functionp fn)
          (let ((simple-args
                 (whatif--simplify-progn-body args bindings)))
            (list 'unknown `(,fn ,@(mapcar #'cl-second simple-args))))
+       ;; Either a function we don't know about, or a macro. We can't
+       ;; simplify because we don't know which arguments are evaluated.
        (list 'unknown form)))
     (_ (error "Don't know how to simplify: %s" form))))
 
@@ -240,3 +242,10 @@ arguments."
    (equal
     (whatif--simplify '(foo x) '((x . 1)))
     (list 'unknown '(foo x)))))
+
+(ert-deftest simplify--let ()
+  "Unimplemented, but ensure we don't crash."
+  (should
+   (equal
+    (whatif--simplify '(let ((x 1) (y 2)) x) nil)
+    (list 'unknown '(let ((x 1) (y 2)) x)))))
