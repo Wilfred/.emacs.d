@@ -45,8 +45,8 @@ it is is the final form."
       ;; If we evaluated the expression to a value, just throw it
       ;; away.
       (pcase current
-        (`(unknown ,subform)
-         (push (list 'unknown subform) simplified-exprs))))
+        (`(partial ,subform)
+         (push (list 'partial subform) simplified-exprs))))
     ;; If the last expression was a value, we still need to return
     ;; it.
     (pcase current
@@ -59,9 +59,8 @@ it is is the final form."
 Loops are not executed and side-effecting functions are not run.
 
 Returns a list ('value VALUE) if we could simplify the entire
-FORM to an expression, or a list ('unknown NEW-FORM) if some
+FORM to an expression, or a list ('partial NEW-FORM) if some
 parts of FORM could not be simplified."
-  ;; TODO: replace 'unknown with 'incomplete or something similar.
   (pcase form
     ;; nil and t evaluate to themselves.
     (`nil (list 'value nil))
@@ -77,7 +76,7 @@ parts of FORM could not be simplified."
     ((pred symbolp)
      (if (assoc form bindings)
          (list 'value (alist-get form bindings))
-       (list 'unknown form)))
+       (list 'partial form)))
     (`(if ,cond ,then)
      (whatif--simplify `(if ,cond ,then nil) bindings))
     (`(if ,cond ,then ,else)
@@ -92,8 +91,8 @@ parts of FORM could not be simplified."
           else))
        ;; Otherwise, return an if where we have simplified as much as
        ;; we can.
-       (`(unknown ,_)
-        (list 'unknown
+       (`(partial ,_)
+        (list 'partial
               `(if ,(cl-second cond) ,(cl-second then) ,(cl-second else))))))
     ;; Remove pointless values in progn, e.g.
     ;; (progn nil (foo) (bar)) -> (progn (foo) (bar))
@@ -101,7 +100,7 @@ parts of FORM could not be simplified."
      (setq exprs (whatif--simplify-progn-body exprs bindings))
      (if (eq 1 (length exprs))
          (cl-first exprs)
-       (list 'unknown `(progn ,@(mapcar #'cl-second exprs)))))
+       (list 'partial `(progn ,@(mapcar #'cl-second exprs)))))
     
     (`(when ,cond . ,body)
      (setq cond (whatif--simplify cond bindings))
@@ -109,10 +108,10 @@ parts of FORM could not be simplified."
      (pcase cond
        (`(value ,value)
         (if value
-            (list 'unknown `(progn ,@(mapcar #'cl-second body)))
+            (list 'partial `(progn ,@(mapcar #'cl-second body)))
           (list 'value nil)))
-       (`(unknown ,_)
-        (list 'unknown
+       (`(partial ,_)
+        (list 'partial
               `(when ,(cl-second cond)
                  ,@(mapcar #'cl-second body))))))
     (`(unless ,cond . ,body)
@@ -122,9 +121,9 @@ parts of FORM could not be simplified."
        (`(value ,value)
         (if value
             (list 'value nil)
-          (list 'unknown `(progn ,@(mapcar #'cl-second body)))))
-       (`(unknown ,_)
-        (list 'unknown
+          (list 'partial `(progn ,@(mapcar #'cl-second body)))))
+       (`(partial ,_)
+        (list 'partial
               `(unless ,(cl-second cond)
                  ,@(mapcar #'cl-second body))))))
     ;; TODO: backquote.
@@ -134,7 +133,7 @@ parts of FORM could not be simplified."
     ;; TODO: update `bindings' after setq.
     (`(setq ,sym ,val)
      (setq val (whatif--simplify val bindings))
-     (list 'unknown `(setq ,sym ,(cl-second val))))
+     (list 'partial `(setq ,sym ,(cl-second val))))
 
     (`(or . ,exprs)
      (let (simple-exprs
@@ -153,20 +152,20 @@ parts of FORM could not be simplified."
                   ;; arguments to `or'.
                   (push value simple-exprs))))
              ;; If we couldn't fully evaluate it, we need to preserve it.
-             (`(unknown ,expr)
+             (`(partial ,expr)
               (push expr simple-exprs))))
          (pcase (nreverse simple-exprs)
            (`() (list 'value nil))
-           (`(,expr) (list 'unknown expr))
-           (`,exprs (list 'unknown `(or ,@exprs)))))))
+           (`(,expr) (list 'partial expr))
+           (`,exprs (list 'partial `(or ,@exprs)))))))
     (`(,fn . ,args)
      (if (functionp fn)
          (let ((simple-args
                 (whatif--simplify-progn-body args bindings)))
-           (list 'unknown `(,fn ,@(mapcar #'cl-second simple-args))))
+           (list 'partial `(,fn ,@(mapcar #'cl-second simple-args))))
        ;; Either a function we don't know about, or a macro. We can't
        ;; simplify because we don't know which arguments are evaluated.
-       (list 'unknown form)))
+       (list 'partial form)))
     (_ (error "Don't know how to simplify: %s" form))))
 
 (ert-deftest simplify--bool ()
@@ -201,7 +200,7 @@ parts of FORM could not be simplified."
   (should
    (equal
     (whatif--simplify 'x nil)
-    (list 'unknown 'x)))
+    (list 'partial 'x)))
   (should
    (equal
     (whatif--simplify 'x '((x . 42)))
@@ -219,31 +218,31 @@ if we can evaluate the condition."
   (should
    (equal
     (whatif--simplify '(if x y z) nil)
-    (list 'unknown '(if x y z))))
+    (list 'partial '(if x y z))))
   (should
    (equal
     (whatif--simplify '(if x y z) '((x . 42)))
-    (list 'unknown 'y))))
+    (list 'partial 'y))))
 
 (ert-deftest simplify--if-body ()
   "We should always simplify the THEN and ELSE."
   (should
    (equal
     (whatif--simplify '(if x y z) '((y . 42) (z . 41)))
-    (list 'unknown '(if x 42 41)))))
+    (list 'partial '(if x 42 41)))))
 
 (ert-deftest simplify--if-condition ()
   "We should always simplify the COND."
   (should
    (equal
     (whatif--simplify '(if (if t x a) y z) '((y . 42) (z . 41)))
-    (list 'unknown '(if x 42 41)))))
+    (list 'partial '(if x 42 41)))))
 
 (ert-deftest simplify--if-without-else ()
   (should
    (equal
     (whatif--simplify '(if t y) nil)
-    (list 'unknown 'y)))
+    (list 'partial 'y)))
   (should
    (equal
     (whatif--simplify '(if nil y) nil)
@@ -257,11 +256,11 @@ if we can evaluate the condition."
   (should
    (equal
     (whatif--simplify '(progn nil y) nil)
-    (list 'unknown 'y)))
+    (list 'partial 'y)))
   (should
    (equal
     (whatif--simplify '(progn x nil y) nil)
-    (list 'unknown '(progn x y)))))
+    (list 'partial '(progn x y)))))
 
 (ert-deftest simplify--when ()
   (should
@@ -271,17 +270,17 @@ if we can evaluate the condition."
   (should
    (equal
     (whatif--simplify '(when t x y) nil)
-    (list 'unknown '(progn x y))))
+    (list 'partial '(progn x y))))
   (should
    (equal
     (whatif--simplify '(when x y) '((y . 1)))
-    (list 'unknown '(when x 1)))))
+    (list 'partial '(when x 1)))))
 
 (ert-deftest simplify--unless ()
   (should
    (equal
     (whatif--simplify '(unless nil x y) nil)
-    (list 'unknown '(progn x y))))
+    (list 'partial '(progn x y))))
   (should
    (equal
     (whatif--simplify '(unless t x y) nil)
@@ -289,7 +288,7 @@ if we can evaluate the condition."
   (should
    (equal
     (whatif--simplify '(unless x y) '((y . 1)))
-    (list 'unknown '(unless x 1)))))
+    (list 'partial '(unless x 1)))))
 
 (ert-deftest simplify--known-fn-call ()
   "If we know we're calling a function, we should simplify its
@@ -297,40 +296,40 @@ arguments."
   (should
    (equal
     (whatif--simplify '(message x) '((x . 1)))
-    (list 'unknown '(message 1)))))
+    (list 'partial '(message 1)))))
 
-(ert-deftest simplify--unknown-fn-call ()
+(ert-deftest simplify--partial-fn-call ()
   "If we don't recognise the symbol, do nothing."
   (should
    (equal
     (whatif--simplify '(foo x) '((x . 1)))
-    (list 'unknown '(foo x)))))
+    (list 'partial '(foo x)))))
 
 (ert-deftest simplify--let ()
   "Unimplemented, but ensure we don't crash."
   (should
    (equal
     (whatif--simplify '(let ((x 1) (y 2)) x) nil)
-    (list 'unknown '(let ((x 1) (y 2)) x)))))
+    (list 'partial '(let ((x 1) (y 2)) x)))))
 
 (ert-deftest simplify--setq ()
   "Ensure we only evaluate the second argument."
   (should
    (equal
     (whatif--simplify '(setq x y) '((x . 1) (y . 2)))
-    (list 'unknown '(setq x 2)))))
+    (list 'partial '(setq x 2)))))
 
 (ert-deftest simplify--or ()
   ;; Remove nil values.
   (should
    (equal
     (whatif--simplify '(or nil x y z) '((x . nil)))
-    (list 'unknown '(or y z))))
+    (list 'partial '(or y z))))
   ;; Simplify a single value.
   (should
    (equal
     (whatif--simplify '(or x y) '((x . nil)))
-    (list 'unknown 'y)))
+    (list 'partial 'y)))
   ;; Stop on first truthy value.
   (should
    (equal
