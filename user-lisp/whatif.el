@@ -1,5 +1,34 @@
 (require 'cl-lib)
 
+(defun whatif--source (fn-symbol)
+  "Get the source of function named FN-SYMBOL as an s-expression."
+  (pcase-let ((`(,buf . ,pos) (find-function-noselect fn-symbol t)))
+    (with-current-buffer buf
+      (save-excursion
+        (goto-char pos)
+        (read buf)))))
+
+(defvar whatif-bindings
+  '((arg . nil)))
+
+(defun whatif (sym)
+  "Insert simplified source."
+  (interactive
+   (list (elisp-refs--completing-read-symbol "Function: " #'functionp)))
+  (let* ((buf (get-buffer-create (format "*whatif: %s*" sym)))
+         (src (whatif--source sym)))
+    (with-current-buffer buf
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert
+         (format ";; Function: %s\n" sym))
+        (cl-prettyprint
+         (cl-second (whatif--simplify src whatif-bindings)))
+        (goto-char (point-min))
+        (emacs-lisp-mode)
+        (setq buffer-read-only t)))
+    (switch-to-buffer buf)))
+
 (defun whatif--simplify-progn-body (forms bindings)
   "Simplify all the forms in FORMS using partial application.
 If any form evaluates to a simple value, discard it unless
