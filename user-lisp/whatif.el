@@ -166,7 +166,6 @@ parts of FORM could not be simplified."
 
     ;; Function call.
     ((and `(,fn . ,args) (guard (functionp fn)))
-     (message "raw args: %s" args)
      (setq args (--map (whatif--simplify it bindings) args))
      ;; If it's a pure function, and we could evaluate all the
      ;; arguments, call it.
@@ -174,7 +173,6 @@ parts of FORM could not be simplified."
           (whatif--values-p args)
           (get fn 'side-effect-free))
          (progn
-           (message "args: %s" (mapcar #'cl-second args))
            (list 'value (apply fn (mapcar #'cl-second args))))
        (list 'partial `(,fn ,@(mapcar #'cl-second args)))))
     (`(,fn . ,args)
