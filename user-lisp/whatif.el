@@ -10,7 +10,8 @@
         (read buf)))))
 
 (defvar whatif-bindings
-  '((arg . nil)))
+  '((arg . nil)
+    (expr .  (eq kind (ly-raw quote choice)))))
 
 (defun whatif (sym)
   "Insert simplified source."
@@ -23,7 +24,11 @@
          (fn-body `(progn ,@(-slice src 3)))
          (simple-body
           (cl-second (whatif--simplify fn-body whatif-bindings)))
-         (simple-fn `(defun ,fn-name ,fn-args ,@(cdr simple-body))))
+         (simple-body
+          (if (eq (car simple-body) 'progn)
+              (cdr simple-body)
+            (list simple-body)))
+         (simple-fn `(defun ,fn-name ,fn-args ,@simple-body)))
     (with-current-buffer buf
       (let ((inhibit-read-only t))
         (erase-buffer)
