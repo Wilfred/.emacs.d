@@ -16,14 +16,19 @@
   (interactive
    (list (elisp-refs--completing-read-symbol "Function: " #'functionp)))
   (let* ((buf (get-buffer-create (format "*whatif: %s*" sym)))
-         (src (whatif--source sym)))
+         (src (whatif--source sym))
+         (fn-name (cl-second src))
+         (fn-args (cl-third src))
+         (fn-body (-slice src 3))
+         (simple-body
+          (cl-second (whatif--simplify fn-body whatif-bindings)))
+         (simple-fn `(defun ,fn-name ,fn-args ,@simple-body)))
     (with-current-buffer buf
       (let ((inhibit-read-only t))
         (erase-buffer)
         (insert
          (format ";; Function: %s\n" sym))
-        (cl-prettyprint
-         (cl-second (whatif--simplify src whatif-bindings)))
+        (cl-prettyprint simple-fn)
         (goto-char (point-min))
         (emacs-lisp-mode)
         (setq buffer-read-only t)))
@@ -125,6 +130,12 @@ parts of FORM could not be simplified."
     ;; TODO: backquote.
     (`(quote ,sym)
      (list 'value sym))
+    ;; TODO: update `bindings' after setq.
+    (`(setq ,sym ,val)
+     (setq val (whatif--simplify val bindings))
+     ;; TODO: it would be nice to support
+     ;; (setq x (setq y foo)) when foo is known.
+     (list 'unknown `(setq ,sym ,(cl-second val))))
     (`(,fn . ,args)
      (if (functionp fn)
          (let ((simple-args
