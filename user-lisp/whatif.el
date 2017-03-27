@@ -1,4 +1,5 @@
 (require 'cl-lib)
+(require 'dash)
 
 (defun whatif--source (fn-symbol)
   "Get the source of function named FN-SYMBOL as an s-expression."
@@ -53,6 +54,10 @@ it is is the final form."
       (`(value ,value)
        (push (list 'value value) simplified-exprs)))
     (nreverse simplified-exprs)))
+
+(defun whatif--values-p (forms)
+  "Do all FORMS represent values?"
+  (--all-p (eq (car it) 'value) forms))
 
 (defun whatif--simplify (form bindings)
   "Simplify FORM in the context of BINDINGS using partial application.
@@ -158,14 +163,25 @@ parts of FORM could not be simplified."
            (`() (list 'value nil))
            (`(,expr) (list 'partial expr))
            (`,exprs (list 'partial `(or ,@exprs)))))))
+
+    ;; Function call.
+    ((and `(,fn . ,args) (guard (functionp fn)))
+     (message "raw args: %s" args)
+     (setq args (--map (whatif--simplify it bindings) args))
+     ;; If it's a pure function, and we could evaluate all the
+     ;; arguments, call it.
+     (if (and
+          (whatif--values-p args)
+          (get fn 'side-effect-free))
+         (progn
+           (message "args: %s" (mapcar #'cl-second args))
+           (list 'value (apply fn (mapcar #'cl-second args))))
+       (list 'partial `(,fn ,@(mapcar #'cl-second args)))))
     (`(,fn . ,args)
-     (if (functionp fn)
-         (let ((simple-args
-                (whatif--simplify-progn-body args bindings)))
-           (list 'partial `(,fn ,@(mapcar #'cl-second simple-args))))
-       ;; Either a function we don't know about, or a macro. We can't
-       ;; simplify because we don't know which arguments are evaluated.
-       (list 'partial form)))
+     ;; Either a function we don't know about, or a macro. We can't
+     ;; simplify because we don't know which arguments are evaluated.
+     (list 'partial form))
+
     (_ (error "Don't know how to simplify: %s" form))))
 
 (ert-deftest simplify--bool ()
@@ -293,12 +309,17 @@ if we can evaluate the condition."
 (ert-deftest simplify--known-fn-call ()
   "If we know we're calling a function, we should simplify its
 arguments."
+  ;; Function with side effects.
   (should
    (equal
     (whatif--simplify '(message x) '((x . 1)))
-    (list 'partial '(message 1)))))
+    (list 'partial '(message 1))))
+  (should
+   (equal
+    (whatif--simplify '(+ x 2) '((x . 3)))
+    (list 'value 5))))
 
-(ert-deftest simplify--partial-fn-call ()
+(ert-deftest simplify--unknown-fn-call ()
   "If we don't recognise the symbol, do nothing."
   (should
    (equal
