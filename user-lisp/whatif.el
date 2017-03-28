@@ -58,7 +58,10 @@ it is the final form."
     (pcase current
       (`(value ,value)
        (push (list 'value value) simplified-exprs)))
-    (nreverse simplified-exprs)))
+    (pcase (nreverse simplified-exprs)
+      (`(,expr) expr)
+      (`,exprs
+       (list 'partial `(progn ,@(mapcar #'cl-second exprs)))))))
 
 (defun whatif--values-p (forms)
   "Do all FORMS represent values?"
@@ -87,6 +90,7 @@ parts of FORM could not be simplified."
      (if (assoc form bindings)
          (list 'value (alist-get form bindings))
        (list 'partial form)))
+
     (`(if ,cond ,then)
      (whatif--simplify `(if ,cond ,then nil) bindings))
     (`(if ,cond ,then ,else)
@@ -104,13 +108,11 @@ parts of FORM could not be simplified."
        (`(partial ,_)
         (list 'partial
               `(if ,(cl-second cond) ,(cl-second then) ,(cl-second else))))))
+
     ;; Remove pointless values in progn, e.g.
     ;; (progn nil (foo) (bar)) -> (progn (foo) (bar))
     (`(progn . ,exprs)
-     (setq exprs (whatif--simplify-progn-body exprs bindings))
-     (if (eq 1 (length exprs))
-         (cl-first exprs)
-       (list 'partial `(progn ,@(mapcar #'cl-second exprs)))))
+     (whatif--simplify-progn-body exprs bindings))
     
     (`(when ,cond . ,body)
      (setq cond (whatif--simplify cond bindings))
@@ -118,12 +120,13 @@ parts of FORM could not be simplified."
      (pcase cond
        (`(value ,value)
         (if value
-            (list 'partial `(progn ,@(mapcar #'cl-second body)))
+            body
           (list 'value nil)))
-       (`(partial ,_)
+       (`(partial ,form)
         (list 'partial
-              `(when ,(cl-second cond)
-                 ,@(mapcar #'cl-second body))))))
+              `(when ,form
+                 ;; body looks like (progn BODY...), so strip the progn.
+                 ,@(cdr body))))))
     (`(unless ,cond . ,body)
      (setq cond (whatif--simplify cond bindings))
      (setq body (whatif--simplify-progn-body body bindings))
@@ -131,11 +134,15 @@ parts of FORM could not be simplified."
        (`(value ,value)
         (if value
             (list 'value nil)
-          (list 'partial `(progn ,@(mapcar #'cl-second body)))))
+          body))
        (`(partial ,_)
-        (list 'partial
-              `(unless ,(cl-second cond)
-                 ,@(mapcar #'cl-second body))))))
+        (pcase body
+          (`(value ,value)
+           (list 'partial `(unless ,(cl-second cond) ,value)))
+          (`(partial ,form)
+           (list 'partial `(unless ,(cl-second cond)
+                             ;; form looks like (progn BODY...), so strip the progn.
+                             ,@(cdr form))))))))
     ;; TODO: backquote.
     (`(quote ,sym)
      (list 'value sym))
