@@ -148,7 +148,7 @@ parts of FORM could not be simplified."
     (`(or . ,exprs)
      (let (simple-exprs
            current)
-       (cl-block 'result
+       (cl-block result
          (dolist (expr exprs)
            (setq current (whatif--simplify expr bindings))
            (pcase current
@@ -157,7 +157,7 @@ parts of FORM could not be simplified."
                 ;; If the first value is truthy, we can simplify.
                 ;; (or 123 x y) => 123
                 (if (null simple-exprs)
-                    (cl-return-from 'result (list 'value value))
+                    (cl-return-from result (list 'value value))
                   ;; Otherwise, we will need to build up a list of
                   ;; arguments to `or'.
                   (push value simple-exprs))))
