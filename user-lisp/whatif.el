@@ -43,7 +43,7 @@
 (defun whatif--simplify-progn-body (forms bindings)
   "Simplify all the forms in FORMS using partial application.
 If any form evaluates to a simple value, discard it unless
-it is is the final form."
+it is the final form."
   (let (simplified-exprs current)
     ;; Evaluate every expression in the progn body.
     (dolist (form forms)
