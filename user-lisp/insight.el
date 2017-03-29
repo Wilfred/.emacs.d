@@ -89,7 +89,7 @@ plus the path of the containing file."
       (erase-buffer)
       (insert
        (format "Symbol: %s\n" fn-symbol)
-       "Type: Function\n"
+       "Calling convention: (foo ARG)\n"
        (format "Location: %s\n\n"
                (if source
                    (plist-get source :path)
