@@ -94,8 +94,10 @@ plus the path of the containing file."
                (if source
                    (plist-get source :path)
                  "Unknown"))
-       "* Description\nfoo bar\n\n"
-       "* Code\n"
+       "* Description\n"
+       (or (documentation fn-symbol)
+           "This function has no docstring.")
+       "\n\n* Code\n"
        (if source
            (insight--syntax-highlight
             (insight--indent-rigidly
