@@ -20,9 +20,12 @@
 
 ;;; Commentary:
 
-;; Inspired by <youtube link here>
+;; Inspired by <youtube link here> (C++ on lisp machine)
 
 ;;; Code:
+
+;; TODO: Link to advice and symbol property info pages
+;; TODO: ability to search for function in manual
 
 (defun insight--source (fn-symbol)
   "Get the source of function named FN-SYMBOL as text,
