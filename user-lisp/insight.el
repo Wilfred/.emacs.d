@@ -24,23 +24,70 @@
 
 ;;; Code:
 
-(defun insight-mock ()
-  (interactive)
-  (let ((buf (get-buffer-create "*insight*")))
+(defun insight--source (fn-symbol)
+  "Get the source of function named FN-SYMBOL as text,
+plus the path of the containing file."
+  (condition-case _err
+      (pcase-let ((`(,buf . ,start-pos) (find-function-noselect fn-symbol t)))
+        (with-current-buffer buf
+          (save-excursion
+            (goto-char start-pos)
+            (forward-sexp)
+            (list
+             :source
+             (buffer-substring start-pos (point))
+             :path
+             (abbreviate-file-name (buffer-file-name))
+             :line
+             (line-number-at-pos start-pos)))))
+    ;; Could not find source -- probably defined interactively.
+    (error nil)))
+
+(defun insight--syntax-highlight (source)
+  "Apply font-lock properties to elisp SOURCE."
+  ;; Load all of SOURCE in a emacs-lisp-mode buffer, and use its
+  ;; highlighting.
+  (with-temp-buffer
+    (insert source)
+    (delay-mode-hooks (emacs-lisp-mode))
+    (if (fboundp 'font-lock-ensure)
+        (font-lock-ensure)
+      (with-no-warnings
+        (font-lock-fontify-buffer)))
+    (buffer-string)))
+
+(defun insight--indent-rigidly (string)
+  "Indent every line in STRING by 2 spaces."
+  (->> (s-lines string)
+       (--map (format  "  %s" it))
+       (s-join "\n")))
+
+(defun insight (fn-symbol)
+  "Explore the definition and usage of function FN-SYMBOL."
+  (interactive
+   (list (elisp-refs--completing-read-symbol "Function: "
+                                             #'functionp)))
+  (let ((source (insight--source fn-symbol))
+        (buf (get-buffer-create
+              (format "*insight: %s*" fn-symbol)))
+        (inhibit-read-only t))
     (with-current-buffer buf
       (erase-buffer)
-      (insert "Symbol: nthcdr
-Type: Function
-Definition: C source code
-
-* Description
-foo bar
-
-* Code
-foo bar
-baz
-
-* Advice
+      (insert
+       (format "Symbol: %s\n" fn-symbol)
+       "Type: Function\n"
+       (format "Location: %s\n\n"
+               (if source
+                   (plist-get source :path)
+                 "Unknown"))
+       "* Description\nfoo bar\n\n"
+       "* Code\n"
+       (if source
+           (insight--syntax-highlight
+            (insight--indent-rigidly
+             (plist-get source :source)))
+         "Could not find source.")
+       "\n\n* Advice
 None
 
 * Symbol Properties
@@ -53,7 +100,9 @@ foo-baz (foo.el:31)
 * Tools
 \(edebug) (edebug once) (trace) (forget)
 ")
-      (outline-mode))
+      (setq buffer-read-only t)
+      (outline-mode)
+      (goto-char (point-min)))
     (switch-to-buffer buf)))
 
 (provide 'insight)
