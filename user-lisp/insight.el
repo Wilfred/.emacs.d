@@ -31,7 +31,7 @@
   "Get the source of function named FN-SYMBOL as text,
 plus the path of the containing file."
   (condition-case _err
-      (pcase-let ((`(,buf . ,start-pos) (find-function-noselect fn-symbol t)))
+      (pcase-let ((`(,buf . ,start-pos) (find-function-noselect fn-symbol)))
         (with-current-buffer buf
           (save-excursion
             (goto-char start-pos)
