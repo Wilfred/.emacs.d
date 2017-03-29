@@ -62,6 +62,17 @@ plus the path of the containing file."
        (--map (format  "  %s" it))
        (s-join "\n")))
 
+(defun insight--format-properties (symbol)
+  "Return a string describing all the properties of SYMBOL."
+  (let* ((syms-and-vals
+          (-partition 2 (symbol-plist symbol)))
+         (lines
+          (--map
+           (-let [(sym val) it] (format "%s: %s" sym val))
+           syms-and-vals)))
+    (when lines
+      (s-join "\n" lines))))
+
 (defun insight (fn-symbol)
   "Explore the definition and usage of function FN-SYMBOL."
   (interactive
@@ -87,14 +98,12 @@ plus the path of the containing file."
             (insight--indent-rigidly
              (plist-get source :source)))
          "Could not find source.")
-       "\n\n* Advice
-None
-
-* Symbol Properties
-None
-
-* Callers
-foo-bar (foo.el:21)
+       "\n\n* Advice\n"
+       "None\n\n"
+       "* Symbol Properties\n"
+       (insight--format-properties fn-symbol)
+       "\n\n* Callers\n"
+       "foo-bar (foo.el:21)
 foo-baz (foo.el:31)
 
 * Tools
