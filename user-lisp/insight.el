@@ -27,6 +27,10 @@
 ;; TODO: Link to advice and symbol property info pages
 ;; TODO: ability to search for function in manual
 
+(require 'dash)
+(require 's)
+(require 'elisp-refs)
+
 (defun insight--source (fn-symbol)
   "Get the source of function named FN-SYMBOL as text,
 plus the path of the containing file."
