@@ -80,48 +80,67 @@ plus the path of the containing file."
     (when lines
       (s-join "\n" lines))))
 
-(defun insight (fn-symbol)
-  "Explore the definition and usage of function FN-SYMBOL."
-  (interactive
-   (list (elisp-refs--completing-read-symbol "Function: "
-                                             #'functionp)))
+(defvar-local insight--sym nil)
+
+(defun insight-update ()
+  (interactive)
+  (insight--update insight--sym))
+
+(defun insight--update (fn-symbol)
+  "Update the current *insight* buffer to the latest state of FN-SYMBOL."
   (let ((source (insight--source fn-symbol))
-        (buf (get-buffer-create
-              (format "*insight: %s*" fn-symbol)))
-        (inhibit-read-only t))
-    (with-current-buffer buf
-      (erase-buffer)
-      (insert
-       (format "Symbol: %s\n" fn-symbol)
-       "Calling convention: (foo ARG)\n"
-       (format "Location: %s\n\n"
-               (if source
-                   (plist-get source :path)
-                 "Unknown"))
-       "* Description\n"
-       (or (documentation fn-symbol)
-           "This function has no docstring.")
-       "\n\n* Code\n"
-       (if source
-           (insight--syntax-highlight
-            (insight--indent-rigidly
-             (plist-get source :source)))
-         "Could not find source.")
-       "\n\n* Advice\n"
-       "None\n\n"
-       "* Symbol Properties\n"
-       (insight--format-properties fn-symbol)
-       "\n\n* Callers\n"
-       "foo-bar (foo.el:21)
+        (inhibit-read-only t)
+        (start-pos (point)))
+    (erase-buffer)
+    (insert
+     (format "Symbol: %s\n" fn-symbol)
+     "Calling convention: (foo ARG)\n"
+     (format "Location: %s\n\n"
+             (if source
+                 (plist-get source :path)
+               "Unknown"))
+     "* Description\n"
+     (or (documentation fn-symbol)
+         "This function has no docstring.")
+     "\n\n* Code\n"
+     (if source
+         (insight--syntax-highlight
+          (insight--indent-rigidly
+           (plist-get source :source)))
+       "Could not find source.")
+     "\n\n* Advice\n"
+     "None\n\n"
+     "* Symbol Properties\n"
+     (or
+      (insight--format-properties fn-symbol)
+      "No properties defined.")
+     "\n\n* Callers\n"
+     "foo-bar (foo.el:21)
 foo-baz (foo.el:31)
 
 * Tools
 \(edebug) (edebug once) (trace) (forget)
 ")
+    (goto-char start-pos)))
+
+(defun insight (fn-symbol)
+  "Explore the definition and usage of function FN-SYMBOL."
+  (interactive
+   (list (elisp-refs--completing-read-symbol "Function: "
+                                             #'functionp)))
+  (let ((buf (get-buffer-create
+              (format "*insight: %s*" fn-symbol))))
+    (with-current-buffer buf
+      (insight-mode)
+      (setq-local insight--sym fn-symbol)
       (setq buffer-read-only t)
-      (outline-mode)
+      (insight-update)
       (goto-char (point-min)))
     (switch-to-buffer buf)))
+
+(define-derived-mode insight-mode outline-mode "Insight")
+
+(define-key insight-mode-map (kbd "g") #'insight-update)
 
 (provide 'insight)
 ;;; insight.el ends here
