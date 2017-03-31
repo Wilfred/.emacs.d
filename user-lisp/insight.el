@@ -29,6 +29,7 @@
 
 (require 'dash)
 (require 's)
+(require 'trace)
 (require 'elisp-refs)
 
 (defun insight--source (fn-symbol)
@@ -119,7 +120,9 @@ plus the path of the containing file."
 foo-baz (foo.el:31)
 
 * Tools
-\(edebug) (edebug once) (trace) "
+\(edebug) (edebug once) "
+     (insight--trace-button)
+     " "
      (insight--forget-button))
     (goto-char start-pos)))
 
@@ -142,6 +145,33 @@ foo-baz (foo.el:31)
      "Forget"
      :type 'insight-forget-button)
     (buffer-string)))
+
+(define-button-type 'insight-trace-button
+  'action #'insight--toggle-trace
+  'follow-link t
+  'help-echo "Trace calls to this function")
+
+;; TODO: it would be nice to optionally delete the source code too.
+(defun insight--toggle-trace (_button)
+  "Toggle whether we trace calls to the current function."
+  (if (trace-is-traced insight--sym)
+      (progn
+        (untrace-function insight--sym)
+        (message "Stopped tracing %s" insight--sym))
+    (trace-function insight--sym)
+    (message "Calls to %s will be traced" insight--sym))
+  (insight--update insight--sym))
+
+(defun insight--trace-button ()
+  "Return a button that toggles tracing."
+  (let ((sym insight--sym))
+    (with-temp-buffer
+      (insert-text-button
+       (if (trace-is-traced sym)
+           "Stop Tracing"
+         "Trace Calls")
+       :type 'insight-trace-button)
+      (buffer-string))))
 
 (defun insight (fn-symbol)
   "Explore the definition and usage of function FN-SYMBOL."
