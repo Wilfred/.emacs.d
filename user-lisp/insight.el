@@ -119,9 +119,29 @@ plus the path of the containing file."
 foo-baz (foo.el:31)
 
 * Tools
-\(edebug) (edebug once) (trace) (forget)
-")
+\(edebug) (edebug once) (trace) "
+     (insight--forget-button))
     (goto-char start-pos)))
+
+(define-button-type 'insight-forget-button
+  'action #'insight--forget
+  'follow-link t
+  'help-echo "Unbind this function")
+
+;; TODO: it would be nice to optionally delete the source code too.
+(defun insight--forget (_button)
+  "Unbind the current function."
+  (message
+   "Forgot function %s"
+   (fmakunbound insight--sym)))
+
+(defun insight--forget-button ()
+  "Return a button that unbinds the current function."
+  (with-temp-buffer
+    (insert-text-button
+     "Forget"
+     :type 'insight-forget-button)
+    (buffer-string)))
 
 (defun insight (fn-symbol)
   "Explore the definition and usage of function FN-SYMBOL."
