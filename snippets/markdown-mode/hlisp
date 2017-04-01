@@ -1,0 +1,7 @@
+# -*- coding: utf-8 -*-
+# name: hlisp
+# key: hlisp
+# --
+{% highlight common-lisp %}
+$1
+{% endhighlight %}
