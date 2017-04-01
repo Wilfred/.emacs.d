@@ -34,4 +34,6 @@
                 (org-back-to-heading)
                 (org-expiry-insert-created)))))
 
+(setq deft-directory "~/scratch")
+
 (provide 'org-customisations)
