@@ -70,13 +70,22 @@ plus the path of the containing file."
        (--map (format  "  %s" it))
        (s-join "\n")))
 
+(defun insight--pretty-print (val)
+  (with-temp-buffer
+    (cl-prettyprint val)
+    (s-trim (buffer-string))))
+
 (defun insight--format-properties (symbol)
   "Return a string describing all the properties of SYMBOL."
   (let* ((syms-and-vals
           (-partition 2 (symbol-plist symbol)))
          (lines
           (--map
-           (-let [(sym val) it] (format "%s: %s" sym val))
+           (-let [(sym val) it]
+             (format "%s %s"
+                     (propertize (symbol-name sym)
+                                 'face 'font-lock-keyword-face)
+                     (insight--pretty-print val)))
            syms-and-vals)))
     (when lines
       (s-join "\n" lines))))
