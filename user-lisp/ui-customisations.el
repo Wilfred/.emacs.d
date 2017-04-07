@@ -243,6 +243,23 @@ If it is split, repeat the current buffer in a vertical split."
                       bufs-with-paths))))
     (switch-to-buffer chosen-buf)))
 
+(defun wh/switch-buffers-same-mode ()
+  (interactive)
+  (let* ((matching-bufs (--filter (eq major-mode (with-current-buffer it major-mode))
+                                  (buffer-list)))
+         (bufs-with-names (--map
+                           (cons
+                            (let ((proj-name (with-current-buffer it (projectile-project-name))))
+                              (if proj-name
+                                  (format "%s (%s)" (buffer-name it) proj-name)
+                                (buffer-name it)))
+                            it)
+                           matching-bufs))
+         (chosen-buf
+          (cdr (assoc (completing-read "Buffer: " bufs-with-names)
+                      bufs-with-names))))
+    (switch-to-buffer chosen-buf)))
+
 (defun wh/switch-magit-status-buffer ()
   "Allow switching between open magit status buffers."
   (interactive)
