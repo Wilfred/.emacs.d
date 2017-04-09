@@ -35,5 +35,6 @@
                 (org-expiry-insert-created)))))
 
 (setq deft-directory "~/scratch")
+(setq deft-default-extension "org")
 
 (provide 'org-customisations)
