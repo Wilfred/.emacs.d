@@ -25,6 +25,8 @@
   (custom-set-faces
    '(org-date ((((class color)) (:underline nil))) t)))
 
+(define-key org-mode-map (kbd "C-c t") #'counsel-org-tag)
+
 (require 'org-expiry)
 
 (add-hook 'org-after-todo-state-change-hook
