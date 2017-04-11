@@ -21,11 +21,4 @@
 
 (require 'modalka-customisations)
 
-;; Move by symbol, not by word.
-;; Inspired by https://atom.io/packages/token-navigation
-(global-set-key (kbd "M-f") #'forward-symbol)
-(global-set-key
- (kbd "M-b")
- (lambda () (interactive) (forward-symbol -1)))
-
 (provide 'movement-customisations)
