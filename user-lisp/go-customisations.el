@@ -6,6 +6,8 @@
 
 (add-hook 'go-mode-hook #'wh/set-go-tab-width)
 
+(add-hook 'go-mode-hook #'go-eldoc-setup)
+
 (require 'go-mode)
 
 (setq gofmt-command "~/go/bin/goimports")
