@@ -176,6 +176,44 @@ parts of FORM could not be simplified."
            (`(,expr) (list 'partial expr))
            (`,exprs (list 'partial `(or ,@exprs)))))))
 
+    (`(cond . ,clauses)
+     (let (simple-clauses)
+       (cl-block result
+         (dolist (clause clauses)
+           (pcase clause
+             (`(,condition)
+              (error "todo"))
+             (`(,condition . ,body)
+              (message "simplified condit: %s" (whatif--simplify condition bindings))
+              (pcase (whatif--simplify condition bindings)
+                (`(value ,value)
+                 (when value
+                   (message "body start: %s" body)
+                   (setq body (whatif--simplify-progn-body
+                               body bindings))
+                   (message "body end: %s" body)
+                   ;; If the first clause is truthy, we can simplify.
+                   ;; (cond (nil 1) (t 123) (x y)) => 123
+                   (if (null simple-clauses)
+                       (cl-return-from result body)
+                     ;; Otherwise, simplify this clause, and terminate
+                     ;; this loop.
+                     ;; (cond (x y) (t 123) (a b)) => (cond (x y) (t 123))
+                     (progn
+                       (push `(,value ,@(cl-second body)) simple-clauses)
+                       (cl-return)))))  ; break from dolist.
+                (`(partial ,form)
+                 (setq body (whatif--simplify-progn-body
+                             body bindings))
+                 (push `(,form ,@(cl-second body)) simple-clauses))))))
+         (message "simple clauses: %s" (reverse simple-clauses))
+         (pcase (nreverse simple-clauses)
+           (`() (list 'value nil))
+           (`(,clause)
+            (list 'partial `(when ,clause)))
+           (`,clauses
+            (list 'partial `(cond ,@clauses)))))))
+
     ;; Function call.
     ((and `(,fn . ,args) (guard (functionp fn)))
      (setq args (--map (whatif--simplify it bindings) args))
@@ -273,6 +311,85 @@ if we can evaluate the condition."
    (equal
     (whatif--simplify '(if nil y) nil)
     (list 'value nil))))
+
+(whatif--simplify
+ '(cond
+   (a (+ b 1))
+   (c d))
+ nil)
+
+(whatif--simplify
+ '(cond
+   (a (+ b 1))
+   (c d)
+   (e (foo)))
+ '((b . 3) (c . 4)))
+
+(ert-deftest simplify--cond ()
+  ;; Simplify some arms
+  (should
+   (equal
+    (whatif--simplify
+     '(cond
+       (a (+ b 1))
+       (c d)
+       (e (foo)))
+     '((b . 3) (c . 5)))
+    (list 'partial
+          '(cond
+            ;; We don't know if this clause will be evaluated, but we can
+            ;; simplify its body.
+            (a 4)
+            ;; We know this clause is true, so we can discard later arms.
+            (5 d)))))
+  ;; Simplify cond entirely.
+  (should
+   (equal
+    (whatif--simplify
+     '(cond
+       (a 1)
+       (b c)
+       (e (foo)))
+     '((a . nil) (b . t)))
+    (list 'partial 'c)))
+  ;; cond clause without body.
+  (should
+   (equal
+    (whatif--simplify
+     '(cond
+       (a)
+       (b))
+     '((a . nil) (b . 123)))
+    (list 'value 123)))
+  ;; No clauses evaluate to t.
+  (should
+   (equal
+    (whatif--simplify
+     '(cond
+       (a (foo))
+       (b (bar)))
+     '((a . nil) (b . nil)))
+    (list 'value nil)))
+  ;; Single unknown clause could just be a when.
+  (should
+   (equal
+    (whatif--simplify
+     '(cond
+       (a (foo) (x))
+       (b (bar) (x))
+       (c (baz) (x)))
+     '((a . nil) (c . nil)))
+    (list 'partial '(when b (baz) (x)))))
+  ;; Single unknown clause without a body.
+  (should
+   (equal
+    (whatif--simplify
+     '(cond
+       (a (foo) (x))
+       (b)
+       (c (baz) (x)))
+     '((a . nil) (c . nil)))
+    (list 'partial 'b))))
 
 (ert-deftest simplify--progn ()
   (should
