@@ -1468,7 +1468,8 @@ description at POINT."
                                "-f"
                                (file-truename (buffer-file-name (go--coverage-origin-buffer)))
                                "-o"
-                               (number-to-string (position-bytes point)))
+                               ;; Emacs point is 1-indexed.
+                               (number-to-string (position-bytes (1- point))))
           (with-current-buffer outbuf
             (split-string (buffer-substring-no-properties (point-min) (point-max)) "\n"))
         (kill-buffer outbuf)))))
