@@ -145,6 +145,7 @@
   ;; lispy-kill-at-point is really handy, but I use C-, for navigating
   ;; hunks.
   (define-key lispy-mode-map-lispy (kbd "C-,") nil)
+  (define-key lispy-mode-map-lispy (kbd "C-c C-k") #'lispy-kill-at-point)
   
   ;; Ensure pressing q closes edebug, macrostep and magit-blame.
   (setq lispy-compat '(edebug macrostep magit-blame-mode)))
