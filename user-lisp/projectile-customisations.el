@@ -13,4 +13,8 @@
           (format " Prj:%s"
                   (projectile-project-name)))))
 
+;; I like this command so much that it's nice to have it available
+;; globally.
+(global-set-key (kbd "C-c p p") #'projectile-switch-project)
+
 (provide 'projectile-customisations)
