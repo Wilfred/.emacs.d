@@ -16,5 +16,12 @@
 ;; $ go get github.com/jzelinskie/tools/cmd/goimports
 (setq gofmt-args (list "-s"))
 
+;; TODO: send PR for this.
+(defun wh/gofmt-before-save ()
+  (set (make-local-variable 'before-save-hook)
+       (append before-save-hook (list #'gofmt-before-save))))
+
+(add-hook 'go-mode-hook #'wh/gofmt-before-save)
+
 (setq godef-command "~/go/bin/godef")
 (provide 'go-customisations)
