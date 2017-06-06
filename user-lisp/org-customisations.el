@@ -39,4 +39,23 @@
 (setq deft-directory "~/scratch")
 (setq deft-default-extension "org")
 
+(defun wh/org-today-time-stamp ()
+  "Insert today's date as a time stamp."
+  (interactive)
+  (org-insert-time-stamp (current-time)))
+
+(define-key org-mode-map (kbd "C-c .") #'wh/org-today-time-stamp)
+
+(defun wh/org-today-subheading ()
+  "Insert a subheading suitable for done.org."
+  (interactive)
+  (org-insert-heading-respect-content)
+  (wh/org-today-time-stamp)
+  (goto-char (line-beginning-position))
+  (while (not (looking-at " "))
+    (forward-char))
+  (insert " "))
+
+(define-key org-mode-map (kbd "C-c n") #'wh/org-today-subheading)
+
 (provide 'org-customisations)
