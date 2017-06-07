@@ -65,9 +65,6 @@ Defaults to `t'.")
 ;; always truncate lines (i.e. don't wrap lines)
 (setq-default truncate-lines t)
 
-;; show file name in window title
-(setq frame-title-format "%b - emacs")
-
 ;; name buffers foo<directory> foo<other_directory> rather than just numbering
 (use-package uniquify
   :config
