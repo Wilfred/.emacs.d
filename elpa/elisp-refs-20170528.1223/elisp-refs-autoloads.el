@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "elisp-refs" "elisp-refs.el" (22613 15525 312594
-;;;;;;  612000))
+;;;### (autoloads nil "elisp-refs" "elisp-refs.el" (22846 20874 466505
+;;;;;;  383000))
 ;;; Generated autoloads from elisp-refs.el
 
 (autoload 'elisp-refs-function "elisp-refs" "\
@@ -35,10 +35,15 @@ If called with a prefix, prompt for a directory to limit the search.
 Display all the references to variable SYMBOL, in all loaded
 elisp files.
 
+If called with a prefix, prompt for a directory to limit the search.
+
 \(fn SYMBOL &optional PATH-PREFIX)" t nil)
 
 (autoload 'elisp-refs-symbol "elisp-refs" "\
 Display all the references to SYMBOL in all loaded elisp files.
+
+If called with a prefix, prompt for a directory to limit the
+search.
 
 \(fn SYMBOL &optional PATH-PREFIX)" t nil)
 
