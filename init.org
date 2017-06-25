@@ -823,332 +823,334 @@ used in its anaphoric macros (e.g. ~it~).
   (eval-after-load "dash" '(dash-enable-font-lock))
 #+END_SRC
 
-** Python
+** Languages
 
-We use pyflakes with flycheck to check for coding errors. Flycheck
-includes other Python checkers so we also disable those.
+*** Python
 
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (require 'flycheck-pyflakes)
-  (add-hook 'python-mode-hook 'flycheck-mode)
+ We use pyflakes with flycheck to check for coding errors. Flycheck
+ includes other Python checkers so we also disable those.
 
-  (add-hook 'python-mode-hook
-            (lambda ()
-              (add-to-list 'flycheck-disabled-checkers 'python-flake8)
-              (add-to-list 'flycheck-disabled-checkers 'python-pylint)))
-#+END_SRC
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (require 'flycheck-pyflakes)
+   (add-hook 'python-mode-hook 'flycheck-mode)
 
-I like to write docstrings with example usage. These examples aren't
-always valid doctests, so we switch off doctest checks.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (setenv "PYFLAKES_NODOCTEST" "y")
-#+END_SRC
-
-I often write triple-quoted docstrings, so it's convenient to have a
-shortcut for inserting them.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (require 'python)
-
-  (define-skeleton python-insert-docstring
-    "Insert a Python docstring."
-    "This string is ignored!"
-    "\"\"\"" - "\n\n    \"\"\"")
-
-  (define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
-#+END_SRC
-
-** Haskell
-
-Flycheck supports Haskell well, so we switch it on inside Haskell
-buffers.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (add-hook 'haskell-mode-hook 'flycheck-mode)
-#+END_SRC
-
-Tab doesn't indent in haskell-mode by default, so we enable
-indentation.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-#+END_SRC
-
-** Ruby
-
-Vagrant files are Ruby, so use Ruby syntax highlighting for them.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (add-to-list 'auto-mode-alist '("Vagrantfile" . ruby-mode))
-#+END_SRC
-
-** C/C++
-
-Flycheck supports C, so we switch it on.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (add-hook 'c-mode-common-hook #'flycheck-mode)
-#+END_SRC
-
-Always indent with 4 spaces, in the Linux kernel style.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (setq-default c-default-style "linux"
-                c-basic-offset 4)
-#+END_SRC
-
-Hungry delete is useful in C (i.e. remove up to the next
-non-whitespace character on C-d) when removing indentation.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (setq-default c-hungry-delete-key t)
-#+END_SRC
-
-** HTML
-
-I like to indent my HTML with tabs (company policy at the first web
-shop I worked at).
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (require 'sgml-mode)
-  
-  ; indent html with tabs only
-  (add-hook 'html-mode-hook
-    (function
-     (lambda ()
-       (progn
-         (setq indent-tabs-mode nil)
-         (setq sgml-basic-offset 4)))))
-#+END_SRC
-
-Automatically close < and " character inside HTML using smartparens.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (require 'smartparens-config)
-  (add-hook 'html-mode-hook 'smartparens-strict-mode)
-#+END_SRC
-
-Much of my HTML is for Django templates. These sometimes have .dtml
-filenames, so use html-mode for those files.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (add-to-list 'auto-mode-alist '("\\.dtml$" . html-mode))
-#+END_SRC
-
-We want syntax highlighting for Django template syntax, so add extra
-font faces and use them if we see Django syntax.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  ;; Define coloured faces for Django syntax.
-  (defvar django-tag-face (make-face 'django-tag-face))
-  (set-face-foreground 'django-tag-face "Orange")
-  ;
-  (defvar django-variable-face (make-face 'django-variable-face))
-  (set-face-foreground 'django-variable-face "Green")
-  
-  (defvar django-comment-face (make-face 'django-comment-face))
-  (set-face-foreground 'django-comment-face "Gray")
-
-  ;; Use these faces for Django syntax.  
-  (font-lock-add-keywords
-   'html-mode
-   '(
-     ("\\({%[^%]*%}\\)" 1 django-tag-face prepend)
-     ("\\({{[^}]*}}\\)" 1 django-variable-face prepend)
-     ("\\({#[^}]*#}\\)" 1 django-comment-face prepend)
-     ("\\({% comment %}\\(.\\|
-  \\)*{% endcomment %}\\)" 1 django-comment-face prepend)
-     ))
-#+END_SRC
-
-TODO: document the rest of our HTML configuration.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  ; skeletons for Django template tags
-  (define-skeleton template-tag-skeleton
-    "Insert a {% foo %} template tag"
-    "Template tag name: "
-    "{% " str " %}")
-  (define-skeleton template-variable-skeleton
-    "Insert a {{ foo }} template variable"
-    "Template variable: "
-    "{{ " str " }}")
-  (define-skeleton template-comment-skeleton
-    "Insert a {# foo #} template variable"
-    "Comment: "
-    "{# " str " #}")
-  (define-skeleton template-block-skeleton
-    "Insert {% block foo %}{% endblock %}"
-    "Block name: "
-    "{% block " str " %}\n" - "\n{% endblock %}")
-  (define-skeleton template-if-else-skeleton
-    "Insert {% if foo %}{% else %}{% endif %}"
-    "If condition: "
-    "{% if " str " %}\n" - "\n{% else %}\n\n{% endif %}")
-  (define-skeleton template-if-skeleton
-    "Insert {% if foo %}{% endif %}"
-    "If condition: "
-    "{% if " str " %}" - "{% endif %}")
-  (define-skeleton underscore-skeleton
-    "Insert <%= foo %>"
-    "Contents: "
-    "<%= " str " %>")
-  
-  (defvar template-skeletons
-    '(template-tag-skeleton
-      template-variable-skeleton
-      template-comment-skeleton
-      template-block-skeleton
-      template-if-skeleton
-      template-if-else-skeleton
-      underscore-skeleton))
-  
-  (defun insert-django-skeleton ()
-    (interactive)
-    (let* ((skeleton-names (mapcar 'symbol-name template-skeletons))
-          (skeleton-chosen (ido-completing-read "HTML skeleton: " skeleton-names)))
-      (funcall (intern skeleton-chosen))))
-  
-  (define-key html-mode-map "\C-ct" 'insert-django-skeleton)
-  
-  (defun visit-parent-django-template ()
-    "In a buffer containg {% extends \"foo.html\" %}, visit foo.html."
-    (interactive)
-    (let (start-pos end-pos template-name)
-      (save-excursion
-        (widen)
-        (goto-char (point-min))
-        ;; Find the extends tag
-        (while (not (looking-at "{% ?extends"))
-          (forward-char 1))
-        ;; Find the opening " of the file name.
-        (while (not (looking-at "\""))
-          (forward-char 1))
-        (forward-char)
-        (setq start-pos (point))
-  
-        ;; Find the closing "
-        (while (not (looking-at "\""))
-          (forward-char 1))
-        (setq end-pos (point))
-  
-        (setq template-name (buffer-substring-no-properties start-pos end-pos)))
-  
-      ;; Open this file, assuming it's in the same directory.
-      ;; TODO: Search the current VCS checkout for it.
-      (find-file template-name)))
-  
-  (defun html-linkify-region (url)
-    "Wraps the region in an <a> tag with href set to URL."
-    (interactive "sURL: ")
-    (let* (
-           (initial-cursor-position (point))
-           (beginning (region-beginning))
-           (end (region-end))
-           (first-replacement (concat "<a href=\"" url "\">"))
-           (second-replacement "</a>"))
-    (goto-char beginning)
-    (insert first-replacement)
-    (goto-char (+ end (length first-replacement)))
-    (insert second-replacement)
-    (goto-char (+ initial-cursor-position (length first-replacement)))
-    ))
-  
-  ; zen coding: converts selector-style lines to tags
-  ; e.g. table>tr*2 becomes <table><tr></tr><tr></tr></table>
-  (require 'zencoding-mode)
-  (add-hook 'sgml-mode-hook 'zencoding-mode) ;; Auto-start on any markup modes
-  
-#+END_SRC
-   
-** CSS
-
-Typically I work on projects that use 4 spaces for CSS indenetation.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (add-hook 'css-mode-hook
-            (function
+   (add-hook 'python-mode-hook
              (lambda ()
-               (progn
-                 (setq css-indent-offset 4)
-                 (setq indent-tabs-mode nil)))))
-#+END_SRC
+               (add-to-list 'flycheck-disabled-checkers 'python-flake8)
+               (add-to-list 'flycheck-disabled-checkers 'python-pylint)))
+ #+END_SRC
+
+ I like to write docstrings with example usage. These examples aren't
+ always valid doctests, so we switch off doctest checks.
+
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (setenv "PYFLAKES_NODOCTEST" "y")
+ #+END_SRC
+
+ I often write triple-quoted docstrings, so it's convenient to have a
+ shortcut for inserting them.
+
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (require 'python)
+
+   (define-skeleton python-insert-docstring
+     "Insert a Python docstring."
+     "This string is ignored!"
+     "\"\"\"" - "\n\n    \"\"\"")
+
+   (define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
+ #+END_SRC
+
+*** Haskell
+
+ Flycheck supports Haskell well, so we switch it on inside Haskell
+ buffers.
+
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (add-hook 'haskell-mode-hook 'flycheck-mode)
+ #+END_SRC
+
+ Tab doesn't indent in haskell-mode by default, so we enable
+ indentation.
+
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+ #+END_SRC
+
+*** Ruby
+
+ Vagrant files are Ruby, so use Ruby syntax highlighting for them.
+
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (add-to-list 'auto-mode-alist '("Vagrantfile" . ruby-mode))
+ #+END_SRC
+
+*** C/C++
+
+ Flycheck supports C, so we switch it on.
+
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (add-hook 'c-mode-common-hook #'flycheck-mode)
+ #+END_SRC
+
+ Always indent with 4 spaces, in the Linux kernel style.
+
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (setq-default c-default-style "linux"
+                 c-basic-offset 4)
+ #+END_SRC
+
+ Hungry delete is useful in C (i.e. remove up to the next
+ non-whitespace character on C-d) when removing indentation.
+
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (setq-default c-hungry-delete-key t)
+ #+END_SRC
+
+*** HTML
+
+ I like to indent my HTML with tabs (company policy at the first web
+ shop I worked at).
+
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (require 'sgml-mode)
+  
+   ; indent html with tabs only
+   (add-hook 'html-mode-hook
+     (function
+      (lambda ()
+        (progn
+          (setq indent-tabs-mode nil)
+          (setq sgml-basic-offset 4)))))
+ #+END_SRC
+
+ Automatically close < and " character inside HTML using smartparens.
+
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (require 'smartparens-config)
+   (add-hook 'html-mode-hook 'smartparens-strict-mode)
+ #+END_SRC
+
+ Much of my HTML is for Django templates. These sometimes have .dtml
+ filenames, so use html-mode for those files.
+
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (add-to-list 'auto-mode-alist '("\\.dtml$" . html-mode))
+ #+END_SRC
+
+ We want syntax highlighting for Django template syntax, so add extra
+ font faces and use them if we see Django syntax.
+
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   ;; Define coloured faces for Django syntax.
+   (defvar django-tag-face (make-face 'django-tag-face))
+   (set-face-foreground 'django-tag-face "Orange")
+   ;
+   (defvar django-variable-face (make-face 'django-variable-face))
+   (set-face-foreground 'django-variable-face "Green")
+  
+   (defvar django-comment-face (make-face 'django-comment-face))
+   (set-face-foreground 'django-comment-face "Gray")
+
+   ;; Use these faces for Django syntax.  
+   (font-lock-add-keywords
+    'html-mode
+    '(
+      ("\\({%[^%]*%}\\)" 1 django-tag-face prepend)
+      ("\\({{[^}]*}}\\)" 1 django-variable-face prepend)
+      ("\\({#[^}]*#}\\)" 1 django-comment-face prepend)
+      ("\\({% comment %}\\(.\\|
+   \\)*{% endcomment %}\\)" 1 django-comment-face prepend)
+      ))
+ #+END_SRC
+
+ TODO: document the rest of our HTML configuration.
+
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   ; skeletons for Django template tags
+   (define-skeleton template-tag-skeleton
+     "Insert a {% foo %} template tag"
+     "Template tag name: "
+     "{% " str " %}")
+   (define-skeleton template-variable-skeleton
+     "Insert a {{ foo }} template variable"
+     "Template variable: "
+     "{{ " str " }}")
+   (define-skeleton template-comment-skeleton
+     "Insert a {# foo #} template variable"
+     "Comment: "
+     "{# " str " #}")
+   (define-skeleton template-block-skeleton
+     "Insert {% block foo %}{% endblock %}"
+     "Block name: "
+     "{% block " str " %}\n" - "\n{% endblock %}")
+   (define-skeleton template-if-else-skeleton
+     "Insert {% if foo %}{% else %}{% endif %}"
+     "If condition: "
+     "{% if " str " %}\n" - "\n{% else %}\n\n{% endif %}")
+   (define-skeleton template-if-skeleton
+     "Insert {% if foo %}{% endif %}"
+     "If condition: "
+     "{% if " str " %}" - "{% endif %}")
+   (define-skeleton underscore-skeleton
+     "Insert <%= foo %>"
+     "Contents: "
+     "<%= " str " %>")
+  
+   (defvar template-skeletons
+     '(template-tag-skeleton
+       template-variable-skeleton
+       template-comment-skeleton
+       template-block-skeleton
+       template-if-skeleton
+       template-if-else-skeleton
+       underscore-skeleton))
+  
+   (defun insert-django-skeleton ()
+     (interactive)
+     (let* ((skeleton-names (mapcar 'symbol-name template-skeletons))
+           (skeleton-chosen (ido-completing-read "HTML skeleton: " skeleton-names)))
+       (funcall (intern skeleton-chosen))))
+  
+   (define-key html-mode-map "\C-ct" 'insert-django-skeleton)
+  
+   (defun visit-parent-django-template ()
+     "In a buffer containg {% extends \"foo.html\" %}, visit foo.html."
+     (interactive)
+     (let (start-pos end-pos template-name)
+       (save-excursion
+         (widen)
+         (goto-char (point-min))
+         ;; Find the extends tag
+         (while (not (looking-at "{% ?extends"))
+           (forward-char 1))
+         ;; Find the opening " of the file name.
+         (while (not (looking-at "\""))
+           (forward-char 1))
+         (forward-char)
+         (setq start-pos (point))
+  
+         ;; Find the closing "
+         (while (not (looking-at "\""))
+           (forward-char 1))
+         (setq end-pos (point))
+  
+         (setq template-name (buffer-substring-no-properties start-pos end-pos)))
+  
+       ;; Open this file, assuming it's in the same directory.
+       ;; TODO: Search the current VCS checkout for it.
+       (find-file template-name)))
+  
+   (defun html-linkify-region (url)
+     "Wraps the region in an <a> tag with href set to URL."
+     (interactive "sURL: ")
+     (let* (
+            (initial-cursor-position (point))
+            (beginning (region-beginning))
+            (end (region-end))
+            (first-replacement (concat "<a href=\"" url "\">"))
+            (second-replacement "</a>"))
+     (goto-char beginning)
+     (insert first-replacement)
+     (goto-char (+ end (length first-replacement)))
+     (insert second-replacement)
+     (goto-char (+ initial-cursor-position (length first-replacement)))
+     ))
+  
+   ; zen coding: converts selector-style lines to tags
+   ; e.g. table>tr*2 becomes <table><tr></tr><tr></tr></table>
+   (require 'zencoding-mode)
+   (add-hook 'sgml-mode-hook 'zencoding-mode) ;; Auto-start on any markup modes
+  
+ #+END_SRC
    
-It's really handy to highlight CSS colour values to show the colour
-they represent.
+*** CSS
 
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (add-hook 'css-mode-hook 'rainbow-mode)
-#+END_SRC
+ Typically I work on projects that use 4 spaces for CSS indenetation.
 
-Smartparens is well suited to CSS too, to automatically pair up curly
-brackets.
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (add-hook 'css-mode-hook
+             (function
+              (lambda ()
+                (progn
+                  (setq css-indent-offset 4)
+                  (setq indent-tabs-mode nil)))))
+ #+END_SRC
+   
+ It's really handy to highlight CSS colour values to show the colour
+ they represent.
 
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (add-hook 'css-mode-hook #'smartparens-strict-mode)
-#+END_SRC
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (add-hook 'css-mode-hook 'rainbow-mode)
+ #+END_SRC
 
-Highlight symbols, so we can see repeated tag names and classes.
+ Smartparens is well suited to CSS too, to automatically pair up curly
+ brackets.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (add-hook 'css-mode-hook #'highlight-symbol-mode)
-#+END_SRC
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (add-hook 'css-mode-hook #'smartparens-strict-mode)
+ #+END_SRC
 
-Company does a great job with completion for CSS, so use it here.
+ Highlight symbols, so we can see repeated tag names and classes.
 
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (add-hook 'css-mode-hook #'company-mode)
-#+END_SRC
+ #+BEGIN_SRC emacs-lisp :tangle yes
+   (add-hook 'css-mode-hook #'highlight-symbol-mode)
+ #+END_SRC
 
-I often toggle =!important= when editing, so define a keybinding
-for this.
+ Company does a great job with completion for CSS, so use it here.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (require 'css-mode)
-  (define-key css-mode-map (kbd "C-c i") #'emr-css-toggle-important)
-#+END_SRC
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (add-hook 'css-mode-hook #'company-mode)
+ #+END_SRC
 
-** Less (CSS)
+ I often toggle =!important= when editing, so define a keybinding
+ for this.
 
-The less compiler doesn't give much feedback, but it does gives us a
-syntax check.
+ #+BEGIN_SRC emacs-lisp :tangle yes
+   (require 'css-mode)
+   (define-key css-mode-map (kbd "C-c i") #'emr-css-toggle-important)
+ #+END_SRC
 
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (require 'less-css-mode)
-  (add-hook 'less-css-mode-hook 'flymake-mode)
-#+END_SRC
+*** Less (CSS)
 
-** Org-mode
+ The less compiler doesn't give much feedback, but it does gives us a
+ syntax check.
 
-We often use code snippets in org-mode files, so syntax highlight
-them.
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (require 'less-css-mode)
+   (add-hook 'less-css-mode-hook 'flymake-mode)
+ #+END_SRC
 
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (setq org-src-fontify-natively t)
-#+END_SRC
+*** Org-mode
 
-** Markdown
+ We often use code snippets in org-mode files, so syntax highlight
+ them.
 
-Markdown is essentially prose, so it's nice to automatically line-wrap
-(by inserting newlines) as we type.
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (setq org-src-fontify-natively t)
+ #+END_SRC
 
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (add-hook 'markdown-mode-hook 'auto-fill-mode)
-#+END_SRC
+*** Markdown
 
-** Shell
+ Markdown is essentially prose, so it's nice to automatically line-wrap
+ (by inserting newlines) as we type.
 
-In OS X, starting Emacs in GUI mode doesn't inherit the shell's
-environment. We set up Emacs' exec-path based on PATH in a shell, so
-any command we can call from a shell, we can call inside Emacs.
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+   (add-hook 'markdown-mode-hook 'auto-fill-mode)
+ #+END_SRC
 
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-(use-package exec-path-from-shell
-  :init
-  (setq exec-path-from-shell-check-startup-files nil)
-  (exec-path-from-shell-initialize))
-#+END_SRC
+*** Shell
+
+ In OS X, starting Emacs in GUI mode doesn't inherit the shell's
+ environment. We set up Emacs' exec-path based on PATH in a shell, so
+ any command we can call from a shell, we can call inside Emacs.
+
+ #+BEGIN_SRC emacs-lisp :tangle yes :comments org
+ (use-package exec-path-from-shell
+   :init
+   (setq exec-path-from-shell-check-startup-files nil)
+   (exec-path-from-shell-initialize))
+ #+END_SRC
    
 ** Performance
 

@@ -731,8 +731,8 @@ Visit the file after creation."
 
 ;; Python
 
-;; We use pyflakes with flycheck to check for coding errors. Flycheck
-;; includes other Python checkers so we also disable those.
+;;  We use pyflakes with flycheck to check for coding errors. Flycheck
+;;  includes other Python checkers so we also disable those.
 
 
 (require 'flycheck-pyflakes)
@@ -768,8 +768,8 @@ Visit the file after creation."
 
 ;; Haskell
 
-;; Flycheck supports Haskell well, so we switch it on inside Haskell
-;; buffers.
+;;  Flycheck supports Haskell well, so we switch it on inside Haskell
+;;  buffers.
 
 
 (add-hook 'haskell-mode-hook 'flycheck-mode)
@@ -784,14 +784,14 @@ Visit the file after creation."
 
 ;; Ruby
 
-;; Vagrant files are Ruby, so use Ruby syntax highlighting for them.
+;;  Vagrant files are Ruby, so use Ruby syntax highlighting for them.
 
 
 (add-to-list 'auto-mode-alist '("Vagrantfile" . ruby-mode))
 
 ;; C/C++
 
-;; Flycheck supports C, so we switch it on.
+;;  Flycheck supports C, so we switch it on.
 
 
 (add-hook 'c-mode-common-hook #'flycheck-mode)
@@ -814,8 +814,8 @@ Visit the file after creation."
 
 ;; HTML
 
-;; I like to indent my HTML with tabs (company policy at the first web
-;; shop I worked at).
+;;  I like to indent my HTML with tabs (company policy at the first web
+;;  shop I worked at).
 
 
 (require 'sgml-mode)
@@ -973,7 +973,7 @@ Visit the file after creation."
 
 ;; CSS
 
-;; Typically I work on projects that use 4 spaces for CSS indenetation.
+;;  Typically I work on projects that use 4 spaces for CSS indenetation.
 
 
 (add-hook 'css-mode-hook
@@ -984,7 +984,7 @@ Visit the file after creation."
                (setq indent-tabs-mode nil)))))
 
 
-   
+
 ;; It's really handy to highlight CSS colour values to show the colour
 ;; they represent.
 
@@ -1013,8 +1013,8 @@ Visit the file after creation."
 
 ;; Less (CSS)
 
-;; The less compiler doesn't give much feedback, but it does gives us a
-;; syntax check.
+;;  The less compiler doesn't give much feedback, but it does gives us a
+;;  syntax check.
 
 
 (require 'less-css-mode)
@@ -1022,25 +1022,25 @@ Visit the file after creation."
 
 ;; Org-mode
 
-;; We often use code snippets in org-mode files, so syntax highlight
-;; them.
+;;  We often use code snippets in org-mode files, so syntax highlight
+;;  them.
 
 
 (setq org-src-fontify-natively t)
 
 ;; Markdown
 
-;; Markdown is essentially prose, so it's nice to automatically line-wrap
-;; (by inserting newlines) as we type.
+;;  Markdown is essentially prose, so it's nice to automatically line-wrap
+;;  (by inserting newlines) as we type.
 
 
 (add-hook 'markdown-mode-hook 'auto-fill-mode)
 
 ;; Shell
 
-;; In OS X, starting Emacs in GUI mode doesn't inherit the shell's
-;; environment. We set up Emacs' exec-path based on PATH in a shell, so
-;; any command we can call from a shell, we can call inside Emacs.
+;;  In OS X, starting Emacs in GUI mode doesn't inherit the shell's
+;;  environment. We set up Emacs' exec-path based on PATH in a shell, so
+;;  any command we can call from a shell, we can call inside Emacs.
 
 
 (use-package exec-path-from-shell
