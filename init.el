@@ -1036,6 +1036,18 @@ Visit the file after creation."
 
 (add-hook 'markdown-mode-hook 'auto-fill-mode)
 
+;; Shell
+
+;; In OS X, starting Emacs in GUI mode doesn't inherit the shell's
+;; environment. We set up Emacs' exec-path based on PATH in a shell, so
+;; any command we can call from a shell, we can call inside Emacs.
+
+
+(use-package exec-path-from-shell
+  :init
+  (setq exec-path-from-shell-check-startup-files nil)
+  (exec-path-from-shell-initialize))
+
 ;; Performance
 
 ;; Emacs will run garbage collection after ~gc-cons-threshold~ bytes of
