@@ -47,15 +47,26 @@
 (define-key org-mode-map (kbd "C-c .") #'wh/org-today-time-stamp)
 
 (defun wh/org-today-subheading ()
-  "Insert a subheading suitable for done.org."
+  "Insert a dated subheading for grouping days in done.org."
   (interactive)
-  (org-insert-heading-respect-content)
+  (insert "** ")
+  (wh/org-today-time-stamp)
+  (insert "\n\n"))
+
+;; Mnemonic: 'd' for day.
+(define-key org-mode-map (kbd "C-c d") #'wh/org-today-subheading)
+
+(defun wh/org-today-entry ()
+  "Insert a dated subsubheading suitable for entries done.org."
+  (interactive)
+  (insert "*** ")
   (wh/org-today-time-stamp)
   (goto-char (line-beginning-position))
   (while (not (looking-at " "))
     (forward-char))
   (insert " "))
 
-(define-key org-mode-map (kbd "C-c n") #'wh/org-today-subheading)
+;; Mnemonic: 'n' for new.
+(define-key org-mode-map (kbd "C-c n") #'wh/org-today-entry)
 
 (provide 'org-customisations)
