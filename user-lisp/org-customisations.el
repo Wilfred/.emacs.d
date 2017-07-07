@@ -59,6 +59,13 @@
 (defun wh/org-today-entry ()
   "Insert a dated subsubheading suitable for entries done.org."
   (interactive)
+
+  ;; Start a new line if we're not on a blank line.
+  (goto-char (line-beginning-position))
+  (when (looking-at "*")
+    (goto-char (line-end-position))
+    (insert "\n\n"))
+  
   (insert "*** ")
   (wh/org-today-time-stamp)
   (goto-char (line-beginning-position))
