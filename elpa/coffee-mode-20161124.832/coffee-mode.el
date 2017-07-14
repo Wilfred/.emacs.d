@@ -419,7 +419,12 @@ called `coffee-compiled-buffer-name'."
 ;;
 
 ;; Instance variables (implicit this)
-(defvar coffee-this-regexp "\\(?:@[_[:word:]]+\\|\\<this\\)\\>")
+(defvar coffee-this-regexp
+  (rx symbol-start
+      (or
+       (seq "@" (+ (or (syntax word) (syntax symbol))))
+       "this")
+      symbol-end))
 
 ;; Prototype::access
 (defvar coffee-prototype-regexp "[_[:word:].$]+?::")
@@ -1246,6 +1251,9 @@ comments such as the following:
     ;; perl style comment: "# ..."
     (modify-syntax-entry ?# "< b" table)
     (modify-syntax-entry ?\n "> b" table)
+
+    ;; _ is a symbol character.
+    (modify-syntax-entry ?_ "_" table)
 
     ;; Treat slashes as paired delimiters; useful for finding regexps.
     (modify-syntax-entry ?/ "/" table)
