@@ -49,9 +49,9 @@
 (defun wh/org-today-subheading ()
   "Insert a dated subheading for grouping days in done.org."
   (interactive)
-  (insert "** ")
-  (wh/org-today-time-stamp)
-  (insert "\n\n"))
+  (goto-char (line-end-position))
+  (insert "\n\n** ")
+  (wh/org-today-time-stamp))
 
 ;; Mnemonic: 'd' for day.
 (define-key org-mode-map (kbd "C-c d") #'wh/org-today-subheading)
