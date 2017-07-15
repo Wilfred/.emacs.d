@@ -108,24 +108,6 @@
 (define-key prog-mode-map (kbd "M-n") #'highlight-symbol-next)
 (define-key prog-mode-map (kbd "M-p") #'highlight-symbol-prev)
 
-;; It's not clear to me why c++-mode-map isn't affected by prog-mode-map,
-;; I suspect it's a bug (tested on 24.5).
-(require 'cc-mode)
-(define-key c++-mode-map (kbd "M-n") #'highlight-symbol-next)
-(define-key c++-mode-map (kbd "M-p") #'highlight-symbol-prev)
-(define-key c++-mode-map (kbd "M-N") #'highlight-symbol-last)
-(define-key c++-mode-map (kbd "M-P") #'highlight-symbol-first)
-(define-key c-mode-map (kbd "M-n") #'highlight-symbol-next)
-(define-key c-mode-map (kbd "M-p") #'highlight-symbol-prev)
-;; Java-mode has the same problem.
-(define-key java-mode-map (kbd "M-n") #'highlight-symbol-next)
-(define-key java-mode-map (kbd "M-p") #'highlight-symbol-prev)
-;; And groovy-mode (note these all inherit from cc-mode).
-(use-package groovy-mode
-  :config
-  (define-key groovy-mode-map (kbd "M-n") #'highlight-symbol-next)
-  (define-key groovy-mode-map (kbd "M-p") #'highlight-symbol-prev))
-
 ;; Whilst YAML isn't a programming language, it's useful to move by
 ;; symbol here too.
 (require 'yaml-mode)
@@ -728,6 +710,9 @@ Visit the file after creation."
 
 
 (eval-after-load "dash" '(dash-enable-font-lock))
+
+(eval-after-load 'cc-mode
+  '(set-keymap-parent c-mode-base-map prog-mode-map))
 
 ;; Python
 
