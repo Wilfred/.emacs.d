@@ -36,8 +36,8 @@ in the current buffer."
           (substring raw-title 1 -1)
         raw-title))))
 
-(defun blog-update-file-name ()
-  "Set the current file name according to the current title."
+(defun wh/blog-update-file-name ()
+  "Set the current blog post file name according to the current title and date."
   (interactive)
   (let* ((title (blog-post-title))
          ;; TODO: preserve the existing date.
