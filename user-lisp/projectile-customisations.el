@@ -17,4 +17,9 @@
 ;; globally.
 (global-set-key (kbd "C-c p p") #'projectile-switch-project)
 
+;; Don't generate tags in test/manual/etags (in GNU Emacs or Remacs
+;; source). This just contains copies of canonical files and
+;; undermines jump-to-def.
+(setq projectile-tags-command "ctags -Re -f \"%s\" %s --exclude=test/manual/etags")
+
 (provide 'projectile-customisations)
