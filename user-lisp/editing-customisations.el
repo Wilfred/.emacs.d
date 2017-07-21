@@ -243,20 +243,31 @@ Handy when editing markdown."
 (defun wh/shebang ()
   "Insert a shebang in the current buffer, and mark the file as executable."
   (interactive)
-  (goto-char (point-min))
-
   ;; We need a file on the file system, or we won't be able to chmod it.
   (unless (file-exists-p (buffer-file-name))
     (basic-save-buffer))
   
   (set-file-modes (buffer-file-name)
                   (file-modes-symbolic-to-number "u+rwx" (file-modes (buffer-file-name))))
-  (let ((interpreter (completing-read "Interpreter: " (list "#!/bin/bash" "#!/usr/bin/env python"))))
-    (insert interpreter)
-    (insert "\n\n")
+
+  (let ((python-interpreter "#!/usr/bin/env python")
+        (bash-interpreter  "#!/bin/bash")
+        interpreter)
     (cond
-     ((s-ends-with-p "bash" interpreter) (sh-mode))
-     ((s-ends-with-p "python" interpreter) (python-mode)))))
+     ;; Choose shebang based on filename.
+     ((f-ext-p (buffer-file-name) "py")
+      (setq interpreter python-interpreter))
+     ((f-ext-p (buffer-file-name) "sh")
+      (setq interpreter bash-interpreter))
+     ;; Prompt for the shebang.
+     (t
+      (setq interpreter (completing-read "Interpreter: " (list bash-interpreter python-interpreter)))))
+    ;; Insert shebang and ensure we're in the right major mode.
+    (goto-char (point-min))
+    (insert interpreter "\n\n")
+    (cond
+     ((equal interpreter bash-interpreter) (sh-mode))
+     ((equal interpreter python-interpreter) (python-mode)))))
 
 (defun wh/apply-on-region (beg end func)
   "Apply FUNC to the active region, replacing it with the result."
