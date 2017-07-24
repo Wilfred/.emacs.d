@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "groovy-electric" "groovy-electric.el" (22697
-;;;;;;  45747 191453 967000))
+;;;### (autoloads nil "groovy-electric" "groovy-electric.el" (22901
+;;;;;;  59927 253165 316000))
 ;;; Generated autoloads from groovy-electric.el
 
 (autoload 'groovy-electric-mode "groovy-electric" "\
@@ -22,22 +22,17 @@ have Font Lock enabled. ${ } is expanded when in a GString
 
 ;;;***
 
-;;;### (autoloads nil "groovy-mode" "groovy-mode.el" (22697 45747
-;;;;;;  108121 682000))
+;;;### (autoloads nil "groovy-mode" "groovy-mode.el" (22901 59927
+;;;;;;  169830 136000))
 ;;; Generated autoloads from groovy-mode.el
- (add-to-list 'auto-mode-alist '("\\.g\\(?:ant\\|roovy\\|radle\\)\\'" . groovy-mode))
+ (add-to-list 'auto-mode-alist '("\\.g\\(?:ant\\|roovy\\|radle\\)\\'\\|Jenkinsfile\\'" . groovy-mode))
  (add-to-list 'interpreter-mode-alist '("groovy" . groovy-mode))
-
-(defvar groovy-mode-hook nil "\
-*Hook called by `groovy-mode'.")
-
-(custom-autoload 'groovy-mode-hook "groovy-mode" t)
 
 (autoload 'groovy-mode "groovy-mode" "\
 Major mode for editing Groovy code.
 
-The hook `c-mode-common-hook' is run with no args at mode
-initialization, then `groovy-mode-hook'.
+The hook `groovy-mode-hook' is run with no args at mode
+initialization.
 
 Key bindings:
 \\{groovy-mode-map}
@@ -46,8 +41,8 @@ Key bindings:
 
 ;;;***
 
-;;;### (autoloads nil "inf-groovy" "inf-groovy.el" (22697 45747 148121
-;;;;;;  179000))
+;;;### (autoloads nil "inf-groovy" "inf-groovy.el" (22901 59927 216497
+;;;;;;  837000))
 ;;; Generated autoloads from inf-groovy.el
 
 (autoload 'inf-groovy-keys "inf-groovy" "\
@@ -94,11 +89,13 @@ to continue it.
 
 (autoload 'run-groovy "inf-groovy" "\
 Run an inferior Groovy process, input and output via buffer *groovy*.
-If there is a process already running in `*groovy*', switch to that buffer.
-With argument, allows you to edit the command line (default is value
-of `groovy-program-name').  Runs the hooks `inferior-groovy-mode-hook'
-\(after the `comint-mode-hook' is run).
-\(Type \\[describe-mode] in the process buffer for a list of commands.)
+If there is a process already running in *groovy*, switch to that buffer.
+With a prefix argument, prompt for the groovysh path and arguments
+\(see variables `groovysh' and `groovysh-args' for the defaults).
+
+Runs the hook `inferior-groovy-mode-hook' (after the
+`comint-mode-hook' is run).  Type \\[describe-mode] in the
+process buffer for a list of commands.
 
 \(fn CMD)" t nil)
 
@@ -106,8 +103,8 @@ of `groovy-program-name').  Runs the hooks `inferior-groovy-mode-hook'
 
 ;;;***
 
-;;;### (autoloads nil nil ("groovy-mode-pkg.el") (22697 45747 224786
-;;;;;;  882000))
+;;;### (autoloads nil nil ("groovy-mode-pkg.el") (22901 59927 286499
+;;;;;;  388000))
 
 ;;;***
 
