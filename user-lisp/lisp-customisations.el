@@ -114,6 +114,7 @@
   ;; Use lispy-mode in emacs-lisp and scheme
   (add-hook 'emacs-lisp-mode-hook #'lispy-mode)
   (add-hook 'scheme-mode-hook #'lispy-mode)
+  (add-hook 'clojure-mode-hook #'lispy-mode)
 
   ;; Disable the lispy keybindings that I don't want:
   (define-key lispy-mode-map (kbd "M-.") nil)
