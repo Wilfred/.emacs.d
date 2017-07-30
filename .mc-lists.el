@@ -28,6 +28,8 @@
         lispy-kill
         lispy-parens
         lispy-quotes
+        lispy-space
+        markdown-electric-backquote
         markdown-exdent-or-delete
         open-newline-and-indent
         org-delete-char
@@ -129,6 +131,7 @@
       '(
         ag-project-at-point
         comment-dwim
+        describe-key
         flycheck-previous-error
         helm-M-x
         iedit-mode
