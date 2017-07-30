@@ -272,6 +272,13 @@ If it is split, repeat the current buffer in a vertical split."
   (let ((inhibit-read-only t))
     (set-text-properties (point-min) (point-max) nil)))
 
+(defun wh/prep-for-screenshot ()
+  "Don't highlight the cursor or its position."
+  (interactive)
+  (hl-line-mode -1)
+  (setq cursor-type nil)
+  (show-paren-mode -1))
+
 ;;; Mode-line.
 
 ;; I want a minimalistic mode line. It should only have:
