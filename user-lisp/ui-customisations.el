@@ -279,6 +279,13 @@ If it is split, repeat the current buffer in a vertical split."
   (setq cursor-type nil)
   (show-paren-mode -1))
 
+(defun wh/prep-for-screenshot-undo ()
+  "Revert `wh/prep-for-screenshot'."
+  (interactive)
+  (hl-line-mode)
+  (setq cursor-type 'box)
+  (show-paren-mode))
+
 ;;; Mode-line.
 
 ;; I want a minimalistic mode line. It should only have:
