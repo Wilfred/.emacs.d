@@ -11,7 +11,11 @@
 (defun wh/new-blog-post ()
   "Create a new blog post with appropriate filename and header."
   (interactive)
-  (let* ((dir (read-directory-name "Posts directory: "))
+  (let* ((default-posts-dir
+           (f-slash (f-expand "~/projects/wilfred.github.com/_posts/")))
+         (dir (read-directory-name "Posts directory: "
+                                   (when (f-exists-p default-posts-dir)
+                                     default-posts-dir)))
          (title (read-string "Post title: "))
          (file-name (blog-file-name title)))
     (find-file (f-join dir file-name))
