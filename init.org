@@ -836,13 +836,6 @@ meantime.
                (add-to-list 'flycheck-disabled-checkers 'python-pylint)))
  #+END_SRC
 
- I like to write docstrings with example usage. These examples aren't
- always valid doctests, so we switch off doctest checks.
-
- #+BEGIN_SRC emacs-lisp :tangle yes :comments org
-   (setenv "PYFLAKES_NODOCTEST" "y")
- #+END_SRC
-
  I often write triple-quoted docstrings, so it's convenient to have a
  shortcut for inserting them.
 
