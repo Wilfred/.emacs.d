@@ -716,25 +716,18 @@ Visit the file after creation."
 
 ;; Python
 
-;;  We use pyflakes with flycheck to check for coding errors. Flycheck
-;;  includes other Python checkers so we also disable those.
+;;  We use flake8 with flycheck to check for coding errors. Since flake8
+;;  includes pep8 style checks, we use a [[https://github.com/Wilfred/dotfiles/blob/master/.config/flake8][whitelist of coding errors]] to
+;;  ignore style checks.
+
+;; Flycheck includes other Python checkers so we also disable those.
 
 
-(require 'flycheck-pyflakes)
 (add-hook 'python-mode-hook 'flycheck-mode)
 
 (add-hook 'python-mode-hook
           (lambda ()
-            (add-to-list 'flycheck-disabled-checkers 'python-flake8)
             (add-to-list 'flycheck-disabled-checkers 'python-pylint)))
-
-
-
-;; I like to write docstrings with example usage. These examples aren't
-;; always valid doctests, so we switch off doctest checks.
-
-
-(setenv "PYFLAKES_NODOCTEST" "y")
 
 
 
