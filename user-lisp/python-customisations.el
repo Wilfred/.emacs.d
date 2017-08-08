@@ -132,7 +132,9 @@ This means `pop-mark' can take us back to our previous position."
 ;; Use ipython, if available.
 ;; from http://emacs.stackexchange.com/q/4161
 (when (executable-find "ipython")
-  (setq python-shell-interpreter "ipython"))
+  (setq python-shell-interpreter "ipython"
+        ;; ipython 5 compat
+        python-shell-interpreter-args "--simple-prompt -i"))
 
 ;; Don't font lock in an inferior python shell. It's too easy for a
 ;; docstring (when using foo? in ipython) to contain doublequotes and
