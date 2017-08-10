@@ -362,10 +362,10 @@ If a prefix argument is given, don't change the kill-ring."
 ;; tools to do this. I've played with ~find-file-in-repository~,
 ;; ~projectile~ and ~find-file-in-project~.
 
-;; ~find-file-in-project~ seems unmaintained. ~find-file-in-repository~
-;; is fast and works well, but is only lightly maintained and doesn't
-;; support some version control systems. ~projectile~ is fast enough,
-;; actively maintained and featureful.
+;; ~find-file-in-repository~ is fast and works well, but is only lightly
+;; maintained and doesn't support some version control
+;; systems. ~projectile~ is fast enough, actively maintained and
+;; featureful.
 
 
 (require 'projectile)
