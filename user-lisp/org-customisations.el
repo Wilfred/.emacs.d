@@ -66,7 +66,7 @@
 
   ;; Start a new line if we're not on a blank line.
   (goto-char (line-beginning-position))
-  (when (looking-at "*")
+  (when (not (looking-at "\n"))
     (goto-char (line-end-position))
     (insert "\n\n"))
   
