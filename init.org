@@ -63,10 +63,10 @@ occasionally, but will probably have bugs.
 
 ** Python
 
-I use pyflakes, which is available on PyPI. You can install it with:
+I use pyflakes and flake8, which are available on PyPI. You can install them with:
 
 #+BEGIN_SRC sh
-  sudo pip install pyflakes
+  pip install pyflakes flake8
 #+END_SRC
 
 ** Less
@@ -823,11 +823,8 @@ meantime.
 
 *** Python
 
- We use flake8 with flycheck to check for coding errors. Since flake8
- includes pep8 style checks, we use a [[https://github.com/Wilfred/dotfiles/blob/master/.config/flake8][whitelist of coding errors]] to
- ignore style checks.
-
-Flycheck includes other Python checkers so we also disable those.
+ We use flake8 with flycheck to check for coding errors. Flycheck
+ includes other Python checkers which we disable.
 
  #+BEGIN_SRC emacs-lisp :tangle yes :comments org
    (add-hook 'python-mode-hook 'flycheck-mode)
@@ -836,6 +833,15 @@ Flycheck includes other Python checkers so we also disable those.
              (lambda ()
                (add-to-list 'flycheck-disabled-checkers 'python-pylint)))
  #+END_SRC
+
+ Since flake8 includes pep8 style checks, we use a [[https://github.com/Wilfred/dotfiles/blob/master/.config/flake8][whitelist of coding
+ errors]] to ignore style checks. This file is in unix configuration
+ file format, so ensure we highlight it correctly when editing.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :coments org
+  (add-to-list 'auto-mode-alist
+               (cons (rx "flake8" eos) #'conf-mode))
+#+END_SRC
 
  I often write triple-quoted docstrings, so it's convenient to have a
  shortcut for inserting them.
