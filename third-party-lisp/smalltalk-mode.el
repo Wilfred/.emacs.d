@@ -232,7 +232,7 @@ Commands:
   (run-hooks 'smalltalk-mode-hook))
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.st\\'" . #'smalltalk-mode))
+(add-to-list 'auto-mode-alist '("\\.st\\'" . smalltalk-mode))
 
 (defun smalltalk-tab ()
   (interactive)
