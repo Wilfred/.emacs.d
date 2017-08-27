@@ -286,6 +286,13 @@ If it is split, repeat the current buffer in a vertical split."
   (setq cursor-type 'box)
   (show-paren-mode))
 
+;; https://emacs.stackexchange.com/a/5343/304
+(defun wh/tone-down-fringes ()
+  (interactive)
+  (set-face-attribute 'fringe nil
+                      :foreground (face-foreground 'default)
+                      :background (face-background 'default)))
+
 ;;; Mode-line.
 
 ;; I want a minimalistic mode line. It should only have:
