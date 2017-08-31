@@ -99,5 +99,11 @@ element.  If called interactively, show it in the echo area."
       (message "%s" path))
     path))
 
+;; https://www.reddit.com/r/emacs/comments/6w9ecn/anyone_using_hyperbole/dmdp0y9/
+(add-hook 'find-file-hook
+          (lambda ()
+            (when (and (featurep 'hyperbole) (eq major-mode 'rust-mode))
+              (hproperty:but-clear)))
+          t)
 
 (provide 'structured-text-customisations)
