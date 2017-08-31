@@ -5,8 +5,8 @@
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 21 August 2013
 ;; Version: 0.4
-;; Package-Version: 20160908.1329
-;; Package-Requires: ((dash "1.2.0"))
+;; Package-Version: 20170814.621
+;; Package-Requires: ((dash "1.2.0") (s "1.11.0"))
 
 ;;; Commentary:
 
@@ -46,6 +46,7 @@
 
 ;;; Code:
 
+(require 's)
 (require 'dash)
 (require 'thingatpt)
 
@@ -72,14 +73,24 @@ of this string."
      (string-equal (symbol-name (symbol-at-point)) from-string))
     (forward-symbol -1))
    ;; If we're just replacing some text that happens to be at point:
-   ;;   foo |bar
-   ;; and `from-string' is "foo bar", it's hard to move back the right amount.
-   ;; For now, we don't move rather than approximate.
-   ;; TODO: Search the buffer for from-string and work out if we should move.
-   ))
+   (t
+    ;; If point is mid-way through an instance of the text we're
+    ;; replacing:
+    ;;   foo |bar
+    ;; and `from-string' is "foo bar", move to its start position.
+    (let ((initial-pos (point)))
+      (ignore-errors
+        (backward-char (length from-string)))
+      (search-forward from-string initial-pos t)))))
 
 ;; todo: investigate whether we're reinventing the wheel, since query-replace-history already exists
 (defvar ez-query-replace/history nil)
+
+(defun ez-query-replace/truncate (s)
+  "Truncate string S so it's suitable to be shown in the minibuffer."
+  (->> s
+       (s-replace "\n" "\\n")
+       (s-truncate 50)))
 
 ;;;###autoload
 (defun ez-query-replace ()
@@ -88,13 +99,21 @@ to the symbol at point."
   (interactive)
   (let* ((from-string (read-from-minibuffer "Replace what? " (ez-query-replace/dwim-at-point)))
          (to-string (read-from-minibuffer
-                     (format "Replace %s with what? " from-string))))
+                     (format "Replace %s with what? " from-string)))
+         (history-entry (list (format "%s -> %s"
+                                      (ez-query-replace/truncate from-string)
+                                      (ez-query-replace/truncate to-string))
+                              from-string to-string)))
 
     (ez-query-replace/backward from-string)
 
-    (add-to-list 'ez-query-replace/history
-                 (list (format "%s -> %s" from-string to-string)
-                       from-string to-string))
+    (if (member history-entry ez-query-replace/history)
+        ;; Move this item to the head of the list.
+        (setq ez-query-replace/history
+              (cons history-entry
+                    (-remove-item history-entry ez-query-replace/history)))
+      (push history-entry ez-query-replace/history))
+    
     (deactivate-mark)
     (perform-replace from-string to-string t nil nil)))
 
@@ -115,7 +134,12 @@ to the symbol at point."
 
     (deactivate-mark)
     (perform-replace from-string to-string
-                   t nil nil)))
+                     t nil nil)))
+
+;; Ivy sorts options alphabetically by default, override that.
+(eval-after-load 'ivy
+  '(add-to-list 'ivy-sort-functions-alist
+                (list #'ez-query-replace-repeat)))
 
 (provide 'ez-query-replace)
 ;;; ez-query-replace.el ends here

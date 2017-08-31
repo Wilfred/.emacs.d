@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "ez-query-replace" "ez-query-replace.el" (22526
-;;;;;;  58019 677102 14000))
+;;;### (autoloads nil "ez-query-replace" "ez-query-replace.el" (22951
+;;;;;;  58863 932563 658000))
 ;;; Generated autoloads from ez-query-replace.el
 
 (autoload 'ez-query-replace "ez-query-replace" "\
