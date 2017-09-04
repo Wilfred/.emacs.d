@@ -79,5 +79,7 @@
 
 ;; Mnemonic: 'n' for new.
 (define-key org-mode-map (kbd "C-c n") #'wh/org-today-entry)
+;; 'i' for item.
+(define-key org-mode-map (kbd "C-c i") #'wh/org-today-entry)
 
 (provide 'org-customisations)
