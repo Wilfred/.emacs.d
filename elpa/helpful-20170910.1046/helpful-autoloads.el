@@ -3,7 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "helpful" "helpful.el" (22903 1843 712270 945000))
+;;;### (autoloads nil "helpful" "helpful.el" (22983 38394 831359
+;;;;;;  386000))
 ;;; Generated autoloads from helpful.el
 
 (autoload 'helpful-function "helpful" "\
@@ -16,8 +17,18 @@ Show help for interactive function named SYMBOL.
 
 \(fn SYMBOL)" t nil)
 
+(autoload 'helpful-key "helpful" "\
+Show help for interactive command bound to KEY-SEQUENCE.
+
+\(fn KEY-SEQUENCE)" t nil)
+
 (autoload 'helpful-macro "helpful" "\
 Show help for macro named SYMBOL.
+
+\(fn SYMBOL)" t nil)
+
+(autoload 'helpful-variable "helpful" "\
+Show help for variable named SYMBOL.
 
 \(fn SYMBOL)" t nil)
 
