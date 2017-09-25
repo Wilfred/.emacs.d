@@ -1,3 +1,7 @@
+(use-package go-mode
+  :config
+  (define-key go-mode-map (kbd "M-.") #'godef-jump))
+
 (add-hook 'go-mode-hook #'flycheck-mode)
 
 ;; Go is indented with tabs, so set the tab size in those buffers.
