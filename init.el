@@ -471,42 +471,6 @@ Visit the file after creation."
   (forward-line -2)
   (move-end-of-line nil))
 
-;; Flymake
-
-;; (Note that there's language-specific flymake configuration too.)
-
-;; It's really useful to be able to move between flymake errors, so we
-;; bind =F8= and =F9= for this. Since there's a gap between these two
-;; keys, they're easy to find.
-
-
-(require 'flymake)
-(global-set-key (kbd "<f8>") 'flymake-goto-prev-error)
-(global-set-key (kbd "<f9>") 'flymake-goto-next-error)
-
-
-
-;; When the cursor (point) is on a line, we want to show the error on
-;; that line in the minibuffer.
-
-
-(defun flymake-error-at-point ()
-  "Show the flymake error in the minibuffer when point is on an invalid line."
-  (when (get-char-property (point) 'flymake-overlay)
-    (let ((help (get-char-property (point) 'help-echo)))
-      (if help (message "%s" help)))))
-
-(add-hook 'post-command-hook 'flymake-error-at-point)
-
-
-
-;; I prefer my errors underlined.
-
-
-(custom-set-faces
- '(flymake-errline ((((class color)) (:underline "Red"))))
- '(flymake-warnline ((((class color)) (:underline "Orange")))))
-
 ;; Flycheck
 
 ;; Flycheck is an excellent on-the-fly checker that provides many
@@ -523,7 +487,7 @@ Visit the file after creation."
 
 
 
-;; Style flycheck errors consistently with flymake.
+;; I prefer my errors underlined.
 
 
 (custom-set-faces
@@ -532,7 +496,9 @@ Visit the file after creation."
 
 
 
-;; We use the same movement keys for flycheck as we do for flymake.
+;; It's really useful to be able to move between flymake errors, so we
+;; bind =F8= and =F9= for this. Since there's a gap between these two
+;; keys, they're easy to find.
 
 
 (require 'flycheck)
@@ -711,16 +677,10 @@ Visit the file after creation."
 
 (eval-after-load "dash" '(dash-enable-font-lock))
 
-(eval-after-load 'cc-mode
-  '(set-keymap-parent c-mode-base-map prog-mode-map))
-
 ;; Python
 
-;;  We use flake8 with flycheck to check for coding errors. Since flake8
-;;  includes pep8 style checks, we use a [[https://github.com/Wilfred/dotfiles/blob/master/.config/flake8][whitelist of coding errors]] to
-;;  ignore style checks.
-
-;; Flycheck includes other Python checkers so we also disable those.
+;;  We use flake8 with flycheck to check for coding errors. Flycheck
+;;  includes other Python checkers which we disable.
 
 
 (add-hook 'python-mode-hook 'flycheck-mode)
@@ -728,6 +688,9 @@ Visit the file after creation."
 (add-hook 'python-mode-hook
           (lambda ()
             (add-to-list 'flycheck-disabled-checkers 'python-pylint)))
+
+(add-to-list 'auto-mode-alist
+             (cons (rx "flake8" eos) #'conf-mode))
 
 
 
@@ -1026,6 +989,64 @@ Visit the file after creation."
   (setq exec-path-from-shell-check-startup-files nil)
   (exec-path-from-shell-initialize))
 
+;; Assembly
+
+;; GNU as comment syntax varies, but ~#~ is used on i386 and x86_64.  See
+;; http://en.wikipedia.org/wiki/GNU_Assembler#Comments
+
+
+(use-package asm-mode
+  :config
+  (setq asm-comment-char ?#))
+
+;; LLVM
+
+
+(use-package llvm-mode
+  :config
+  ;; TODO: llvm-mode should really inherit from prog-mode.
+  (add-hook 'llvm-mode-hook #'highlight-symbol-mode))
+
+(use-package coffee-mode
+  :config
+  (setq coffee-tab-width 2)
+
+  (defun wh/company-in-coffee-mode ()
+    (set (make-local-variable 'company-backends) (list #'company-dabbrev-code)))
+  (add-hook 'coffee-mode-hook #'wh/company-in-coffee-mode)
+
+  (add-hook 'coffee-mode-hook #'flycheck-mode))
+
+(use-package rcirc
+  :config
+  (setq rcirc-default-nick "wilfredh")
+  (setq rcirc-server-alist
+        '(("irc.freenode.net" :channels ("#emacs"))
+          ("irc.mozilla.org" :channels ("#rust"))))
+  ;; Keep history.
+  (setq rcirc-log-flag t)
+  (setq rcirc-log-directory "~/irc_logs")
+  ;; Taken from
+  ;; https://github.com/s1n4/dotfiles/blob/master/emacs.d/config/rcirc-config.el
+  (defun wh/log-filename-with-date (process target)
+    (format
+     "%s_%s.log"
+     (if target
+         (rcirc-generate-new-buffer-name process target)
+       (process-name process))
+     (format-time-string "%Y-%m-%d")))
+
+  (setq rcirc-log-filename-function #'wh/log-filename-with-date)
+  ;; Ignore away/join/part messages from lurkers.
+  (setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
+  (add-hook 'rcirc-mode-hook #'rcirc-omit-mode)
+  (require 'rcirc-color))
+
+(use-package twittering-mode
+  :init
+  ;; Don't show the twitter client or location, it's just distracting.
+  (setq twittering-status-format "%i %s,  %@:\n%FILL[  ]{%T %r%R}\n "))
+
 ;; Performance
 
 ;; Emacs will run garbage collection after ~gc-cons-threshold~ bytes of
@@ -1042,6 +1063,9 @@ Visit the file after creation."
 
 
 (setq confirm-kill-emacs #'y-or-n-p)
+
+(eval-after-load 'cc-mode
+  '(set-keymap-parent c-mode-base-map prog-mode-map))
 
 (remove-hook 'find-file-hook #'crux-reopen-as-root)
 
@@ -1074,15 +1098,11 @@ Visit the file after creation."
 
 (require 'go-customisations)
 (require 'c-customisations)
-(require 'asm-customisations)
-(require 'coffee-customisations)
 (require 'javascript-customisations)
 (require 'lisp-customisations)
 (require 'makefile-customisations)
 (require 'python-customisations)
-(require 'groovy-customisations)
 (require 'rust-customisations)
-(require 'llvm-customisations)
 (require 'sh-customisations)
 (require 'xml-customisations)
 (require 'html-customisations)
@@ -1090,7 +1110,6 @@ Visit the file after creation."
 (require 'startup-customisations)
 
 (require 'git-customisations)
-(require 'irc-customisations)
 (require 'eshell-customisations)
 
 (require 'compilation-customisations)
@@ -1100,23 +1119,6 @@ Visit the file after creation."
 (setq ag-highlight-search 't)
 (global-set-key (kbd "<f5>") #'ag-project)
 
-;; stolen from http://whattheemacsd.com/setup-dired.el-02.html
-(defun dired-back-to-top ()
-  (interactive)
-  (beginning-of-buffer)
-  (dired-next-line (if dired-omit-mode 2 4)))
-
-(define-key dired-mode-map
-  (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
-
-(defun dired-jump-to-bottom ()
-  (interactive)
-  (end-of-buffer)
-  (dired-next-line -1))
-
-(define-key dired-mode-map
-  (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
-
 (require 'conflicts-customisations)
 (require 'org-customisations)
 
@@ -1124,8 +1126,7 @@ Visit the file after creation."
 
 (require 'blog-utils)
 
-;; crontab mode for files named
-(require 'crontab-mode)
+;; crontab mode for files named crontab.foo
 (add-to-list 'auto-mode-alist '("crontab.*?\\'" . crontab-mode))
 
 (setq ring-bell-function 'ignore)
@@ -1180,13 +1181,3 @@ The FILE-NAME defaults to the one used in the URL."
 ;; cycle through amounts of spacing
 ;; http://pragmaticemacs.com/emacs/cycle-spacing/
 (global-set-key (kbd "M-SPC") #'cycle-spacing)
-
-(use-package twittering-mode
-  :init
-  ;; Don't show the twitter client or location, it's just distracting.
-  (setq twittering-status-format "%i %s,  %@:\n%FILL[  ]{%T %r%R}\n "))
-
-(defun font-size-for-demos ()
-  "Increase font size everywhere.
-Really handy when doing Emacs demos on projectors."
-  (set-face-attribute 'default (selected-frame) :height 120))

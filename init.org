@@ -568,41 +568,6 @@ It's also useful to quickly generate a minimal HTML page to play with.
 
 ** As-you-type Checks
 
-*** Flymake
-
-(Note that there's language-specific flymake configuration too.)
-
-It's really useful to be able to move between flymake errors, so we
-bind =F8= and =F9= for this. Since there's a gap between these two
-keys, they're easy to find.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (require 'flymake)
-  (global-set-key (kbd "<f8>") 'flymake-goto-prev-error)
-  (global-set-key (kbd "<f9>") 'flymake-goto-next-error)
-#+END_SRC
-
-When the cursor (point) is on a line, we want to show the error on
-that line in the minibuffer.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (defun flymake-error-at-point ()
-    "Show the flymake error in the minibuffer when point is on an invalid line."
-    (when (get-char-property (point) 'flymake-overlay)
-      (let ((help (get-char-property (point) 'help-echo)))
-        (if help (message "%s" help)))))
-  
-  (add-hook 'post-command-hook 'flymake-error-at-point)
-#+END_SRC
-
-I prefer my errors underlined.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (custom-set-faces
-   '(flymake-errline ((((class color)) (:underline "Red"))))
-   '(flymake-warnline ((((class color)) (:underline "Orange")))))
-#+END_SRC
-
 *** Flycheck
 
 Flycheck is an excellent on-the-fly checker that provides many
@@ -618,7 +583,7 @@ highlight the whole line, as it's much faster. See
   (setq flycheck-highlighting-mode 'lines)
 #+END_SRC
 
-Style flycheck errors consistently with flymake.
+I prefer my errors underlined.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (custom-set-faces
@@ -626,7 +591,9 @@ Style flycheck errors consistently with flymake.
    '(flycheck-warning ((((class color)) (:underline "Orange")))))
 #+END_SRC
 
-We use the same movement keys for flycheck as we do for flymake.
+It's really useful to be able to move between flymake errors, so we
+bind =F8= and =F9= for this. Since there's a gap between these two
+keys, they're easy to find.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'flycheck)
@@ -687,9 +654,10 @@ it on the mode line. Hide it.
   (diminish 'undo-tree-mode)
 #+END_SRC
 
-** Emacs Lisp
+** Languages
+*** Emacs Lisp
 
-*** Shortcuts
+**** Shortcuts
 
 =eval-defun= is bound to =C-M-x=, but Gnome doesn't allow Emacs to
 receive that key sequence. When writing elisp, it's very useful, so we
@@ -720,7 +688,7 @@ expand the macros in our elisp file.
   (define-key emacs-lisp-mode-map (kbd "C-c m") 'macrostep-expand)
 #+END_SRC
 
-*** Editing Parentheses
+**** Editing Parentheses
 
 Paredit make editing code with parentheses wonderful and has been the
 gold standard for lisp coding for some time. Smartparens has recently
@@ -732,7 +700,7 @@ the time to set it up for lisp yet.
             (lambda () (paredit-mode 1)))
 #+END_SRC
 
-*** Highlighting Parentheses
+**** Highlighting Parentheses
 
 We colour each pair of parentheses according to their depth. This is
 useful for seeing similarly nested lines, such as conditions in a
@@ -760,7 +728,7 @@ unique colours until we're seven levels deep.
   (set-face-foreground 'rainbow-delimiters-unmatched-face "red")
 #+END_SRC
 
-*** Function Signatures
+**** Function Signatures
 
 We use eldoc to show the signature of the function at point in the
 minibuffer.
@@ -777,7 +745,7 @@ We don't want this minor mode to be shown in the minibuffer, however.
   (diminish 'eldoc-mode)
 #+END_SRC
 
-*** On-the-fly Checking
+**** On-the-fly Checking
 
 It's really useful to use flycheck when coding elisp. It detects
 mistyped variables, deprecated functions (everything that
@@ -795,7 +763,7 @@ the way for quick throwaway elisp scripts, so we switch off checkdoc.
   (setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers))
 #+END_SRC
 
-*** Highlighting
+**** Highlighting
 
 Emacs lisp highlighting works pretty well out of the box. However,
 dash.el provides addition highlighting for its functions and variables
@@ -805,21 +773,6 @@ used in its anaphoric macros (e.g. ~it~).
   (eval-after-load "dash" '(dash-enable-font-lock))
 #+END_SRC
 
-** Languages
-
-*** prog-mode
-
-Modes derived from ~cc-mode~ (e.g. ~c-mode~, ~c++-mode~, ~java-mode~) don't
-derive from prog-mode. This means that keybindings in ~prog-mode-map~
-don't apply.
-
-This has been fixed in Emacs 26 (bug #26658), but patch in the
-meantime.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (eval-after-load 'cc-mode
-    '(set-keymap-parent c-mode-base-map prog-mode-map))
-#+END_SRC
 
 *** Python
 
@@ -1147,7 +1100,84 @@ meantime.
    (setq exec-path-from-shell-check-startup-files nil)
    (exec-path-from-shell-initialize))
  #+END_SRC
-   
+
+*** Assembly
+
+GNU as comment syntax varies, but ~#~ is used on i386 and x86_64.  See
+http://en.wikipedia.org/wiki/GNU_Assembler#Comments
+
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
+  (use-package asm-mode
+    :config
+    (setq asm-comment-char ?#))
+#+END_SRC
+
+*** LLVM
+
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org
+  (use-package llvm-mode
+    :config
+    ;; TODO: llvm-mode should really inherit from prog-mode.
+    (add-hook 'llvm-mode-hook #'highlight-symbol-mode))
+#+END_SRC
+
+*** CoffeeScript
+
+Set indentation, dabbrev completion and flycheck in CS.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package coffee-mode
+    :config
+    (setq coffee-tab-width 2)
+
+    (defun wh/company-in-coffee-mode ()
+      (set (make-local-variable 'company-backends) (list #'company-dabbrev-code)))
+    (add-hook 'coffee-mode-hook #'wh/company-in-coffee-mode)
+
+    (add-hook 'coffee-mode-hook #'flycheck-mode))
+#+END_SRC
+
+
+** Applications
+
+*** IRC
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package rcirc
+    :config
+    (setq rcirc-default-nick "wilfredh")
+    (setq rcirc-server-alist
+          '(("irc.freenode.net" :channels ("#emacs"))
+            ("irc.mozilla.org" :channels ("#rust"))))
+    ;; Keep history.
+    (setq rcirc-log-flag t)
+    (setq rcirc-log-directory "~/irc_logs")
+    ;; Taken from
+    ;; https://github.com/s1n4/dotfiles/blob/master/emacs.d/config/rcirc-config.el
+    (defun wh/log-filename-with-date (process target)
+      (format
+       "%s_%s.log"
+       (if target
+           (rcirc-generate-new-buffer-name process target)
+         (process-name process))
+       (format-time-string "%Y-%m-%d")))
+
+    (setq rcirc-log-filename-function #'wh/log-filename-with-date)
+    ;; Ignore away/join/part messages from lurkers.
+    (setq rcirc-omit-responses '("JOIN" "PART" "QUIT" "NICK" "AWAY"))
+    (add-hook 'rcirc-mode-hook #'rcirc-omit-mode)
+    (require 'rcirc-color))
+#+END_SRC
+
+*** Twitter
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package twittering-mode
+    :init
+    ;; Don't show the twitter client or location, it's just distracting.
+    (setq twittering-status-format "%i %s,  %@:\n%FILL[  ]{%T %r%R}\n "))
+#+END_SRC
+
 ** Performance
 
 Emacs will run garbage collection after ~gc-cons-threshold~ bytes of
@@ -1168,6 +1198,21 @@ annoying to accidentally close Emacs, so warn first.
 #+END_SRC
 
 ** Workarounds
+*** prog-mode
+
+Modes derived from ~cc-mode~ (e.g. ~c-mode~, ~c++-mode~, ~java-mode~) don't
+derive from prog-mode. This means that keybindings in ~prog-mode-map~
+don't apply.
+
+This has been fixed in Emacs 26 (bug #26658), but patch in the
+meantime.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (eval-after-load 'cc-mode
+    '(set-keymap-parent c-mode-base-map prog-mode-map))
+#+END_SRC
+
+*** Crux
 
 Don't try to reopen all files that are owned by other users.
 https://github.com/bbatsov/crux/issues/20
@@ -1205,15 +1250,11 @@ https://github.com/bbatsov/crux/issues/20
 
   (require 'go-customisations)
   (require 'c-customisations)
-  (require 'asm-customisations)
-  (require 'coffee-customisations)
   (require 'javascript-customisations)
   (require 'lisp-customisations)
   (require 'makefile-customisations)
   (require 'python-customisations)
-  (require 'groovy-customisations)
   (require 'rust-customisations)
-  (require 'llvm-customisations)
   (require 'sh-customisations)
   (require 'xml-customisations)
   (require 'html-customisations)
@@ -1221,7 +1262,6 @@ https://github.com/bbatsov/crux/issues/20
   (require 'startup-customisations)
 
   (require 'git-customisations)
-  (require 'irc-customisations)
   (require 'eshell-customisations)
 
   (require 'compilation-customisations)
@@ -1231,23 +1271,6 @@ https://github.com/bbatsov/crux/issues/20
   (setq ag-highlight-search 't)
   (global-set-key (kbd "<f5>") #'ag-project)
 
-  ;; stolen from http://whattheemacsd.com/setup-dired.el-02.html
-  (defun dired-back-to-top ()
-    (interactive)
-    (beginning-of-buffer)
-    (dired-next-line (if dired-omit-mode 2 4)))
-
-  (define-key dired-mode-map
-    (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
-
-  (defun dired-jump-to-bottom ()
-    (interactive)
-    (end-of-buffer)
-    (dired-next-line -1))
-
-  (define-key dired-mode-map
-    (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
-
   (require 'conflicts-customisations)
   (require 'org-customisations)
 
@@ -1255,8 +1278,7 @@ https://github.com/bbatsov/crux/issues/20
 
   (require 'blog-utils)
 
-  ;; crontab mode for files named
-  (require 'crontab-mode)
+  ;; crontab mode for files named crontab.foo
   (add-to-list 'auto-mode-alist '("crontab.*?\\'" . crontab-mode))
 
   (setq ring-bell-function 'ignore)
@@ -1311,14 +1333,4 @@ https://github.com/bbatsov/crux/issues/20
   ;; cycle through amounts of spacing
   ;; http://pragmaticemacs.com/emacs/cycle-spacing/
   (global-set-key (kbd "M-SPC") #'cycle-spacing)
-
-  (use-package twittering-mode
-    :init
-    ;; Don't show the twitter client or location, it's just distracting.
-    (setq twittering-status-format "%i %s,  %@:\n%FILL[  ]{%T %r%R}\n "))
-
-  (defun font-size-for-demos ()
-    "Increase font size everywhere.
-  Really handy when doing Emacs demos on projectors."
-    (set-face-attribute 'default (selected-frame) :height 120))
 #+END_SRC

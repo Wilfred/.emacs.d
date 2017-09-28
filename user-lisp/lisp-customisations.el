@@ -82,21 +82,6 @@
                 ielm-mode-hook))
   (add-hook hook #'rainbow-delimiters-mode))
 
-(autoload 'clojure-mode "clojure-mode")
-
-(require 'cider)
-
-;; Trifle configuration
-(require 'trifle-mode)
-
-;; convenience function for Trifle indentation
-;; todo: full-blown indentation functionality
-(defun remove-indent ()
-  (interactive)
-  (back-to-indentation)
-  (let ((indent-size (- (point) (line-beginning-position))))
-    (delete-backward-char indent-size)))
-
 ;; Common Lisp configuration
 (use-package slime
   :config
