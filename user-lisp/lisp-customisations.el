@@ -1,5 +1,7 @@
 ;;; lisp-customisations --- Emacs configuration for lisp languages
 
+(setq load-prefer-newer t)
+
 (use-package paredit
   :diminish ""
   :config
