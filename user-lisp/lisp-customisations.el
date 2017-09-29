@@ -140,10 +140,9 @@
 
 ;; Work around https://github.com/abo-abo/lispy/issues/283
 (remove-hook 'python-mode-hook #'wisent-python-default-setup)
-
 (defun wh/elisp-imenu-reset ()
+  (interactive)
   (setq imenu-create-index-function #'imenu-default-create-index-function))
-
 (add-hook 'emacs-lisp-mode-hook #'wh/elisp-imenu-reset)
 
 (defun wh/split-pkg-version (pkg)
