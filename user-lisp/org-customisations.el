@@ -48,8 +48,6 @@
   (interactive)
   (org-insert-time-stamp (current-time)))
 
-(define-key org-mode-map (kbd "C-c .") #'wh/org-today-time-stamp)
-
 (defun wh/org-today-subheading ()
   "Insert a dated subheading for grouping days in done.org."
   (interactive)
