@@ -47,6 +47,7 @@
            '(clojure-mode-hook
              emacs-lisp-mode-hook
              scheme-mode-hook
+             racket-mode-hook
              lisp-mode-hook
              ielm-mode-hook))
     (add-hook hook #'wh/switch-on-paredit)))
@@ -66,7 +67,9 @@
   (define-key emacs-lisp-mode-map (kbd "_")
     #'nameless-insert-name-or-self-insert))
 
-(dolist (hook '(emacs-lisp-mode-hook clojure-mode-hook))
+(dolist (hook '(emacs-lisp-mode-hook
+                clojure-mode-hook
+                racket-mode-hook))
   (add-hook hook
             (lambda ()
               (setq use-hl-line nil)
@@ -81,7 +84,8 @@
 (dolist (hook '(clojure-mode-hook
                 scheme-mode-hook
                 lisp-mode-hook
-                ielm-mode-hook))
+                ielm-mode-hook
+                racket-mode-hook))
   (add-hook hook #'rainbow-delimiters-mode))
 
 ;; Common Lisp configuration
@@ -98,10 +102,11 @@
 
 (use-package lispy
   :config
-  ;; Use lispy-mode in emacs-lisp and scheme
+  ;; Use lispy-mode in lisp languages.
   (add-hook 'emacs-lisp-mode-hook #'lispy-mode)
   (add-hook 'scheme-mode-hook #'lispy-mode)
   (add-hook 'clojure-mode-hook #'lispy-mode)
+  (add-hook 'racket-mode-hook #'lispy-mode)
 
   ;; Disable the lispy keybindings that I don't want:
   (define-key lispy-mode-map (kbd "M-.") nil)
