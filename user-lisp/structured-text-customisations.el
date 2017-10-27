@@ -106,4 +106,76 @@ element.  If called interactively, show it in the echo area."
               (hproperty:but-clear)))
           t)
 
+;; Port of http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=900ede244c886c56579dcbfabd04cf4f144275a1
+(defun css--font-lock-keywords (&optional sassy)
+  `((,(concat "!\\s-*"
+              (regexp-opt (append (if sassy scss-bang-ids)
+                                  css-bang-ids)))
+     (0 font-lock-builtin-face))
+    ;; Atrules keywords.  IDs not in css-at-ids are valid (ignored).
+    ;; In fact the regexp should probably be
+    ;; (,(concat "\\(@" css-ident-re "\\)\\([ \t\n][^;{]*\\)[;{]")
+    ;;  (1 font-lock-builtin-face))
+    ;; Since "An at-rule consists of everything up to and including the next
+    ;; semicolon (;) or the next block, whichever comes first."
+    (,(concat "@" css-ident-re) (0 font-lock-builtin-face))
+    ;; Variables.
+    (,(concat (rx symbol-start) "--" css-ident-re) (0 font-lock-variable-name-face))
+    ;; Selectors.
+    ;; FIXME: attribute selectors don't work well because they may contain
+    ;; strings which have already been highlighted as f-l-string-face and
+    ;; thus prevent this highlighting from being applied (actually now that
+    ;; I use `keep' this should work better).  But really the part of the
+    ;; selector between [...] should simply not be highlighted.
+    (,(concat
+       "^[ \t]*\\("
+       (if (not sassy)
+           ;; We don't allow / as first char, so as not to
+           ;; take a comment as the beginning of a selector.
+           "[^@/:{}() \t\n][^:{}()]+"
+         ;; Same as for non-sassy except we do want to allow { and }
+         ;; chars in selectors in the case of #{$foo}
+         ;; variable interpolation!
+         (concat "\\(?:" scss--hash-re
+                 "\\|[^@/:{}() \t\n#]\\)"
+                 "[^:{}()#]*\\(?:" scss--hash-re "[^:{}()#]*\\)*"))
+       ;; Even though pseudo-elements should be prefixed by ::, a
+       ;; single colon is accepted for backward compatibility.
+       "\\(?:\\(:" (regexp-opt (append css-pseudo-class-ids
+                                       css-pseudo-element-ids) t)
+       "\\|\\::" (regexp-opt css-pseudo-element-ids t) "\\)"
+       "\\(?:([^)]+)\\)?"
+       (if (not sassy)
+           "[^:{}()\n]*"
+         (concat "[^:{}()\n#]*\\(?:" scss--hash-re "[^:{}()\n#]*\\)*"))
+       "\\)*"
+       "\\)\\(?:\n[ \t]*\\)*{")
+     (1 'css-selector keep))
+    ;; In the above rule, we allow the open-brace to be on some subsequent
+    ;; line.  This will only work if we properly mark the intervening text
+    ;; as being part of a multiline element (and even then, this only
+    ;; ensures proper refontification, but not proper discovery).
+    ("^[ \t]*{" (0 (save-excursion
+                     (goto-char (match-beginning 0))
+                     (skip-chars-backward " \n\t")
+                     (put-text-property (point) (match-end 0)
+                                        'font-lock-multiline t)
+                     ;; No face.
+                     nil)))
+    ;; Properties.  Again, we don't limit ourselves to css-property-ids.
+    (,(concat "\\(?:[{;]\\|^\\)[ \t]*\\("
+              "\\(?:\\(" css-proprietary-nmstart-re "\\)\\|"
+              css-nmstart-re "\\)" css-nmchar-re "*"
+              "\\)\\s-*:")
+     (1 (if (match-end 2) 'css-proprietary-property 'css-property)))
+    ;; Make sure the parens in a url(...) expression receive the
+    ;; default face. This is done because the parens may sometimes
+    ;; receive generic string delimiter syntax (see
+    ;; `css-syntax-propertize-function').
+    (,css--uri-re
+     (1 'default t) (2 'default t))))
+
+(defvar css-font-lock-keywords (css--font-lock-keywords))
+
+
 (provide 'structured-text-customisations)
