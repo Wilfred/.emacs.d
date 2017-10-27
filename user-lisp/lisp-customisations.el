@@ -250,8 +250,8 @@ and `defcustom' forms reset their default values."
     (goto-char (point-min))
     (while (not (eobp))
       (forward-sexp)
-      (eval-defun nil)))
-  nil)
+      (shut-up
+        (eval-defun nil)))))
 
 ;; Although this is a language agnostic tool, I only really use it in
 ;; elisp (and it works best there).
