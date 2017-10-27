@@ -42,6 +42,7 @@
         sp--self-insert-command
         sp-backward-delete-char
         sp-backward-kill-word
+        sp-backward-sexp
         sp-forward-sexp
         sp-kill-word
         sp-remove-active-pair-overlay
@@ -131,11 +132,13 @@
       '(
         ag-project-at-point
         comment-dwim
+        counsel-M-x
         describe-key
         flycheck-previous-error
         helm-M-x
         iedit-mode
         ivy-alt-done
+        ivy-switch-buffer
         lispy-cursor-down
         mouse-set-region
         smex
