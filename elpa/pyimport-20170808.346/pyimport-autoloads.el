@@ -1,27 +1,24 @@
 ;;; pyimport-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
+(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "pyimport" "pyimport.el" (22398 3733 694762
-;;;;;;  54000))
+;;;### (autoloads nil "pyimport" "pyimport.el" (23032 34477 627029
+;;;;;;  770000))
 ;;; Generated autoloads from pyimport.el
 
 (autoload 'pyimport-insert-missing "pyimport" "\
 Try to insert an import for the symbol at point.
-Dumb: just scans open Python buffers.
+If called with a prefix, choose which import to use.
 
-\(fn)" t nil)
+This is a simple heuristic: we just look for imports in all open Python buffers.
+
+\(fn PREFIX)" t nil)
 
 (autoload 'pyimport-remove-unused "pyimport" "\
 Remove unused imports in the current Python buffer.
 
 \(fn)" t nil)
-
-;;;***
-
-;;;### (autoloads nil nil ("pyimport-pkg.el") (22398 3733 739995
-;;;;;;  971000))
 
 ;;;***
 
