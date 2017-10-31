@@ -3,8 +3,8 @@
 ;; Copyright (C) 2017
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
-;; Version: 0.5
-;; Package-Version: 20170806.1414
+;; Version: 0.6
+;; Package-Version: 20171016.1420
 ;; Keywords: convenience
 ;; Package-Requires: ((emacs "24.4") (loop "1.3") (dash "2.13.0") (s "1.11.0") (f "0.18.2"))
 ;; URL: https://github.com/Wilfred/suggest.el
@@ -34,16 +34,22 @@
 (require 's)
 (require 'f)
 (require 'subr-x)
+(require 'cl-extra) ;; cl-prettyprint
 (eval-when-compile
   (require 'cl-lib)) ;; cl-incf
 
-;; TODO: add #'read, but don't prompt for input when the example is nil.
-;;
 ;; See also `cl--simple-funcs' and `cl--safe-funcs'.
 (defvar suggest-functions
   (list
    ;; TODO: add funcall, apply and map?
+   ;; Boolean functions
+   #'not
+   #'booleanp
+   #'consp
+   #'numberp
+   #'stringp
    ;; Built-in functions that access or examine lists.
+   ;; TODO: why isn't car marked as pure?
    #'car
    #'cdr
    #'cadr
@@ -51,6 +57,7 @@
    #'last
    #'cons
    #'nth
+   #'nthcdr
    #'list
    #'length
    #'safe-length
@@ -62,6 +69,7 @@
    ;; Built-in functions that create lists.
    #'make-list
    #'number-sequence
+   #'mapcar
    ;; Sequence functions
    #'elt
    #'aref
@@ -104,6 +112,7 @@
    #'-intersection
    #'-distinct
    #'-rotate
+   #'-sort
    #'-repeat
    #'-cons*
    #'-snoc
@@ -113,6 +122,12 @@
    #'-first-item
    #'-last-item
    #'-butlast
+   #'-map
+   #'-mapcat
+   ;; dash.el folding/unfolding
+   #'-reduce
+   #'-reduce-r
+   #'-iterate
    ;; alist functions
    #'assoc
    #'alist-get
@@ -168,6 +183,8 @@
    #'split-string
    #'capitalize
    #'replace-regexp-in-string
+   #'format
+   #'string-join
    ;; Quoting strings
    #'shell-quote-argument
    #'regexp-quote
@@ -188,6 +205,7 @@
    #'s-chop-prefixes
    #'s-shared-start
    #'s-shared-end
+   #'s-truncate
    #'s-repeat
    #'s-concat
    #'s-prepend
@@ -210,6 +228,7 @@
    #'symbol-value
    #'symbol-file
    #'intern
+   #'read
    ;; Converting between types
    #'string-to-list
    #'string-to-number
@@ -259,19 +278,85 @@ arguments, and no arguments are functions. For other functions,
 the likelihood of users discovering them is too low.
 
 Likewise, we avoid predicates of one argument, as those generally
-need multiple examples to ensure they do what the user wants.")
+need multiple examples to ensure they do what the user wants.
+
+See also `suggest-extra-args'.")
+
+(defvar suggest-extra-args
+  (list
+   ;; There's no special values for `list', and it produces silly
+   ;; results when we add values.
+   #'list '()
+   ;; Similarly, we can use nil when building a list, but otherwise
+   ;; we're just building an irrelevant list if we use the default
+   ;; values.
+   #'cons '(nil)
+   #'-cons* '(nil)
+   #'-snoc '(nil)
+   #'append '(nil)
+   ;; `format' has specific formatting strings that are worth trying.
+   #'format '("%d" "%o" "%x" "%X" "%e" "%c" "%f" "%s" "%S")
+   ;; `-iterate' is great for building incrementing/decrementing lists.
+   ;; (an alternative to `number-sequence').
+   #'-iterate '(1+ 1-)
+   ;; Lists can be sorted in a variety of ways.
+   #'-sort '(< > string< string>)
+   ;; For indexing functions, just use non-negative numbers. This
+   ;; avoids confusing results like (last nil 5) => nil.
+   #'elt '(0 1 2)
+   #'nth '(0 1 2)
+   #'nthcdr '(0 1 2)
+   #'last '(0 1 2)
+   #'-drop '(0 1 2)
+   #'-drop-last '(0 1 2)
+   #'-take '(0 1 2)
+   ;; For functions that look up a value, don't supply any extra
+   ;; arguments.
+   #'plist-member '()
+   #'assoc '()
+   ;; Likewise for comparisons, there's no interesting extra value we can offer.
+   #'-is-suffix-p '()
+   #'-is-prefix-p '()
+   #'-is-infix-p '()
+   ;; Remove has some weird behaviours with t: (remove 'foo t) => t.
+   ;; Only use nil as an extra value, so we can discover remove as an
+   ;; alternative to `-non-nil'.
+   #'remove '(nil)
+   ;; mapcar with identity is a fun way to convert sequences (strings,
+   ;; vectors) to lists.
+   #'mapcar '(identity)
+   ;; These common values often set flags in interesting
+   ;; ways.
+   t '(nil t -1 0 1 2))
+  "Some functions work best with a special extra argument.
+
+This plist associates functions with particular arguments that
+produce good results. If a function isn't explicitly mentioned,
+we look up `t' instead.")
 
 (defun suggest--safe (fn args)
-  "Is FN safe to call with ARGS?
-Due to Emacs bug #25684, some string functions cause Emacs to segfault
-when given negative integers."
+  "Is FN safe to call with ARGS?"
   (not
-   ;; These functions call caseify_object in casefiddle.c.
-   (and (memq fn '(upcase downcase capitalize upcase-initials))
-        (consp args)
-        (null (cdr args))
-        (integerp (car args))
-        (< (car args) 0))))
+   (or
+    ;; Due to Emacs bug #25684, string functions that call
+    ;; caseify_object in casefiddle.c cause Emacs to segfault when
+    ;; given negative integers.
+    (and (memq fn '(upcase downcase capitalize upcase-initials))
+         (consp args)
+         (null (cdr args))
+         (integerp (car args))
+         (< (car args) 0))
+    ;; If `read' is called with nil or t, it prompts interactively.
+    (and (eq fn 'read)
+         (member args '(nil (nil) (t))))
+    ;; Work around https://github.com/Wilfred/suggest.el/issues/37 on
+    ;; Emacs 24, where it's possible to crash `read' with a list.
+    (and (eq fn 'read)
+         (eq emacs-major-version 24)
+         (consp (car args)))
+    ;; Work around https://github.com/magnars/dash.el/issues/241
+    (and (memq fn '(-interleave -zip))
+         (null args)))))
 
 (defface suggest-heading
   '((((class color) (background light)) :foreground "DarkGoldenrod4" :weight bold)
@@ -529,7 +614,9 @@ nil otherwise."
   (when (suggest--safe func (if variadic-p
                                 (car values)
                               values))
-    (let (func-output func-success)
+    (let ((default-directory "/")
+          (file-name-handler-alist nil)
+          func-output func-success)
       (ignore-errors
         (setq func-output
               (if variadic-p
@@ -541,13 +628,30 @@ nil otherwise."
               :variadic-p variadic-p
               :literals literals)))))
 
+(defun suggest--unread (value)
+  "Convert VALUE to a string that can be read to obtain VALUE.
+This is primarily for quoting symbols."
+  (cond
+   ((consp value)
+    (format "'%S" value))
+   ((functionp value)
+    (format "#'%s" value))
+   ((and
+     (symbolp value)
+     (not (keywordp value))
+     (not (eq value nil))
+     (not (eq value t)))
+    (format "'%s" value))
+   (t
+    (format "%S" value))))
+
 (defun suggest--try-call (iteration func input-values input-literals)
   "Try to call FUNC with INPUT-VALUES, and return a list of outputs"
   (let (outputs)
     ;; See if (func value1 value2...) gives us a value.
     (-when-let (result (suggest--call func input-values input-literals))
       (push result outputs))
-    
+
     ;; See if (apply func input-values) gives us a value.
     (when (and (eq (length input-values) 1) (listp (car input-values)))
       (-when-let (result (suggest--call func input-values input-literals t))
@@ -555,14 +659,16 @@ nil otherwise."
 
     ;; See if (func COMMON-CONSTANT value1 value2...) gives us a value.
     (when (zerop iteration)
-      (dolist (extra-arg (list nil t 0 1 -1 2))
+      (dolist (extra-arg (if (plist-member suggest-extra-args func)
+                             (plist-get suggest-extra-args func)
+                           (plist-get suggest-extra-args t)))
         (dolist (position '(after before))
           (let ((args (if (eq position 'before)
                           (cons extra-arg input-values)
                         (-snoc input-values extra-arg)))
                 (literals (if (eq position 'before)
-                              (cons (format "%S" extra-arg) input-literals)
-                            (-snoc input-literals (format "%S" extra-arg)))))
+                              (cons (suggest--unread extra-arg) input-literals)
+                            (-snoc input-literals (suggest--unread extra-arg)))))
             (-when-let (result (suggest--call func args literals))
               (push result outputs))))))
     ;; Return results in ascending order of preference, so we prefer
@@ -610,7 +716,7 @@ than their values."
                        (cl-incf possibilities-count)
                        (when (>= possibilities-count suggest--max-possibilities)
                          (throw 'done nil))
-                       
+
                        ;; If we're on the first iteration, we're just
                        ;; searching all input permutations. Don't try any
                        ;; other permutations, or we end up showing e.g. both
@@ -652,30 +758,43 @@ than their values."
 (defun suggest--cmp-relevance (pos1 pos2)
   "Compare two possibilities such that the more relevant result
   is smaller."
-  ;; We prefer fewer functions, and we prefer simpler functions. We
-  ;; use a dumb but effective heuristic: concatenate the function
-  ;; names and take the shortest.
-  (cond
-   ;; If we have the same number of function calls, with the same
-   ;; number of arguments, prefer functions with shorter names.
-   ((and
-     (= (length (plist-get pos1 :funcs)) (length (plist-get pos2 :funcs)))
-     (= (length (plist-get pos1 :literals)) (length (plist-get pos2 :literals))))
-    (let ((join-names (lambda (pos)
-                        (->> (plist-get pos :funcs)
-                             (--map (plist-get it :sym))
-                             (-map #'symbol-name)
-                             (apply #'concat)))))
-      (< (length (funcall join-names pos1)) (length (funcall join-names pos2)))))
+  (let ((pos1-func-count (length (plist-get pos1 :funcs)))
+        (pos2-func-count (length (plist-get pos2 :funcs)))
+        (pos1-arg-count (length (plist-get pos1 :literals)))
+        (pos2-arg-count (length (plist-get pos2 :literals)))
+        (pos1-apply-count (length (--filter (plist-get it :variadic-p)
+                                            (plist-get pos1 :funcs))))
+        (pos2-apply-count (length (--filter (plist-get it :variadic-p)
+                                            (plist-get pos2 :funcs)))))
+    (cond
+     ;; If we have the same number of function calls, with the same
+     ;; number of arguments, prefer functions with shorter names. This
+     ;; is a dumb but surprisingly effective heuristic.
+     ((and
+       (= pos1-func-count pos2-func-count)
+       (= pos1-arg-count pos2-arg-count)
+       (= pos1-apply-count pos2-apply-count))
+      (let ((join-names (lambda (pos)
+                          (->> (plist-get pos :funcs)
+                               (--map (plist-get it :sym))
+                               (-map #'symbol-name)
+                               (apply #'concat)))))
+        (< (length (funcall join-names pos1)) (length (funcall join-names pos2)))))
 
-   ;; Prefer calls that don't have extra arguments, so prefer (1+ 1)
-   ;; over (+ 1 1).
-   ((= (length (plist-get pos1 :funcs)) (length (plist-get pos2 :funcs)))
-    (< (length (plist-get pos1 :literals)) (length (plist-get pos2 :literals))))
+     ;; Prefer direct function calls to using apply.
+     ((and
+       (= pos1-func-count pos2-func-count)
+       (= pos1-arg-count pos2-arg-count))
+      (< pos1-apply-count pos2-apply-count))
 
-   ;; Prefer fewer function calls over all else.
-   (t
-    (< (length (plist-get pos1 :funcs)) (length (plist-get pos2 :funcs))))))
+     ;; Prefer calls that don't have extra arguments, so prefer (1+ 1)
+     ;; over (+ 1 1).
+     ((= pos1-func-count pos2-func-count)
+      (< pos1-arg-count pos2-arg-count))
+
+     ;; Prefer fewer function calls over all else.
+     (t
+      (< (length (plist-get pos1 :funcs)) (length (plist-get pos2 :funcs)))))))
 
 ;;;###autoload
 (defun suggest-update ()
@@ -692,7 +811,7 @@ than their values."
     (setq possibilities
           (-take 5
                  (-sort #'suggest--cmp-relevance possibilities)))
-    
+
     (if possibilities
         (suggest--write-suggestions
          possibilities
