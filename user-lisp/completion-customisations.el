@@ -31,8 +31,7 @@
 
 (global-set-key (kbd "s-/") #'company-dabbrev)
 
-(global-set-key (kbd "C-z") #'company-try-hard)
-(define-key company-active-map (kbd "C-z") #'company-try-hard)
+(global-set-key (kbd "C-z") #'eacl-complete-line)
 
 (defun wh/company-whole-line-with-activate ()
   "Call `company-whole-line', temporarily enabling company-mode if necessary."
