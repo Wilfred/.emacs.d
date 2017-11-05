@@ -8,7 +8,7 @@
 ;; Author: Julien Barnier
 ;; Adapted-By: Yesudeep Mangalapilly
 ;; Keywords: tango palette color theme emacs
-;; Package-Version: 20150702.104
+;; Package-Version: 20170924.809
 ;; URL: https://github.com/juba/color-theme-tangotango
 ;; Version: 0.0.6
 
@@ -71,7 +71,7 @@
  `(button ((t (:inherit (link)))))
  `(link ((t (:foreground "dodger blue" :underline (:color foreground-color :style line)))))
  `(link-visited ((default (:inherit (link))) (((class color) (background light)) (:foreground "magenta4")) (((class color) (background dark)) (:foreground "violet"))))
- `(fringe ((t (:background "grey10"))))
+ `(fringe ((t (:background "#2e3434"))))
  `(header-line ((default (:inherit (mode-line))) (((type tty)) (:underline (:color foreground-color :style line) :inverse-video nil)) (((class color grayscale) (background light)) (:box nil :foreground "grey20" :background "grey90")) (((class color grayscale) (background dark)) (:box nil :foreground "grey90" :background "grey20")) (((class mono) (background light)) (:underline (:color foreground-color :style line) :box nil :inverse-video nil :foreground "black" :background "white")) (((class mono) (background dark)) (:underline (:color foreground-color :style line) :box nil :inverse-video nil :foreground "white" :background "black"))))
  `(tooltip ((t (:background "lightyellow" :foreground "black" :inherit (quote variable-pitch)))))
  `(mode-line ((t (:box (:line-width 1 :color nil :style released-button) :background "#222222" :foreground "#bbbbbc"))))
