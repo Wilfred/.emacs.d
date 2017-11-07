@@ -349,10 +349,10 @@ If the region is active, toggle commenting on the whole region."
 (defun wh/show-backups ()
   "Show the directory containing all the backups of the current buffer."
   (interactive)
-  (let* ((backup-name
-          (backup-each-save-compute-location (buffer-file-name)))
-         (directory (f-dirname backup-name)))
-    (dired directory)))
+  (dired
+   (f-dirname (backup-each-save-compute-location
+               (or (buffer-file-name)
+                   (f-expand "foo" default-directory))))))
 
 ;; Automatically save when tabbing out of a buffer.
 ;; Inspired by http://ngnghm.github.io/blog/2015/08/03/chapter-2-save-our-souls/
