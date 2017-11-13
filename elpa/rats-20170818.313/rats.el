@@ -5,7 +5,7 @@
 ;; Author: Antoine Kalmbach <ane@iki.fi>
 ;; Created: 2016-03-05
 ;; Version: 0.1.0
-;; Package-Version: 20160315.1145
+;; Package-Version: 20170818.313
 ;; Keywords: go
 ;; Package-Requires: ((s "1.10.0") (go-mode "1.3.1") (cl-lib "0.5"))
 
@@ -119,17 +119,19 @@
   "Run `go test', or if TEST is provided, run only that test."
   (let ((go-command (executable-find rats-go-executable-name)))
     (if go-command
-        (let* ((output-buffer-name "*rats-test*") 
-               (arguments '("test" "-v"))
-               (full-args (append arguments )))
+        (let* ((output-buffer-name "*rats-test*")
+               (go-args (if (s-present? test)
+                            (list "test" "-v" "-run" test)
+                          (list "test" "-v")))
+               (inhibit-read-only t))
           (when (get-buffer output-buffer-name)
             (with-current-buffer (get-buffer output-buffer-name)
               (erase-buffer)))
           (let ((output-buffer (get-buffer-create output-buffer-name)))
-            (call-process "go" nil output-buffer nil "test" "-v"
-                          (if (s-present? test) "-run" "")
-                          (if (s-present? test) test ""))
+            (apply #'call-process "go" nil output-buffer nil go-args)
+
             (with-current-buffer output-buffer
+              (compilation-mode)
               (if (rats--failed-p (buffer-string))
                   `((err . ,(rats--format-failure (buffer-string))))
                 (if (s-present? test)
