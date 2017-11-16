@@ -88,6 +88,14 @@
                 racket-mode-hook))
   (add-hook hook #'rainbow-delimiters-mode))
 
+(use-package geiser
+  :config
+  ;; Use racket-mode for racket.
+  ;; https://github.com/jaor/geiser/pull/228
+  (setq
+   auto-mode-alist
+   (remove '("\\.rkt\\'" . scheme-mode) auto-mode-alist)))
+
 ;; Common Lisp configuration
 (use-package slime
   :config
