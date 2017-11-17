@@ -25,6 +25,43 @@
   (require 'ob-sh)
   (require 'ob-python)
 
+  ;; I use S-left for moving between windows in a frame. Use the same
+  ;; keybinding as wh/increment-number-decimal for incrementing dates.
+  (define-key org-mode-map (kbd "<C-up>") #'org-timestamp-up-day)
+  (define-key org-mode-map (kbd "<C-down>") #'org-timestamp-down-day)
+
+  (defun wh/org-today-subheading ()
+    "Insert a dated subheading for grouping days in done.org."
+    (interactive)
+    (goto-char (line-end-position))
+    (insert "\n\n** ")
+    (org-date-from-calendar))
+
+  ;; Mnemonic: 'd' for day.
+  (define-key org-mode-map (kbd "C-c d") #'wh/org-today-subheading)
+
+  (defun wh/org-today-entry ()
+    "Insert a dated subsubheading suitable for entries done.org."
+    (interactive)
+
+    ;; Start a new line if we're not on a blank line.
+    (goto-char (line-beginning-position))
+    (when (not (looking-at "\n"))
+      (goto-char (line-end-position))
+      (insert "\n\n"))
+
+    (insert "*** ")
+    (org-date-from-calendar)
+    (goto-char (line-beginning-position))
+    (while (not (looking-at " "))
+      (forward-char))
+    (insert " "))
+
+  ;; Mnemonic: 'n' for new.
+  (define-key org-mode-map (kbd "C-c n") #'wh/org-today-entry)
+  ;; 'i' for item.
+  (define-key org-mode-map (kbd "C-c i") #'wh/org-today-entry)
+
   ;; Don't underline dates, it's distracting.
   (custom-set-faces
    '(org-date ((((class color)) (:underline nil))) t)))
@@ -42,42 +79,5 @@
 
 (setq deft-directory "~/scratch")
 (setq deft-default-extension "org")
-
-(defun wh/org-today-time-stamp ()
-  "Insert today's date as a time stamp."
-  (interactive)
-  (org-insert-time-stamp (current-time)))
-
-(defun wh/org-today-subheading ()
-  "Insert a dated subheading for grouping days in done.org."
-  (interactive)
-  (goto-char (line-end-position))
-  (insert "\n\n** ")
-  (wh/org-today-time-stamp))
-
-;; Mnemonic: 'd' for day.
-(define-key org-mode-map (kbd "C-c d") #'wh/org-today-subheading)
-
-(defun wh/org-today-entry ()
-  "Insert a dated subsubheading suitable for entries done.org."
-  (interactive)
-
-  ;; Start a new line if we're not on a blank line.
-  (goto-char (line-beginning-position))
-  (when (not (looking-at "\n"))
-    (goto-char (line-end-position))
-    (insert "\n\n"))
-  
-  (insert "*** ")
-  (wh/org-today-time-stamp)
-  (goto-char (line-beginning-position))
-  (while (not (looking-at " "))
-    (forward-char))
-  (insert " "))
-
-;; Mnemonic: 'n' for new.
-(define-key org-mode-map (kbd "C-c n") #'wh/org-today-entry)
-;; 'i' for item.
-(define-key org-mode-map (kbd "C-c i") #'wh/org-today-entry)
 
 (provide 'org-customisations)
