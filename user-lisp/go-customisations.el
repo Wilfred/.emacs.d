@@ -25,6 +25,10 @@
   (defun wh/gofmt-before-save ()
     (set (make-local-variable 'before-save-hook)
          (append before-save-hook (list #'gofmt-before-save))))
-  (add-hook 'go-mode-hook #'wh/gofmt-before-save))
+  (add-hook 'go-mode-hook #'wh/gofmt-before-save)
+
+  (require 'rats)
+  (add-hook 'go-mode-hook #'rats-mode))
+
 
 (provide 'go-customisations)
