@@ -19,9 +19,7 @@
     string))
 
 (defun random-reseed-securely ()
-  "Securely reseed Emacs' random number generator.
-By default, the random number generator is only seeded with the
-current time the current Emacs PID."
+  "Securely reseed Emacs' random number generator."
   (random (shell-command "cat < /dev/urandom | fold -w32 | head -n1")))
 
 (defun random-password ()
