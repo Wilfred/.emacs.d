@@ -26,7 +26,7 @@
 
 ;; Everyone uses four space indents, and Emacs noisily announces
 ;; indentation guessing.
-(setq python-indent-guess-indent-offset nil)
+(setq python-indent-guess-indent-offset-verbose nil)
 
 ;; TODO: properly highlight differently named self arguments (often seen in nested classes):
 
