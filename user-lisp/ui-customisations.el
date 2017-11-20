@@ -252,7 +252,9 @@ If it is split, repeat the current buffer in a vertical split."
                             (buffer-list)))
          (bufs-with-names (--map (cons
                                   (with-current-buffer it
-                                    (projectile-project-name))
+                                    (format "%s %s"
+                                            (s-pad-right 15 " " (projectile-project-name))
+                                            (f-abbrev default-directory)))
                                   it)
                                  buffers))
          (chosen-buf
