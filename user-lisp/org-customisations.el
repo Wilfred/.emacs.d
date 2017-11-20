@@ -35,7 +35,7 @@
     (interactive)
     (goto-char (line-end-position))
     (insert "\n\n** ")
-    (org-date-from-calendar))
+    (org-insert-time-stamp (current-time) nil t))
 
   ;; Mnemonic: 'd' for day.
   (define-key org-mode-map (kbd "C-c d") #'wh/org-today-subheading)
@@ -51,7 +51,7 @@
       (insert "\n\n"))
 
     (insert "*** ")
-    (org-date-from-calendar)
+    (org-insert-time-stamp (current-time))
     (goto-char (line-beginning-position))
     (while (not (looking-at " "))
       (forward-char))
