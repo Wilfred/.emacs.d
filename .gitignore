@@ -52,3 +52,6 @@ var/pcache
 src
 # Images of emojis
 emojis
+
+# anaconda is a virtualenv with eggs, so shouldn't be checked in.
+anaconda-mode
