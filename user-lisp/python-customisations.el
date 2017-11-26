@@ -104,7 +104,7 @@ This means `pop-mark' can take us back to our previous position."
 
 ;; Anaconda is great for jump-to-definition. You do need to
 ;; tell it which virtualenv you're using, see `venv-workon'.
-(use-package anaconda
+(use-package anaconda-mode
   :diminish "Ana"
   :config
   (add-to-list 'python-mode-hook #'anaconda-mode)
