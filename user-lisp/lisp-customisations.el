@@ -130,6 +130,11 @@
   (define-key lispy-mode-map (kbd ":") nil)
   (define-key lispy-mode-map-lispy (kbd ":") nil)
 
+  ;; Use [ to insert a pair [] in lisp, because it's pretty common in
+  ;; scheme and clojure. Keep ] as jumping to the close paren, as
+  ;; that's useful and we autoclose square parens.
+  (define-key lispy-mode-map-lispy (kbd "[") nil)
+
   ;; lispy-underscore has some extra smarts, but they're only for
   ;; Clojure. I like using _ with `nameless-mode'.
   (define-key lispy-mode-map (kbd "_") nil)
