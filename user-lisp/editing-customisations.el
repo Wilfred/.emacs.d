@@ -251,7 +251,8 @@ Handy when editing markdown."
                   (file-modes-symbolic-to-number "u+rwx" (file-modes (buffer-file-name))))
 
   (let ((python-interpreter "#!/usr/bin/env python")
-        (bash-interpreter  "#!/bin/bash")
+        (bash-interpreter "#!/bin/bash")
+        (racket-lang "#lang racket")
         interpreter)
     (cond
      ;; Choose shebang based on filename.
@@ -259,6 +260,8 @@ Handy when editing markdown."
       (setq interpreter python-interpreter))
      ((f-ext-p (buffer-file-name) "sh")
       (setq interpreter bash-interpreter))
+     ((f-ext-p (buffer-file-name) "rkt")
+      (setq interpreter racket-lang))
      ;; Prompt for the shebang.
      (t
       (setq interpreter (completing-read "Interpreter: " (list bash-interpreter python-interpreter)))))
