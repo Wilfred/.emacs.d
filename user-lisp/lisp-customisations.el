@@ -88,6 +88,10 @@
                 racket-mode-hook))
   (add-hook hook #'rainbow-delimiters-mode))
 
+(use-package racket-mode
+  :config
+  (add-hook 'racket-mode-hook #'flycheck-mode))
+
 (use-package geiser
   :config
   ;; Use racket-mode for racket.
