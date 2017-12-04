@@ -1,9 +1,11 @@
 ;;; flycheck-ert.el --- Flycheck: ERT extensions  -*- lexical-binding: t; -*-
 
+;; Copyright (C) 2017 Flycheck contributors
 ;; Copyright (C) 2013-2016 Sebastian Wiesner and Flycheck contributors
 
 ;; Author: Sebastian Wiesner <swiesner@lunaryorn.com>
-;; Maintainer: Sebastian Wiesner <swiesner@lunaryorn.com>
+;; Maintainer: Clément Pit-Claudel <clement.pitclaudel@live.com>
+;;             fmdkdd <fmdkdd@gmail.com>
 ;; URL: https://github.com/flycheck/flycheck
 
 ;; This file is not part of GNU Emacs.
@@ -42,6 +44,28 @@
   ;; Provide `ert-skip' and friends for Emacs 24.3
   (defconst flycheck-ert-ert-can-skip (fboundp 'ert-skip)
     "Whether ERT supports test skipping.")
+
+  (unless (fboundp 'define-error)
+    ;; from Emacs `subr.el'
+    (defun define-error (name message &optional parent)
+      "Define NAME as a new error signal.
+MESSAGE is a string that will be output to the echo area if such an error
+is signaled without being caught by a `condition-case'.
+PARENT is either a signal or a list of signals from which it inherits.
+Defaults to `error'."
+      (unless parent (setq parent 'error))
+      (let ((conditions
+             (if (consp parent)
+                 (apply #'append
+                        (mapcar (lambda (parent)
+                                  (cons parent
+                                        (or (get parent 'error-conditions)
+                                            (error "Unknown signal `%s'" parent))))
+                                parent))
+               (cons parent (get parent 'error-conditions)))))
+        (put name 'error-conditions
+             (delete-dups (copy-sequence (cons name conditions))))
+        (when message (put name 'error-message message)))))
 
   (unless flycheck-ert-ert-can-skip
     ;; Fake skipping
