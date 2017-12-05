@@ -1,7 +1,7 @@
 ;;; rust-mode.el --- A major emacs mode for editing Rust source code -*-lexical-binding: t-*-
 
 ;; Version: 0.3.0
-;; Package-Version: 20170805.952
+;; Package-Version: 20171106.510
 ;; Author: Mozilla
 ;; Url: https://github.com/rust-lang/rust-mode
 ;; Keywords: languages
@@ -85,7 +85,7 @@
   (let ((table (make-syntax-table)))
 
     ;; Operators
-    (dolist (i '(?+ ?- ?* ?/ ?& ?| ?^ ?! ?< ?> ?~ ?@))
+    (dolist (i '(?+ ?- ?* ?/ ?% ?& ?| ?^ ?! ?< ?> ?~ ?@))
       (modify-syntax-entry i "." table))
 
     ;; Strings
@@ -538,16 +538,18 @@ buffer."
     "true" "trait" "type"
     "use"
     "virtual"
-    "where" "while"))
+    "where" "while"
+    "yield"))
 
 (defconst rust-special-types
   '("u8" "i8"
     "u16" "i16"
     "u32" "i32"
     "u64" "i64"
+    "u128" "i128"
 
     "f32" "f64"
-    "float" "int" "uint" "isize" "usize"
+    "isize" "usize"
     "bool"
     "str" "char"))
 
@@ -682,6 +684,12 @@ match data if found. Returns nil if not within a Rust string."
      ;; Field names like `foo:`, highlight excluding the :
      (,(concat (rust-re-grab rust-re-ident) ":[^:]") 1 font-lock-variable-name-face)
 
+     ;; CamelCase Means Type Or Constructor
+     (,rust-re-type-or-constructor 1 font-lock-type-face)
+
+     ;; Type-inferred binding
+     (,(concat "\\_<\\(?:let\\|ref\\)\\s-+\\(?:mut\\s-+\\)?" (rust-re-grab rust-re-ident) "\\_>") 1 font-lock-variable-name-face)
+
      ;; Type names like `Foo::`, highlight excluding the ::
      (,(rust-path-font-lock-matcher rust-re-uc-ident) 1 font-lock-type-face)
 
@@ -690,9 +698,6 @@ match data if found. Returns nil if not within a Rust string."
 
      ;; Lifetimes like `'foo`
      (,(concat "'" (rust-re-grab rust-re-ident) "[^']") 1 font-lock-variable-name-face)
-
-     ;; CamelCase Means Type Or Constructor
-     (,rust-re-type-or-constructor 1 font-lock-type-face)
 
      ;; Question mark operator
      ("\\?" . 'rust-question-mark-face)
@@ -751,7 +756,7 @@ match data if found. Returns nil if not within a Rust string."
   can have a where clause, rewind back to just before the name of
   the subject of that where clause and return the new point.
   Otherwise return nil"
-  
+
   (let* ((ident-pos (point))
          (newpos (save-excursion
                    (rust-rewind-irrelevant)
@@ -794,7 +799,7 @@ match data if found. Returns nil if not within a Rust string."
       ;; A type alias or ascription could have a type param list.  Skip backwards past it.
       (when (member token '(ambiguous-operator open-brace))
         (rust-rewind-type-param-list))
-      
+
       (cond
 
        ;; Certain keywords always introduce expressions
@@ -809,7 +814,10 @@ match data if found. Returns nil if not within a Rust string."
        ;; An ident! followed by an open brace is a macro invocation.  Consider
        ;; it to be an expression.
        ((and (equal token 'open-brace) (rust-looking-back-macro)) t)
-       
+
+       ;; In a brace context a "]" introduces an expression.
+       ((and (eq token 'open-brace) (rust-looking-back-str "]")))
+
        ;; An identifier is right after an ending paren, bracket, angle bracket
        ;; or curly brace.  It's a type if the last sexp was a type.
        ((and (equal token 'ident) (equal 5 (rust-syntax-class-before-point)))
@@ -823,7 +831,7 @@ match data if found. Returns nil if not within a Rust string."
         (backward-sexp)
         (rust-rewind-irrelevant)
         (looking-back "[{;]" (1- (point))))
-       
+
        ((rust-looking-back-ident)
         (rust-rewind-qualified-ident)
         (rust-rewind-irrelevant)
@@ -846,7 +854,7 @@ match data if found. Returns nil if not within a Rust string."
                         (rust-rewind-irrelevant)
                         (rust-looking-back-symbols '("enum" "struct" "union" "trait" "type"))))))
            ))
-         
+
          ((equal token 'ambiguous-operator)
           (cond
            ;; An ampersand after an ident has to be an operator rather than a & at the beginning of a ref type
@@ -877,7 +885,7 @@ match data if found. Returns nil if not within a Rust string."
                   (rust-rewind-irrelevant)
                   (rust-looking-back-str "enum")))))
             t)
-           
+
            ;; Otherwise the ambiguous operator is a type if the identifier is a type
            ((rust-is-in-expression-context 'ident) t)))
 
@@ -926,7 +934,7 @@ match data if found. Returns nil if not within a Rust string."
 
        ;; A :: introduces a type (or module, but not an expression in any case)
        ((rust-looking-back-str "::") nil)
-       
+
        ((rust-looking-back-str ":")
         (backward-char)
         (rust-is-in-expression-context 'colon))
@@ -965,7 +973,7 @@ match data if found. Returns nil if not within a Rust string."
 (defun rust-is-lt-char-operator ()
   "Return t if the < sign just after point is an operator rather
   than an opening angle bracket, otherwise nil."
-  
+
   (let ((case-fold-search nil))
     (save-excursion
       (rust-rewind-irrelevant)
@@ -977,7 +985,7 @@ match data if found. Returns nil if not within a Rust string."
        ((and (rust-looking-back-str "<")
              (not (equal 4 (rust-syntax-class-before-point)))
              (not (rust-looking-back-str "<<"))))
-       
+
        ;; On the other hand, if we are after a closing paren/brace/bracket it
        ;; can only be an operator, not an angle bracket.  Likewise, if we are
        ;; after a string it's an operator.  (The string case could actually be
@@ -1005,7 +1013,7 @@ match data if found. Returns nil if not within a Rust string."
          ;; The special types can't take type param lists, so a < after one is
          ;; always an operator
          (looking-at rust-re-special-types)
-         
+
          (rust-is-in-expression-context 'ident)))
 
        ;; Otherwise, assume it's an angle bracket
@@ -1040,7 +1048,7 @@ should be considered a paired angle bracket."
    ;; to balance regardless of the < and >, so if we don't treat any < or >
    ;; as angle brackets it won't mess up any paren balancing.
    ((rust-in-macro) t)
-   
+
    ((looking-at "<")
     (rust-is-lt-char-operator))
 
@@ -1484,6 +1492,11 @@ This is written mainly to be used as `end-of-defun-function' for Rust."
   (interactive)
   (setq-local rust-format-on-save nil))
 
+(defun rust-compile ()
+  "Compile using `cargo build`"
+  (interactive)
+  (compile "cargo build"))
+
 (defvar rust-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-f") 'rust-format-buffer)
@@ -1539,8 +1552,6 @@ This is written mainly to be used as `end-of-defun-function' for Rust."
   (setq-local end-of-defun-function 'rust-end-of-defun)
   (setq-local parse-sexp-lookup-properties t)
   (setq-local electric-pair-inhibit-predicate 'rust-electric-pair-inhibit-predicate-wrap)
-
-  (setq-local compile-command "cargo build")
 
   (add-hook 'before-save-hook 'rust--before-save-hook nil t)
 
@@ -1603,7 +1614,7 @@ See `compilation-error-regexp-alist' for help on their format.")
    the compilation window until the top of the error is visible."
   (save-selected-window
     (when (eq major-mode 'rust-mode)
-      (select-window (get-buffer-window next-error-last-buffer))
+      (select-window (get-buffer-window next-error-last-buffer 'visible))
       (when (save-excursion
               (beginning-of-line)
               (looking-at " *-->"))
