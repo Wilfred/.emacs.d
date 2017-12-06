@@ -274,4 +274,12 @@ and `defcustom' forms reset their default values."
 ;; elisp (and it works best there).
 (global-set-key (kbd "C-c C-r") #'emr-show-refactor-menu)
 
+;; Use helpful instead of Emacs' describe commands.
+(global-set-key (kbd "C-h f") #'helpful-callable)
+
+(global-set-key (kbd "C-h v") #'helpful-variable)
+(global-set-key (kbd "C-h k") #'helpful-key)
+
+(global-set-key (kbd "C-c C-.") #'helpful-at-point)
+
 (provide 'lisp-customisations)
