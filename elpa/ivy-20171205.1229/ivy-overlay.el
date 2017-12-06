@@ -1,6 +1,6 @@
-;;; ivy-overlay.el --- Overlay display functions for Ivy  -*- lexical-binding: t; -*-
+;;; ivy-overlay.el --- Overlay display functions for Ivy  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2016  Oleh Krehel
+;; Copyright (C) 2016-2017  Free Software Foundation, Inc.
 
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 ;; Keywords: convenience
@@ -36,14 +36,16 @@
 (defvar ivy-overlay-at nil
   "Overlay variable for `ivy-display-function-overlay'.")
 
+(declare-function ivy--truncate-string "ivy")
+
 (defun ivy-left-pad (str width)
-  "Pad STR from left with WIDTH spaces."
-  (let ((padding (make-string width ?\ )))
-    (mapconcat (lambda (x) (concat padding x))
+  "Return STR, but with each line indented by WIDTH spaces.
+Lines are truncated to the window width."
+  (let ((padding (make-string width ?\s)))
+    (mapconcat (lambda (x)
+                 (ivy--truncate-string (concat padding x) (1- (window-width))))
                (split-string str "\n")
                "\n")))
-
-(declare-function company-abort "ext:company")
 
 (defun ivy-overlay-cleanup ()
   "Clean up after `ivy-display-function-overlay'."
@@ -71,40 +73,60 @@ Then attach the overlay the character before point."
 
 (declare-function org-current-level "org")
 (defvar org-indent-indentation-per-level)
+(defvar ivy-height)
+(defvar ivy-last)
+(defvar ivy-text)
+(defvar ivy-completion-beg)
+(declare-function ivy--get-window "ivy")
+(declare-function ivy-state-current "ivy")
+(declare-function ivy-state-window "ivy")
+
+(defun ivy-overlay-impossible-p ()
+  (or
+   (< (- (window-width) (current-column))
+      (length (ivy-state-current ivy-last)))
+   (<= (window-height) (+ ivy-height 3))
+   (= (point) (point-min))))
 
 (defun ivy-display-function-overlay (str)
   "Called from the minibuffer, display STR in an overlay in Ivy window.
 Hide the minibuffer contents and cursor."
-  (add-face-text-property (minibuffer-prompt-end) (point-max)
-                          '(:foreground "white"))
-  (let ((cursor-pos (1+ (- (point) (minibuffer-prompt-end))))
-        (ivy-window (ivy--get-window ivy-last)))
-    (setq cursor-type nil)
-    (with-selected-window ivy-window
-      (when cursor-type
-        (setq ivy--old-cursor-type cursor-type))
+  (if (save-selected-window
+        (select-window (ivy-state-window ivy-last))
+        (ivy-overlay-impossible-p))
+      (let ((buffer-undo-list t))
+        (save-excursion
+          (forward-line 1)
+          (insert str)))
+    (add-face-text-property (minibuffer-prompt-end) (point-max)
+                            '(:foreground "white"))
+    (let ((cursor-pos (1+ (- (point) (minibuffer-prompt-end))))
+          (ivy-window (ivy--get-window ivy-last)))
       (setq cursor-type nil)
-      (let ((overlay-str
-             (concat
-              (buffer-substring (max 1 (1- (point))) (point))
-              ivy-text
-              (if (eolp)
-                  " "
-                "")
-              (buffer-substring (point) (line-end-position))
-              (ivy-left-pad
-               str
-               (+ (if (eq major-mode 'org-mode)
-                      (* org-indent-indentation-per-level (org-current-level))
-                    0)
-                  (if (eq (ivy-state-caller ivy-last)
-                          'ivy-completion-in-region)
-                      (- ivy-completion-beg ivy-completion-end)
-                    0)
-                  (current-column))))))
-        (add-face-text-property cursor-pos (1+ cursor-pos)
-                                'ivy-cursor t overlay-str)
-        (ivy-overlay-show-after overlay-str)))))
+      (with-selected-window ivy-window
+        (when cursor-type
+          (setq ivy--old-cursor-type cursor-type))
+        (setq cursor-type nil)
+        (let ((overlay-str
+               (concat
+                (buffer-substring (max 1 (1- (point))) (point))
+                ivy-text
+                (if (eolp)
+                    " "
+                  "")
+                (buffer-substring (point) (line-end-position))
+                (ivy-left-pad
+                 str
+                 (+ (if (and (eq major-mode 'org-mode)
+                             (bound-and-true-p org-indent-mode))
+                        (* org-indent-indentation-per-level (org-current-level))
+                      0)
+                    (save-excursion
+                      (goto-char ivy-completion-beg)
+                      (current-column)))))))
+          (add-face-text-property cursor-pos (1+ cursor-pos)
+                                  'ivy-cursor t overlay-str)
+          (ivy-overlay-show-after overlay-str))))))
 
 (provide 'ivy-overlay)
 ;;; ivy-overlay.el ends here
