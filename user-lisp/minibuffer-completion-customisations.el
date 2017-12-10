@@ -64,12 +64,6 @@
   ;; substring in mind.
   (setq ivy-initial-inputs-alist nil)
 
-  ;; Use C-j for immediate termination with the current value, and RET
-  ;; for continuing completion for that directory. This is the ido
-  ;; behaviour.
-  (define-key ivy-minibuffer-map (kbd "C-j") #'ivy-immediate-done)
-  (define-key ivy-minibuffer-map (kbd "RET") #'ivy-alt-done)
-
   ;; Use C-RET as the same as RET, because I tend to accidentally press
   ;; C-RET.
   (define-key ivy-minibuffer-map (kbd "<C-return>") #'ivy-alt-done)
