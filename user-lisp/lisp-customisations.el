@@ -156,6 +156,11 @@
   ;; hunks.
   (define-key lispy-mode-map-lispy (kbd "C-,") nil)
   (define-key lispy-mode-map-lispy (kbd "C-c C-k") #'lispy-kill-at-point)
+
+  ;; Semantic mode can be switched on by lispy, which changes the
+  ;; behaviour of a range of commands. Ensure it's only temporarily
+  ;; switched on.
+  (setq lispy-no-permanent-semantic t)
   
   ;; Ensure pressing q closes edebug, macrostep and magit-blame.
   (setq lispy-compat '(edebug macrostep magit-blame-mode)))
