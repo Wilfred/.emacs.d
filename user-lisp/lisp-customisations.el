@@ -287,4 +287,8 @@ and `defcustom' forms reset their default values."
 
 (global-set-key (kbd "C-c C-.") #'helpful-at-point)
 
+;; Since helpful exposes the manual anyway, use C-h F for looking up
+;; functions.
+(global-set-key (kbd "C-h F") #'helpful-function)
+
 (provide 'lisp-customisations)
