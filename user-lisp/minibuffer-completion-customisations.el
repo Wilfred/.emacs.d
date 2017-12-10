@@ -12,25 +12,18 @@
 ;; just the beginning) to find the values I'm looking for.
 
 ;;; ido:
-;; For my everyday usage, ido works really well. It's robust, reliable
+;; For everyday usage, ido works really well. It's built-in, robust, reliable
 ;; and unsurprising.
-
-(require 'ido)
-
-;; TODO: ido is a little slow for large option sets, e.g. C-h v or C-h
-;; f. ido-flx looks hopeful as an alternative that's faster with
-;; negligible change in experience. Ido-hacks also exists, but it's a
-;; fork of ido.
 
 ;; The advantages of ido are:
 ;; * Simplicity. It doesn't open a new buffer like helm does.
 ;; * Convenient narrow. It may not be ergonomic, but I'm very familiar with it.
 ;; * Less invasive. Helm has opinions on how commands should work,
-;; whereas ido is a drop-in replacement.
+;;   whereas ido is a drop-in replacement.
 ;; * Low configuration. Smex just works, saving command history, whereas
-;; helm requires a separate package for this.
+;;   helm requires a separate package for this.
 ;; * Aesthetics. I prefer tools that stay in the minibuffer. Helm does
-;; not, and even defines its own font sizes, which I dislike.
+;;   not, and even defines its own font sizes, which I dislike.
 ;;
 ;; My customisations:
 ;; * Virtual buffers are nice for reopening files when switching buffers.
@@ -38,46 +31,53 @@
 ;;
 ;; The disadvantages:
 ;; * ido needs lots of packages. ido-ubiquitous does what ido-everywhere
-;; should have done. ido-vertical. smex.
+;;   should have done. ido-vertical. smex.
 ;; * smex does not show keybindings (see my PR on the smex repo).
-;; * slow for large datasets. Particularly C-h f and C-h v.
+;; * slow for large datasets. Particularly C-h f and C-h v. There's
+;;   ido-hacks (which forks parts of ido included in Emacs) and
+;;   ido-flx (with slightly different behaviour).
 ;; 
 ;; Instead, we use ivy.
 
-;; Enable ivy.
-(ivy-mode 1)
+(use-package ivy
+  :diminish ""
+  :config
+  ;; Enable ivy.
+  (ivy-mode 1)
 
-;; Don't bother showing ivy in the mode line.
-(diminish 'ivy-mode)
+  ;; When switching buffers, offer recently accessed files that we don't
+  ;; currently have open.
+  (setq ivy-use-virtual-buffers t)
 
-;; When switching buffers, offer recently accessed files that we don't
-;; currently have open.
-(setq ivy-use-virtual-buffers t)
+  ;; Don't require order, so 'func descr' matches 'describe-function'
+  (setq ivy-re-builders-alist
+        '((t . ivy--regex-ignore-order)))
 
-;; Don't require order, so 'func descr' matches 'describe-function'
-(setq ivy-re-builders-alist
-      '((t . ivy--regex-ignore-order)))
+  ;; Don't show ./ and ../ when finding files with ivy.
+  ;; To go up a directory, use backspace.
+  (setq ivy-extra-directories nil)
 
-;; Don't show ./ and ../ when finding files with ivy.
-;; To go up a directory, use backspace.
-(setq ivy-extra-directories nil)
+  ;; Highlight the current selection with an arrow too.
+  (setq ivy-format-function 'ivy-format-function-arrow)
 
-;; Highlight the current selection with an arrow too.
-(setq ivy-format-function 'ivy-format-function-arrow)
+  ;; Don't start the search term with ^ by default. I often have a
+  ;; substring in mind.
+  (setq ivy-initial-inputs-alist nil)
 
-;; Don't start the search term with ^ by default. I often have a
-;; substring in mind.
-(setq ivy-initial-inputs-alist nil)
+  ;; Use C-j for immediate termination with the current value, and RET
+  ;; for continuing completion for that directory. This is the ido
+  ;; behaviour.
+  (define-key ivy-minibuffer-map (kbd "C-j") #'ivy-immediate-done)
+  (define-key ivy-minibuffer-map (kbd "RET") #'ivy-alt-done)
 
-;; Use C-j for immediate termination with the current value, and RET
-;; for continuing completion for that directory. This is the ido
-;; behaviour.
-(define-key ivy-minibuffer-map (kbd "C-j") #'ivy-immediate-done)
-(define-key ivy-minibuffer-map (kbd "RET") #'ivy-alt-done)
+  ;; Use C-RET as the same as RET, because I tend to accidentally press
+  ;; C-RET.
+  (define-key ivy-minibuffer-map (kbd "<C-return>") #'ivy-alt-done)
 
-;; Use C-RET as the same as RET, because I tend to accidentally press
-;; C-RET.
-(define-key ivy-minibuffer-map (kbd "<C-return>") #'ivy-alt-done)
+  ;; Allow using the input as entered. This is useful when you want to
+  ;; input a value that doesn't yet exist, such as creating a new file
+  ;; with C-x C-f.
+  (setq ivy-use-selectable-prompt t))
 
 (global-set-key (kbd "M-x") 'counsel-M-x)
 (global-set-key (kbd "C-x C-f") 'counsel-find-file)
