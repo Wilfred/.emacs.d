@@ -291,4 +291,7 @@ and `defcustom' forms reset their default values."
 ;; functions.
 (global-set-key (kbd "C-h F") #'helpful-function)
 
+;; `describe-coding-system' isn't very useful, so lookup commands instead.
+(global-set-key (kbd "C-h C") #'helpful-command)
+
 (provide 'lisp-customisations)
