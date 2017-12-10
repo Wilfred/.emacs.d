@@ -76,5 +76,8 @@
 (magit-define-popup-action 'magit-push-popup
   ?P "push alias" #'magit-push-current-to-upstream)
 
+;; I never remember this command, so give it an alias. It's bound to C
+;; in magit commit buffers.
+(defalias 'wh/magit-add-file-entry #'magit-commit-add-log)
 
 (provide 'git-customisations)
