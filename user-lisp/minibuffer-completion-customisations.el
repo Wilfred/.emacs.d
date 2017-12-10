@@ -37,7 +37,7 @@
 ;; * Ordering
 ;;
 ;; The disadvantages:
-;; * ido needs lots of package. ido-ubiquitous does what ido-everywhere
+;; * ido needs lots of packages. ido-ubiquitous does what ido-everywhere
 ;; should have done. ido-vertical. smex.
 ;; * smex does not show keybindings (see my PR on the smex repo).
 ;; * slow for large datasets. Particularly C-h f and C-h v.
