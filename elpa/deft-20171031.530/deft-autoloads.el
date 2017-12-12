@@ -3,7 +3,7 @@
 ;;; Code:
 (add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "deft" "deft.el" (22751 47286 888283 512000))
+;;;### (autoloads nil "deft" "deft.el" (23088 5544 0 0))
 ;;; Generated autoloads from deft.el
 
 (autoload 'deft-find-file "deft" "\
