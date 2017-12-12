@@ -77,9 +77,12 @@
                 (org-back-to-heading)
                 (org-expiry-insert-created)))))
 
-(setq deft-directory "~/scratch")
-(setq deft-default-extension "org")
+(use-package deft
+  :config
+  (setq deft-directory "~/scratch")
+  (setq deft-default-extension "org")
 
-(setq deft-use-filename-as-title t)
+  (setq deft-use-filename-as-title t)
+  (setq deft-use-filter-string-for-filename t))
 
 (provide 'org-customisations)
