@@ -80,4 +80,6 @@
 (setq deft-directory "~/scratch")
 (setq deft-default-extension "org")
 
+(setq deft-use-filename-as-title t)
+
 (provide 'org-customisations)
