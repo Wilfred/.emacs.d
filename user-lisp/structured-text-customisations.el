@@ -172,7 +172,6 @@ element.  If called interactively, show it in the echo area."
     (,css--uri-re
      (1 'default t) (2 'default t))))
 
-(defvar css-font-lock-keywords (css--font-lock-keywords))
-
+(setq css-font-lock-keywords (css--font-lock-keywords))
 
 (provide 'structured-text-customisations)
