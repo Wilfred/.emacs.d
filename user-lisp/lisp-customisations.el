@@ -253,15 +253,6 @@ Handy for ielm."
   (move-end-of-line 0)
   (insert (format "\n%s" x)))
 
-;; Inspired by elisp-slime-nav-describe-elisp-thing-at-point.
-(defun wh/describe-symbol-at-point ()
-  "Open a Help buffer for the symbol at point."
-  (interactive)
-  (describe-symbol (symbol-at-point)))
-
-(define-key emacs-lisp-mode-map (kbd "C-c C-d")
-  #'wh/describe-symbol-at-point)
-
 ;; http://emacs.stackexchange.com/a/2302/304
 (defun wh/eval-buffer ()
   "Execute the current buffer as Lisp code.
@@ -286,6 +277,7 @@ and `defcustom' forms reset their default values."
 (global-set-key (kbd "C-h k") #'helpful-key)
 
 (global-set-key (kbd "C-c C-.") #'helpful-at-point)
+(global-set-key (kbd "C-c C-d") #'helpful-at-point)
 
 ;; Since helpful exposes the manual anyway, use C-h F for looking up
 ;; functions.
