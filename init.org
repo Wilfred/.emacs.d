@@ -194,6 +194,8 @@ of the same symbol.
   (require 'yaml-mode)
   (define-key yaml-mode-map (kbd "M-n") #'highlight-symbol-next)
   (define-key yaml-mode-map (kbd "M-p") #'highlight-symbol-prev)
+  (define-key yaml-mode-map (kbd "M-N") #'highlight-symbol-last)
+  (define-key yaml-mode-map (kbd "M-P") #'highlight-symbol-first)
 #+END_SRC
 
 Jumping to the first occurrence of the symbol is handy for finding
