@@ -220,12 +220,11 @@ except Exception as e:
   (python-nav-forward-statement)
   ;; Delete it.
   (er/mark-python-block)
-  (delete-region (region-beginning) (region-end))
-  (pyimport--delete-current-line)
+  (delete-region (line-beginning-position) (1+ (region-end)))
   ;; Move to the try: keyword.
   (python-nav-forward-statement -2)
   ;; Delete it.
-  (pyimport--delete-current-line)
+  (delete-region (line-beginning-position) (1+ (line-end-position)))
   ;; Unindent the current line.
   (python-indent-shift-left (line-beginning-position) (line-end-position)))
 
