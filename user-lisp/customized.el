@@ -40,6 +40,7 @@
  '(highlight-symbol-face ((t (:underline t))))
  '(hl-line ((t (:background "gray14"))))
  '(hl-sexp-face ((t (:background "gray14"))))
+ '(info-title-2 ((t (:inherit info-title-3))))
  '(js2-function-param-face ((((class color)) (:foreground "Green"))))
  '(magit-section-highlight ((t (:background "grey14"))))
  '(org-date ((((class color)) (:underline nil))))
