@@ -22,7 +22,7 @@
   (setq org-hide-emphasis-markers t)
 
   ;; Allow running code in sh and python
-  (require 'ob-sh)
+  (require 'ob-shell)
   (require 'ob-python)
 
   ;; I use S-left for moving between windows in a frame. Use the same
