@@ -25,81 +25,107 @@
   ;; Open .pyi in Python mode. This has been fixed upstream:
   ;; http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=94b2e1fc00f90b4072b4a998caf2054c540b7ac4
   (when (< emacs-major-version 26)
-    (add-to-list 'auto-mode-alist (cons (rx ".pyi" eos) #'python-mode))))
+    (add-to-list 'auto-mode-alist (cons (rx ".pyi" eos) #'python-mode)))
+
+  ;; Everyone uses four space indents, and Emacs noisily announces
+  ;; indentation guessing.
+  (setq python-indent-guess-indent-offset-verbose nil)
+
+  (require 'which-func)
+
+  ;; FIXME: breaks for class methods, since it assumes `self'
+  (defun wh/python-insert-super-function ()
+    "Insert a call to super for the current class and function."
+    (interactive)
+    ;; for some reason, we need a non-empty block for which-function to find the name of the method
+    (insert "pass")
+
+    (let* (class-name method-name args-start args-end)
+
+      (-let (((class-name method-name) (split-string (which-function) (rx ".")))
+             (args-start nil)
+             (args-end nil))
+
+        ;; remove 'pass'
+        (backward-delete-char 4)
+
+        (save-excursion
+          ;; go to the function definition and find the arguments
+          (beginning-of-defun)
+
+          (while (not (looking-at "("))
+            (forward-char))
+          (setq args-start (1+ (point)))
+          (forward-sexp)
+          (setq args-end (1- (point))))
+
+        (let ((args (s-trim (buffer-substring args-start args-end))))
+          ;; remove 'self'
+          (setq args (s-trim (s-chop-prefixes '("self," "self") args)))
+
+          (insert (format "super(%s, self).%s(%s)" class-name method-name args)))))
+
+    ;; backward one char so the user can enter the argument for the superclass's function
+    (backward-char))
+
+  (define-key python-mode-map (kbd "C-M-n") 'python-nav-forward-statement)
+  (define-key python-mode-map (kbd "C-M-p") 'python-nav-backward-statement)
+  ;; To be consistent with our paredit keybindings, use super for syntatic movement.
+  (define-key python-mode-map (kbd "s-n") 'python-nav-forward-statement)
+  (define-key python-mode-map (kbd "s-p") 'python-nav-backward-statement)
+
+  (define-key python-mode-map (kbd "s-f") #'sp-forward-sexp)
+  (define-key python-mode-map (kbd "C-M-f") #'sp-forward-sexp)
+  (define-key python-mode-map (kbd "s-b") #'sp-backward-sexp)
+  (define-key python-mode-map (kbd "C-M-b") #'sp-backward-sexp)
+
+  (define-key python-mode-map (kbd "s-u") 'python-nav-backward-up-list)
+  ;; TODO: this is only necessary because the above keybinding is
+  ;; overridden by smartparens.
+  (defadvice sp-backward-up-sexp (around wh/backward-up-python activate)
+    "When editing python, defer to Python's navigation command."
+    (if (eq major-mode 'python-mode)
+        (python-nav-backward-up-list)
+      ad-do-it))
+
+  ;; mark-sexp is useless in python, we want the the equivalent command
+  ;; for marking a Python statement.
+  (define-key python-mode-map (kbd "C-M-SPC") #'er/mark-python-statement)
+
+  ;; Use ipython, if available.
+  ;; from http://emacs.stackexchange.com/q/4161
+  (when (executable-find "ipython")
+    (setq python-shell-interpreter "ipython"
+          ;; ipython 5 compat
+          python-shell-interpreter-args "--simple-prompt -i"))
+
+  ;; Don't font lock in an inferior python shell. It's too easy for a
+  ;; docstring (when using foo? in ipython) to contain doublequotes and
+  ;; all the highlighting is broken from then onwards.
+  (setq python-shell-enable-font-lock nil)
+
+  (define-key python-mode-map (kbd "C-c C-t") #'pytest-one)
+
+  (setq pytest-cmd-flags "-x --tb=native")
+
+  (require 'python-smart-execute)
+  (define-key python-mode-map (kbd "C-c e") #'python-smart-execute)
+  (define-key python-mode-map (kbd "<f1>") #'python-smart-execute)
+  (define-key python-mode-map (kbd "<S-f1>") #'python-smart-execute-no-move)
+
+  (add-hook 'python-mode-hook #'subword-mode))
 
 (require 'python)
 (require 'python-utils)
-(eval-when-compile (require 'cl)) ;; first, second
 
-;; Everyone uses four space indents, and Emacs noisily announces
-;; indentation guessing.
-(setq python-indent-guess-indent-offset-verbose nil)
+(setq flycheck-python-mypy-args '("--py2" "--strict" "--disallow-any=generics"))
+(setq flycheck-python-mypy-executable "/Users/whughes/pyenvs/mypyenv/bin/mypy")
 
 ;; TODO: properly highlight differently named self arguments (often seen in nested classes):
 
 ;; class Foo(object):
 ;;     def __init__(_self, *args):
 ;;         pass
-
-(require 'which-func)
-
-;; FIXME: breaks for class methods, since it assumes `self'
-(defun wh/python-insert-super-function ()
-  "Insert a call to super for the current class and function."
-  (interactive)
-  (let* (class-name method-name args-start args-end)
-    ;; for some reason, we need a non-empty block for which-function to find the name of the method
-    (insert "pass")
-
-    (let ((exact-position (split-string (which-function) (rx ".")))) ;; e.g. ("FooBar" "method")
-      (setq class-name (first exact-position))
-      (setq method-name (second exact-position)))
-
-    ;; remove 'pass'
-    (backward-delete-char 4)
-
-    (save-excursion
-      ;; go to the function definition and find the arguments
-      (beginning-of-defun)
-
-      (while (not (looking-at "("))
-        (forward-char))
-      (setq args-start (1+ (point)))
-      (forward-sexp)
-      (setq args-end (1- (point))))
-
-    (let ((args (s-trim (buffer-substring args-start args-end))))
-      ;; remove 'self'
-      (setq args (s-trim (s-chop-prefixes '("self," "self") args)))
-
-      (insert (format "super(%s, self).%s(%s)" class-name method-name args))))
-
-  ;; backward one char so the user can enter the argument for the superclass's function
-  (backward-char))
-
-(define-key python-mode-map (kbd "C-M-n") 'python-nav-forward-statement)
-(define-key python-mode-map (kbd "C-M-p") 'python-nav-backward-statement)
-;; To be consistent with our paredit keybindings, use super for syntatic movement.
-(define-key python-mode-map (kbd "s-n") 'python-nav-forward-statement)
-(define-key python-mode-map (kbd "s-p") 'python-nav-backward-statement)
-
-(define-key python-mode-map (kbd "s-f") #'sp-forward-sexp)
-(define-key python-mode-map (kbd "C-M-f") #'sp-forward-sexp)
-(define-key python-mode-map (kbd "s-b") #'sp-backward-sexp)
-(define-key python-mode-map (kbd "C-M-b") #'sp-backward-sexp)
-
-(define-key python-mode-map (kbd "s-u") 'python-nav-backward-up-list)
-;; TODO: this is only necessary because the above keybinding is
-;; overridden by smartparens.
-(defadvice sp-backward-up-sexp (around wh/backward-up-python activate)
-  "When editing python, defer to Python's navigation command."
-  (if (eq major-mode 'python-mode)
-      (python-nav-backward-up-list)
-    ad-do-it))
-
-;; mark-sexp is useless in python, we want the the equivalent command
-;; for marking a Python statement.
-(define-key python-mode-map (kbd "C-M-SPC") #'er/mark-python-statement)
 
 (exec-path-from-shell-copy-env "WORKON_HOME")
 (require 'virtualenvwrapper)
@@ -137,29 +163,6 @@ This means `pop-mark' can take us back to our previous position."
           #'company-anaconda)))
 
   (add-hook 'python-mode-hook #'wh/company-in-python-mode))
-
-(add-hook 'python-mode-hook #'subword-mode)
-
-;; Use ipython, if available.
-;; from http://emacs.stackexchange.com/q/4161
-(when (executable-find "ipython")
-  (setq python-shell-interpreter "ipython"
-        ;; ipython 5 compat
-        python-shell-interpreter-args "--simple-prompt -i"))
-
-;; Don't font lock in an inferior python shell. It's too easy for a
-;; docstring (when using foo? in ipython) to contain doublequotes and
-;; all the highlighting is broken from then onwards.
-(setq python-shell-enable-font-lock nil)
-
-(define-key python-mode-map (kbd "C-c C-t") #'pytest-one)
-
-(setq pytest-cmd-flags "-x --tb=native")
-
-(require 'python-smart-execute)
-(define-key python-mode-map (kbd "C-c e") #'python-smart-execute)
-(define-key python-mode-map (kbd "<f1>") #'python-smart-execute)
-(define-key python-mode-map (kbd "<S-f1>") #'python-smart-execute-no-move)
 
 ;; From http://emacsredux.com/blog/2015/01/18/clear-comint-buffers/
 ;; (but widely used e.g. spacemacs has it too).
