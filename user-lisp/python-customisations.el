@@ -20,6 +20,13 @@
 ;;   does not work with python-shell-send-defun because it tries to
 ;;   inspect the previous line for decorators.
 
+(use-package python
+  :config
+  ;; Open .pyi in Python mode. This has been fixed upstream:
+  ;; http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=94b2e1fc00f90b4072b4a998caf2054c540b7ac4
+  (when (< emacs-major-version 26)
+    (add-to-list 'auto-mode-alist (cons (rx ".pyi" eos) #'python-mode))))
+
 (require 'python)
 (require 'python-utils)
 (eval-when-compile (require 'cl)) ;; first, second
