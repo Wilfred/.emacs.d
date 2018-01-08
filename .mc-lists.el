@@ -4,6 +4,7 @@
 (setq mc/cmds-to-run-for-all
       '(
         ace-jump-zap-up-to-char-dwim
+        avy-zap-up-to-char-dwim
         backward-sexp
         beginning-of-line-dwim
         c-electric-delete-forward
