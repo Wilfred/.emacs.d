@@ -279,6 +279,13 @@ and `defcustom' forms reset their default values."
 (global-set-key (kbd "C-c C-.") #'helpful-at-point)
 (global-set-key (kbd "C-c C-d") #'helpful-at-point)
 
+;; Unfortunately, C-d C-d is used to terminate REPL sessions in
+;; comint-mode, which means I often trigger it by accident in
+;; ielm. Disable that.
+(use-package comint
+  :config
+  (define-key comint-mode-map (kbd "C-c C-d") nil))
+
 ;; Since helpful exposes the manual anyway, use C-h F for looking up
 ;; functions.
 (global-set-key (kbd "C-h F") #'helpful-function)
