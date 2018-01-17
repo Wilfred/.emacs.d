@@ -11,6 +11,11 @@
   (defun wh/set-go-tab-width ()
     (setq tab-width 4))
   (add-hook 'go-mode-hook #'wh/set-go-tab-width)
+  ;; Use gocode for completion.
+
+  (defun wh/setup-company ()
+    (setq company-backends (list #'company-go)))
+  (add-hook 'go-mode-hook #'wh/setup-company)
 
   ;; Show type of variable at point in the minibuffer.
   (add-hook 'go-mode-hook #'go-eldoc-setup)
