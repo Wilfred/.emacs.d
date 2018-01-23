@@ -245,7 +245,7 @@
 (defun diff-hl-changes ()
   (let* ((file buffer-file-name)
          (backend (vc-backend file)))
-    (when backend
+    (when (and backend (file-exists-p file))
       (let ((state (vc-state file backend)))
         (cond
          ((diff-hl-modified-p state)
@@ -546,7 +546,7 @@ in the source file, or the last line of the hunk above it."
         (with-current-buffer buf
           (let* ((file buffer-file-name)
                  (backend (vc-backend file)))
-            (when backend
+            (when (and backend (file-exists-p file))
               (cond
                ((member file modified-files)
                 (when (memq (vc-state file) unmodified-states)
