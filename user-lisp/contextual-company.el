@@ -72,18 +72,19 @@ Assumes FORM has been fully macro-expanded."
        ;; We know that x is bound when we evaluate z, but not when we
        ;; evaluate y.
        ((eq (car form) 'let)
-        (let* ((var-vals (nth 1 form))
-               (vars (--map (if (consp it) (car it) it) var-vals))
-               (vals (--map (if (consp it) (cadr it) nil) var-vals)))
+        (-let* (((_ var-vals . body) form)
+                ;; Handle both (let ((x 1)) _) and (let (x) _).
+                (vars (--map (if (consp it) (car it) it) var-vals))
+                (vals (--map (if (consp it) (cadr it) nil) var-vals)))
           (setq bindings-found
                 (append
                  (--map (wh/bound-syms it accum) vals)
-                 (--map (wh/bound-syms it (append accum vars)) (-slice form 2))))))
+                 (--map (wh/bound-syms it (append accum vars)) body)))))
 
        ((eq (car form) 'let*)
-        (let* ((accum-with-vars accum)
-               (var-vals (nth 1 form))
-               body-vars)
+        (-let* (((_ var-vals . body) form)
+                (accum-with-vars accum)
+                (body-vars nil))
           (--each var-vals
             ;; E.g. (let* ((x a) (y b) z) c)
             (if (consp it)
@@ -105,7 +106,14 @@ Assumes FORM has been fully macro-expanded."
                 (append
                  (nreverse bindings-found)
                  (--map (wh/bound-syms it (append accum body-vars))
-                        (cddr form))))))
+                        body))))
+        ((eq (car form) 'condition-case)
+         (-let [(var bodyform . handlers)]
+           (setq bindings-found
+                 (cons
+                  (wh/bound-syms bodyform accum)
+                  (--map (wh/bound-syms it (append accum (list var)))
+                         handlers))))))
 
        ;; For other forms (`progn' etc) then just recurse to see if it
        ;; contains XXX. We know that it introduces no new bindings. It is
@@ -122,7 +130,7 @@ Assumes FORM has been fully macro-expanded."
 
 (wh/bound-syms 'XXX '(a x))
 (wh/bound-syms '(function (lambda (x y) XXX)) nil)
-(wh/bound-syms '(lambda (x y) (progn a b XXX)) nil)
+(wh/bound-syms (macroexpand-all '(lambda (x y) (--map XXX y))))
 
 (wh/bound-syms '(lambda (x y)
                   (progn x y
