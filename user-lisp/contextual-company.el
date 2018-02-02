@@ -80,6 +80,33 @@ Assumes FORM has been fully macro-expanded."
                  (--map (wh/bound-syms it accum) vals)
                  (--map (wh/bound-syms it (append accum vars)) (-slice form 2))))))
 
+       ((eq (car form) 'let*)
+        (let* ((accum-with-vars accum)
+               (var-vals (nth 1 form))
+               body-vars)
+          (--each var-vals
+            ;; E.g. (let* ((x a) (y b) z) c)
+            (if (consp it)
+                (-let [(var val) it]
+                  ;; `x' will be bound in the body.
+                  (push var body-vars)
+                  ;; `a' will be evaluated without `x' bound.
+                  (push (wh/bound-syms val accum-with-vars)
+                        bindings-found)
+                  ;; `x' will be bound when evaluating `b' on the next
+                  ;; iteration.
+                  (setq accum-with-vars
+                        (append accum-with-vars (list var))))
+              ;; Otherwise, a variable without a binding, like `z' in
+              ;; our example.
+              (push it body-vars)))
+          (setq body-vars (nreverse body-vars))
+          (setq bindings-found
+                (append
+                 (nreverse bindings-found)
+                 (--map (wh/bound-syms it (append accum body-vars))
+                        (cddr form))))))
+
        ;; For other forms (`progn' etc) then just recurse to see if it
        ;; contains XXX. We know that it introduces no new bindings. It is
        ;; actually possible to introduce a global with `setq', but we
@@ -89,13 +116,20 @@ Assumes FORM has been fully macro-expanded."
               (--map (wh/bound-syms it accum)
                      (cdr form)))))
 
+      ;; For any sublist that didn't contain XXX, we will have
+      ;; returned nil. Find the non-empty list, if any.
       (-first #'consp bindings-found)))))
 
 (wh/bound-syms 'XXX '(a x))
 (wh/bound-syms '(function (lambda (x y) XXX)) nil)
-(wh/bound-syms '(lambda (x y) (progn x y XXX)) nil)
+(wh/bound-syms '(lambda (x y) (progn a b XXX)) nil)
 
-(wh/bound-syms '(lambda (x y) (progn x y (let ((z a) zz) XXX))) nil)
+(wh/bound-syms '(lambda (x y)
+                  (progn x y
+                         (let ((z a) zz (x))
+                           XXX
+                           (let (foo bar))
+                           nil))))
 
 (macroexpand-all (symbol-function 'wh/foo))
 
