@@ -114,6 +114,8 @@ Assumes FORM has been fully macro-expanded."
                           bindings-found))
                 ;; Otherwise, a variable without a binding, like `z' in
                 ;; our example.
+                (when (eq it 'XXX)
+                  (throw 'done accum))
                 (push it vars)))
             (setq vars (nreverse vars))
             (setq bindings-found
@@ -144,6 +146,8 @@ Assumes FORM has been fully macro-expanded."
                           (append accum-with-vars (list var))))
                 ;; Otherwise, a variable without a binding, like `z' in
                 ;; our example.
+                (when (eq it 'XXX)
+                  (throw 'done accum))
                 (push it vars)))
             (setq vars (nreverse vars))
             (setq bindings-found
@@ -206,6 +210,12 @@ Assumes FORM has been fully macro-expanded."
     (list 'x)))
   ;; If our placeholder is in the variable position, still consider
   ;; previous keybindings.
+  (should
+   (equal
+    (wh/bound-syms '(let ((x 1))
+                      (let (XXX)
+                        3)))
+    (list 'x)))
   (should
    (equal
     (wh/bound-syms '(let ((x 1))
