@@ -24,8 +24,17 @@
 ;;
 ;; Offer sensible completion inside (declare ...) forms and
 ;; (interactive ...) forms.
-
+;; 
 ;; Consider expanding macros to work out what's bound.
+;;
+;; Offer &rest and &optional in parameter lists.
+;;
+;; Offer bound variables inside let/condition-case.
+;;
+;; (require ...) and (provide ...) should be trivially completable.
+;;
+;; define-key and global-set-key: offer keymaps and interactive
+;; commands.
 
 (defun wh/foo (x y)
   (let ((a (1+ x))
