@@ -66,9 +66,13 @@
       (setq form
             (macroexpand-all (read (current-buffer)))))
     (delete-char 5)
-    (message "syms: %S"
-             (-filter #'wh/in-obarray-p
-                      (wh/bound-syms form)))))
+    (message
+     "syms: %S"
+     ;; Filter out any symbols created by `make-symbol'. This allows
+     ;; us to find deliberate bindings, such as `it' with `--map', but
+     ;; not consider symbols from `gensym'.
+     (-filter #'wh/in-obarray-p
+              (wh/bound-syms form)))))
 
 (defun wh/bound-syms (form &optional accum)
   "Return a list of bound symbols around the symbol XXX in FORM.
@@ -76,19 +80,19 @@
 Assumes FORM has been fully macro-expanded."
   (catch 'done
     ;; If we've hit the symbol we're looking for, we can return the
-    ;; bound symbols we found. Filter out any symbols created by
-    ;; `make-symbol'. This allows us to find deliberate bindings, such
-    ;; as `it' with `--map', but not consider symbols from `gensym'.
+    ;; bound symbols we found.
     (when (eq form 'XXX)
       (throw 'done accum))
     
     (when (consp form)
       (let (bindings-found)
         ;; If this is a lambda form, the enclosed forms have the parameters
-        ;; too. TODO: handle &optional and &rest.
+        ;; too.
         (cond
          ((eq (car form) 'lambda)
           (-let [(_ args . body) form]
+            (setq args
+                  (--remove (member it '(&optional &rest)) args))
             (setq bindings-found
                   (--map (wh/bound-syms it (append accum args))
                          body))))
@@ -176,7 +180,11 @@ Assumes FORM has been fully macro-expanded."
   (should
    (equal
     (wh/bound-syms '(lambda (x y) XXX))
-    (list 'x 'y))))
+    (list 'x 'y)))
+  (should
+   (equal
+    (wh/bound-syms '(lambda (x &optional y &rest z) XXX))
+    (list 'x 'y 'z))))
 
 (ert-deftest wh/bound-syms-let ()
   ;; Handle bindings introduced by let.
