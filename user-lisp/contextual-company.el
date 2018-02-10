@@ -14,7 +14,8 @@
 ;; Auto insert space when completing (foo ) if foo takes multiple
 ;; args.
 ;;
-;; Completion inside emacs style `backticks'.
+;; Completion inside emacs style `backticks' inside docstrings and
+;; comments.
 ;;
 ;; Even when we can't offer an exact set of options, offer the current
 ;; package as a prefix.
@@ -35,6 +36,28 @@
 ;;
 ;; define-key and global-set-key: offer keymaps and interactive
 ;; commands.
+;;
+;; Autocomplete keywords inside rx.
+;;
+;; Complete () to a function call, unless we're in quotes.
+;;
+;; Show num args (dropdown) and docstring (minibuffer) when completing.
+;;
+;; Sort prefix first, but allow substring, so we offer
+;; `map-char-table' for input "char-table".
+;;
+;; Write a crude type inference (look at integer and list assignments)
+;; and prioritise arguments to e.g. `nth' (based on its docstring
+;; saying arg type) that are known to be integer/lists.
+;;
+;; Don't offer completion inside quoted forms, except `(foo,
+;; bar). This again requires macro expansion.
+;;
+;; Don't offer completion for the first argument of var-val pairs in
+;; `let', as they're usually new vars.
+;;
+;; Offer completion of FOO in a docstring when `foo' is an argument to
+;; a function.
 
 (defun wh/foo (x y)
   (let ((a (1+ x))
@@ -59,7 +82,37 @@
   ;; `-lambda' too.
   (--map (+ x it) y))
 
+;; TODO: Play with `company-diag'.
+
+;; not relevant, this is for idle completion.
+(setq company-minimum-prefix-length 3)
+(setq-local company-minimum-prefix-length 3)
+
+
+
+(defun company-my-backend (command &optional arg &rest ignored)
+  (interactive (list 'interactive))
+  (pcase command
+    (`interactive (company-begin-backend 'company-my-backend))
+    (`prefix (company-grab-symbol))
+    (`candidates (list "foobar" "foobaz" "foobarbaz"))
+    (`meta (format "This value is named %s" arg))))
+
+
+(defun wh/company-contextual (command &optional arg &rest ignored)
+  "Company backend for elisp that considers context."
+  (interactive (list 'interactive))
+  (message "command: %S arg: %S" command arg)
+  #'
+  (pcase command
+    (`interactive (company-begin-backend 'wh/company-contextual))
+    (`prefix (or (symbol-name (symbol-at-point)) ""))
+    (`candidates
+     ;; todo: looking back at #'.
+     (-map #'symbol-name (wh/bound-syms-at-point)))))
+
 (defun wh/in-obarray-p (sym)
+  ab
   (not (null (intern-soft sym))))
 
 (defun wh/bound-syms-at-point ()
@@ -75,13 +128,10 @@
       (setq form
             (macroexpand-all (read (current-buffer)))))
     (delete-char 5)
-    (message
-     "syms: %S"
-     ;; Filter out any symbols created by `make-symbol'. This allows
-     ;; us to find deliberate bindings, such as `it' with `--map', but
-     ;; not consider symbols from `gensym'.
-     (-filter #'wh/in-obarray-p
-              (wh/bound-syms form)))))
+    ;; Filter out any symbols created by `make-symbol'. This allows
+    ;; us to find deliberate bindings, such as `it' with `--map', but
+    ;; not consider symbols from `gensym'.
+    (-filter #'wh/in-obarray-p (wh/bound-syms form))))
 
 (defun wh/bound-syms (form &optional accum)
   "Return a list of bound symbols around the symbol XXX in FORM.
