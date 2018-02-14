@@ -58,6 +58,9 @@
 ;;
 ;; Offer completion of FOO in a docstring when `foo' is an argument to
 ;; a function.
+;;
+;; Offer completion of known signals when defining handlers in
+;; `condition-case'.
 
 (defun wh/foo (x y)
   (let ((a (1+ x))
