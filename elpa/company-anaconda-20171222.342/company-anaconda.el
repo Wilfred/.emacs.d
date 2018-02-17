@@ -4,7 +4,7 @@
 
 ;; Author: Artem Malyshev <proofit404@gmail.com>
 ;; URL: https://github.com/proofit404/anaconda-mode
-;; Package-Version: 20160809.705
+;; Package-Version: 20171222.342
 ;; Version: 0.2.0
 ;; Package-Requires: ((company "0.8.0") (anaconda-mode "0.1.1") (cl-lib "0.5.0") (dash "2.6.0") (s "1.9"))
 
@@ -93,8 +93,8 @@ Properly detect strings, comments and attribute access."
                      (let ((line (buffer-substring-no-properties
                                   (line-beginning-position)
                                   (point))))
-                       (string-match "[a-zA-Z_][a-zA-Z0-9_.]*\\'" line)
-                       (match-string 0 line))))
+                       (when (string-match "\\(?:[a-zA-Z_][a-zA-Z0-9_.]*\\|\"[^\"]*\".\\)\\'" line)
+                         (match-string 0 line)))))
            (if (looking-back "\\." (- (point) 1))
                (cons it t)
              it)
