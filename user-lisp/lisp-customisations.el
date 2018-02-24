@@ -2,6 +2,19 @@
 
 (setq load-prefer-newer t)
 
+(use-package emacs-lisp-mode
+  :config
+  (defun wh/run-ert-test ()
+    "Run ERT test at point. If point is in a function, run the
+test with the same name."
+    (interactive)
+    (save-excursion
+      (beginning-of-defun)
+      (let* ((form (read (current-buffer)))
+             (sym (nth 1 form)))
+        (ert sym))))
+  (define-key emacs-lisp-mode-map (kbd "C-c r") #'wh/run-ert-test))
+
 (use-package paredit
   :diminish ""
   :config
@@ -161,7 +174,7 @@
   ;; behaviour of a range of commands. Ensure it's only temporarily
   ;; switched on.
   (setq lispy-no-permanent-semantic t)
-  
+
   ;; Ensure pressing q closes edebug, macrostep and magit-blame.
   (setq lispy-compat '(edebug macrostep magit-blame-mode)))
 
