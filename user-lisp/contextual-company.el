@@ -61,6 +61,9 @@
 ;;
 ;; Offer completion of known signals when defining handlers in
 ;; `condition-case'.
+;;
+;; Offer completion of literals for argument of a known type,
+;; particularly booleans.
 
 (defun wh/foo (x y)
   (let ((a (1+ x))
