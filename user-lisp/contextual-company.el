@@ -63,7 +63,13 @@
 ;; `condition-case'.
 ;;
 ;; Offer completion of literals for argument of a known type,
-;; particularly booleans.
+;; particularly booleans. Types may be inferred from parameter names
+;; in docstrings.
+;;
+;; Advise eval functions and rank functions/variables more highly if
+;; they've been used in a recent function body. See page 22 of
+;; https://users.dcc.uchile.cl/~rrobbes/p/JASE-completion.pdf
+;; which measures the effectiveness of this approach.
 
 (defun wh/foo (x y)
   (let ((a (1+ x))
