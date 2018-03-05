@@ -102,7 +102,13 @@
      elisp-complete--recent-syms
      (-take elisp-complete--history-size syms))))
 
+(defadvice edebug-eval-defun (after elisp-complete--record-form activate)
+  (let ((form (edebug-read-top-level-form)))
+    (elisp-complete--add-to-recent form)))
 
+(defadvice eval-last-sexp (after elisp-complete--record-last-form activate)
+  (let ((form (elisp--preceding-sexp)))
+    (elisp-complete--add-to-recent form)))
 
 ;; TODO: Play with `company-diag'.
 
@@ -110,14 +116,20 @@
 (setq company-minimum-prefix-length 3)
 (setq-local company-minimum-prefix-length 3)
 
+(defun elisp-complete--candidates (prefix)
+  (let* ((sym-names (-map #'symbol-name elisp-complete--recent-syms))
+         (matching-names
+          (--filter (s-starts-with-p prefix it) sym-names)))
+    matching-names))
 
-
-(defun company-my-backend (command &optional arg &rest ignored)
+;; TODO: consider using `completion-in-region' like
+;; `anaconda-mode-complete-callback' rather than using company.
+(defun elisp-complete (command &optional arg &rest ignored)
   (interactive (list 'interactive))
   (pcase command
-    (`interactive (company-begin-backend 'company-my-backend))
+    (`interactive (company-begin-backend 'elisp-complete))
     (`prefix (company-grab-symbol))
-    (`candidates (list "foobar" "foobaz" "foobarbaz"))
+    (`candidates (elisp-complete--candidates arg))
     (`meta (format "This value is named %s" arg))))
 
 
