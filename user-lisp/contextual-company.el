@@ -71,6 +71,11 @@
 ;; https://users.dcc.uchile.cl/~rrobbes/p/JASE-completion.pdf which
 ;; measures the effectiveness of this approach. This would require
 ;; advising `eval-last-sexp', `edebug-eval-defun', and `eval-buffer'.
+;;
+;; Also see if a user has recently viewed docs for a symbol.
+;;
+;; `defadvice' should offer completion for existing functions as the
+;; first argument.
 
 (defvar elisp-complete--recent-syms nil)
 (defvar elisp-complete--history-size 1000)
