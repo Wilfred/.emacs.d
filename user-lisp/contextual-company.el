@@ -77,6 +77,10 @@
 ;; `defadvice' should offer completion for existing functions as the
 ;; first argument.
 
+(require 'dash)
+(require 's)
+(require 'elisp-def)
+
 (defvar elisp-complete--recent-syms nil)
 (defvar elisp-complete--history-size 1000)
 
@@ -116,11 +120,34 @@
 (setq company-minimum-prefix-length 3)
 (setq-local company-minimum-prefix-length 3)
 
+(defun elisp-complete--locals-at-point ()
+  (catch 'done
+    ;; Macro expand the source around point and see what bindings are
+    ;; present.
+    (-let* (((form-start form-end) (elisp-def--enclosing-form
+                                    (elisp-def--syntax-depth)))
+            (placeholder (elisp-def--fresh-placeholder))
+            (src (elisp-def--source-with-placeholder form-start form-end placeholder))
+            (form (condition-case nil
+                      (read src)
+                    (end-of-file nil)))
+            (expanded-form (macroexpand-all form)))
+      ;; TODO: this includes generated symbols produced by dash macro expansion.
+      (elisp-def--bound-syms expanded-form placeholder))))
+
 (defun elisp-complete--candidates (prefix)
   (let* ((sym-names (-map #'symbol-name elisp-complete--recent-syms))
          (matching-names
-          (--filter (s-starts-with-p prefix it) sym-names)))
-    matching-names))
+          (--filter (s-starts-with-p prefix it) sym-names))
+         ;; TODO: elisp-complete--locals-at-point isn't offering these
+         ;; let-bound vars for some reason.
+         (local-names
+          (-map #'symbol-name (elisp-complete--locals-at-point)))
+         (matching-locals
+          (--filter (s-starts-with-p prefix it) local-names)))
+    (append
+     matching-locals
+     matching-names)))
 
 ;; TODO: consider using `completion-in-region' like
 ;; `anaconda-mode-complete-callback' rather than using company.
@@ -131,227 +158,3 @@
     (`prefix (company-grab-symbol))
     (`candidates (elisp-complete--candidates arg))
     (`meta (format "This value is named %s" arg))))
-
-
-(defun wh/company-contextual (command &optional arg &rest ignored)
-  "Company backend for elisp that considers context."
-  (interactive (list 'interactive))
-  (message "command: %S arg: %S" command arg)
-  #'
-  (pcase command
-    (`interactive (company-begin-backend 'wh/company-contextual))
-    (`prefix (or (symbol-name (symbol-at-point)) ""))
-    (`candidates
-     ;; todo: looking back at #'.
-     (-map #'symbol-name (wh/bound-syms-at-point)))))
-
-(defun wh/in-obarray-p (sym)
-  ab
-  (not (null (intern-soft sym))))
-
-(defun wh/bound-syms-at-point ()
-  (interactive)
-  (let (form)
-    (save-excursion
-      ;; Insert a placeholder at point.
-      (insert " XXX ")
-      ;; Move out of the outermost enclosing form.
-      (while (> (nth 0 (syntax-ppss)) 0)
-        (backward-up-list))
-      ;; Read and expand this form.
-      (setq form
-            (macroexpand-all (read (current-buffer)))))
-    (delete-char 5)
-    ;; Filter out any symbols created by `make-symbol'. This allows
-    ;; us to find deliberate bindings, such as `it' with `--map', but
-    ;; not consider symbols from `gensym'.
-    (-filter #'wh/in-obarray-p (wh/bound-syms form))))
-
-(defun wh/bound-syms (form &optional accum)
-  "Return a list of bound symbols around the symbol XXX in FORM.
-
-Assumes FORM has been fully macro-expanded."
-  (catch 'done
-    ;; If we've hit the symbol we're looking for, we can return the
-    ;; bound symbols we found.
-    (when (eq form 'XXX)
-      (throw 'done accum))
-    
-    (when (consp form)
-      (let (bindings-found)
-        ;; If this is a lambda form, the enclosed forms have the parameters
-        ;; too.
-        (cond
-         ((eq (car form) 'lambda)
-          (-let [(_ args . body) form]
-            (setq args
-                  (--remove (member it '(&optional &rest)) args))
-            (setq bindings-found
-                  (--map (wh/bound-syms it (append accum args))
-                         body))))
-         ;; (let ((x y)) z)
-         ;; We know that x is bound when we evaluate z, but not when we
-         ;; evaluate y.
-         ((eq (car form) 'let)
-          (-let* (((_ var-vals . body) form)
-                  (vars nil))
-            (--each var-vals
-              (if (consp it)
-                  (-let [(var val) it]
-                    (when (eq var 'XXX)
-                      (throw 'done accum))
-                    ;; `x' will be bound in the body.
-                    (push var vars)
-                    ;; `y' will be evaluated without `x' bound.
-                    (push (wh/bound-syms val accum)
-                          bindings-found))
-                ;; Otherwise, a variable without a binding, like `z' in
-                ;; our example.
-                (when (eq it 'XXX)
-                  (throw 'done accum))
-                (push it vars)))
-            (setq vars (nreverse vars))
-            (setq bindings-found
-                  (append
-                   (nreverse bindings-found)
-                   (--map (wh/bound-syms it (append accum vars))
-                          body)))))
-         ;; Handle `let*' forms, including bindings introduced by
-         ;; previous vars.
-         ((eq (car form) 'let*)
-          (-let* (((_ var-vals . body) form)
-                  (accum-with-vars accum)
-                  (vars nil))
-            (--each var-vals
-              ;; E.g. (let* ((x a) (y b) z) c)
-              (if (consp it)
-                  (-let [(var val) it]
-                    (when (eq var 'XXX)
-                      (throw 'done accum))
-                    ;; `x' will be bound in the body.
-                    (push var vars)
-                    ;; `a' will be evaluated without `x' bound.
-                    (push (wh/bound-syms val accum-with-vars)
-                          bindings-found)
-                    ;; `x' will be bound when evaluating `b' on the next
-                    ;; iteration.
-                    (setq accum-with-vars
-                          (append accum-with-vars (list var))))
-                ;; Otherwise, a variable without a binding, like `z' in
-                ;; our example.
-                (when (eq it 'XXX)
-                  (throw 'done accum))
-                (push it vars)))
-            (setq vars (nreverse vars))
-            (setq bindings-found
-                  (append
-                   (nreverse bindings-found)
-                   (--map (wh/bound-syms it (append accum vars))
-                          body)))))
-         ;; Handle `condition-case', the only other special form that
-         ;; can introduce bindings.
-         ((eq (car form) 'condition-case)
-          (-let [(_ var bodyform . handlers) form]
-            (when (eq var 'XXX)
-              (throw 'done accum))
-            (setq bindings-found
-                  (cons
-                   (wh/bound-syms bodyform accum)
-                   (--map (wh/bound-syms it (append accum (list var)))
-                          handlers)))))
-
-         ;; For other forms (`progn' etc) then just recurse to see if it
-         ;; contains XXX. We know that it introduces no new bindings. It is
-         ;; actually possible to introduce a global with `setq', but we
-         ;; ignore that.
-         (t
-          (setq bindings-found
-                (--map (wh/bound-syms it accum)
-                       form))))
-
-        ;; For any sublist that didn't contain XXX, we will have
-        ;; returned nil. Find the non-empty list, if any.
-        (-first #'consp bindings-found)))))
-
-(ert-deftest wh/bound-syms-lambda ()
-  (should
-   (equal
-    (wh/bound-syms '(lambda (x y) XXX))
-    (list 'x 'y)))
-  (should
-   (equal
-    (wh/bound-syms '(lambda (x &optional y &rest z) XXX))
-    (list 'x 'y 'z))))
-
-(ert-deftest wh/bound-syms-let ()
-  ;; Handle bindings introduced by let.
-  (should
-   (equal
-    (wh/bound-syms '(let (x y) XXX))
-    (list 'x 'y)))
-  (should
-   (equal
-    (wh/bound-syms '(let ((x 1) (y)) XXX))
-    (list 'x 'y)))
-  ;; Don't consider previous bindings in the same let.
-  (should
-   (equal
-    (wh/bound-syms '(let ((x 1))
-                      (let ((y 2)
-                            (z (+ XXX 1)))
-                        2)))
-    (list 'x)))
-  ;; If our placeholder is in the variable position, still consider
-  ;; previous keybindings.
-  (should
-   (equal
-    (wh/bound-syms '(let ((x 1))
-                      (let (XXX)
-                        3)))
-    (list 'x)))
-  (should
-   (equal
-    (wh/bound-syms '(let ((x 1))
-                      (let ((XXX 2))
-                        3)))
-    (list 'x))))
-
-(ert-deftest wh/bound-syms-let* ()
-  (should
-   (equal
-    (wh/bound-syms '(let* (x y) XXX))
-    (list 'x 'y)))
-  (should
-   (equal
-    (wh/bound-syms '(let* ((x 1) (y)) XXX))
-    (list 'x 'y)))
-  (should
-   (equal
-    (wh/bound-syms '(let ((x 1))
-                      (let* ((y 2)
-                             (z (+ XXX 1)))
-                        2)))
-    (list 'x 'y)))
-  (should
-   (equal
-    (wh/bound-syms '(let* ((x 1))
-                      (let* ((XXX 2))
-                        3)))
-    (list 'x))))
-
-(ert-deftest wh/bound-syms-condition-case ()
-  (should
-   (equal
-    (wh/bound-syms '(condition-case x (XXX) y))
-    nil))
-  (should
-   (equal
-    (wh/bound-syms '(condition-case x y (XXX)))
-    (list 'x))))
-
-(ert-deftest wh/bound-syms-progn ()
-  (should
-   (equal
-    (wh/bound-syms '(progn (x y) XXX))
-    nil)))
-
