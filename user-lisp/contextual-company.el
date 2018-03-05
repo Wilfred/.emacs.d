@@ -79,6 +79,25 @@
       
       (message "hello"))))
 
+(defun wh/global-syms (form)
+  "Return all the globally bound symbol references in FORM."
+  ;; TODO: we can't macro expand, because we want to preserve macro
+  ;; references. However, this erroneously offers binding variable
+  ;; names (probably harmless) and function (due to #'foo, which will
+  ;; lead to noise).
+  (let* ((atoms (-flatten form))
+         (syms (-filter #'symbolp atoms))
+         (bound-syms (--filter (or (boundp it) (fboundp it)) syms)))
+    (-uniq bound-syms)))
+
+(setq wh/syms
+      (wh/global-syms
+       '(defun wh/global-syms (form)
+          (let* ((atoms (-flatten form))
+                 (syms (-filter #'symbolp atoms))
+                 (bound-syms (--filter (or (boundp it) (fboundp it)) syms)))
+            (-uniq bound-syms)))))
+
 (defun wh/foo2 (x y)
   (let* ((a (1+ x))
          b)
