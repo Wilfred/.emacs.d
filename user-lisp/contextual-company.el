@@ -72,14 +72,10 @@
 ;; measures the effectiveness of this approach. This would require
 ;; advising `eval-last-sexp', `edebug-eval-defun', and `eval-buffer'.
 
-(defun wh/foo (x y)
-  (let ((a (1+ x))
-        b)
-    (cl-destructuring-bind (f g) y
-      
-      (message "hello"))))
+(defvar elisp-complete--recent-syms nil)
+(defvar elisp-complete--history-size 1000)
 
-(defun wh/global-syms (form)
+(defun elisp-complete--global-syms (form)
   "Return all the globally bound symbol references in FORM."
   ;; TODO: we can't macro expand, because we want to preserve macro
   ;; references. However, this erroneously offers binding variable
@@ -87,32 +83,21 @@
   ;; lead to noise).
   (let* ((atoms (-flatten form))
          (syms (-filter #'symbolp atoms))
+         ;; Ignore quote and function, because those probably result
+         ;; from forms using 'foo and #'foo so it's unlikely they've
+         ;; been used by the user.
+         (syms (--filter (not (memq it '(quote function))) syms))
          (bound-syms (--filter (or (boundp it) (fboundp it)) syms)))
     (-uniq bound-syms)))
 
-(setq wh/syms
-      (wh/global-syms
-       '(defun wh/global-syms (form)
-          (let* ((atoms (-flatten form))
-                 (syms (-filter #'symbolp atoms))
-                 (bound-syms (--filter (or (boundp it) (fboundp it)) syms)))
-            (-uniq bound-syms)))))
+(defun elisp-complete--add-to-recent (form)
+  (let* ((used-syms (elisp-complete--global-syms form))
+         (syms (-uniq (append used-syms elisp-complete--recent-syms))))
+    (setq
+     elisp-complete--recent-syms
+     (-take elisp-complete--history-size syms))))
 
-(defun wh/foo2 (x y)
-  (let* ((a (1+ x))
-         b)
-    
-    (-let [(p q) (some-func)]
-      12345)))
 
-(lambda (x y)
-  
-  (-let [(p q) (some-func)]
-    12345))
-
-(defun wh/foo3 (x y)
-  ;; `-lambda' too.
-  (--map (+ x it) y))
 
 ;; TODO: Play with `company-diag'.
 
