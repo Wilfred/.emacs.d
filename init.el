@@ -113,6 +113,8 @@
 (require 'yaml-mode)
 (define-key yaml-mode-map (kbd "M-n") #'highlight-symbol-next)
 (define-key yaml-mode-map (kbd "M-p") #'highlight-symbol-prev)
+(define-key yaml-mode-map (kbd "M-N") #'highlight-symbol-last)
+(define-key yaml-mode-map (kbd "M-P") #'highlight-symbol-first)
 
 
 
@@ -562,38 +564,6 @@ Visit the file after creation."
 (require 'diminish)
 (diminish 'undo-tree-mode)
 
-;; Shortcuts
-
-;; =eval-defun= is bound to =C-M-x=, but Gnome doesn't allow Emacs to
-;; receive that key sequence. When writing elisp, it's very useful, so we
-;; bind it to a convenient keybinding.
-
-;; =edebug-eval-defun= is even more powerful. It ensures that =defvar=
-;; and =defcustom= are re-evaluated, so they're reset to their initial
-;; values. It can even mark a function for edebug, if it's called with a
-;; prefix.
-
-
-(require 'edebug)
-(define-key emacs-lisp-mode-map (kbd "C-c e") #'edebug-eval-defun)
-
-
-
-;; Similarly, toggle-debug-on-error is something I call a lot when
-;; developing, and it doesn't have have any keybinding.
-
-
-(define-key emacs-lisp-mode-map (kbd "C-c d") 'toggle-debug-on-error)
-
-
-
-;; When writing and debugging macros, it's really important to be able
-;; to see what they expand to. Macrostep allows us to incrementally
-;; expand the macros in our elisp file.
-
-
-(define-key emacs-lisp-mode-map (kbd "C-c m") 'macrostep-expand)
-
 ;; Editing Parentheses
 
 ;; Paredit make editing code with parentheses wonderful and has been the
@@ -605,50 +575,13 @@ Visit the file after creation."
 (add-hook 'emacs-lisp-mode-hook
           (lambda () (paredit-mode 1)))
 
-;; Highlighting Parentheses
-
-;; We colour each pair of parentheses according to their depth. This is
-;; useful for seeing similarly nested lines, such as conditions in a
-;; cond expression.
-
-
-(add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
-
-
-
-;; Our theme (tangotango) only provides colours for the first few nesting
-;; levels before repeating. We override the face colours so we have
-;; unique colours until we're seven levels deep.
-
-
-(require 'rainbow-delimiters)
-(set-face-foreground 'rainbow-delimiters-depth-1-face "white")
-(set-face-foreground 'rainbow-delimiters-depth-2-face "cyan")
-(set-face-foreground 'rainbow-delimiters-depth-3-face "yellow")
-(set-face-foreground 'rainbow-delimiters-depth-4-face "green")
-(set-face-foreground 'rainbow-delimiters-depth-5-face "orange")
-(set-face-foreground 'rainbow-delimiters-depth-6-face "purple")
-(set-face-foreground 'rainbow-delimiters-depth-7-face "white")
-(set-face-foreground 'rainbow-delimiters-depth-8-face "cyan")
-(set-face-foreground 'rainbow-delimiters-depth-9-face "yellow")
-(set-face-foreground 'rainbow-delimiters-unmatched-face "red")
-
-;; Function Signatures
-
-;; We use eldoc to show the signature of the function at point in the
-;; minibuffer.
-
-
-(add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
-
 
 
 ;; We don't want this minor mode to be shown in the minibuffer, however.
 
 
-(require 'diminish)
-(require 'eldoc)
-(diminish 'eldoc-mode)
+(use-package eldoc
+  :diminish "")
 
 ;; On-the-fly Checking
 
@@ -665,8 +598,9 @@ Visit the file after creation."
 ;; the way for quick throwaway elisp scripts, so we switch off checkdoc.
 
 
-(require 'flycheck)
-(setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers))
+(use-package flycheck
+  :config
+  (setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers)))
 
 ;; Highlighting
 
@@ -676,6 +610,33 @@ Visit the file after creation."
 
 
 (eval-after-load "dash" '(dash-enable-font-lock))
+
+;; Execute on package load
+
+;; Finally, wrap this logic in a ~use-package~ block so we don't slow down
+;; startup.
+
+
+(use-package elisp-mode
+  :config
+  (require 'edebug)
+  (define-key emacs-lisp-mode-map (kbd "C-c e") #'edebug-eval-defun)
+  (define-key emacs-lisp-mode-map (kbd "C-c d") 'toggle-debug-on-error)
+  (define-key emacs-lisp-mode-map (kbd "C-c m") 'macrostep-expand)
+  (add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
+  (require 'rainbow-delimiters)
+  (set-face-foreground 'rainbow-delimiters-depth-1-face "white")
+  (set-face-foreground 'rainbow-delimiters-depth-2-face "cyan")
+  (set-face-foreground 'rainbow-delimiters-depth-3-face "yellow")
+  (set-face-foreground 'rainbow-delimiters-depth-4-face "green")
+  (set-face-foreground 'rainbow-delimiters-depth-5-face "orange")
+  (set-face-foreground 'rainbow-delimiters-depth-6-face "purple")
+  (set-face-foreground 'rainbow-delimiters-depth-7-face "white")
+  (set-face-foreground 'rainbow-delimiters-depth-8-face "cyan")
+  (set-face-foreground 'rainbow-delimiters-depth-9-face "yellow")
+  (set-face-foreground 'rainbow-delimiters-unmatched-face "red")
+  (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
+  )
 
 ;; Python
 

@@ -670,7 +670,8 @@ and =defcustom= are re-evaluated, so they're reset to their initial
 values. It can even mark a function for edebug, if it's called with a
 prefix.
 
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
+#+NAME: edebug-keybinding
+#+BEGIN_SRC emacs-lisp
   (require 'edebug)
   (define-key emacs-lisp-mode-map (kbd "C-c e") #'edebug-eval-defun)
 #+END_SRC
@@ -678,7 +679,8 @@ prefix.
 Similarly, toggle-debug-on-error is something I call a lot when
 developing, and it doesn't have have any keybinding.
 
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
+#+NAME: toggle-debug-keybinding
+#+BEGIN_SRC emacs-lisp
   (define-key emacs-lisp-mode-map (kbd "C-c d") 'toggle-debug-on-error)
 #+END_SRC
 
@@ -686,7 +688,8 @@ When writing and debugging macros, it's really important to be able
 to see what they expand to. Macrostep allows us to incrementally
 expand the macros in our elisp file.
 
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
+#+NAME: macrostep-keybinding
+#+BEGIN_SRC emacs-lisp
   (define-key emacs-lisp-mode-map (kbd "C-c m") 'macrostep-expand)
 #+END_SRC
 
@@ -706,9 +709,10 @@ the time to set it up for lisp yet.
 
 We colour each pair of parentheses according to their depth. This is
 useful for seeing similarly nested lines, such as conditions in a
-cond expression.
+~cond~ expression.
 
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
+#+NAME: rainbow-delimiters
+#+BEGIN_SRC emacs-lisp
   (add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
 #+END_SRC
 
@@ -716,7 +720,8 @@ Our theme (tangotango) only provides colours for the first few nesting
 levels before repeating. We override the face colours so we have
 unique colours until we're seven levels deep.
 
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
+#+NAME: rainbow-delimiters-faces
+#+BEGIN_SRC emacs-lisp
   (require 'rainbow-delimiters)
   (set-face-foreground 'rainbow-delimiters-depth-1-face "white")
   (set-face-foreground 'rainbow-delimiters-depth-2-face "cyan")
@@ -735,16 +740,16 @@ unique colours until we're seven levels deep.
 We use eldoc to show the signature of the function at point in the
 minibuffer.
 
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
+#+NAME: elisp-eldoc
+#+BEGIN_SRC emacs-lisp
   (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
 #+END_SRC
 
 We don't want this minor mode to be shown in the minibuffer, however.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (require 'diminish)
-  (require 'eldoc)
-  (diminish 'eldoc-mode)
+  (use-package eldoc
+    :diminish "")
 #+END_SRC
 
 **** On-the-fly Checking
@@ -761,8 +766,9 @@ By default, flycheck also runs checkdoc on elisp code. This gets in
 the way for quick throwaway elisp scripts, so we switch off checkdoc.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (require 'flycheck)
-  (setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers))
+  (use-package flycheck
+    :config
+    (setq flycheck-checkers (--remove (eq it 'emacs-lisp-checkdoc) flycheck-checkers)))
 #+END_SRC
 
 **** Highlighting
@@ -775,6 +781,22 @@ used in its anaphoric macros (e.g. ~it~).
   (eval-after-load "dash" '(dash-enable-font-lock))
 #+END_SRC
 
+**** Execute on package load
+
+Finally, wrap this logic in a ~use-package~ block so we don't slow down
+startup.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :comments org :noweb yes
+  (use-package elisp-mode
+    :config
+    <<edebug-keybinding>>
+    <<toggle-debug-keybinding>>
+    <<macrostep-keybinding>>
+    <<rainbow-delimiters>>
+    <<rainbow-delimiters-faces>>
+    <<elisp-eldoc>>
+    )
+#+END_SRC
 
 *** Python
 
