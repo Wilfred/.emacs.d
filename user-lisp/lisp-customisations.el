@@ -13,7 +13,10 @@ test with the same name."
       (let* ((form (read (current-buffer)))
              (sym (nth 1 form)))
         (ert sym))))
-  (define-key emacs-lisp-mode-map (kbd "C-c r") #'wh/run-ert-test))
+  (define-key emacs-lisp-mode-map (kbd "C-c r") #'wh/run-ert-test)
+
+  (dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook))
+    (add-hook hook #'elisp-def-mode)))
 
 (use-package paredit
   :diminish ""
