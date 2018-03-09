@@ -2,7 +2,7 @@
 
 (setq load-prefer-newer t)
 
-(use-package emacs-lisp-mode
+(use-package elisp-mode
   :config
   (defun wh/run-ert-test ()
     "Run ERT test at point. If point is in a function, run the
