@@ -564,17 +564,6 @@ Visit the file after creation."
 (require 'diminish)
 (diminish 'undo-tree-mode)
 
-;; Editing Parentheses
-
-;; Paredit make editing code with parentheses wonderful and has been the
-;; gold standard for lisp coding for some time. Smartparens has recently
-;; gained popularity as an paredit alternative, but I haven't invested
-;; the time to set it up for lisp yet.
-
-
-(add-hook 'emacs-lisp-mode-hook
-          (lambda () (paredit-mode 1)))
-
 
 
 ;; We don't want this minor mode to be shown in the minibuffer, however.

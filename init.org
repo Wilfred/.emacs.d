@@ -693,18 +693,6 @@ expand the macros in our elisp file.
   (define-key emacs-lisp-mode-map (kbd "C-c m") 'macrostep-expand)
 #+END_SRC
 
-**** Editing Parentheses
-
-Paredit make editing code with parentheses wonderful and has been the
-gold standard for lisp coding for some time. Smartparens has recently
-gained popularity as an paredit alternative, but I haven't invested
-the time to set it up for lisp yet.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (add-hook 'emacs-lisp-mode-hook
-            (lambda () (paredit-mode 1)))
-#+END_SRC
-
 **** Highlighting Parentheses
 
 We colour each pair of parentheses according to their depth. This is
