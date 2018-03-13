@@ -166,19 +166,7 @@
 ;; positions.
 
 
-(defun beginning-of-line-dwim ()
-  "Toggles between moving point to the first non-whitespace character, and
-the start of the line."
-  (interactive)
-  (let ((start-position (point)))
-    ;; Move to the first non-whitespace character.
-    (back-to-indentation)
-
-    ;; If we haven't moved position, go to start of the line.
-    (when (= (point) start-position)
-      (move-beginning-of-line nil))))
-
-(global-set-key (kbd "C-a") 'beginning-of-line-dwim)
+(global-set-key (kbd "C-a") #'crux-move-beginning-of-line)
 
 ;; By Character
 
