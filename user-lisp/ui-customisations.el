@@ -136,6 +136,12 @@ Defaults to `t'.")
 
 (global-set-key (kbd "C-x 5") #'transpose-frame)
 
+(use-package ace-window
+  :config
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+
+(global-set-key (kbd "C-x o") #'ace-window)
+
 ;; It's common for me to split the window vertically, with the same
 ;; buffer on both sides. This lets me easily view two different parts
 ;; of the same buffer.
