@@ -3,7 +3,7 @@
 ;;; Code:
 (add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "eacl" "eacl.el" (23036 18474 559099 993000))
+;;;### (autoloads nil "eacl" "eacl.el" (23210 62115 367404 68000))
 ;;; Generated autoloads from eacl.el
 
 (autoload 'eacl-get-project-root "eacl" "\
@@ -11,7 +11,7 @@ Get project root.
 
 \(fn)" nil nil)
 
-(autoload 'eacl-current-line "eacl" "\
+(autoload 'eacl-current-line-info "eacl" "\
 Current line.
 
 \(fn)" nil nil)
@@ -19,7 +19,7 @@ Current line.
 (autoload 'eacl-get-keyword "eacl" "\
 Get trimmed keyword from CUR-LINE.
 
-\(fn CUR-LINE)" nil nil)
+\(fn LINE)" nil nil)
 
 (autoload 'eacl-complete-multi-lines-internal "eacl" "\
 Complete multi-lines.  REGEX is used to match the lines.
