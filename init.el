@@ -985,6 +985,10 @@ Visit the file after creation."
   ;; Don't show the twitter client or location, it's just distracting.
   (setq twittering-status-format "%i %s,  %@:\n%FILL[  ]{%T %r%R}\n "))
 
+(use-package google-this
+  :config
+  (global-set-key (kbd "C-c g") #'google-this))
+
 ;; Performance
 
 ;; Emacs will run garbage collection after ~gc-cons-threshold~ bytes of
