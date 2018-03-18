@@ -9,11 +9,6 @@
 (show-paren-mode 1)
 (setq show-paren-when-point-inside-paren t)
 
-;; Make cursor the width of the character it is under, particularly
-;; useful for spotting tabs.
-;; http://pragmaticemacs.com/emacs/adaptive-cursor-width/
-(setq x-stretch-cursor t)
-
 ;; Don't show the git branch on the line.
 (setq mode-line-format
       '("%e"
