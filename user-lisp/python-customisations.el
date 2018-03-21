@@ -111,9 +111,7 @@
   (require 'python-smart-execute)
   (define-key python-mode-map (kbd "C-c e") #'python-smart-execute)
   (define-key python-mode-map (kbd "<f1>") #'python-smart-execute)
-  (define-key python-mode-map (kbd "<S-f1>") #'python-smart-execute-no-move)
-
-  (add-hook 'python-mode-hook #'subword-mode))
+  (define-key python-mode-map (kbd "<S-f1>") #'python-smart-execute-no-move))
 
 (require 'python)
 (require 'python-utils)
