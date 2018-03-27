@@ -9,4 +9,8 @@
         ;; files often contain prose with apostrophes.
         (rpm . (,sh-mode-syntax-table ?\' "."))))
 
+;; Remove keybinding that overrides `crux-rename-buffer-and-file`.
+(require 'sh-script)
+(define-key sh-mode-map (kbd "C-c C-n") nil)
+
 (provide 'sh-customisations)
