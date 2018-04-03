@@ -3,7 +3,7 @@
 ;;; Code:
 (add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "avy" "avy.el" (22697 45824 700478 737000))
+;;;### (autoloads nil "avy" "avy.el" (23235 47181 149644 481000))
 ;;; Generated autoloads from avy.el
 
 (autoload 'avy-goto-char "avy" "\
@@ -19,7 +19,9 @@ Jump to the currently visible CHAR in the current line.
 
 (autoload 'avy-goto-char-2 "avy" "\
 Jump to the currently visible CHAR1 followed by CHAR2.
-The window scope is determined by `avy-all-windows' (ARG negates it).
+The window scope is determined by `avy-all-windows'.
+When ARG is non-nil, do the opposite of `avy-all-windows'.
+BEG and END narrow the scope where candidates are searched.
 
 \(fn CHAR1 CHAR2 &optional ARG BEG END)" t nil)
 
@@ -27,6 +29,8 @@ The window scope is determined by `avy-all-windows' (ARG negates it).
 Jump to the currently visible CHAR1 followed by CHAR2.
 This is a scoped version of `avy-goto-char-2', where the scope is
 the visible part of the current buffer up to point.
+The window scope is determined by `avy-all-windows'.
+When ARG is non-nil, do the opposite of `avy-all-windows'.
 
 \(fn CHAR1 CHAR2 &optional ARG)" t nil)
 
@@ -34,6 +38,8 @@ the visible part of the current buffer up to point.
 Jump to the currently visible CHAR1 followed by CHAR2.
 This is a scoped version of `avy-goto-char-2', where the scope is
 the visible part of the current buffer following point.
+The window scope is determined by `avy-all-windows'.
+When ARG is non-nil, do the opposite of `avy-all-windows'.
 
 \(fn CHAR1 CHAR2 &optional ARG)" t nil)
 
@@ -44,47 +50,61 @@ Jump to one of the current isearch candidates.
 
 (autoload 'avy-goto-word-0 "avy" "\
 Jump to a word start.
-The window scope is determined by `avy-all-windows' (ARG negates it).
+The window scope is determined by `avy-all-windows'.
+When ARG is non-nil, do the opposite of `avy-all-windows'.
+BEG and END narrow the scope where candidates are searched.
 
-\(fn ARG)" t nil)
+\(fn ARG &optional BEG END)" t nil)
 
 (autoload 'avy-goto-word-1 "avy" "\
 Jump to the currently visible CHAR at a word start.
-The window scope is determined by `avy-all-windows' (ARG negates it).
+The window scope is determined by `avy-all-windows'.
+When ARG is non-nil, do the opposite of `avy-all-windows'.
+BEG and END narrow the scope where candidates are searched.
+When SYMBOL is non-nil, jump to symbol start instead of word start.
 
 \(fn CHAR &optional ARG BEG END SYMBOL)" t nil)
 
 (autoload 'avy-goto-word-1-above "avy" "\
 Jump to the currently visible CHAR at a word start.
 This is a scoped version of `avy-goto-word-1', where the scope is
-the visible part of the current buffer up to point. 
+the visible part of the current buffer up to point.
+The window scope is determined by `avy-all-windows'.
+When ARG is non-nil, do the opposite of `avy-all-windows'.
 
 \(fn CHAR &optional ARG)" t nil)
 
 (autoload 'avy-goto-word-1-below "avy" "\
 Jump to the currently visible CHAR at a word start.
 This is a scoped version of `avy-goto-word-1', where the scope is
-the visible part of the current buffer following point. 
+the visible part of the current buffer following point.
+The window scope is determined by `avy-all-windows'.
+When ARG is non-nil, do the opposite of `avy-all-windows'.
 
 \(fn CHAR &optional ARG)" t nil)
 
 (autoload 'avy-goto-symbol-1 "avy" "\
 Jump to the currently visible CHAR at a symbol start.
-The window scope is determined by `avy-all-windows' (ARG negates it).
+The window scope is determined by `avy-all-windows'.
+When ARG is non-nil, do the opposite of `avy-all-windows'.
 
 \(fn CHAR &optional ARG)" t nil)
 
 (autoload 'avy-goto-symbol-1-above "avy" "\
 Jump to the currently visible CHAR at a symbol start.
 This is a scoped version of `avy-goto-symbol-1', where the scope is
-the visible part of the current buffer up to point. 
+the visible part of the current buffer up to point.
+The window scope is determined by `avy-all-windows'.
+When ARG is non-nil, do the opposite of `avy-all-windows'.
 
 \(fn CHAR &optional ARG)" t nil)
 
 (autoload 'avy-goto-symbol-1-below "avy" "\
 Jump to the currently visible CHAR at a symbol start.
 This is a scoped version of `avy-goto-symbol-1', where the scope is
-the visible part of the current buffer following point. 
+the visible part of the current buffer following point.
+The window scope is determined by `avy-all-windows'.
+When ARG is non-nil, do the opposite of `avy-all-windows'.
 
 \(fn CHAR &optional ARG)" t nil)
 
@@ -155,7 +175,7 @@ The window scope is determined by `avy-all-windows' or
 \(fn ARG)" t nil)
 
 (autoload 'avy-move-region "avy" "\
-Select two lines and move the text between them here.
+Select two lines and move the text between them above the current line.
 
 \(fn)" t nil)
 
@@ -169,6 +189,8 @@ The window scope is determined by `avy-all-windows' or
 
 (autoload 'avy-kill-ring-save-region "avy" "\
 Select two lines and save the region between them to the kill ring.
+The window scope is determined by `avy-all-windows'.
+When ARG is non-nil, do the opposite of `avy-all-windows'.
 
 \(fn ARG)" t nil)
 
@@ -176,7 +198,7 @@ Select two lines and save the region between them to the kill ring.
 Select line and kill the whole selected line.
 
 With a numerical prefix ARG, kill ARG line(s) starting from the
-selected line. If ARG is negative, kill backward.
+selected line.  If ARG is negative, kill backward.
 
 If ARG is zero, kill the selected line but exclude the trailing
 newline.
@@ -190,10 +212,16 @@ selected line.
 \(fn ARG)" t nil)
 
 (autoload 'avy-kill-ring-save-whole-line "avy" "\
-Select line and Save the whole selected line as if killed, but don’t kill it.
+Select line and save the whole selected line as if killed, but don’t kill it.
 
 This command is similar to `avy-kill-whole-line', except that it
 saves the line(s) as if killed, but does not kill it(them).
+
+With a numerical prefix ARG, kill ARG line(s) starting from the
+selected line.  If ARG is negative, kill backward.
+
+If ARG is zero, kill the selected line but exclude the trailing
+newline.
 
 \(fn ARG)" t nil)
 
