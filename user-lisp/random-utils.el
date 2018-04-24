@@ -22,8 +22,27 @@
   "Securely reseed Emacs' random number generator."
   (random (shell-command "cat < /dev/urandom | fold -w32 | head -n1")))
 
+(defun wh/words ()
+  (let ((buf (find-file-noselect "~/.emacs.d/user-lisp/words.txt")))
+    (with-current-buffer buf
+      (s-lines (s-trim (buffer-string))))))
+
+(defun random-xkcd-password (&optional word-count)
+  (interactive)
+  (unless word-count
+    (setq word-count 4))
+  (let ((all-words (wh/words))
+        words
+        password)
+    (dotimes (_ word-count)
+      (push (random-choice all-words) words))
+    (setq password (s-join " " words))
+    (message "%s (also copied to clipboard)" password)
+    (let ((select-enable-clipboard t))
+      (kill-new password))))
+
 (defun random-password ()
-  "Generate a random 32 character string and "
+  "Generate a random 32 character string."
   (interactive)
   (random-reseed-securely)
   (let ((password
