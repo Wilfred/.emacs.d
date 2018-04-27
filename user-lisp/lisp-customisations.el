@@ -41,7 +41,6 @@ test with the same name."
   ;; For consistency, we do the same thing for other sexp-oriented
   ;; commands that ship with Emacs.
   (define-key paredit-mode-map (kbd "<s-backspace>") #'backward-kill-sexp)
-  (define-key paredit-mode-map (kbd "s-k") #'kill-sexp)
   (define-key paredit-mode-map (kbd "s-t") #'transpose-sexps)
 
   ;; Use hungry-delete in elisp too.  There is also
@@ -171,7 +170,7 @@ test with the same name."
   ;; lispy-kill-at-point is really handy, but I use C-, for navigating
   ;; hunks.
   (define-key lispy-mode-map-lispy (kbd "C-,") nil)
-  (define-key lispy-mode-map-lispy (kbd "C-c C-k") #'lispy-kill-at-point)
+  (define-key lispy-mode-map-lispy (kbd "s-k") #'lispy-kill-at-point)
 
   ;; Semantic mode can be switched on by lispy, which changes the
   ;; behaviour of a range of commands. Ensure it's only temporarily
