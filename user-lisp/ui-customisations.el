@@ -159,6 +159,20 @@ If it is split, repeat the current buffer in a vertical split."
       (delete-other-windows)
       (split-window-right))))
 
+;; https://www.emacswiki.org/emacs/TransposeWindows
+ (defun transpose-windows ()
+   "Transpose two windows.  If more or less than two windows are visible, error."
+   (interactive)
+   (unless (= 2 (count-windows))
+     (user-error "There are not 2 windows."))
+   (let* ((windows (window-list))
+          (w1 (car windows))
+          (w2 (nth 1 windows))
+          (w1b (window-buffer w1))
+          (w2b (window-buffer w2)))
+     (set-window-buffer w1 w2b)
+     (set-window-buffer w2 w1b)))
+
 ;; windmove allows S-<right> and S-<right> to switch between windows
 ;; instead of `C-x o'
 (when (fboundp 'windmove-default-keybindings)
