@@ -1,8 +1,8 @@
 ;;; elisp-def.el --- macro-aware go-to-definition for elisp  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018  Wilfred Hughes
-;; Version: 0.1
-;; Package-Version: 20180224.1517
+;; Version: 1.1
+;; Package-Version: 20180410.224
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Keywords: lisp
@@ -28,8 +28,14 @@
 ;; bindings.
 ;;
 ;; See full docs at https://github.com/Wilfred/elisp-def
+
+;;; Usage:
+
+;; Once this file is installed (e.g. with MELPA), add the following to
+;; your Emacs configuration:
 ;;
-;; TODO: fonts
+;; (dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook))
+;;   (add-hook hook #'elisp-def-mode))
 
 ;;; Code:
 
@@ -64,6 +70,17 @@ source code: they have e.g. org.elc but no org.el."
       (or (eq filename 'C-source)
           (and (stringp filename)
                (equal (file-name-extension filename) "c"))))))
+
+(defun elisp-def--find-face (sym)
+  "Find the buffer and position where face SYM is defined."
+  (let (buf pos)
+    (condition-case nil
+        (progn
+          (find-face-definition sym)
+          (setq buf (current-buffer))
+          (setq pos (point)))
+      (error nil))
+    (list buf pos)))
 
 (defun elisp-def--find-feature (sym)
   "Find the buffer and position where feature SYM is defined."
@@ -155,7 +172,7 @@ This is the function _slot_ of SYM, so SYM may be a function or macro."
 
 (defun elisp-def--defined-in (sym)
   "All the namespaces that SYM is globally defined in.
-Returns a list '(function variable).
+Returns a list containing at most '(function variable face).
 
 Note that macros are in the same namespace as functions."
   (let (result)
@@ -164,6 +181,10 @@ Note that macros are in the same namespace as functions."
     ;; Function or macro.
     (when (fboundp sym)
       (push 'function result))
+    (when (facep sym)
+      (push 'face result))
+    (when (memq sym features)
+      (push 'library result))
     result))
 
 (defun elisp-def--sharp-quoted-p ()
@@ -188,6 +209,50 @@ as just another level of nesting."
       (setq depth (1+ depth)))
     depth))
 
+(defun elisp-def--top-level-pos ()
+  "Return the start and end positions of the form surrounding
+point."
+  (let* ((ppss (syntax-ppss))
+         (in-comment (nth 4 ppss))
+         (string-comment-start (nth 8 ppss))
+         start-pos end-pos)
+    (save-excursion
+      (if in-comment
+          ;; If we're inside a comment, just return the comment
+          ;; contents.
+          (progn
+            (setq start-pos string-comment-start)
+            (setq end-pos (line-end-position)))
+
+        ;; If we're not in a form, we might be in a top-level symbol,
+        ;; so move to the beginning.
+        (while (and
+                (looking-at (rx (or (syntax word) (syntax symbol))))
+                (not (looking-at (rx symbol-start))))
+          (backward-char))
+        ;; Move past any top-level quotes.
+        (when (eq (char-before) ?')
+          (backward-char))
+        (when (eq (char-before) ?`)
+          (backward-char))
+        (when (eq (char-before) ?#)
+          (backward-char))
+        
+        ;; If we're in a string, move outside of it.
+        (when string-comment-start
+          (goto-char string-comment-start))
+        ;; We can now move out, in sexp increments, until we're
+        ;; outside of the top-level form.
+        (while (nth 1 (syntax-ppss))
+          (goto-char (nth 1 (syntax-ppss))))
+
+        ;; We're now at beginning of the outer sexp, return its
+        ;; position.
+        (setq start-pos (point))
+        (forward-sexp)
+        (setq end-pos (point)))
+      (list start-pos end-pos))))
+
 (defun elisp-def--namespace-at-point ()
   "Is the symbol at point a function/macro, a global variable, a
 quoted variable, or a let-bound variable?
@@ -202,8 +267,7 @@ quoted variables, because they aren't being used at point."
 
     ;; Otherwise, macro expand the source at point and look at how the
     ;; symbol is used.
-    (-let* (((form-start form-end) (elisp-def--enclosing-form
-                                    (elisp-def--syntax-depth)))
+    (-let* (((form-start form-end) (elisp-def--top-level-pos))
             (placeholder (elisp-def--fresh-placeholder))
             (src (elisp-def--source-with-placeholder form-start form-end placeholder))
             (form (condition-case nil
@@ -545,10 +609,12 @@ positions of the form."
         (if string-start-pos
             (goto-char string-start-pos)
           (goto-char enclosing-start-pos))))
-    (list (point)
-          (progn
-            (forward-sexp)
-            (point)))))
+    (let (start-pos end-pos)
+      (forward-sexp)
+      (setq end-pos (point))
+      (backward-sexp)
+      (setq start-pos (point))
+      (list start-pos end-pos))))
 
 (defun elisp-def--binding-form-start ()
   "Return the start position of the form enclosing point
@@ -733,7 +799,9 @@ Or for let-bound variables:
             ((eq namespace 'variable)
              (elisp-def--find-variable sym))
             ((eq namespace 'function)
-             (elisp-def--find-function sym)))]
+             (elisp-def--find-function sym))
+            ((eq namespace 'face)
+             (elisp-def--find-face sym)))]
       (unless (and buf pos)
         ;; todo: mention if it's due to being a primitive
         (user-error "Couldn't find definition for %s %s"
@@ -760,18 +828,19 @@ Or for let-bound variables:
         ;; works for e.g. `point', but not for `re-search-forward'.
         (elisp-def--flash-region (point) sym-end-pos)))))
 
-;;;###autoload
-(define-minor-mode elisp-def-mode
-  "Minor mode for finding definitions with `elisp-def'.
-
-\\{elisp-def-mode-map}")
-
 (defvar elisp-def-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "M-.") #'elisp-def)
     (define-key map (kbd "M-,") #'xref-pop-marker-stack)
     map)
   "Keymap used in command `elisp-def-mode'.")
+
+;;;###autoload
+(define-minor-mode elisp-def-mode
+  "Minor mode for finding definitions with `elisp-def'.
+
+\\{elisp-def-mode-map}"
+  nil " ElispDef" elisp-def-mode-map)
 
 (provide 'elisp-def)
 ;;; elisp-def.el ends here

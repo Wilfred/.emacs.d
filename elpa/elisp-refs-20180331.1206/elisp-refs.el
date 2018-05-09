@@ -3,10 +3,10 @@
 ;; Copyright (C) 2016  
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
-;; Version: 1.2
-;; Package-Version: 20170528.1223
+;; Version: 1.3
+;; Package-Version: 20180331.1206
 ;; Keywords: lisp
-;; Package-Requires: ((dash "2.12.0") (f "0.18.2") (list-utils "0.4.4") (loop "2.1") (s "1.11.0"))
+;; Package-Requires: ((dash "2.12.0") (loop "1.2") (s "1.11.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -33,11 +33,10 @@
 
 ;;; Code:
 
-(require 'list-utils)
 (require 'dash)
-(require 'f)
 (require 'loop)
 (require 's)
+(require 'format)
 (eval-when-compile (require 'cl-lib))
 
 (defun elisp-refs--format-int (integer)
@@ -119,7 +118,7 @@ Internal implementation detail.")
              (nreverse forms)
            ;; Some unexpected error, propagate.
            (error "Unexpected error whilst reading %s position %s: %s"
-                  (f-abbrev elisp-refs--path) (point) err)))))))
+                  (abbreviate-file-name elisp-refs--path) (point) err)))))))
 
 (defun elisp-refs--walk (buffer form start-pos end-pos symbol match-p &optional path)
   "Walk FORM, a nested list, and return a list of sublists (with
@@ -158,7 +157,7 @@ START-POS and END-POS should be the position of FORM within BUFFER."
       (--each (-zip form subforms-positions)
         (-let [(subform subform-start subform-end) it]
           (when (or
-                 (and (consp subform) (not (list-utils-improper-p subform)))
+                 (and (consp subform) (format-proper-list-p subform))
                  (and (symbolp subform) (eq subform symbol)))
             (-when-let (subform-matches
                         (elisp-refs--walk
@@ -326,10 +325,10 @@ Where the file was a .elc, return the path to the .el file instead."
   (let ((elc-paths (-non-nil (mapcar #'-first-item load-history))))
     (-non-nil
      (--map
-      (let ((el-name (format "%s.el" (f-no-ext it)))
-            (el-gz-name (format "%s.el.gz" (f-no-ext it))))
-        (cond ((f-exists? el-name) el-name)
-              ((f-exists? el-gz-name) el-gz-name)
+      (let ((el-name (format "%s.el" (file-name-sans-extension it)))
+            (el-gz-name (format "%s.el.gz" (file-name-sans-extension it))))
+        (cond ((file-exists-p el-name) el-name)
+              ((file-exists-p el-gz-name) el-gz-name)
               ;; Ignore files where we can't find a .el file.
               (t nil)))
       elc-paths))))
@@ -338,7 +337,11 @@ Where the file was a .elc, return the path to the .el file instead."
   "Read PATH into a disposable buffer, and return it.
 Works around the fact that Emacs won't allow multiple buffers
 visiting the same file."
-  (let ((fresh-buffer (generate-new-buffer (format "refs-%s" path))))
+  (let ((fresh-buffer (generate-new-buffer (format " *refs-%s*" path)))
+        (file-name-handler-alist
+         '(("\\(?:\\.dz\\|\\.txz\\|\\.xz\\|\\.lzma\\|\\.lz\\|\\.g?z\\|\\.\\(?:tgz\\|svgz\\|sifz\\)\\|\\.tbz2?\\|\\.bz2\\|\\.Z\\)\\(?:~\\|\\.~[-[:alnum:]:#@^._]+\\(?:~[[:digit:]]+\\)?~\\)?\\'" .
+            jka-compr-handler)
+           ("\\`/:" . file-name-non-special))))
     (with-current-buffer fresh-buffer
       (setq-local elisp-refs--path path)
       (insert-file-contents path)
@@ -465,7 +468,7 @@ propertize them."
   "Return a button that navigates to PATH."
   (with-temp-buffer
     (insert-text-button
-     (f-abbrev path)
+     (abbreviate-file-name path)
      :type 'elisp-refs-path-button
      'path path)
     (buffer-string)))
@@ -641,11 +644,20 @@ t."
   "Display all the references to function SYMBOL, in all loaded
 elisp files.
 
-If called with a prefix, prompt for a directory to limit the search."
+If called with a prefix, prompt for a directory to limit the search.
+
+This searches for functions, not macros. For that, see
+`elisp-refs-macro'."
   (interactive
    (list (elisp-refs--completing-read-symbol "Function: " #'functionp)
          (when current-prefix-arg
            (read-directory-name "Limit search to loaded files in: "))))
+  (when (not (functionp symbol))
+    (if (macrop symbol)
+        (user-error "%s is a macro. Did you mean elisp-refs-macro?"
+                    symbol)
+      (user-error "%s is not a function. Did you mean elisp-refs-symbol?"
+                  symbol)))
   (elisp-refs--search symbol
                       (elisp-refs--describe-button symbol 'function)
                       (lambda (buf)
@@ -657,11 +669,20 @@ If called with a prefix, prompt for a directory to limit the search."
   "Display all the references to macro SYMBOL, in all loaded
 elisp files.
 
-If called with a prefix, prompt for a directory to limit the search."
+If called with a prefix, prompt for a directory to limit the search.
+
+This searches for macros, not functions. For that, see
+`elisp-refs-function'."
   (interactive
    (list (elisp-refs--completing-read-symbol "Macro: " #'macrop)
          (when current-prefix-arg
            (read-directory-name "Limit search to loaded files in: "))))
+  (when (not (macrop symbol))
+    (if (functionp symbol)
+        (user-error "%s is a function. Did you mean elisp-refs-function?"
+                    symbol)
+      (user-error "%s is not a function. Did you mean elisp-refs-symbol?"
+                  symbol)))
   (elisp-refs--search symbol
                       (elisp-refs--describe-button symbol 'macro)
                       (lambda (buf)

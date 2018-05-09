@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "elisp-refs" "elisp-refs.el" (22846 20874 466505
-;;;;;;  383000))
+;;;### (autoloads nil "elisp-refs" "elisp-refs.el" (23283 24488 256803
+;;;;;;  60000))
 ;;; Generated autoloads from elisp-refs.el
 
 (autoload 'elisp-refs-function "elisp-refs" "\
@@ -13,6 +13,9 @@ elisp files.
 
 If called with a prefix, prompt for a directory to limit the search.
 
+This searches for functions, not macros. For that, see
+`elisp-refs-macro'.
+
 \(fn SYMBOL &optional PATH-PREFIX)" t nil)
 
 (autoload 'elisp-refs-macro "elisp-refs" "\
@@ -20,6 +23,9 @@ Display all the references to macro SYMBOL, in all loaded
 elisp files.
 
 If called with a prefix, prompt for a directory to limit the search.
+
+This searches for macros, not functions. For that, see
+`elisp-refs-function'.
 
 \(fn SYMBOL &optional PATH-PREFIX)" t nil)
 
