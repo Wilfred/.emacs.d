@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "suggest" "suggest.el" (23032 34447 943062
-;;;;;;  594000))
+;;;### (autoloads nil "suggest" "suggest.el" (23283 26520 456440
+;;;;;;  272000))
 ;;; Generated autoloads from suggest.el
 
 (autoload 'suggest "suggest" "\
