@@ -32,8 +32,11 @@
          (append before-save-hook (list #'gofmt-before-save))))
   (add-hook 'go-mode-hook #'wh/gofmt-before-save)
 
-  (require 'rats)
   (add-hook 'go-mode-hook #'rats-mode))
+
+(use-package rats-mode
+  :config
+  (define-key rats-mode-map (kbd "C-c r") #'rats-run-test-under-point))
 
 
 (provide 'go-customisations)
