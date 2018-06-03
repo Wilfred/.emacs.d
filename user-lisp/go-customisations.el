@@ -34,7 +34,7 @@
 
   (add-hook 'go-mode-hook #'rats-mode))
 
-(use-package rats-mode
+(use-package rats
   :config
   (define-key rats-mode-map (kbd "C-c r") #'rats-run-test-under-point))
 
