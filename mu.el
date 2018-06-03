@@ -280,8 +280,7 @@ This fills each line between `comint-last-output-start' and the buffer's
 	(let (start)
 	  (beginning-of-line)
 	  (setq start (point))
-	  (forward-line)
-	  (fill-region start (point) nil t))))))
+	  (forward-line))))))
 
 (provide 'mu)
 
