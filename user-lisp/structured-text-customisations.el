@@ -103,6 +103,11 @@ element.  If called interactively, show it in the echo area."
               (hproperty:but-clear)))
           t)
 
+(use-package css-mode
+  :config
+  (setq css-indent-offset 2)
+  (add-hook 'css-mode-hook #'prettier-js-mode))
+
 ;; Port of http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=900ede244c886c56579dcbfabd04cf4f144275a1
 (defun css--font-lock-keywords (&optional sassy)
   `((,(concat "!\\s-*"
