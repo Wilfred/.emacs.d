@@ -21,6 +21,9 @@
   ;; Show *foo* and /foo/ without org markers, just the formatting.
   (setq org-hide-emphasis-markers t)
 
+  ;; Enable n/p to move between org headings.
+  (setq org-use-speed-commands t)
+
   ;; Allow running code in sh and python
   (require 'ob-shell)
   (require 'ob-python)
