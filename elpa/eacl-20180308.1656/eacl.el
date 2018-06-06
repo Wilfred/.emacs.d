@@ -272,6 +272,30 @@ Candidates same as KEYWORD in current file is excluded."
                       cands))
   (delq nil (delete-dups cands)))
 
+(defun eacl-git-p (path)
+  "Return non-nil if PATH is part of a git repository."
+  (locate-dominating-file path ".git"))
+
+(defun eacl-search-command (search-regex multiline-p path)
+  "Return a shell command that will search for SEARCH-REGEX in PATH."
+  (cond
+   (multiline-p
+    ;; Without `-z` multi-line grep will fail.
+    ;; The side-effect of `-z` is the we basically can't get line number
+    ;; The best algorithm is remove any match in current file
+    (format "%s -rszonI --null %s -- \"%s\" ."
+            eacl-grep-program
+            (eacl-grep-exclude-opts)
+            search-regex))
+   ;; git-grep does not support multiline searches.
+   ((eacl-git-p path)
+    (format "git grep -h --untracked \"%s\"" search-regex))
+   (t
+    (format "%s -rshI %s -- \"%s\" ."
+            eacl-grep-program
+            (eacl-grep-exclude-opts)
+            search-regex))))
+
 (defun eacl-complete-line-or-statement (regex keyword &optional extra)
   "Complete line or statement according to REGEX.
 If REGEX is nil, we only complete single line.
@@ -280,13 +304,8 @@ KEYWORD is used to grep.
 EXTRA is optional information to filter candidates."
   (let* ((default-directory (or (funcall eacl-project-root-callback) default-directory))
          (quoted-keyword (eacl-shell-quote-argument keyword))
-         ;; Without `-z` multi-line grep will fail.
-         ;; The side-effect of `-z` is the we basically can't get line number
-         ;; The best algorithm is remove any match in current file
-         (cmd (format (if regex "%s -rszonI %s -- \"%s\" *" "%s -rshI %s -- \"%s\" *")
-                      eacl-grep-program
-                      (eacl-grep-exclude-opts)
-                      (if regex (concat quoted-keyword regex) quoted-keyword)))
+         (search-regex (if regex (concat quoted-keyword regex) quoted-keyword))
+         (cmd (eacl-search-command search-regex regex default-directory))
          ;; Grep option "-z" outputs null character at the end of each candidate
          (sep (if regex "\x0" "[\r\n]+"))
          (orig-collection (eacl-get-candidates cmd sep keyword))
