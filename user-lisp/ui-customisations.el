@@ -133,7 +133,8 @@ Defaults to `t'.")
 
 (use-package ace-window
   :config
-  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+  (setq aw-char-position 'left))
 
 (global-set-key (kbd "C-x o") #'ace-window)
 
