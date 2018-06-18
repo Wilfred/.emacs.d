@@ -1,4 +1,4 @@
-;;; smartparens-html.el --- Additional configuration for HTML based modes.
+;;; smartparens-html.el --- Additional configuration for HTML based modes.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2013-2014 Matus Goljer
 
@@ -36,12 +36,6 @@
 ;;
 ;; into your configuration.  You can use this in conjunction with the
 ;; default config or your own configuration.
-
-;; It is advised that you add `html-mode' to the list
-;; `sp-navigate-consider-stringlike-sexp'.  This will tell smartparens
-;; to treat the "" delimited strings as sexps, and enable you to use
-;; all the sexp-based commands on them (such as `sp-down-sexp',
-;; `sp-up-sexp' etc.)
 
 ;; This file provides these interactive functions:
 
@@ -95,7 +89,11 @@ backward."
         (sp-beginning-of-sexp arg)
       (sp-beginning-of-sexp (1- (- (prefix-numeric-value arg)))))))
 
-(defun sp-html-post-handler (&optional id action context)
+(defun sp-html-post-handler (&optional _id action _context)
+  "Post-action hooks for `html-mode'.
+
+ID is the tag being processed, ACTION is the action and CONTEXT
+specifies if we are inside a string or code."
   (cl-case action
     (slurp-forward
      (save-excursion

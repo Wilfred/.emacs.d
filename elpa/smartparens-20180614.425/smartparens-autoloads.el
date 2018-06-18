@@ -1,10 +1,12 @@
 ;;; smartparens-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
+
+(add-to-list 'load-path (directory-file-name
+                         (or (file-name-directory #$) (car load-path))))
+
 
-;;;### (autoloads nil "smartparens" "smartparens.el" (22547 50200
-;;;;;;  149347 109000))
+;;;### (autoloads nil "smartparens" "smartparens.el" (0 0 0 0))
 ;;; Generated autoloads from smartparens.el
 
 (autoload 'sp-cheat-sheet "smartparens" "\
@@ -12,7 +14,7 @@ Generate a cheat sheet of all the smartparens interactive functions.
 
 Without a prefix argument, print only the short documentation and examples.
 
-With non-nil prefix argument, show the full documentation for each function.
+With non-nil prefix argument ARG, show the full documentation for each function.
 
 You can follow the links to the function or variable help page.
 To get back to the full list, use \\[help-go-back].
@@ -29,15 +31,12 @@ better orientation.
 Keymap used for `smartparens-mode'.")
 
 (autoload 'sp-use-paredit-bindings "smartparens" "\
-Initiate `smartparens-mode-map' with paredit-compatible bindings for
-corresponding functions provided by smartparens.  See variable
-`sp-paredit-bindings'.
+Initiate `smartparens-mode-map' with `sp-paredit-bindings'.
 
 \(fn)" t nil)
 
 (autoload 'sp-use-smartparens-bindings "smartparens" "\
-Initiate `smartparens-mode-map' with smartparens bindings for navigation functions.
-See variable `sp-smartparens-bindings'.
+Initiate `smartparens-mode-map' with `sp-smartparens-bindings'.
 
 \(fn)" t nil)
 
@@ -92,6 +91,11 @@ See `smartparens-strict-mode' for more information on Smartparens-Strict mode.
 
 (autoload 'turn-on-smartparens-strict-mode "smartparens" "\
 Turn on `smartparens-strict-mode'.
+
+\(fn)" t nil)
+
+(autoload 'turn-off-smartparens-strict-mode "smartparens" "\
+Turn off `smartparens-strict-mode'.
 
 \(fn)" t nil)
 
@@ -179,14 +183,140 @@ Turn off `show-smartparens-mode'.
 
 \(fn)" t nil)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens" '("smartparens-" "sp-")))
+
 ;;;***
 
-;;;### (autoloads nil nil ("smartparens-clojure.el" "smartparens-config.el"
-;;;;;;  "smartparens-ess.el" "smartparens-haskell.el" "smartparens-html.el"
-;;;;;;  "smartparens-latex.el" "smartparens-lua.el" "smartparens-pkg.el"
-;;;;;;  "smartparens-python.el" "smartparens-racket.el" "smartparens-ruby.el"
-;;;;;;  "smartparens-rust.el" "smartparens-scala.el") (22547 50200
-;;;;;;  376018 853000))
+;;;### (autoloads nil "smartparens-clojure" "smartparens-clojure.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from smartparens-clojure.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-clojure" '("sp-clojure-prefix")))
+
+;;;***
+
+;;;### (autoloads nil "smartparens-config" "smartparens-config.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from smartparens-config.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-config" '("sp-lisp-invalid-hyperlink-p")))
+
+;;;***
+
+;;;### (autoloads nil "smartparens-crystal" "smartparens-crystal.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from smartparens-crystal.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-crystal" '("sp-crystal-")))
+
+;;;***
+
+;;;### (autoloads nil "smartparens-elixir" "smartparens-elixir.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from smartparens-elixir.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-elixir" '("sp-elixir-")))
+
+;;;***
+
+;;;### (autoloads nil "smartparens-ess" "smartparens-ess.el" (0 0
+;;;;;;  0 0))
+;;; Generated autoloads from smartparens-ess.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-ess" '("sp-ess-")))
+
+;;;***
+
+;;;### (autoloads nil "smartparens-haskell" "smartparens-haskell.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from smartparens-haskell.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-haskell" '("sp-")))
+
+;;;***
+
+;;;### (autoloads nil "smartparens-html" "smartparens-html.el" (0
+;;;;;;  0 0 0))
+;;; Generated autoloads from smartparens-html.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-html" '("sp-html-")))
+
+;;;***
+
+;;;### (autoloads nil "smartparens-latex" "smartparens-latex.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from smartparens-latex.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-latex" '("sp-latex-")))
+
+;;;***
+
+;;;### (autoloads nil "smartparens-lua" "smartparens-lua.el" (0 0
+;;;;;;  0 0))
+;;; Generated autoloads from smartparens-lua.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-lua" '("sp-lua-post-keyword-insert")))
+
+;;;***
+
+;;;### (autoloads nil "smartparens-markdown" "smartparens-markdown.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from smartparens-markdown.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-markdown" '("sp-")))
+
+;;;***
+
+;;;### (autoloads nil "smartparens-org" "smartparens-org.el" (0 0
+;;;;;;  0 0))
+;;; Generated autoloads from smartparens-org.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-org" '("sp--org-skip-asterisk")))
+
+;;;***
+
+;;;### (autoloads nil "smartparens-python" "smartparens-python.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from smartparens-python.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-python" '("sp-python-fix-tripple-quotes")))
+
+;;;***
+
+;;;### (autoloads nil "smartparens-ruby" "smartparens-ruby.el" (0
+;;;;;;  0 0 0))
+;;; Generated autoloads from smartparens-ruby.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-ruby" '("sp-")))
+
+;;;***
+
+;;;### (autoloads nil "smartparens-rust" "smartparens-rust.el" (0
+;;;;;;  0 0 0))
+;;; Generated autoloads from smartparens-rust.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-rust" '("sp-")))
+
+;;;***
+
+;;;### (autoloads nil "smartparens-scala" "smartparens-scala.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from smartparens-scala.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-scala" '("sp-scala-wrap-with-indented-newlines")))
+
+;;;***
+
+;;;### (autoloads nil "smartparens-text" "smartparens-text.el" (0
+;;;;;;  0 0 0))
+;;; Generated autoloads from smartparens-text.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-text" '("sp-text-mode-")))
+
+;;;***
+
+;;;### (autoloads nil nil ("smartparens-javascript.el" "smartparens-ml.el"
+;;;;;;  "smartparens-pkg.el" "smartparens-racket.el") (0 0 0 0))
 
 ;;;***
 
@@ -194,5 +324,6 @@ Turn off `show-smartparens-mode'.
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
+;; coding: utf-8
 ;; End:
 ;;; smartparens-autoloads.el ends here

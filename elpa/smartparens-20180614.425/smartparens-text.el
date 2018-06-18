@@ -1,10 +1,10 @@
-;;; smartparens-scala.el --- Additional configuration for Scala based modes.
+;;; smartparens-latex.el --- Additional configuration for text-mode.  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2015 Greg Nwosu
+;; Copyright (C) 2017 Matus Goljer
 
-;; Author: Greg Nwosu <greg.nwosu@gmail.com>
-;; Maintainer: Greg Nwosu <greg.nwosu@gmail.com>
-;; Created: 8 July 2015
+;; Author: Matus Goljer <matus.goljer@gmail.com>
+;; Maintainer: Matus Goljer <matus.goljer@gmail.com>
+;; Created: 16 July 2017
 ;; Keywords: abbrev convenience editing
 ;; URL: https://github.com/Fuco1/smartparens
 
@@ -29,17 +29,17 @@
 
 ;;; Commentary:
 
-;; This file provides some additional configuration for Scala based
-;; modes.  To use it, simply add:
+;; This file provides some additional configuration for `text-mode'.
+;; To use it, simply add:
 ;;
-;; (require 'smartparens-scala)
+;; (require 'smartparens-text)
 ;;
 ;; into your configuration.  You can use this in conjunction with the
 ;; default config or your own configuration.
-;;
+
 ;; If you have good ideas about what should be added please file an
 ;; issue on the github tracker.
-;;
+
 ;; For more info, see github readme at
 ;; https://github.com/Fuco1/smartparens
 
@@ -47,11 +47,19 @@
 
 (require 'smartparens)
 
-;; Scala has no sexp suffices.  This fixes slurping
-;; import scala.mutable{|} ListBuffer, Set ---the comma should not travel with the closing
-;; paren
-(--each '(scala-mode inferior-scala-mode)
-  (add-to-list 'sp-sexp-suffix (list it 'regexp "")))
+(defun sp-text-mode-emoticon-p (_id action _context)
+  (when (memq action '(insert navigate))
+    (sp--looking-back-p ":-?[()]" 3)))
 
-(provide 'smartparens-scala)
-;;; smartparens-scala.el ends here
+(defun sp-text-mode-skip-emoticon (ms mb _me)
+  (when (member ms '("(" ")"))
+    (save-excursion
+      (goto-char mb)
+      (sp--looking-back-p ":-?" 2))))
+
+(sp-local-pair 'text-mode "(" nil
+               :unless '(:add sp-text-mode-emoticon-p)
+               :skip-match 'sp-text-mode-skip-emoticon)
+
+(provide 'smartparens-text)
+;;; smartparens-text.el ends here

@@ -1,4 +1,4 @@
-;;; smartparens-elixir.el --- Configuration for Elixir.
+;;; smartparens-elixir.el --- Configuration for Elixir.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017 Matúš Goljer
 
@@ -27,8 +27,13 @@
 
 (require 'smartparens)
 
+(--each '(elixir-mode)
+  (add-to-list 'sp-sexp-suffix (list it 'regexp "")))
+
 (defun sp-elixir-def-p (id)
   "Return non-nil if the \"do\" keyword is part of definition.
+
+ID is the opening delimiter.
 
 Definitions are the constructions of the form defmodule-do-end,
 def-do-end and similar pairs."
@@ -52,11 +57,14 @@ def-do-end and similar pairs."
                                 "try"
                                 ))))))
 
-(defun sp-elixir-skip-def-p (ms mb me)
+(defun sp-elixir-skip-def-p (ms _mb _me)
+  "Test if \"do\" is part of definition.
+MS, MB, ME."
   (sp-elixir-def-p ms))
 
-(defun sp-elixir-do-block-post-handler (id action context)
-  "Insert \"do\" keyword and indent the new block."
+(defun sp-elixir-do-block-post-handler (_id action _context)
+  "Insert \"do\" keyword and indent the new block.
+ID, ACTION, CONTEXT."
   (when (eq action 'insert)
     (let ((m (make-marker)))
       (save-excursion
@@ -67,10 +75,11 @@ def-do-end and similar pairs."
       (indent-region (line-beginning-position) m)
       (move-marker m nil nil))))
 
-(defun sp-elixir-empty-do-block-post-handler (id action context)
+(defun sp-elixir-empty-do-block-post-handler (_id action _context)
   "Insert empty \"do\" keyword and indent the new block.
 
-This is used for receive-do-end expression."
+This is used for receive-do-end expression.
+ID, ACTION, CONTEXT."
   (when (eq action 'insert)
     (let ((m (make-marker)))
       (save-excursion
@@ -88,25 +97,35 @@ This is used for receive-do-end expression."
 (sp-with-modes 'elixir-mode
   (sp-local-pair "do" "end"
                  :when '(("SPC" "RET" "<evil-ret>"))
-                 :skip-match 'sp-elixir-skip-def-p)
+                 :skip-match 'sp-elixir-skip-def-p
+                 :unless '(sp-in-comment-p sp-in-string-p))
   (sp-local-pair "def" "end"
                  :when '(("SPC" "RET" "<evil-ret>"))
-                 :post-handlers '(sp-elixir-do-block-post-handler))
+                 :post-handlers '(sp-elixir-do-block-post-handler)
+                 :unless '(sp-in-comment-p sp-in-string-p))
+  (sp-local-pair "defp" "end"
+                 :when '(("SPC" "RET" "<evil-ret>"))
+                 :post-handlers '(sp-elixir-do-block-post-handler)
+                 :unless '(sp-in-comment-p sp-in-string-p))
   (sp-local-pair "defmodule" "end"
                  :when '(("SPC" "RET" "<evil-ret>"))
-                 :post-handlers '(sp-elixir-do-block-post-handler))
+                 :post-handlers '(sp-elixir-do-block-post-handler)
+                 :unless '(sp-in-comment-p sp-in-string-p))
   (sp-local-pair "fn" "end"
                  :when '(("SPC" "RET" "<evil-ret>"))
                  :post-handlers '("| "))
   (sp-local-pair "if" "end"
                  :when '(("SPC" "RET" "<evil-ret>"))
-                 :post-handlers '(sp-elixir-do-block-post-handler))
+                 :post-handlers '(sp-elixir-do-block-post-handler)
+                 :unless '(sp-in-comment-p sp-in-string-p))
   (sp-local-pair "unless" "end"
                  :when '(("SPC" "RET" "<evil-ret>"))
-                 :post-handlers '(sp-elixir-do-block-post-handler))
+                 :post-handlers '(sp-elixir-do-block-post-handler)
+                 :unless '(sp-in-comment-p sp-in-string-p))
   (sp-local-pair "case" "end"
                  :when '(("SPC" "RET" "<evil-ret>"))
-                 :post-handlers '(sp-elixir-do-block-post-handler))
+                 :post-handlers '(sp-elixir-do-block-post-handler)
+                 :unless '(sp-in-comment-p sp-in-string-p))
   (sp-local-pair "receive" "end"
                  :when '(("RET" "<evil-ret>"))
                  :post-handlers '(sp-elixir-empty-do-block-post-handler))

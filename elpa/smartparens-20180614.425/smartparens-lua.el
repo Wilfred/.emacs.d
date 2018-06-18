@@ -1,4 +1,4 @@
-;;; smartparens-lua.el --- Additional configuration for Lua based modes.
+;;; smartparens-lua.el --- Additional configuration for Lua based modes.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2013-2014 Matus Goljer
 
@@ -48,6 +48,7 @@
 (require 'smartparens)
 
 (defun sp-lua-post-keyword-insert (id action _context)
+  "ID, ACTION, CONTEXT."
   (cond
    ((eq action 'insert)
     (cond
@@ -68,19 +69,19 @@
 (sp-with-modes '(lua-mode)
   (sp-local-pair "if" "end"
                  :when '(("SPC"))
-                 :unless '(sp-in-comment-p)
+                 :unless '(sp-in-comment-p sp-in-string-p)
                  :post-handlers '(sp-lua-post-keyword-insert))
   (sp-local-pair "function" "end"
                  :when '(("SPC"))
-                 :unless '(sp-in-comment-p)
+                 :unless '(sp-in-comment-p sp-in-string-p)
                  :post-handlers '(sp-lua-post-keyword-insert))
   (sp-local-pair "for" "end"
                  :when '(("SPC"))
-                 :unless '(sp-in-comment-p)
+                 :unless '(sp-in-comment-p sp-in-string-p)
                  :post-handlers '(sp-lua-post-keyword-insert))
   (sp-local-pair "while" "end"
                  :when '(("SPC"))
-                 :unless '(sp-in-comment-p)
+                 :unless '(sp-in-comment-p sp-in-string-p)
                  :post-handlers '(sp-lua-post-keyword-insert))
   )
 

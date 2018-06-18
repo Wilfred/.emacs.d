@@ -1,4 +1,4 @@
-;;; smartparens-scala.el --- Additional configuration for Scala based modes.
+;;; smartparens-scala.el --- Additional configuration for Scala based modes.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2015 Greg Nwosu
 
@@ -52,6 +52,29 @@
 ;; paren
 (--each '(scala-mode inferior-scala-mode)
   (add-to-list 'sp-sexp-suffix (list it 'regexp "")))
+
+(defun sp-scala-wrap-with-indented-newlines (_1 action _2)
+  "Post handler for the wrap ACTION, putting the region on indented newlines."
+  (when (eq action 'wrap)
+    (sp-get sp-last-wrapped-region
+      (let ((beg :beg-in)
+            (end :end-in))
+        (save-excursion
+          (goto-char end)
+          (newline-and-indent))
+        (save-excursion
+          (goto-char beg)
+          (newline))
+        (indent-region beg end)))))
+
+(sp-local-pair 'scala-mode "(" nil
+               :post-handlers '(("||\n[i]" "RET")
+                                ("| " "SPC")))
+
+(sp-local-pair 'scala-mode "{" nil
+               :post-handlers '(("||\n[i]" "RET")
+                                ("| " "SPC")
+                                sp-scala-wrap-with-indented-newlines))
 
 (provide 'smartparens-scala)
 ;;; smartparens-scala.el ends here

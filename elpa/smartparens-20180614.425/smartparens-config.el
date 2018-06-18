@@ -1,4 +1,4 @@
-;;; smartparens-config.el --- Default configuration for smartparens package
+;;; smartparens-config.el --- Default configuration for smartparens package  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2013-2016 Matus Goljer
 
@@ -45,21 +45,30 @@
 
 (require 'smartparens)
 
-(defun sp-lisp-invalid-hyperlink-p (_1 action _2)
+(defun sp-lisp-invalid-hyperlink-p (_id action _context)
+  "Test if there is an invalid hyperlink in a Lisp docstring.
+ID, ACTION, CONTEXT."
   (when (eq action 'navigate)
     ;; Ignore errors due to us being at the start or end of the
     ;; buffer.
     (ignore-errors
-      (or (and (looking-at "\\sw\\|\\s_")
-               (save-excursion
-                 (backward-char 2)
-                 (looking-at "\\sw\\|\\s_")))
-          (and (save-excursion
-                 (backward-char 1)
-                 (looking-at "\\sw\\|\\s_"))
-               (save-excursion
-                 (forward-char 1)
-                 (looking-at "\\sw\\|\\s_")))))))
+      (or
+       ;; foo'|bar
+       (and (looking-at "\\sw\\|\\s_")
+            ;; do not consider punctuation
+            (not (looking-at "[?.,;!]"))
+            (save-excursion
+              (backward-char 2)
+              (looking-at "\\sw\\|\\s_")))
+       ;; foo|'bar
+       (and (save-excursion
+              (backward-char 1)
+              (looking-at "\\sw\\|\\s_"))
+            (save-excursion
+              (forward-char 1)
+              (looking-at "\\sw\\|\\s_")
+              ;; do not consider punctuation
+              (not (looking-at "[?.,;!]"))))))))
 
 ;; emacs is lisp hacking enviroment, so we set up some most common
 ;; lisp modes too
@@ -74,7 +83,7 @@
                  :when '(sp-in-string-p
                          sp-in-comment-p)
                  :unless '(sp-lisp-invalid-hyperlink-p)
-                 :skip-match (lambda (ms mb me)
+                 :skip-match (lambda (ms _mb _me)
                                (cond
                                 ((equal ms "'")
                                  (or (sp-lisp-invalid-hyperlink-p "`" 'navigate '_)
@@ -99,6 +108,7 @@
 ;; macro, you MUST supply the major mode argument.
 
 (eval-after-load 'clojure-mode             '(require 'smartparens-clojure))
+(eval-after-load 'crystal-mode             '(require 'smartparens-crystal))
 (eval-after-load 'elixir-mode              '(require 'smartparens-elixir))
 (eval-after-load 'enh-ruby-mode            '(require 'smartparens-ruby))
 (eval-after-load 'ess                      '(require 'smartparens-ess))
@@ -108,15 +118,20 @@
   (eval-after-load it                      '(require 'smartparens-html)))
 (eval-after-load 'latex                    '(require 'smartparens-latex))
 (eval-after-load 'lua-mode                 '(require 'smartparens-lua))
+(eval-after-load 'markdown-mode            '(require 'smartparens-markdown))
 (--each '(python-mode python)
   (eval-after-load it                      '(require 'smartparens-python)))
+(eval-after-load 'org                      '(require 'smartparens-org))
 (eval-after-load 'racket-mode              '(require 'smartparens-racket))
 (eval-after-load 'ruby-mode                '(require 'smartparens-ruby))
 (eval-after-load 'rust-mode                '(require 'smartparens-rust))
 (eval-after-load 'scala-mode               '(require 'smartparens-scala))
 (eval-after-load 'tex-mode                 '(require 'smartparens-latex))
-(eval-after-load 'tuareg                   '(require 'smartparens-ocaml))
-
+(eval-after-load 'text-mode                '(require 'smartparens-text))
+(eval-after-load 'tuareg                   '(require 'smartparens-ml))
+(eval-after-load 'fsharp-mode              '(require 'smartparens-ml))
+(--each '(js js2-mode)
+  (eval-after-load it                      '(require 'smartparens-javascript)))
 (provide 'smartparens-config)
 
 ;;; smartparens-config.el ends here

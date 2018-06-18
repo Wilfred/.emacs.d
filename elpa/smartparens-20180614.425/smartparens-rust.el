@@ -1,4 +1,4 @@
-;;; smartparens-rust.el --- Additional configuration for Haskell based modes.
+;;; smartparens-rust.el --- Additional configuration for Rust based modes.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2015 Wilfred Hughes
 
@@ -44,9 +44,12 @@
 ;;; Code:
 (require 'smartparens)
 
-(defun sp-in-rust-lifetime-context (&rest args)
+(declare-function rust-mode "rust-mode")
+
+(defun sp-in-rust-lifetime-context (&rest _args)
   "Return t if point is in a Rust context where ' represents a lifetime.
-If we return nil, ' should be used for character literals."
+If we return nil, ' should be used for character literals.
+ARGS."
   (or
    (condition-case nil
        ;; If point is just after a &', it's probably a &'foo.
@@ -62,9 +65,25 @@ If we return nil, ' should be used for character literals."
             (goto-char paren-pos)
             (looking-at "<"))))))
 
-(defun sp-rust-filter-angle-brackets (id action context)
-  "Return t if we should allow ACTION in the current CONTEXT
-for angle brackets."
+(defun sp-rust-skip-match-angle-bracket (_ms _mb me)
+  "Non-nil if we should ignore the bracket as valid delimiter."
+  (save-excursion
+    (goto-char me)
+    (let ((on-fn-return-type
+           (sp--looking-back-p (rx "->") nil))
+          (on-match-branch
+           (sp--looking-back-p (rx "=>") nil))
+          (on-comparison
+           (sp--looking-back-p (rx (or
+                                    (seq space "<")
+                                    (seq space ">")
+                                    (seq space "<<")
+                                    (seq space ">>")))
+                               nil)))
+      (or on-comparison on-fn-return-type on-match-branch))))
+
+(defun sp-rust-filter-angle-brackets (_id action context)
+  "Non-nil if we should allow ID's ACTION in CONTEXT for angle brackets."
   ;; See the docstring for `sp-pair' for the possible values of ID,
   ;; ACTION and CONTEXT.
   (cond
@@ -78,6 +97,8 @@ for angle brackets."
    ((eq context 'code)
     (let ((on-fn-return-type
            (looking-back (rx "->") nil))
+          (on-match-branch
+           (looking-back (rx "=>") nil))
           (on-comparison
            (looking-back (rx (or
                               (seq space "<")
@@ -89,25 +110,26 @@ for angle brackets."
        ;; Only insert a matching > if we're not looking at a
        ;; comparison.
        ((eq action 'insert)
-        (and (not on-comparison) (not on-fn-return-type)))
+        (and (not on-comparison) (not on-fn-return-type) (not on-match-branch)))
        ;; Always allow wrapping in a pair if the region is active.
        ((eq action 'wrap)
-        t)
+        (not on-match-branch))
        ;; When pressing >, autoskip if we're not looking at a
        ;; comparison.
        ((eq action 'autoskip)
-        (and (not on-comparison) (not on-fn-return-type)))
+        (and (not on-comparison) (not on-fn-return-type) (not on-match-branch)))
        ;; Allow navigation, highlighting and strictness checks if it's
        ;; not a comparison.
        ((eq action 'navigate)
-        (and (not on-comparison) (not on-fn-return-type))))))))
+        (and (not on-comparison) (not on-fn-return-type) (not on-match-branch))))))))
 
 (sp-with-modes '(rust-mode)
   (sp-local-pair "'" "'"
                  :unless '(sp-in-comment-p sp-in-string-quotes-p sp-in-rust-lifetime-context)
                  :post-handlers'(:rem sp-escape-quotes-after-insert))
   (sp-local-pair "<" ">"
-                 :when '(sp-rust-filter-angle-brackets)))
+                 :when '(sp-rust-filter-angle-brackets)
+                 :skip-match 'sp-rust-skip-match-angle-bracket))
 
 ;; Rust has no sexp suffices.  This fixes slurping
 ;; (|foo).bar -> (foo.bar)
