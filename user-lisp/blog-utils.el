@@ -47,7 +47,7 @@ in the current buffer."
          ;; TODO: preserve the existing date.
          (filename (wh/blog-file-name title)))
     (rename-file (buffer-file-name) filename)
-    (rename-buffer filename)))
+    (set-visited-file-name filename t t)))
 
 (defun convert-creole ()
   "Convert creole text in the current buffer to markdown."
