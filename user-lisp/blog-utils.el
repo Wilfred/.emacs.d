@@ -2,7 +2,7 @@
 (require 'f)
 
 ;; TODO: migrate these functions to https://github.com/fred-o/jekyll-modes/
-(defun blog-file-name (title &optional time)
+(defun wh/blog-file-name (title &optional time)
   (format "%s-%s.markdown"
           ;; use `parse-time-string' to reverse this formatting
           (format-time-string "%Y-%m-%d" time)
@@ -17,7 +17,7 @@
                                    (when (f-exists-p default-posts-dir)
                                      default-posts-dir)))
          (title (read-string "Post title: "))
-         (file-name (blog-file-name title)))
+         (file-name (wh/blog-file-name title)))
     (find-file (f-join dir file-name))
     (insert (format "--- 
 layout: post
@@ -26,7 +26,7 @@ title: \"%s\"
 
 " title))))
 
-(defun blog-post-title ()
+(defun wh/blog-post-title ()
   "Get the post title from the YAML front matter
 in the current buffer."
   (save-excursion
@@ -43,9 +43,9 @@ in the current buffer."
 (defun wh/blog-update-file-name ()
   "Set the current blog post file name according to the current title and date."
   (interactive)
-  (let* ((title (blog-post-title))
+  (let* ((title (wh/blog-post-title))
          ;; TODO: preserve the existing date.
-         (filename (blog-file-name title)))
+         (filename (wh/blog-file-name title)))
     (rename-file (buffer-file-name) filename)
     (rename-buffer filename)))
 
