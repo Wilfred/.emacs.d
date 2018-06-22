@@ -24,6 +24,9 @@
         mode-line-modes
         mode-line-misc-info))
 
+;; Show debug-on-error and debug-on-quit status in the modeline.
+(mode-line-debug-mode)
+
 ;; always highlight line that cursor is on, unless a mode requests
 ;; otherwise.
 (defvar use-hl-line t
