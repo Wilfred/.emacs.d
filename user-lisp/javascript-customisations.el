@@ -1,4 +1,15 @@
-(require 'js2-mode)
+(use-package js2-mode
+  :config
+  ;; fix js2-mode's function parameter colour, which is too dark for a dark theme
+  (custom-set-faces
+   '(js2-function-param-face ((((class color)) (:foreground "Green")))))
+
+  ;; js2-mode offers a variety of warnings, but eslint is better at
+  ;; this, so we switch of those in js2-mode.
+  (setq js2-strict-inconsistent-return-warning nil)
+  (setq js2-strict-missing-semi-warning nil)
+  (setq js2-strict-trailing-comma-warning nil))
+
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 
 (defun wh/js-use-tabs ()
@@ -16,21 +27,17 @@
   (setq indent-tabs-mode nil)
   (setq js2-basic-offset 2))
 
-(dolist (hook '(js-mode-hook js2-mode-hook js-jsx-mode-hook js2-jsx-mode-hook rjsx-mode-hook))
+(defun wh/configure-js-mode (hook)
   (add-hook hook #'wh/js-use-2-spaces)
   (add-hook hook #'tern-mode)
   (add-hook hook #'flycheck-mode)
   (add-hook hook #'prettier-js-mode))
 
-;; fix js2-mode's function parameter colour, which is too dark for a dark theme
-(custom-set-faces
- '(js2-function-param-face ((((class color)) (:foreground "Green")))))
-
-;; js2-mode offers a variety of warnings, but eslint is better at
-;; this, so we switch of those in js2-mode.
-(setq js2-strict-inconsistent-return-warning nil)
-(setq js2-strict-missing-semi-warning nil)
-(setq js2-strict-trailing-comma-warning nil)
+(dolist (hook '(js-mode-hook js2-mode-hook js-jsx-mode-hook js2-jsx-mode-hook rjsx-mode-hook))
+  (add-hook hook #'wh/js-use-2-spaces)
+  (add-hook hook #'tern-mode)
+  (add-hook hook #'flycheck-mode)
+  (add-hook hook #'prettier-js-mode))
 
 (require 'company)
 (add-to-list 'company-backends 'company-tern)

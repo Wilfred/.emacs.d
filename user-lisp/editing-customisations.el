@@ -1,3 +1,9 @@
+;; Fastest load, according to https://github.com/jwiegley/use-package#use-packageel-is-no-longer-needed-at-runtime
+(eval-when-compile
+  (require 'use-package))
+(require 'diminish)
+(require 'bind-key)
+
 ;;;; Editing customisations -- general text munging when typing.
 (require 's)
 (require 'dash)
@@ -151,21 +157,15 @@ are interchanged."
 (setq-default shift-select-mode nil)
 
 ;; use expand-region to grow the region according to the current mode's syntax
-(require 'expand-region)
-(require 'python-el-fgallina-expansions)
-(global-set-key (kbd "C-=") 'er/expand-region)
+(use-package expand-region
+  :config
+  (require 'python-el-fgallina-expansions)
+  (global-set-key (kbd "C-=") 'er/expand-region))
 
-(require 'move-dup)
 (global-move-dup-mode)
 (diminish 'move-dup-mode)
 
 (global-set-key (kbd "C-c o") #'md/duplicate-down)
-
-;; Fastest load, according to https://github.com/jwiegley/use-package#use-packageel-is-no-longer-needed-at-runtime
-(eval-when-compile
-  (require 'use-package))
-(require 'diminish)
-(require 'bind-key)
 
 (use-package ez-query-replace
   :bind (("M-%" . ez-query-replace)
@@ -393,7 +393,6 @@ a symmetrically-encrypted GPG file. Require explict saving in this case."
         (t
          (insert (file-relative-name filename)))))
 
-(require 'bool-flip)
 (global-set-key (kbd "C-c t") #'bool-flip-do-flip)
 
 ;; http://stackoverflow.com/a/4459159/509706

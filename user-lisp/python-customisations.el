@@ -113,9 +113,6 @@
   (define-key python-mode-map (kbd "<f1>") #'python-smart-execute)
   (define-key python-mode-map (kbd "<S-f1>") #'python-smart-execute-no-move))
 
-(require 'python)
-(require 'python-utils)
-
 (setq flycheck-python-mypy-args '("--py2" "--strict" "--disallow-any=generics"))
 (setq flycheck-python-mypy-executable "/Users/whughes/pyenvs/mypyenv/bin/mypy")
 
@@ -126,7 +123,6 @@
 ;;         pass
 
 (exec-path-from-shell-copy-env "WORKON_HOME")
-(require 'virtualenvwrapper)
 
 (defadvice python-nav-up-list (before python-nav-push-mark activate)
   "Push the mark before this Python nav command.

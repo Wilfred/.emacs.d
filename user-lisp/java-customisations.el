@@ -1,7 +1,6 @@
 ;;; eclim, which lets us use eclispe as a server
 
 (setq eclim-executable (expand-file-name "~/.eclipse/org.eclipse.platform_3.7.0_155965261/eclim"))
-(require 'eclim)
 
 (defvar eclim-in-use nil)
 (defun eclim-switch-on ()
@@ -21,17 +20,12 @@ is quite invasive, messing with (amongst others) after-save-hook."
 (add-hook 'java-mode-hook '(lambda () (progn (eclim-switch-on) (eclim-mode 1))))
 
 ;; eclim key bindings
-(require 'cc-mode); java-mode-map
-(define-key java-mode-map (kbd "<f6>") 'eclim-java-find-declaration)
+(use-package cc-mode
+  :config
+  (define-key java-mode-map (kbd "<f6>") 'eclim-java-find-declaration))
 
 ; treat camelCaseWords as different words with M-f and M-b
 (add-hook 'java-mode-hook '(lambda () (subword-mode 1)))
-
-(require 'potato-customisations); buffer-contains-string-p
-(autoload 'dolist "cl")
-(autoload 'ido-completing-read "ido")
-
-(autoload 'path-for-current-buffer "file-customisations")
 
 (require 'f)
 
@@ -54,7 +48,7 @@ is quite invasive, messing with (amongst others) after-save-hook."
     (if failed-tests
         (progn
           (find-file (f-join test-results-directory
-                             (ido-completing-read "Pick a failed class: " failed-tests)))
+                             (completing-read "Pick a failed class: " failed-tests)))
           (compilation-mode))
       (message (format "No failed tests in %s." test-results-directory)))))
 

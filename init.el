@@ -110,11 +110,12 @@
 
 ;; Whilst YAML isn't a programming language, it's useful to move by
 ;; symbol here too.
-(require 'yaml-mode)
-(define-key yaml-mode-map (kbd "M-n") #'highlight-symbol-next)
-(define-key yaml-mode-map (kbd "M-p") #'highlight-symbol-prev)
-(define-key yaml-mode-map (kbd "M-N") #'highlight-symbol-last)
-(define-key yaml-mode-map (kbd "M-P") #'highlight-symbol-first)
+(use-package yaml-mode
+  :config
+  (define-key yaml-mode-map (kbd "M-n") #'highlight-symbol-next)
+  (define-key yaml-mode-map (kbd "M-p") #'highlight-symbol-prev)
+  (define-key yaml-mode-map (kbd "M-N") #'highlight-symbol-last)
+  (define-key yaml-mode-map (kbd "M-P") #'highlight-symbol-first))
 
 
 
@@ -179,8 +180,6 @@
 ;; ~back-to-indentation~ by default, but our =C-a= behaviour makes it
 ;; redundant.
 
-
-(require 'jump-char)
 
 (global-set-key (kbd "M-m") #'jump-char-forward)
 (global-set-key (kbd "M-M") #'jump-char-backward)
@@ -358,8 +357,7 @@ If a prefix argument is given, don't change the kill-ring."
 ;; featureful.
 
 
-(require 'projectile)
-(projectile-global-mode)
+(projectile-mode)
 
 
 
@@ -410,7 +408,6 @@ If a prefix argument is given, don't change the kill-ring."
 ;; we've modified.
 
 
-(require 'backup-each-save)
 (add-hook 'after-save-hook 'backup-each-save)
 
 ;; Scratch Files
@@ -549,7 +546,6 @@ Visit the file after creation."
 ;; it on the mode line. Hide it.
 
 
-(require 'diminish)
 (diminish 'undo-tree-mode)
 
 
@@ -636,14 +632,14 @@ Visit the file after creation."
 ;; shortcut for inserting them.
 
 
-(require 'python)
+(use-package python
+  :config
+  (define-skeleton python-insert-docstring
+    "Insert a Python docstring."
+    "This string is ignored!"
+    "\"\"\"" - "\n\n    \"\"\"")
 
-(define-skeleton python-insert-docstring
-  "Insert a Python docstring."
-  "This string is ignored!"
-  "\"\"\"" - "\n\n    \"\"\"")
-
-(define-key python-mode-map (kbd "C-c s") 'python-insert-docstring)
+  (define-key python-mode-map (kbd "C-c s") 'python-insert-docstring))
 
 ;; Haskell
 
@@ -693,19 +689,12 @@ Visit the file after creation."
 
 ;; HTML
 
-;;  I like to indent my HTML with tabs (company policy at the first web
-;;  shop I worked at).
+;;  I like to indent my HTML with four spaces.
 
 
-(require 'sgml-mode)
-
-; indent html with tabs only
-(add-hook 'html-mode-hook
-  (function
-   (lambda ()
-     (progn
-       (setq indent-tabs-mode nil)
-       (setq sgml-basic-offset 4)))))
+(use-package sgml-mode
+  :config
+  (setq sgml-basic-offset 4))
 
 
 
@@ -797,10 +786,12 @@ Visit the file after creation."
 (defun insert-django-skeleton ()
   (interactive)
   (let* ((skeleton-names (mapcar 'symbol-name template-skeletons))
-        (skeleton-chosen (ido-completing-read "HTML skeleton: " skeleton-names)))
+         (skeleton-chosen (ido-completing-read "HTML skeleton: " skeleton-names)))
     (funcall (intern skeleton-chosen))))
 
-(define-key html-mode-map "\C-ct" 'insert-django-skeleton)
+(use-package sgml-mode
+  :config
+  (define-key html-mode-map "\C-ct" 'insert-django-skeleton))
 
 (defun visit-parent-django-template ()
   "In a buffer containg {% extends \"foo.html\" %}, visit foo.html."
@@ -832,22 +823,19 @@ Visit the file after creation."
 (defun html-linkify-region (url)
   "Wraps the region in an <a> tag with href set to URL."
   (interactive "sURL: ")
-  (let* (
-         (initial-cursor-position (point))
+  (let* ((initial-cursor-position (point))
          (beginning (region-beginning))
          (end (region-end))
          (first-replacement (concat "<a href=\"" url "\">"))
          (second-replacement "</a>"))
-  (goto-char beginning)
-  (insert first-replacement)
-  (goto-char (+ end (length first-replacement)))
-  (insert second-replacement)
-  (goto-char (+ initial-cursor-position (length first-replacement)))
-  ))
+    (goto-char beginning)
+    (insert first-replacement)
+    (goto-char (+ end (length first-replacement)))
+    (insert second-replacement)
+    (goto-char (+ initial-cursor-position (length first-replacement)))))
 
-; zen coding: converts selector-style lines to tags
-; e.g. table>tr*2 becomes <table><tr></tr><tr></tr></table>
-(require 'zencoding-mode)
+;; zen coding: converts selector-style lines to tags
+;; e.g. table>tr*2 becomes <table><tr></tr><tr></tr></table>
 (add-hook 'sgml-mode-hook 'zencoding-mode) ;; Auto-start on any markup modes
 
 ;; CSS
@@ -855,12 +843,7 @@ Visit the file after creation."
 ;;  Typically I work on projects that use 4 spaces for CSS indenetation.
 
 
-(add-hook 'css-mode-hook
-          (function
-           (lambda ()
-             (progn
-               (setq css-indent-offset 4)
-               (setq indent-tabs-mode nil)))))
+(setq css-indent-offset 4)
 
 
 
@@ -896,8 +879,9 @@ Visit the file after creation."
 ;;  syntax check.
 
 
-(require 'less-css-mode)
-(add-hook 'less-css-mode-hook 'flymake-mode)
+(use-package less-css-mode
+  :config
+  (add-hook 'less-css-mode-hook 'flymake-mode))
 
 ;; Org-mode
 
@@ -1056,10 +1040,12 @@ Visit the file after creation."
 
 (require 'compilation-customisations)
 
+;; TODO: distinguish missing file from error during execution
 (ignore-errors (require 'site-customisations))
 
 (setq ag-highlight-search 't)
 (global-set-key (kbd "<f5>") #'ag-project)
+(global-set-key (kbd "<f5>") #'deadgrep)
 
 (require 'conflicts-customisations)
 (require 'org-customisations)

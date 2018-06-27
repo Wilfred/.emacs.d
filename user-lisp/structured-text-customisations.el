@@ -12,16 +12,9 @@
 (add-hook 'json-mode-hook #'flycheck-mode)
 
 ;; yaml mode stuff, since google app engine uses it
-(require 'yaml-mode)
-(add-hook 'yaml-mode-hook
-	  '(lambda ()
-	     (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
-
 (add-hook 'yaml-mode-hook #'highlight-symbol-mode)
 
 ;; markdown mode
-(autoload 'markdown-mode "markdown-mode"
-  "Major mode for editing Markdown files" t)
 (add-to-list 'auto-mode-alist '("\\.md$" . gfm-mode))
 (add-to-list 'auto-mode-alist '("\\.markdown$" . markdown-mode))
 
