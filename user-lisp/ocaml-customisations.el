@@ -19,3 +19,15 @@
 ;; understands shadowing.
 (add-hook 'merlin-mode-hook
           (function (lambda () (highlight-symbol-mode -1))))
+
+;; Style merlin occurrences to match highlight-symbol occurrences.
+(set-face-attribute 'merlin-eldoc-occurrences-face nil :underline t)
+(set-face-attribute 'merlin-eldoc-occurrences-face nil :inherit nil)
+
+;; Ensure we can access binaries installed with opam, such as
+;; ocp-indent.
+(add-to-list 'exec-path "/home/wilfred/.opam/system/bin/")
+
+;; _oasis files are basically conf syntax.
+;; http://oasis.forge.ocamlcore.org/MANUAL.html#writing-_oasis-file
+(add-to-list 'auto-mode-alist '("_oasis" . conf-mode))
