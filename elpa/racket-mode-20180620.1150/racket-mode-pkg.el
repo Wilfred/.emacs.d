@@ -1,4 +1,4 @@
-(define-package "racket-mode" "20170913.534" "Major mode for Racket language."
+(define-package "racket-mode" "20180620.1150" "Major mode for Racket language."
   '((emacs "24.3")
     (faceup "0.0.2")
     (s "1.9.0"))

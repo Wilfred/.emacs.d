@@ -86,7 +86,7 @@
        1 racket-selfeval-face)
 
       ;; Some self-eval constants
-      (,(regexp-opt '("#t" "#f" "+inf.0" "-inf.0" "+nan.0") 'symbols)
+      (,(regexp-opt '("#t" "#true" "#f" "#false" "+inf.0" "-inf.0" "+nan.0") 'symbols)
        . racket-selfeval-face)
 
       ;; Numeric literals including Racket reader hash prefixes.
@@ -193,12 +193,11 @@
             (group "lambda")
             (or word-end symbol-end))
        1
-       (if racket-pretty-lambda
-           (progn (compose-region (match-beginning 1)
-                                  (match-end       1)
-                                  racket-lambda-char)
-                  nil)
-         font-lock-keyword-face)
+       (ignore
+        (when racket-pretty-lambda
+          (compose-region (match-beginning 1)
+                          (match-end       1)
+                          racket-lambda-char)))
        nil t)
       ))
   "Function/variable identifiers, Typed Racket types.

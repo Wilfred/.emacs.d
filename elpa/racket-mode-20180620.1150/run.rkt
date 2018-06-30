@@ -1,4 +1,4 @@
-#lang at-exp racket/base
+#lang racket/base
 
 (require racket/cmdline
          racket/contract/base
@@ -99,9 +99,9 @@
             (with-handlers ([exn? (λ (x)
                                     (display-exn x)
                                     (put/stop (struct-copy rerun rr [maybe-mod #f])))])
+              (maybe-load-language-info mod-path) ;FIRST: see #281
               (current-namespace (dynamic-require/some-namespace maybe-mod))
               (maybe-warn-about-submodules mod-path context-level)
-              (maybe-load-language-info mod-path)
               (check-top-interaction))))
         ;; 3. Tell command server to use our namespace and module.
         (attach-command-server (current-namespace) maybe-mod)
@@ -164,8 +164,7 @@
   ;; Check that the lang defines #%top-interaction
   (unless (memq '#%top-interaction (namespace-mapped-symbols))
     (display-commented
-     @~a{Because the language used by this module provides no `#%top-interaction'
-         you will be unable to evaluate expressions here in the REPL.})))
+     "Because the language used by this module provides no `#%top-interaction\n you will be unable to evaluate expressions here in the REPL.")))
 
 ;; Catch attempt to load racket/gui/base for the first time.
 (define repl-module-name-resolver
