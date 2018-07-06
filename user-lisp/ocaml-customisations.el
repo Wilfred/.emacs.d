@@ -27,6 +27,11 @@
 ;; Ensure we can access binaries installed with opam, such as
 ;; ocp-indent.
 (add-to-list 'exec-path "/home/wilfred/.opam/system/bin/")
+(setenv
+ "CAML_LD_LIBRARY_PATH"
+ "/home/wilfred/.opam/system/lib/stublibs:/usr/lib/ocaml/stublibs")
+(when (executable-find "utop")
+  (setq tuareg-interactive-program "utop"))
 
 ;; _oasis files are basically conf syntax.
 ;; http://oasis.forge.ocamlcore.org/MANUAL.html#writing-_oasis-file
