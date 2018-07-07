@@ -1,9 +1,12 @@
 ;;; emr-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
+
+(add-to-list 'load-path (directory-file-name
+                         (or (file-name-directory #$) (car load-path))))
+
 
-;;;### (autoloads nil "emr" "emr.el" (22697 45786 834288 649000))
+;;;### (autoloads nil "emr" "emr.el" (0 0 0 0))
 ;;; Generated autoloads from emr.el
 
 (autoload 'emr-move-above-defun "emr" "\
@@ -11,48 +14,6 @@ Move to the start of the current defun.
 If the defun is preceded by comments, move above them.
 
 \(fn)" t nil)
-
-(autoload 'emr-looking-at-string\? "emr" "\
-Return non-nil if point is inside a string.
-
-\(fn)" nil nil)
-
-(autoload 'emr-looking-at-comment\? "emr" "\
-Non-nil if point is on a comment.
-
-\(fn)" nil nil)
-
-(autoload 'emr-blank\? "emr" "\
-Non-nil if STR is null, empty or whitespace-only.
-
-\(fn STR)" nil nil)
-
-(autoload 'emr-line-str "emr" "\
-Return the contents of the current line.
-
-\(fn)" nil nil)
-
-(autoload 'emr-blank-line\? "emr" "\
-Non-nil if POINT is on a blank line.
-
-\(fn &optional (POINT (point)))" nil nil)
-
-(autoload 'emr-line-matches\? "emr" "\
-Non-nil if POINT is on a line that matches REGEX.
-
-\(fn REGEX &optional (POINT (point)))" nil nil)
-
-(autoload 'emr-insert-above-defun "emr" "\
-Insert and indent STR above the current top level form.
-Return the position of the end of STR.
-
-\(fn STR)" nil nil)
-
-(autoload 'emr-collapse-vertical-whitespace "emr" "\
-Collapse blank lines around point.
-Ensure there are at most `emr-lines-between-toplevel-forms' blanks.
-
-\(fn)" nil nil)
 
 (autoload 'emr-reporting-buffer-changes "emr" "\
 Perform a refactoring action and show a brief diff.
@@ -97,9 +58,11 @@ Activate language support for EMR.
 
 \(fn)" nil nil)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "emr" '("emr")))
+
 ;;;***
 
-;;;### (autoloads nil "emr-c" "emr-c.el" (22697 45786 870954 855000))
+;;;### (autoloads nil "emr-c" "emr-c.el" (0 0 0 0))
 ;;; Generated autoloads from emr-c.el
 
 (autoload 'emr-c-tidy-includes "emr-c" "\
@@ -126,10 +89,11 @@ Initialize EMR in C buffers and enable the EMR menu.
 
 \(fn)" nil nil)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "emr-c" '("emr-c")))
+
 ;;;***
 
-;;;### (autoloads nil "emr-css" "emr-css.el" (22697 45786 767622
-;;;;;;  821000))
+;;;### (autoloads nil "emr-css" "emr-css.el" (0 0 0 0))
 ;;; Generated autoloads from emr-css.el
 
 (autoload 'emr-css-toggle-important "emr-css" "\
@@ -139,8 +103,7 @@ Add or remove !important on the property at point.
 
 ;;;***
 
-;;;### (autoloads nil "emr-elisp" "emr-elisp.el" (22697 45786 804289
-;;;;;;  26000))
+;;;### (autoloads nil "emr-elisp" "emr-elisp.el" (0 0 0 0))
 ;;; Generated autoloads from emr-elisp.el
 
 (autoload 'emr-el-inline-variable "emr-elisp" "\
@@ -349,10 +312,18 @@ Enable the EMR menu for Elisp buffers.
 
 \(fn)" nil nil)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "emr-elisp" '("emr-")))
+
 ;;;***
 
-;;;### (autoloads nil "emr-lisp" "emr-lisp.el" (22697 45786 734289
-;;;;;;  907000))
+;;;### (autoloads nil "emr-iedit" "emr-iedit.el" (0 0 0 0))
+;;; Generated autoloads from emr-iedit.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "emr-iedit" '("emr-iedit")))
+
+;;;***
+
+;;;### (autoloads nil "emr-lisp" "emr-lisp.el" (0 0 0 0))
 ;;; Generated autoloads from emr-lisp.el
 
 (autoload 'emr-lisp-comment-form "emr-lisp" "\
@@ -368,10 +339,11 @@ textual comments.
 
 \(fn)" t nil)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "emr-lisp" '("emr-lisp")))
+
 ;;;***
 
-;;;### (autoloads nil "emr-scheme" "emr-scheme.el" (22697 45786 700956
-;;;;;;  993000))
+;;;### (autoloads nil "emr-scheme" "emr-scheme.el" (0 0 0 0))
 ;;; Generated autoloads from emr-scheme.el
 
 (autoload 'emr-scm-extract-function "emr-scheme" "\
@@ -387,10 +359,12 @@ The variable will be called NAME.
 
 \(fn NAME)" t nil)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "emr-scheme" '("emr-scm:")))
+
 ;;;***
 
-;;;### (autoloads nil nil ("emr-iedit.el" "emr-js.el" "emr-pkg.el"
-;;;;;;  "emr-prog.el" "emr-ruby.el") (22697 45786 904287 768000))
+;;;### (autoloads nil nil ("emr-js.el" "emr-pkg.el" "emr-prog.el"
+;;;;;;  "emr-ruby.el") (0 0 0 0))
 
 ;;;***
 
@@ -398,5 +372,6 @@ The variable will be called NAME.
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
+;; coding: utf-8
 ;; End:
 ;;; emr-autoloads.el ends here

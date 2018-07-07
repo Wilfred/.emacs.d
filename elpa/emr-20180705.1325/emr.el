@@ -1,9 +1,10 @@
 ;;; emr.el --- Emacs refactoring system.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2013 Chris Barrett
+;; Copyright (C) 2016 Wilfred Hughes
 
 ;; Author: Chris Barrett <chris.d.barrett@me.com>
-;; Version: 0.3.7
+;; Version: 0.3.8
 ;; Keywords: tools convenience refactoring
 ;; Package-Requires: ((s "1.3.1") (dash "1.2.0") (cl-lib "0.2") (popup "0.5.0") (emacs "24.1") (list-utils "0.3.0") (redshank "1.0.0") (paredit "24.0.0") (projectile "0.9.1") (clang-format "0") (iedit "0.97"))
 ;; This file is not part of GNU Emacs.
@@ -54,10 +55,12 @@
 
 (defcustom emr-lines-between-toplevel-forms 1
   "The number of lines to try to preserve between toplevel forms."
+  :type 'integer
   :group 'emr)
 
 (defcustom emr-popup-help-delay 1
   "The time to wait before showing documentation in the refactor menu."
+  :type 'integer
   :group 'emr)
 
 ;;; Utility functions
@@ -70,48 +73,47 @@ If the defun is preceded by comments, move above them."
   (ignore-errors
     (beginning-of-thing 'defun))
   ;; If there is a comment attached to this defun, skip over it.
-  (while (save-excursion
-           (forward-line -1)
-           (and (emr-looking-at-comment?)
-                (not (bobp))))
-    (forward-line -1)))
+  (let* ((prev-line-pos
+          (unless (bobp)
+            (save-excursion
+              (forward-line -1)
+              (point))))
+         (comment-preceding
+          (and
+           prev-line-pos
+           (emr-looking-at-comment?
+            (line-end-position prev-line-pos)))))
+    (when comment-preceding
+      (forward-line -1)
+      (while (and (emr-looking-at-comment? (line-end-position))
+                  (not (bobp)))
+        (forward-line -1)))))
 
-;;;###autoload
 (defun emr-looking-at-string? ()
   "Return non-nil if point is inside a string."
   (nth 3 (syntax-ppss)))
 
-;;;###autoload
-(defun emr-looking-at-comment? ()
+(defun emr-looking-at-comment? (&optional pos)
   "Non-nil if point is on a comment."
-  (nth 4 (syntax-ppss)))
+  (nth 4 (syntax-ppss pos)))
 
-;;;###autoload
-(defun emr-blank? (str)
-  "Non-nil if STR is null, empty or whitespace-only."
-  (s-blank? (s-trim str)))
-
-;;;###autoload
 (defun emr-line-str ()
   "Return the contents of the current line."
   (buffer-substring (line-beginning-position)
                     (line-end-position)))
 
-;;;###autoload
 (cl-defun emr-blank-line? (&optional (point (point)))
   "Non-nil if POINT is on a blank line."
   (save-excursion
     (goto-char point)
-    (emr-blank? (emr-line-str))))
+    (s-blank-str? (emr-line-str))))
 
-;;;###autoload
 (cl-defun emr-line-matches? (regex &optional (point (point)))
   "Non-nil if POINT is on a line that matches REGEX."
   (save-excursion
     (goto-char point)
     (s-matches? regex (emr-line-str))))
 
-;;;###autoload
 (defun emr-insert-above-defun (str)
   "Insert and indent STR above the current top level form.
 Return the position of the end of STR."
@@ -132,7 +134,6 @@ Return the position of the end of STR."
           (open-line 1)))
       (point))))
 
-;;;###autoload
 (defun emr-collapse-vertical-whitespace ()
   "Collapse blank lines around point.
 Ensure there are at most `emr-lines-between-toplevel-forms' blanks."
@@ -151,12 +152,6 @@ Ensure there are at most `emr-lines-between-toplevel-forms' blanks."
 
 ;;; These commands may be used to describe the changes made to buffers. See
 ;;; example in emr-elisp.
-
-(cl-defun emr:ellipsize (str &optional (maxlen (window-width (minibuffer-window))))
-  "Chop STR and add ellipses if it exceeds MAXLEN in length."
-  (if (> (length str) maxlen)
-      (concat (substring-no-properties str 0 (1- maxlen)) "…")
-    str))
 
 (defun emr:indexed-lines (str)
   "Split string STR into a list of conses.
@@ -181,7 +176,7 @@ buffer."
            (replace-regexp-in-string "[ \n\r\t]+" " " text))
 
       (format "%s line %s: %s" description line)
-      (emr:ellipsize)
+      (s-truncate (window-width (minibuffer-window)))
       (message))))
 
 (defun emr:line-visible? (line)
@@ -239,7 +234,7 @@ Removes the function arglist and lisp usage example."
             (when after-example
               (->> after-example
                 (s-lines)
-                (--drop-while (or (emr-blank? it)
+                (--drop-while (or (s-blank-str? it)
                                   (s-matches? (rx bol (+ space)) it)))
                 (s-join "\n"))))))
 
@@ -308,6 +303,7 @@ Return a popup item for the refactoring menu if so."
 (defun emr-show-refactor-menu ()
   "Show the refactor menu at point."
   (interactive)
+  (emr-initialize)
   ;; Run each factory function and collect the menu items representing
   ;; available commands.
   (-if-let (actions (->> emr:refactor-commands

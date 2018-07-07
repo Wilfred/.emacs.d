@@ -33,7 +33,6 @@
 (require 'emr)
 (require 'emr-lisp)
 (autoload 'define-compilation-mode "compile")
-(autoload 'ido-yes-or-no-p "ido-yes-or-no")
 (autoload 'redshank-letify-form-up "redshank")
 (autoload 'paredit-splice-sexp-killing-backward "paredit")
 
@@ -141,6 +140,24 @@ stdin. Bad."
           (list-utils-make-proper-copy)
           (-mapcat 'emr-el:bound-variables))))))))
 
+(defun emr-el:unquoted-symbols (form)
+  "Return a list of every unquoted symbol in FORM."
+  (let (syms
+        (forms-remaining (list form)))
+    (while (not (null forms-remaining))
+      (let ((subform (pop forms-remaining)))
+        (cond
+         ;; Skip quoted symbols.
+         ((and (consp subform) (eq (car subform) 'quote)))
+         ;; Iterate on the subforms for lists.
+         ((consp subform)
+          (push (cdr subform) forms-remaining)
+          (push (car subform) forms-remaining))
+         ;; If this node is a symbol, add it to our list.
+         ((and subform (symbolp subform))
+          (push subform syms)))))
+    syms))
+
 (defun emr-el:free-variables (form &optional context)
   "Try to find the symbols in FORM that do not have variable bindings.
 CONTEXT is the top level form that encloses FORM."
@@ -152,8 +169,7 @@ CONTEXT is the top level form that encloses FORM."
 
   (let ((bound-vars (emr-el:bound-variables form))
         (ctx-bound (emr-el:bound-variables context))
-        (form-syms (->> form (list) (-flatten) (-filter 'symbolp)))
-        )
+        (form-syms (emr-el:unquoted-symbols form)))
     (->> (or (ignore-errors (macroexpand-all form)) form)
       ;; Get all symbols from FORM's macro-expansion.
       (list)
@@ -222,11 +238,7 @@ CONTEXT is the top level form that encloses FORM."
 
 (defun emr-el:looking-at-definition? ()
   "Non-nil if point is at a definition form."
-  (or (ignore-errors (emr-el:definition? (list-at-point)))
-      (-when-let (def (thing-at-point 'defun))
-        (->> (emr-el:safe-read def)
-          (cl-third)
-          (emr-el:find-in-tree (list-at-point))))))
+  (ignore-errors (emr-el:definition? (list-at-point))))
 
 ;;;; Refactoring commands
 
@@ -416,15 +428,15 @@ AFTER:
 "
   (interactive
    (list
-    ;; Read a name for the function, ensuring it is not blank.
-    (let ((x (read-string "Name: ")))
-      (if (s-blank? x) (user-error "Name must not be blank") x))
+    ;; Function name.
+    (read-string "Name: ")
 
     ;; Prompt user with default arglist.
     (emr-el:read-args (emr-el:form-extent-for-extraction)
                       (thing-at-point 'defun))))
 
-  (cl-assert (not (s-blank? name)) () "Name must not be blank")
+  (when (s-blank? name)
+    (user-error "Name must not be blank"))
 
   (emr-lisp-extraction-refactor (sexp) "Extracted to"
     (let ((name (intern name))
@@ -435,8 +447,8 @@ AFTER:
       (insert (emr-el:print (cl-list* name arglist)))
       ;; Insert defun.
       (->> (format "(%s %s %s\n  %s)" defun-form name arglist body)
-        (emr-el:format-defun)
-        (emr-lisp-insert-above-defun)))))
+           (emr-el:format-defun)
+           (emr-lisp-insert-above-defun)))))
 
 ; ------------------
 
@@ -532,7 +544,8 @@ AFTER:
   (usage x)
 "
   (interactive "*sName: ")
-  (cl-assert (not (s-blank? name)) () "Name must not be blank")
+  (when (s-blank? name)
+    (user-error "Name must not be blank"))
   (emr-lisp-extraction-refactor (sexp) "Extracted to"
     ;; Insert usage.
     (insert (s-trim name))
@@ -560,7 +573,8 @@ AFTER:
 
 "
   (interactive "*sName: ")
-  (cl-assert (not (s-blank? name)) () "Name must not be blank")
+  (when (s-blank? name)
+    (user-error "Name must not be blank"))
   (emr-lisp-extraction-refactor (sexp) "Extracted to"
     ;; Insert usage
     (insert (s-trim name))
@@ -724,8 +738,9 @@ details.
 
 (defconst emr-el:scope-boundary-forms
   '(lambda defun cl-defun defun* defmacro cl-defmacro defmacro*
-    let let* save-excursion unwind-protect
-    flet cl-flet cl-flet* cl-labels labels)
+     let let* save-excursion unwind-protect
+     flet cl-flet cl-flet* cl-labels labels
+     ert-deftest)
   "A list of forms that define some kind of scope or context.
 They will bound upward searches when looking for places to insert let forms.")
 
@@ -962,7 +977,7 @@ bindings or body of the enclosing let expression."
                               (forward-sexp)
                               (point)))
           (goto-char (point-min))
-          ;; Replace occurence os SYM with VALUE.
+          ;; Replace occurences of SYM with VALUE.
           (while (search-forward-regexp
                   (eval `(rx symbol-start (group-n 1 ,sym) symbol-end))
                   nil t)
@@ -1052,7 +1067,7 @@ Its variables will be let-bound."
       (buffer-string))))
 
 (defun emr-el:defun-at-point-has-body ()
-  (not (emr-blank? (emr-el:defun-body-str (thing-at-point 'defun)))))
+  (not (s-blank-str? (emr-el:defun-body-str (thing-at-point 'defun)))))
 
 ;;;###autoload
 (defun emr-el-inline-function ()
@@ -1062,7 +1077,7 @@ Replaces all usages in the current buffer."
   ;; Warn the user if the defun at point has an empty body. Prompt before
   ;; continuing.
   (when (or (emr-el:defun-at-point-has-body)
-            (ido-yes-or-no-p "Warning: This function has no body.  Continue? "))
+            (y-or-n-p "Warning: This function has no body.  Continue? "))
     (atomic-change-group
       (save-excursion
 
@@ -1151,7 +1166,7 @@ the cdr is the usage form."
       (emr-collapse-vertical-whitespace))))
 
 ;;; `emr-el-ref': A reference to a function or variable within a file.
-(defstruct emr-el-ref file line col identifier type form)
+(cl-defstruct emr-el-ref file line col identifier type form)
 
 (defun emr-el:find-unused-defs ()
   "Return a list of all unused definitions in the buffer.
@@ -1278,7 +1293,7 @@ popup window."
                     (emr-el:def-find-usages (list-at-point)))))
 
 (emr-declare-command 'emr-el-extract-function
-  :title "function"
+  :title "extract function"
   :description "defun"
   :modes 'emacs-lisp-mode
   :predicate (lambda ()
@@ -1286,7 +1301,7 @@ popup window."
                         (emr-el:looking-at-let-binding-symbol?)))))
 
 (emr-declare-command 'emr-el-extract-variable
-  :title "variable"
+  :title "extract variable"
   :description "defvar"
   :modes 'emacs-lisp-mode
   :predicate (lambda ()
@@ -1295,7 +1310,7 @@ popup window."
                     (thing-at-point 'defun))))
 
 (emr-declare-command 'emr-el-extract-constant
-  :title "constant"
+  :title "extract constant"
   :description "defconst"
   :modes 'emacs-lisp-mode
   :predicate (lambda ()
@@ -1303,7 +1318,7 @@ popup window."
                         (emr-el:looking-at-let-binding-symbol?)))))
 
 (emr-declare-command 'emr-el-extract-to-let
-  :title "let-bind"
+  :title "extract to let"
   :description "let"
   :modes 'emacs-lisp-mode
   :predicate (lambda ()
@@ -1346,7 +1361,7 @@ popup window."
                     (not (emr-el:autoload-directive-exsts-above-defun?)))))
 
 (emr-declare-command 'emr-el-eval-and-replace
-  :title "eval"
+  :title "eval and replace"
   :description "value"
   :modes 'emacs-lisp-mode
   :predicate (lambda ()

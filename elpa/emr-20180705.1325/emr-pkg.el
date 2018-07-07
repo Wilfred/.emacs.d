@@ -1,4 +1,4 @@
-(define-package "emr" "20170109.1526" "Emacs refactoring system."
+(define-package "emr" "20180705.1325" "Emacs refactoring system."
   '((s "1.3.1")
     (dash "1.2.0")
     (cl-lib "0.2")
