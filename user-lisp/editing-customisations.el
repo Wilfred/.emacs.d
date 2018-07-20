@@ -414,4 +414,7 @@ a symmetrically-encrypted GPG file. Require explict saving in this case."
 ;; modes that I use (python binds a lot of C-c prefixes).
 (global-set-key (kbd "C-c C-b") #'aj/toggle-fold)
 
+;; Allow repeated C-SPC to pop the mark.
+(setq set-mark-command-repeat-pop t)
+
 (provide 'editing-customisations)
