@@ -18,6 +18,10 @@ test with the same name."
   (dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook))
     (add-hook hook #'elisp-def-mode)))
 
+;; I often end up looking up libraries.
+(global-set-key (kbd "C-c l") #'counsel-find-library)
+
+
 (use-package paredit
   :diminish ""
   :config
