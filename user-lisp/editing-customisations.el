@@ -362,6 +362,10 @@ If the region is active, toggle commenting on the whole region."
 (use-package super-save
   :demand
   :config
+  ;; Ensure that we trigger saving when switching between windows,
+  ;; even when using ace-window.
+  (add-to-list 'super-save-triggers "ace-window")
+
   (super-save-mode +1)
   :diminish super-save-mode)
 
