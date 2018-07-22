@@ -24,11 +24,15 @@ Clojure completion at point.
 
 \(fn)" t nil)
 
-(autoload 'counsel-unicode-char "counsel" "\
-Insert COUNT copies of a Unicode character at point.
-COUNT defaults to 1.
+(autoload 'counsel-company "counsel" "\
+Complete using `company-candidates'.
 
-\(fn &optional COUNT)" t nil)
+\(fn)" t nil)
+
+(autoload 'counsel-irony "counsel" "\
+Inline C/C++ completion using Irony.
+
+\(fn)" t nil)
 
 (autoload 'counsel-describe-variable "counsel" "\
 Forward to `describe-variable'.
@@ -55,6 +59,16 @@ or radio, offer completion of all possible values.
 Otherwise, offer a variant of `eval-expression', with the initial
 input corresponding to the chosen variable.
 
+With a prefix arg, restrict list to variables defined using
+`defcustom'.
+
+\(fn SYM)" t nil)
+
+(autoload 'counsel-apropos "counsel" "\
+Show all matching symbols.
+See `apropos' for further information about what is considered
+a symbol and how to search for them.
+
 \(fn)" t nil)
 
 (autoload 'counsel-info-lookup-symbol "counsel" "\
@@ -62,24 +76,11 @@ Forward to `info-lookup-symbol' with ivy completion.
 
 \(fn SYMBOL &optional MODE)" t nil)
 
-(autoload 'counsel-file-register "counsel" "\
-Search file in register.
-
-You cannot use Emacs' normal register commands to create file
-registers.  Instead you must use the `set-register' function like
-so: `(set-register ?i \"/home/eric/.emacs.d/init.el\")'.  Now you
-can use `C-x r j i' to open that file.
-
-\(fn)" t nil)
-
-(autoload 'counsel-bookmark "counsel" "\
-Forward to `bookmark-jump' or `bookmark-set' if bookmark doesn't exist.
-
-\(fn)" t nil)
-
 (autoload 'counsel-M-x "counsel" "\
 Ivy version of `execute-extended-command'.
 Optional INITIAL-INPUT is the initial input in the minibuffer.
+This function integrates with either the `amx' or `smex' package
+when available, in that order of precedence.
 
 \(fn &optional INITIAL-INPUT)" t nil)
 
@@ -108,6 +109,13 @@ If non-nil, show only bindings that start with PREFIX.
 BUFFER defaults to the current one.
 
 \(fn &optional PREFIX BUFFER)" t nil)
+
+(autoload 'counsel-faces "counsel" "\
+Complete faces with preview.
+Actions are provided by default for describing or customizing the
+selected face.
+
+\(fn)" t nil)
 
 (autoload 'counsel-git "counsel" "\
 Find file in the current Git repository.
@@ -151,6 +159,21 @@ When INITIAL-INPUT is non-nil, use it in the minibuffer during completion.
 
 (autoload 'counsel-recentf "counsel" "\
 Find a file on `recentf-list'.
+
+\(fn)" t nil)
+
+(autoload 'counsel-bookmark "counsel" "\
+Forward to `bookmark-jump' or `bookmark-set' if bookmark doesn't exist.
+
+\(fn)" t nil)
+
+(autoload 'counsel-file-register "counsel" "\
+Search file in register.
+
+You cannot use Emacs' normal register commands to create file
+registers.  Instead you must use the `set-register' function like
+so: `(set-register ?i \"/home/eric/.emacs.d/init.el\")'.  Now you
+can use `C-x r j i' to open that file.
 
 \(fn)" t nil)
 
@@ -265,8 +288,18 @@ Browse all attachments for current Org file.
 
 \(fn)" t nil)
 
+(autoload 'counsel-org-entity "counsel" "\
+Complete Org entities using Ivy.
+
+\(fn)" t nil)
+
 (autoload 'counsel-org-capture "counsel" "\
 Capture something.
+
+\(fn)" t nil)
+
+(autoload 'counsel-org-agenda-headlines "counsel" "\
+Choose from headers of `org-mode' files in the agenda.
 
 \(fn)" t nil)
 
@@ -277,8 +310,13 @@ Text-mode emulation of looking and choosing from a menubar.
 
 (autoload 'counsel-yank-pop "counsel" "\
 Ivy replacement for `yank-pop'.
+ARG has the same meaning as in `yank-pop', but its default value
+can be controlled with `counsel-yank-pop-preselect-last', which
+see.  See also `counsel-yank-pop-filter' for how to filter
+candidates.
+Note: Duplicate elements of `kill-ring' are always deleted.
 
-\(fn)" t nil)
+\(fn &optional ARG)" t nil)
 
 (autoload 'counsel-imenu "counsel" "\
 Jump to a buffer position indexed by imenu.
@@ -318,6 +356,44 @@ Browse shell history.
 
 \(fn)" t nil)
 
+(autoload 'counsel-outline "counsel" "\
+Jump to outline with completion.
+
+\(fn)" t nil)
+
+(autoload 'counsel-ibuffer "counsel" "\
+Use ibuffer to switch to another buffer.
+NAME specifies the name of the buffer (defaults to \"*Ibuffer*\").
+
+\(fn &optional NAME)" t nil)
+
+(autoload 'counsel-switch-to-shell-buffer "counsel" "\
+Switch to a shell buffer, or create one.
+
+\(fn)" t nil)
+
+(autoload 'counsel-unicode-char "counsel" "\
+Insert COUNT copies of a Unicode character at point.
+COUNT defaults to 1.
+
+\(fn &optional COUNT)" t nil)
+
+(autoload 'counsel-colors-emacs "counsel" "\
+Show a list of all supported colors for a particular frame.
+
+You can insert or kill the name or hexadecimal RGB value of the
+selected color.
+
+\(fn)" t nil)
+
+(autoload 'counsel-colors-web "counsel" "\
+Show a list of all W3C web colors for use in CSS.
+
+You can insert or kill the name or hexadecimal RGB value of the
+selected color.
+
+\(fn)" t nil)
+
 (autoload 'counsel-rhythmbox "counsel" "\
 Choose a song from the Rhythmbox library to play or enqueue.
 
@@ -325,49 +401,6 @@ Choose a song from the Rhythmbox library to play or enqueue.
 
 (autoload 'counsel-linux-app "counsel" "\
 Launch a Linux desktop application, similar to Alt-<F2>.
-
-\(fn)" t nil)
-
-(autoload 'counsel-company "counsel" "\
-Complete using `company-candidates'.
-
-\(fn)" t nil)
-
-(autoload 'counsel-colors-emacs "counsel" "\
-Show a list of all supported colors for a particular frame.
-
-You can insert or kill the name or the hexadecimal rgb value of the
-selected candidate.
-
-\(fn)" t nil)
-
-(autoload 'counsel-colors-web "counsel" "\
-Show a list of all W3C web colors for use in CSS.
-
-You can insert or kill the name or the hexadecimal rgb value of the
-selected candidate.
-
-\(fn)" t nil)
-
-(autoload 'counsel-org-agenda-headlines "counsel" "\
-Choose from headers of `org-mode' files in the agenda.
-
-\(fn)" t nil)
-
-(autoload 'counsel-irony "counsel" "\
-Inline C/C++ completion using Irony.
-
-\(fn)" t nil)
-
-(autoload 'counsel-apropos "counsel" "\
-Show all matching symbols.
-See `apropos' for further information about what is considered
-a symbol and how to search for them.
-
-\(fn)" t nil)
-
-(autoload 'counsel-switch-to-shell-buffer "counsel" "\
-Switch to a shell buffer, or create one.
 
 \(fn)" t nil)
 

@@ -1,6 +1,6 @@
 ;;; colir.el --- Color blending library -*- lexical-binding: t -*-
 
-;; Copyright (C) 2015-2017  Free Software Foundation, Inc.
+;; Copyright (C) 2015-2018  Free Software Foundation, Inc.
 
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 
@@ -20,25 +20,27 @@
 ;; see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;
+
 ;; This package solves the problem of adding a face with a background
 ;; to text which may already have a background.  In all conflicting
 ;; areas, instead of choosing either the original or the new
 ;; background face, their blended sum is used.
 ;;
-;; The blend mode functions are taken from http://en.wikipedia.org/wiki/Blend_modes.
+;; The blend mode functions are taken from URL
+;; `http://en.wikipedia.org/wiki/Blend_modes'.
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'color)
 
-(defcustom colir-compose-method 'colir-compose-alpha
+(defcustom colir-compose-method #'colir-compose-alpha
   "Select a method to compose two color channels."
-  :type '(choice
-          (const colir-compose-alpha)
-          (const colir-compose-overlay)
-          (const colir-compose-soft-light))
-  :group 'ivy)
+  :group 'ivy
+  :type '(radio
+          (function-item colir-compose-alpha)
+          (function-item colir-compose-overlay)
+          (function-item colir-compose-soft-light)))
 
 (defun colir-compose-soft-light (a b)
   "Compose A and B channels."
@@ -81,32 +83,40 @@ C1 and C2 are triples of floats in [0.0 1.0] range."
     ;; from available color palette).
     (color-name-to-rgb color)))
 
+(defun colir--blend-background (start next prevn face object)
+  (let ((background-prev (face-background prevn)))
+    (progn
+      (put-text-property
+       start next 'face
+       (if background-prev
+           (cons `(background-color
+                   . ,(colir-blend
+                       (colir-color-parse background-prev)
+                       (colir-color-parse (face-background face nil t))))
+                 prevn)
+         (list face prevn))
+       object))))
+
 (defun colir-blend-face-background (start end face &optional object)
   "Append to the face property of the text from START to END the face FACE.
 When the text already has a face with a non-plain background,
 blend it with the background of FACE.
 Optional argument OBJECT is the string or buffer containing the text.
 See also `font-lock-append-text-property'."
-  (let (next prev)
+  (let (next prev prevn)
     (while (/= start end)
       (setq next (next-single-property-change start 'face object end))
       (setq prev (get-text-property start 'face object))
-      (when (listp prev)
-        (setq prev (cl-find-if #'atom prev)))
-      (if (facep prev)
-          (let ((background-prev (face-background prev)))
-            (progn
-              (put-text-property
-               start next 'face
-               (if background-prev
-                   (cons `(background-color
-                           . ,(colir-blend
-                               (colir-color-parse background-prev)
-                               (colir-color-parse (face-background face nil t))))
-                         prev)
-                 (list face prev))
-               object)))
-        (put-text-property start next 'face face object))
+      (setq prevn (if (listp prev)
+                      (cl-find-if #'atom prev)
+                    prev))
+      (cond
+        ((or (keywordp (car-safe prev)) (consp (car-safe prev)))
+         (put-text-property start next 'face (cons face prev) object))
+        ((facep prevn)
+         (colir--blend-background start next prevn face object))
+        (t
+         (put-text-property start next 'face face object)))
       (setq start next))))
 
 (provide 'colir)

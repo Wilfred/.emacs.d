@@ -23,7 +23,7 @@ When non-nil, INITIAL-INPUT is the initial search pattern.
 (autoload 'swiper-all "swiper" "\
 Run `swiper' for all open buffers.
 
-\(fn)" t nil)
+\(fn &optional INITIAL-INPUT)" t nil)
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "swiper" '("swiper-")))
 
