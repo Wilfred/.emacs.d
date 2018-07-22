@@ -5,7 +5,7 @@
 ;; Author: Louis Roché <louis@louisroche.net>
 ;; Created: 27 April 2018
 ;; Version: 1.2
-;; Package-Version: 20180526.129
+;; Package-Version: 20180630.1026
 ;; Keywords: merlin ocaml languages eldoc
 ;; Homepage: https://github.com/khady/merlin-eldoc
 ;; Package-Requires: ((emacs "24.4") (merlin "3.0"))
