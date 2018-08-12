@@ -1,9 +1,12 @@
 ;;; helpful-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
+
+(add-to-list 'load-path (directory-file-name
+                         (or (file-name-directory #$) (car load-path))))
+
 
-;;;### (autoloads nil "helpful" "helpful.el" (23283 24487 56772 96000))
+;;;### (autoloads nil "helpful" "helpful.el" (0 0 0 0))
 ;;; Generated autoloads from helpful.el
 
 (autoload 'helpful-function "helpful" "\
@@ -50,11 +53,14 @@ Show help for the symbol at point.
 
 \(fn)" t nil)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "helpful" '("helpful-")))
+
 ;;;***
 
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
+;; coding: utf-8
 ;; End:
 ;;; helpful-autoloads.el ends here
