@@ -1242,6 +1242,7 @@ https://github.com/bbatsov/crux/issues/20
   (require 'isearch-customisations)
   (require 'projectile-customisations)
 
+  (require 'ocaml-customisations)
   (require 'go-customisations)
   (require 'c-customisations)
   (require 'javascript-customisations)
