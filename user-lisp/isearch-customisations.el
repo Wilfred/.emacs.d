@@ -59,6 +59,10 @@ This is useful when followed by an immediate kill."
 (global-set-key (kbd "<f12>") #'swiper)
 (global-set-key (kbd "C-c <f12>") #'swiper-all)
 
+;; override `isearch-forward' as suggested in
+;; http://cestlaz.github.io/posts/using-emacs-7-avy/
+(global-set-key (kbd "C-s") #'swiper)
+
 ;; Show the index of the current match in addition to the total
 ;; matches with ivy (used by swiper). Anzu style.
 (require 'ivy)
