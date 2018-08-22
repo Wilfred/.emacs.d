@@ -27,6 +27,7 @@
         lispy-delete
         lispy-delete-backward
         lispy-kill
+        lispy-move-end-of-line
         lispy-parens
         lispy-quotes
         lispy-space
