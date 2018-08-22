@@ -12,8 +12,8 @@
 ;;	Xavier Maillard <xavier@maillard.im>
 ;; Created: Sep 4, 2007
 ;; Version: HEAD
-;; Package-Version: 20180507.721
-;; Identity: $Id: c8a4790a04f28664fd27958dc34c17e442e560cb $
+;; Package-Version: 20180818.1451
+;; Identity: $Id: 39c4fc97e6f5684287386630e7c7cf872257fae7 $
 ;; Keywords: twitter web
 ;; URL: http://twmode.sf.net/
 
@@ -96,7 +96,7 @@
   :group 'hypermedia)
 
 (defconst twittering-mode-version "HEAD")
-(defconst twittering-mode-identity "$Id: c8a4790a04f28664fd27958dc34c17e442e560cb $")
+(defconst twittering-mode-identity "$Id: 39c4fc97e6f5684287386630e7c7cf872257fae7 $")
 (defvar twittering-api-host "api.twitter.com")
 (defvar twittering-api-search-host "search.twitter.com")
 (defvar twittering-web-host "twitter.com")
@@ -953,7 +953,11 @@ the value of the last form in TIMEOUT-FORMS."
 
 This function is the same as `start-process' except that SENTINEL must
 be invoked when the process is successfully started."
-  (let ((proc (apply 'start-process name buffer program args)))
+  (let* (;; By binding `process-connection-type' to nil,
+	 ;; ensure that the new process communicates with Emacs
+	 ;; via a pipe instead of a pty.
+	 (process-connection-type nil)
+	 (proc (apply 'start-process name buffer program args)))
     (when (and proc (functionp sentinel))
       (if (twittering-process-alive-p proc)
 	  (set-process-sentinel proc sentinel)
@@ -2959,6 +2963,9 @@ FORMAT is a response data format (\"xml\", \"atom\", \"json\")"
 		     ((eq service-method 'twitter-api-v1.1)
 		      (mapcar 'twittering-json-object-to-a-status
 			      (cdr (assq 'statuses json-array))))))
+		   ((twittering-timeline-spec-is-direct-message-events-p spec)
+		    (twittering-json-object-to-statuses-on-direct-message-events json-array)
+		    )
 		   ((twittering-timeline-spec-is-direct-messages-p spec)
 		    (mapcar
 		     'twittering-json-object-to-a-status-on-direct-messages
@@ -3166,7 +3173,7 @@ FORMAT is a response data format (\"xml\", \"atom\", \"json\")"
 		    twittering-list-index-retrieved)))
     result))
 
-(defun twittering-http-post (account-info-alist host method &optional parameters format additional-info sentinel clean-up-sentinel)
+(defun twittering-http-post (account-info-alist host method &optional parameters format additional-info sentinel clean-up-sentinel post-body)
   "Send HTTP POST request to api.twitter.com (or search.twitter.com)
 ACCOUNT-INFO-ALIST is an alist used by
 `twittering-add-application-header-to-http-request'.
@@ -3188,7 +3195,7 @@ FORMAT is a response data format (\"xml\", \"atom\", \"json\")"
 	 (path (concat "/" method "." format))
 	 (headers nil)
 	 (port nil)
-	 (post-body "")
+	 (post-body (or post-body ""))
 	 (request
 	  (twittering-add-application-header-to-http-request
 	   (twittering-make-http-request "POST" headers host port path
@@ -3902,10 +3909,11 @@ This function requires `epa' or `alpaca' library."
 	     (epa-display-error context)
 	   (message "%s" (cdr err)))
 	 nil))
-      (setq decrypted-result
-	    (epa--decode-coding-string
-	     decrypted-result
-	     (or coding-system-for-read 'undecided)))
+      (when decrypted-result
+	(setq decrypted-result
+	      (epa--decode-coding-string
+	       decrypted-result
+	       (or coding-system-for-read 'undecided))))
       (if (epg-context-result-for context 'verify)
 	  (epa-display-info (epg-verify-result-to-string
 			     (epg-context-result-for context 'verify))))
@@ -4521,6 +4529,7 @@ Before calling this, you have to configure `twittering-bitly-login' and
 ;;; - (list USER LIST):
 ;;;     the list LIST of the user USER. LIST and USER are strings.
 ;;;
+;;; - (direct_message_events): received direct messages.
 ;;; - (direct_messages): received direct messages.
 ;;; - (direct_messages_sent): sent direct messages.
 ;;; - (favorites): favorites timeline for the current user.
@@ -4564,6 +4573,7 @@ Before calling this, you have to configure `twittering-bitly-login' and
 ;;; USER ::= /[a-zA-Z0-9_-]+/
 ;;; LIST ::= USER "/" LISTNAME
 ;;; LISTNAME ::= /[a-zA-Z0-9_-]+/
+;;; DIRECT_MESSSAGE_EVENTS ::= ":direct_message_events"
 ;;; DIRECT_MESSSAGES ::= ":direct_messages"
 ;;; DIRECT_MESSSAGES_SENT ::= ":direct_messages_sent"
 ;;; FAVORITES ::= ":favorites" | ":favorites/" USER
@@ -4612,6 +4622,7 @@ If SHORTEN is non-nil, the abbreviated expression will be used."
      ;; list
      ((eq type 'list) (concat (car value) "/" (cadr value)))
      ;; simple
+     ((eq type 'direct_message_events) ":direct_message_events")
      ((eq type 'direct_messages) ":direct_messages")
      ((eq type 'direct_messages_sent) ":direct_messages_sent")
      ((eq type 'favorites)
@@ -4694,7 +4705,8 @@ Return cons of the spec and the rest string."
    ((string-match "^:\\([a-z_-]+\\)" str)
     (let ((type (match-string 1 str))
 	  (following (substring str (match-end 0)))
-	  (alist '(("direct_messages" . direct_messages)
+	  (alist '(("direct_message_events" . direct_message_events)
+		   ("direct_messages" . direct_messages)
 		   ("direct_messages_sent" . direct_messages_sent)
 		   ("friends" . friends)
 		   ("home" . home)
@@ -4867,7 +4879,7 @@ nil if NOERROR is non-nil."
 `merge'."
   (let ((primary-spec-types
 	 '(user list
-		direct_messages direct_messages_sent
+		direct_message_events direct_messages direct_messages_sent
 		favorites friends home mentions public replies
 		search
 		retweeted_by_me retweeted_by_user
@@ -4903,6 +4915,12 @@ nil if NOERROR is non-nil."
 (defun twittering-timeline-spec-is-user-p (spec)
   "Return non-nil if SPEC is a user timeline."
   (and (consp spec) (eq 'user (car spec))))
+
+(defun twittering-timeline-spec-is-direct-message-events-p (spec)
+  "Return non-nil if SPEC is a timeline spec which is related of
+direct_message_events."
+  (and spec
+       (memq (car spec) '(direct_message_events))))
 
 (defun twittering-timeline-spec-is-direct-messages-p (spec)
   "Return non-nil if SPEC is a timeline spec which is related of
@@ -5332,6 +5350,9 @@ string and the number of new statuses for the timeline."
 			  (id2 (cdr (assq 'id status2))))
 		      (twittering-status-id< id2 id1))))))
       (when new-statuses
+	;; Register user IDs found in new statuses.
+	(when (and (not (twittering-timeline-spec-is-direct-messages-p spec)))
+	  (mapc #'twittering-register-user-id-from-status new-statuses))
 	(let ((new-timeline-data
 	       (sort (append new-statuses timeline-data)
 		     (lambda (status1 status2)
@@ -5369,6 +5390,137 @@ string and the number of new statuses for the timeline."
 		    (run-hooks 'twittering-new-tweets-hook))
 		  `(,other-spec-string ,(length rendered-tweets)))))))
 	(twittering-get-buffer-list))))))
+
+;;;;
+;;;; User IDs
+;;;;
+
+(defvar twittering-user-id-db (make-hash-table :test 'equal))
+(defvar twittering-user-screen-name-db (make-hash-table :test 'equal))
+(defcustom twittering-user-id-db-file
+  (expand-file-name "~/.twittering-mode-user-info.gz")
+  "*The file to which user IDs are stored.
+The file is loaded with `with-auto-compression-mode'."
+  :group 'twittering-mode
+  :type 'file)
+
+(defun twittering-registered-user-screen-names ()
+  (let ((result '()))
+    (maphash
+     (lambda (user-screen-name properties)
+       (setq result (cons user-screen-name result)))
+     twittering-user-screen-name-db)
+    result))
+
+(defun twittering-find-user (user-id)
+  (gethash user-id twittering-user-id-db))
+
+(defun twittering-find-user-screen-name (user-screen-name)
+  (gethash user-screen-name twittering-user-screen-name-db))
+
+(defun twittering-register-user-id (user-id properties)
+  (let ((screen-name (cdr (assq 'screen-name properties))))
+    (puthash user-id properties twittering-user-id-db)
+    (when screen-name
+      (puthash screen-name properties twittering-user-screen-name-db))))
+
+(defun twittering-register-user-id-from-status (status)
+  (let* ((id (cdr (assq 'user-id status)))
+	 (symbols '((user-id . id)
+		    (user-name . name)
+		    (user-screen-name . screen-name)
+		    (user-profile-image-url . profile-image-url)
+		    ;; (user-description . description)
+		    ;; (user-location . location)
+		    ))
+	 (info (mapcar (lambda (pair)
+			 (let ((source-sym (car pair))
+			       (dest-sym (cdr pair)))
+			   `(,dest-sym . ,(cdr (assq source-sym status)))))
+		       symbols)))
+    (twittering-register-user-id id info)
+    (when (assq 'quoted-status status)
+      (twittering-register-user-id-from-status
+       (cdr (assq 'quoted-status status))))
+    (when (assq 'retweeting-id status)
+      ;; Register a user ID from a retweeting tweet.
+      (let* ((id-of-retweet (cdr (assq 'retweeting-user-id status)))
+	     (info-of-retweet
+	      (mapcar (lambda (pair)
+			(let* ((raw-source-sym (car pair))
+			       (source-sym
+				(intern
+				 (concat "retweeting-"
+					 (symbol-name raw-source-sym))))
+			       (dest-sym (cdr pair)))
+			  `(,dest-sym . ,(cdr (assq source-sym status)))))
+		     symbols)))
+	(twittering-register-user-id id-of-retweet info-of-retweet)))
+    ))
+
+(defun twittering-save-user-id-db (&optional filename)
+  (let ((filename (or filename twittering-user-id-db-file))
+	(stored-data
+	 (let ((result nil))
+	   (maphash
+	    (lambda (user-id properties)
+	      (setq result (cons `(,user-id ,@properties) result)))
+	    twittering-user-id-db)
+	   result))
+	;; Bind `default-directory' to the temporary directory
+	;; because it is possible that the directory pointed by
+	;; `default-directory' has been already removed.
+	(default-directory temporary-file-directory))
+    (when (require 'jka-compr nil t)
+      (with-auto-compression-mode
+	(let ((coding-system-for-write 'utf-8))
+	  (with-temp-file filename
+	    (insert "( 1 ")
+	    (prin1 (cons 'emacs-version emacs-version) (current-buffer))
+	    (insert "(user-id-list ")
+	    (mapc (lambda (entry) (prin1 entry (current-buffer))) stored-data)
+	    (insert "))")))))))
+
+(defun twittering-load-user-id-db (&optional filename)
+  (let* ((filename (or filename twittering-user-id-db-file))
+	 ;; Bind `default-directory' to the temporary directory
+	 ;; because it is possible that the directory pointed by
+	 ;; `default-directory' has been already removed.
+	 (default-directory temporary-file-directory)
+	 (data
+	  (with-temp-buffer
+	    (condition-case err
+		(cond
+		 ((and (require 'jka-compr)
+		       (file-exists-p filename))
+		  (with-auto-compression-mode
+		    (let ((coding-system-for-read 'utf-8))
+		      (insert-file-contents filename)))
+		  (read (current-buffer)))
+		 (t
+		  nil))
+	      (error
+	       (message "Failed to load user IDs. %s" (cdr err))
+	       nil))))
+	 (format-version (car data)))
+    (cond
+     ((equal 1 format-version)
+      (let ((generator-version (cdr (assq 'emacs-version data))))
+	(cond
+	 ((or (equal generator-version emacs-version)
+	      (y-or-n-p
+	       (format "%s is generated by Emacs %s! Continue?"
+		       filename version)))
+	  (mapc (lambda (entry)
+		  (let ((id (car entry))
+			(properties (cdr entry)))
+		    (twittering-register-user-id id properties)))
+		(cdr (assq 'user-id-list data)))
+	  t)
+	 (t
+	  (message "Stopped loading user IDs")))))
+     (t
+      nil))))
 
 ;;;;
 ;;;; URIs related to a tweet
@@ -5461,24 +5613,35 @@ Return nil if URL-STRING cannot be interpreted as a URL pointing a tweet."
 (defun twittering-status-id= (id1 id2)
   (equal id1 id2))
 
+(defun twittering-epoch-timestamp-to-time (timestamp-str)
+  "Return a time object corresponding to the given epoch timestamp in msec.
+TIMESTAMP-STR must be a decimal string representing a time elapsed since
+the UNIX epoch (1970-01-01 00:00:00+00:00) in milliseconds."
+  (require 'calc)
+  (let* ((str (calc-eval `(,(concat "floor(10#" timestamp-str "/10#1000)")
+			   calc-word-size 64 calc-number-radix 16)))
+	 (hex-str (substring str 3))
+	 (len (length hex-str))
+	 (hex-str (if (< len 8)
+		      (concat (make-string (- 8 len) ?0) hex-str)
+		    hex-str))
+	 (high (substring hex-str 0 4))
+	 (low (substring hex-str 4))
+	 (milisec-str
+	  (calc-eval `(,(concat "10#" timestamp-str "%10#1000")
+		       calc-word-size 64 calc-number-radix 10))))
+    (mapcar (lambda (s) (string-to-number s 16))
+	    `(,high ,low ,milisec-str))))
+
 (defun twittering-snowflake-epoch-time ()
   "Return the epoch time of Snowflake."
-  (require 'calc)
   (let ((epoch-str
 	 ;; This corresponds to 2010-11-04 01:42:54+00:00 in RFC3339.
 	 ;; The value comes from the following page.
 	 ;; https://github.com/twitter/snowflake/blob/6d4634aa490de26e22425538291fe0a03071a170/src/main/scala/com/twitter/service/snowflake/IdWorker.scala#L22
 	 ;; 22    val twepoch = 1288834974657L
 	 "1288834974657"))
-    (let ((str
-	   (calc-eval `(,(concat "floor(10#" epoch-str "/10#1000)")
-			calc-word-size 64 calc-number-radix 16)))
-	  (milisec-str
-	   (calc-eval `(,(concat "10#" epoch-str "%10#1000")
-			calc-word-size 64 calc-number-radix 10))))
-      (mapcar (lambda (s) (string-to-number s 16))
-	      `(,(substring str 3 7) ,(substring str 7)
-		,milisec-str)))))
+    (twittering-epoch-timestamp-to-time epoch-str)))
 
 (defun twittering-id-to-time (id)
   "Return the time corresonding to ID generated by Snowflake.
@@ -5955,8 +6118,8 @@ verify-credentials -- Verify the current credentials.
       of `twittering-send-http-request' via `twittering-http-get'.
 send-direct-message -- Send a direct message.
   Valid key symbols in ARGS-ALIST:
-    username -- the username who the message is sent to.
-    status -- the sent message.
+    recipient-id -- the user ID who the message is sent to.
+    text -- the sent message.
 mute -- Mute a user.
   Valid key symbols in ARGS-ALIST:
     user-id -- the user-id that will be muted.
@@ -6266,8 +6429,8 @@ get-service-configuration -- Get the configuration of the server.
    ((eq command 'send-direct-message)
     ;; Send a direct message.
     (let ((parameters
-	   `(("screen_name" . ,(cdr (assq 'username args-alist)))
-	     ("text" . ,(cdr (assq 'status args-alist))))))
+	   `(("user_id" . ,(cdr (assq 'id args-alist)))
+	     ("text" . ,(cdr (assq 'text args-alist))))))
       (twittering-http-post account-info-alist twittering-api-host
 			    (twittering-api-path "direct_messages/new")
 			    parameters nil additional-info)))
@@ -6383,6 +6546,11 @@ get-service-configuration -- Get the configuration of the server.
 		  ("slug" . ,list-name)
 		  ("tweet_mode" . "extended")
 		  )))
+	     ((eq spec-type 'direct_message_events)
+	      `(,twittering-api-host
+		"1.1/direct_messages/events/list"
+		("count" . "50")
+		))
 	     ((eq spec-type 'direct_messages)
 	      `(,twittering-api-host
 		"1.1/direct_messages"
@@ -6639,13 +6807,24 @@ get-service-configuration -- Get the configuration of the server.
    ((eq command 'send-direct-message)
     ;; Send a direct message.
     (let* ((host twittering-api-host)
-	   (method "1.1/direct_messages/new")
-	   (http-parameters
-	    `(("screen_name" . ,(cdr (assq 'username args-alist)))
-	      ("text" . ,(cdr (assq 'status args-alist)))))
-	   (format-str "json"))
+	   (method "1.1/direct_messages/events/new")
+	   (http-parameters nil)
+	   (format-str "json")
+	   (additional-info nil)
+	   (recipient-id (cdr (assq 'recipient-id args-alist)))
+	   (text (cdr (assq 'text args-alist)))
+	   (obj
+	    `((event
+	       .
+	       ((type . "message_create")
+		(message_create
+		 .
+		 ((target . ((recipient_id . ,recipient-id)))
+		  (message_data . ((text . ,text)))))))))
+	   (post-body (json-encode obj))
+	   )
       (twittering-http-post account-info-alist host method http-parameters
-			    format-str additional-info)))
+			    format-str additional-info nil nil post-body)))
    ((memq command '(mute unmute))
     ;; Mute a user.
     (let* ((user-id (cdr (assq 'user-id args-alist)))
@@ -6941,7 +7120,19 @@ Otherwise, return 140."
 ;;;;
 
 (defun twittering-register-account-info (account-info)
-  (setq twittering-oauth-access-token-alist account-info))
+  (setq twittering-oauth-access-token-alist account-info)
+  (let* ((account-info twittering-oauth-access-token-alist)
+	 (table '(("user_id" . id)
+		  ("screen_name" . screen-name)))
+	 (properties
+	  (mapcar (lambda (pair)
+		    (let ((source (car pair))
+			  (dest (cdr pair)))
+		      `(,dest . ,(cdr (assoc source account-info)))
+		      ))
+		  table))
+	 (user-id (cdr (assq 'id properties))))
+    (twittering-register-user-id user-id properties)))
 
 (defun twittering-get-main-account-info ()
   (cond
@@ -7778,9 +7969,16 @@ to JSON objects from ordinary timeline and search timeline."
 			`(,sym . ,(cdr (assq target entry)))))
 		    sym-table))))
     `((text . ,(twittering-normalize-string text))
-      (created-at
-       . ,(apply 'encode-time
-		 (parse-time-string (cdr (assq 'created_at json-object)))))
+      ,@(let ((obj (cdr (assq 'created_at json-object))))
+	  (when obj
+	    ;; If the `json-object' does not have a `created_at' key,
+	    ;; simply do nothing.
+	    ;; Such a json-object may be generated by the function
+	    ;; `twittering-json-object-to-statuses-on-direct-message-events'.
+	    ;; because the objects of direct message events do not have
+	    ;; a human readable timestamp string.
+	    `((created-at . ,(apply 'encode-time
+				    (parse-time-string obj))))))
       (entity
        (hashtags . ,(mapcar (lambda (entry)
 			      (let* ((indices (cdr (assq 'indices entry)))
@@ -7992,6 +8190,66 @@ To convert a JSON object from other timelines, use
 		  (source-uri . ,uri)))
 	    `((source . ,source)
 	      (source-uri . ""))))))
+
+(defun twittering-json-object-to-statuses-on-direct-message-events (json-object)
+  "Convert JSON-OBJECT representing DM events into an alist representation.
+JSON-OBJECT must originate in the timeline of direct message events.
+To convert a JSON object from other timelines, use
+`twittering-json-object-to-a-status'."
+  (let* ((events (cdr (assq 'events json-object)))
+	 (apps (cdr (assq 'apps json-object))))
+    (mapcar
+     (lambda (ev)
+       (let* ((id (cdr (assq 'id ev)))
+	      (epoch-timestamp-str (cdr (assq 'created_timestamp ev)))
+	      (created-at
+	       (twittering-epoch-timestamp-to-time epoch-timestamp-str))
+	      (msg-create (cdr (assq 'message_create ev)))
+	      (msg-data (cdr (assq 'message_data msg-create)))
+	      (target (cdr (assq 'target msg-create)))
+	      (recipient-id (cdr (assq 'recipient_id target)))
+	      (recipient-info (twittering-find-user recipient-id))
+	      (recipient-name
+	       (or (cdr (assq 'name recipient-info))
+		   (format "UNKNOWN-NAME(ID:%s)" recipient-id)))
+	      (recipient-screen-name
+	       (or (cdr (assq 'screen-name recipient-info))
+		   (format "UNKNOWN-SCREEN-NAME(ID:%s)" recipient-id)))
+	      (sender-id (cdr (assq 'sender_id msg-create)))
+	      (user-info (twittering-find-user sender-id))
+	      (user-name (or (cdr (assq 'name user-info))
+			     (format "UNKNOWN-NAME(ID:%s)" sender-id)))
+	      (user-screen-name
+	       (or (cdr (assq 'screen-name user-info))
+		   (format "UNKNOWN-SCREEN-NAME(ID:%s)" sender-id)))
+	      (user-profile-image-url (cdr (assq 'profile-image-url user-info)))
+	      (source-app-id (cdr (assq 'source_app_id msg-create)))
+	      (source-app-name
+	       (if source-app-id
+		   (cdr (assq 'name (assq (intern source-app-id) apps)))
+		 ;; A message without `source_app_id' has been observed.
+		 ""))
+	      (source-app-url
+	       (if source-app-id
+		   (cdr (assq 'url (assq (intern source-app-id) apps)))
+		 ;; A message without `source_app_id' has been observed.
+		 ""))
+	      )
+	 `(,@(twittering-extract-common-element-from-json msg-data)
+	   (id . ,id)
+	   (created-at . ,created-at)
+	   (user-id . ,sender-id)
+	   (user-name . ,user-name)
+	   (user-screen-name . ,user-screen-name)
+	   (user-profile-image-url . ,user-profile-image-url)
+	   (recipient-id . ,recipient-id)
+	   (recipient-name . ,recipient-name)
+	   (recipient-screen-name . ,recipient-screen-name)
+	   (source . ,source-app-name)
+	   (source-uri . ,source-app-url)
+	   )))
+     events)
+    ))
 
 (defun twittering-json-object-to-a-status-on-direct-messages (json-object)
   "Convert JSON-OBJECT representing a tweet into an alist representation.
@@ -10679,6 +10937,8 @@ been initialized yet."
 	       'bold))))
       "Timeline footer on twittering-mode" :group 'faces)
     (twittering-update-status-format)
+    (twittering-load-user-id-db)
+    (add-hook 'kill-emacs-hook 'twittering-save-user-id-db)
     (when twittering-use-convert
       (if (null twittering-convert-program)
 	  (setq twittering-use-convert nil)
@@ -11406,11 +11666,17 @@ Pairs of a key symbol and an associated value are following:
 	    (cons status twittering-edit-history))
       (cond
        ((eq tweet-type 'direct-message)
-	(if direct-message-recipient
-	    (twittering-call-api 'send-direct-message
-				 `((username . ,direct-message-recipient)
-				   (status . ,status)))
-	  (message "No username specified")))
+	(if (null direct-message-recipient)
+	    (message "No direct message recipient specified")
+	  (let* ((recipient-info
+		  (twittering-find-user-screen-name direct-message-recipient))
+		 (recipient-id (cdr (assq 'id recipient-info))))
+	    (if recipient-id
+		(twittering-call-api 'send-direct-message
+				     `((recipient-id . ,recipient-id)
+				       (text . ,status)))
+	      (message "Failed to find the user ID of %s"
+		       direct-message-recipient)))))
        ((eq tweet-type 'reply)
 	(twittering-call-api 'update-status
 			     `((status . ,status)
@@ -11552,11 +11818,17 @@ Pairs of a key symbol and an associated value are following:
 	      (when (twittering-status-not-blank-p status)
 		(cond
 		 ((eq tweet-type 'direct-message)
-		  (if username
-		      (twittering-call-api 'send-direct-message
-					   `((username . ,username)
-					     (status . ,status)))
-		    (message "No username specified")))
+		  (if (null username)
+		      (message "No direct message recipient specified")
+		    (let* ((recipient-info
+			    (twittering-find-user-screen-name username))
+			   (recipient-id (cdr (assq 'id recipient-info))))
+		      (if recipient-id
+			  (twittering-call-api 'send-direct-message
+					       `((recipient-id . ,recipient-id)
+						 (text . ,status)))
+			(message "Failed to find the user ID of %s"
+				 username)))))
 		 (t
 		  (let ((parameters `(("status" . ,status)))
 			(as-reply
@@ -11604,7 +11876,7 @@ Pairs of a key symbol and an associated value are following:
 
 (defun twittering-read-username-with-completion (prompt init-user &optional history)
   (let ((collection (append twittering-user-history
-			    (twittering-get-usernames-from-timeline))))
+			    (twittering-registered-user-screen-names))))
     (twittering-completing-read prompt collection nil nil init-user history)))
 
 (defun twittering-read-list-name (username &optional list-index)
@@ -11638,8 +11910,9 @@ Pairs of a key symbol and an associated value are following:
 (defun twittering-read-timeline-spec-with-completion (prompt initial &optional as-string)
   (let* ((dummy-hist
 	  (append twittering-timeline-history
-		  (twittering-get-usernames-from-timeline)
-		  '(":direct_messages" ":direct_messages_sent"
+		  (twittering-registered-user-screen-names)
+		  '(":direct_message_events"
+		    ":direct_messages" ":direct_messages_sent"
 		    ":favorites" ":friends"
 		    ":home" ":mentions" ":public" ":replies"
 		    ":retweeted_by_me" ":retweeted_by_user/"
@@ -12173,8 +12446,11 @@ How to edit a tweet is determined by `twittering-update-status-funcion'."
 	 (uri (get-text-property (point) 'uri))
 	 (tweet-type
 	  (cond
-	   ((twittering-timeline-spec-is-direct-messages-p
-	     (get-text-property (point) 'source-spec))
+	   ((or
+	     (twittering-timeline-spec-is-direct-message-events-p
+	      (get-text-property (point) 'source-spec))
+	     (twittering-timeline-spec-is-direct-messages-p
+	      (get-text-property (point) 'source-spec)))
 	    'direct-message)
 	   (t
 	    'reply)))
