@@ -24,7 +24,6 @@
 (use-package merlin-eldoc
   :config
   (set-face-attribute 'merlin-eldoc-occurrences-face nil :underline t)
-  (set-face-attribute 'merlin-eldoc-occurrences-face nil :underline nil)
   (set-face-attribute 'merlin-eldoc-occurrences-face nil :inherit nil))
 
 ;; Ensure we can access binaries installed with opam, such as
