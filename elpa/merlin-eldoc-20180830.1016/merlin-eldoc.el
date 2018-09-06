@@ -4,8 +4,8 @@
 
 ;; Author: Louis Roché <louis@louisroche.net>
 ;; Created: 27 April 2018
-;; Version: 1.2
-;; Package-Version: 20180630.1026
+;; Version: 1.3
+;; Package-Version: 20180830.1016
 ;; Keywords: merlin ocaml languages eldoc
 ;; Homepage: https://github.com/khady/merlin-eldoc
 ;; Package-Requires: ((emacs "24.4") (merlin "3.0"))
@@ -150,8 +150,8 @@ the documentation."
 Based on the merlin feature allowing to call
 `merlin-type-enclosing' multiple times on the same value and get
 a type with more and more details."
-  :type '(radio (const :tag "minimal")
-                (const :tag "maximal")))
+  :type '(radio (const :tag "minimal" min)
+                (const :tag "maximal" max)))
 
 ;;; Utils
 
@@ -189,7 +189,6 @@ This is done by comparing font face.  So a mode such as
 before to call this function."
   (merlin-eldoc--current-font-among-fonts-p pos '(tuareg-font-lock-governing-face
                                                   font-lock-keyword-face)))
-
 
 (defun merlin-eldoc--in-operator-p (pos)
   "Return non-nil if character at POS is operator.
@@ -298,16 +297,16 @@ minibuffer."
 
 ;;; Main logic
 
-(defvar merlin-eldoc--max-lines merlin-eldoc-max-lines
+(defvar-local merlin-eldoc--max-lines merlin-eldoc-max-lines
   "Local copy of `merlin-eldoc-max-lines' adjusted to follow eldoc config.")
 
-(defvar merlin-eldoc--max-lines-type merlin-eldoc-max-lines-type
+(defvar-local merlin-eldoc--max-lines-type merlin-eldoc-max-lines-type
   "Local copy of `merlin-eldoc-max-lines-type' adjusted to follow max lines.")
 
-(defvar merlin-eldoc--max-lines-doc merlin-eldoc-max-lines-doc
+(defvar-local merlin-eldoc--max-lines-doc merlin-eldoc-max-lines-doc
   "Local copy of `merlin-eldoc-max-lines-doc' adjusted to follow max lines.")
 
-(defvar merlin-eldoc--max-lines-fun-args
+(defvar-local merlin-eldoc--max-lines-fun-args
   merlin-eldoc-max-lines-function-arguments
   "Local copy of `merlin-eldoc-max-lines-function-arguments' adjusted to follow max lines.")
 
@@ -389,7 +388,8 @@ The value returned is one of:
          (doc-type (cond ((integerp merlin-eldoc--max-lines-doc) 'multi)
                          (t merlin-eldoc--max-lines-doc))))
     (cond ((or (not eldoc-echo-area-use-multiline-p)
-               (equal merlin-eldoc--max-lines-doc 'fit)) 'fit)
+               (equal merlin-eldoc--max-lines-doc 'fit))
+           'fit)
           ((> type-lines 1)
            (cond ((equal merlin-eldoc--max-lines-doc 'fit) 'fit)
                  ((= doc-max-lines 0) 'fit)
@@ -467,6 +467,40 @@ The value returned is one of:
                        (t nil))))
     (if output (merlin-eldoc--fontify output))))
 
+(defvar-local merlin-eldoc--last-occurrences nil
+  "List of bounds of the form (START . END) for the last symbol that had occurrences.")
+
+(defvar-local merlin-eldoc--last-occurrence-index nil
+  "Index of the last occurrence visited in `merlin-eldoc--last-occurrences'.")
+
+(defun merlin-eldoc--store-occurrences (occurrences)
+  "Store OCCURRENCES and current position.
+
+OCCURRENCES must be a list of BOUNDS (of the form (START . END)).
+
+This function updates the content of
+`merlin-eldoc--last-occurences' and
+`merlin-eldoc--last-occurrence-index'.
+
+Occurrences and position are meant to be used by
+`merlin-eldoc-jump-to-prev-occurrence' and
+`merlin-eldoc-jump-to-next-occurrence'."
+  (setq-local merlin-eldoc--last-occurrences (vconcat occurrences))
+  (setq-local merlin-eldoc--last-occurrence-index nil)
+  (let ((point (point))
+        (found-p nil)
+        (i 0)
+        (len (length merlin-eldoc--last-occurrences)))
+    (while (and (not found-p) (< i len))
+      (let* ((bounds (aref merlin-eldoc--last-occurrences i))
+             (begin (car bounds))
+             (end (cdr bounds)))
+        (when (and (>= point begin)
+                   (<= point end))
+          (setq-local merlin-eldoc--last-occurrence-index i)
+          (setq found-p t))
+        (setq i (1+ i))))))
+
 (defun merlin-eldoc--occurrences ()
   "Produce list of BOUNDS (of the form (START . END)) of occurrences of the symbol at point."
   (merlin/call "occurrences"
@@ -486,9 +520,12 @@ The value returned is one of:
   "Create an overlay on all the occurences of symbol at point."
   (when merlin-eldoc-occurrences
     (merlin-eldoc--unhighlight-occurrences)
-    (dolist (occ (merlin-eldoc--occurrences))
-      (merlin-eldoc--highlight-occurrence
-       (merlin--make-bounds occ) 'merlin-eldoc-occurrences-face))))
+    (let* ((occurrences (merlin-eldoc--occurrences))
+           (bounds (mapcar #'merlin--make-bounds occurrences)))
+      (dolist (occ bounds)
+        (merlin-eldoc--highlight-occurrence occ
+                                            'merlin-eldoc-occurrences-face))
+      (merlin-eldoc--store-occurrences bounds))))
 
 (defun merlin-eldoc--on-overlay-p (id)
   "Return whether point is on a tide overlay of type ID."
@@ -499,11 +536,15 @@ The value returned is one of:
 (defun merlin-eldoc--hl-identifiers-post-command-hook ()
   "Unhighlight if point moves off identifier."
   (unless (merlin-eldoc--on-overlay-p 'occurrences)
-    (merlin-eldoc--unhighlight-occurrences)))
+    (merlin-eldoc--unhighlight-occurrences)
+    (setq-local merlin-eldoc--last-occurrences nil)
+    (setq-local merlin-eldoc--last-occurrence-index nil)))
 
 (defun merlin-eldoc--hl-identifiers-before-change-function (_beg _end)
   "Unhighlight any time the buffer changes."
-  (merlin-eldoc--unhighlight-occurrences))
+  (merlin-eldoc--unhighlight-occurrences)
+  (setq-local merlin-eldoc--last-occurrences nil)
+  (setq-local merlin-eldoc--last-occurrence-index nil))
 
 (defun merlin-eldoc--format-args-single (text)
   "Format TEXT content into a string fitting on a single line."
@@ -564,11 +605,37 @@ The value returned is one of:
                        (merlin-eldoc--merlin-error-at-point-p))))
     (merlin-eldoc--adjust-max-len)
     (cond ((merlin-eldoc--valid-type-position-p (point))
-           (merlin-eldoc--highlight-occurrences)
+           (ignore-errors (merlin-eldoc--highlight-occurrences))
            (merlin-eldoc--gather-type-and-doc-info))
           ((merlin-eldoc--valid-fun-args-position-p (point))
            (merlin-eldoc--gather-fun-args))
           (t nil))))
+
+(defun merlin-eldoc-jump-to-prev-occurrence ()
+  "Jump to prev occurrence of value at point."
+  (interactive)
+  (when merlin-eldoc--last-occurrence-index
+    (let* ((len (length merlin-eldoc--last-occurrences))
+           (i merlin-eldoc--last-occurrence-index)
+           (i (1- i))
+           (i (if (>= i 0) i (1- len)))
+           (bounds (aref merlin-eldoc--last-occurrences i)))
+      (setq-local merlin-eldoc--last-occurrence-index i)
+      (message "jumping to occurrence %s/%s" (1+ i) len)
+      (goto-char (car bounds)))))
+
+(defun merlin-eldoc-jump-to-next-occurrence ()
+  "Jump to next occurrence of value at point."
+  (interactive)
+  (when merlin-eldoc--last-occurrence-index
+    (let* ((len (length merlin-eldoc--last-occurrences))
+           (i merlin-eldoc--last-occurrence-index)
+           (i (1+ i))
+           (i (if (< i len) i 0))
+           (bounds (aref merlin-eldoc--last-occurrences i)))
+      (setq-local merlin-eldoc--last-occurrence-index i)
+      (message "jumping to occurrence %s/%s" (1+ i) len)
+      (goto-char (car bounds)))))
 
 ;;;###autoload
 (defun merlin-eldoc-setup ()
