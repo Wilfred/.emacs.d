@@ -38,3 +38,5 @@
 ;; _oasis files are basically conf syntax.
 ;; http://oasis.forge.ocamlcore.org/MANUAL.html#writing-_oasis-file
 (add-to-list 'auto-mode-alist '("_oasis" . conf-mode))
+
+(provide 'ocaml-customisations)
