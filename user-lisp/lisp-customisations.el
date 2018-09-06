@@ -16,7 +16,29 @@ test with the same name."
   (define-key emacs-lisp-mode-map (kbd "C-c r") #'wh/run-ert-test)
 
   (dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook))
-    (add-hook hook #'elisp-def-mode)))
+    (add-hook hook #'elisp-def-mode))
+
+  ;; When a package is installed, it's byte-compiled. However, git is set
+  ;; up to ignore .elc files (see the .gitignore file). The system that
+  ;; installs the file therefore has .elc files, but other systems need to
+  ;; byte-compile those directories.
+
+  ;; To make matters worse, we can't just compile on startup any package
+  ;; files that aren't compiled already, since some files fail compilation
+  ;; every time. Instead, we compile directories that don't contain any
+  ;; .elc files.
+
+  (defun wh/was-compiled-p (path)
+    "Does the directory at PATH contain any .elc files?"
+    (--any-p (f-ext? it "elc") (f-files path)))
+
+  ;; todo: clean up orphaned .elc files
+  (defun wh/ensure-packages-compiled ()
+    "If any packages installed with package.el aren't compiled yet, compile them."
+    (interactive)
+    (--each (f-directories package-user-dir)
+      (unless (wh/was-compiled-p it)
+        (byte-recompile-directory it 0)))))
 
 ;; I often end up looking up libraries.
 (global-set-key (kbd "C-c l") #'counsel-find-library)
