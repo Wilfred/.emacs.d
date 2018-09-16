@@ -4,9 +4,9 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; URL: https://github.com/Wilfred/deadgrep
-;; Package-Version: 20180714.1716
+;; Package-Version: 20180912.2303
 ;; Keywords: tools
-;; Version: 0.5
+;; Version: 0.6
 ;; Package-Requires: ((emacs "25.1") (dash "2.12.0") (s "1.11.0") (spinner "1.7.3") (projectile "0.14.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -105,11 +105,17 @@ overflow on our regexp matchers if we don't apply this.")
 This is stored as a cons cell of integers (lines-before . lines-after).")
 (defvar-local deadgrep--initial-filename nil)
 
-(defvar-local deadgrep--current-file nil)
+(defvar-local deadgrep--current-file nil
+  "The file we're currently inserting results for.")
 (defvar-local deadgrep--spinner nil)
 (defvar-local deadgrep--remaining-output nil
   "We can't guarantee that our process filter will always receive whole lines.
 We save the last line here, in case we need to append more text to it.")
+(defvar-local deadgrep--postpone-start nil
+  "If non-nil, don't (re)start searches.")
+
+(defvar-local deadgrep--debug-command nil)
+(defvar-local deadgrep--debug-first-output nil)
 
 (defconst deadgrep--position-column-width 5)
 
@@ -139,9 +145,13 @@ We save the last line here, in case we need to append more text to it.")
         (cond
          ;; Ignore blank lines.
          ((s-blank? line))
-         ;; Ignore -- lines, which are used as a context separator
-         ;; when calling ripgrep with context flags.
-         ((string= line "--"))
+         ;; Lines of just -- are used as a context separator when
+         ;; calling ripgrep with context flags.
+         ;; TODO: don't always use three ---.
+         ((string= line "--")
+          (insert
+           (propertize "---\n"
+                       'face 'deadgrep-meta-face)))
          ;; If we don't have a color code, ripgrep must be complaining
          ;; about something (e.g. zero matches for a
          ;; glob, or permission denied on some directories).
@@ -190,25 +200,34 @@ We save the last line here, in case we need to append more text to it.")
 
 (defun deadgrep--process-sentinel (process output)
   "Update the deadgrep buffer associated with PROCESS as complete."
-  (let ((buffer (process-buffer process)))
+  (let ((buffer (process-buffer process))
+        (finished-p (string= output "finished\n")))
     (when (buffer-live-p buffer)
       (with-current-buffer buffer
         ;; rg has terminated, so stop the spinner.
         (spinner-stop deadgrep--spinner)
 
-        (deadgrep--insert-output "" t)
+        (deadgrep--insert-output "" finished-p)
 
         ;; Report any errors that occurred.
         (unless (member output
                         (list
                          "exited abnormally with code 1\n"
+                         "interrupt\n"
                          "finished\n"))
           (save-excursion
             (let ((inhibit-read-only t))
               (goto-char (point-max))
-              (insert output))))))))
+              (insert output))))
+
+        (message "Deadgrep finished")))))
 
 (defun deadgrep--process-filter (process output)
+  ;; Searches may see a lot of output, but it's really useful to have
+  ;; a snippet of output when debugging. Store the first output received.
+  (unless deadgrep--debug-first-output
+    (setq deadgrep--debug-first-output output))
+
   ;; If we had an unfinished line from our last call, include that.
   (when deadgrep--remaining-output
     (setq output (concat deadgrep--remaining-output output))
@@ -339,37 +358,68 @@ with Emacs text properties."
 
 (defun deadgrep--type-list ()
   "Query the rg executable for available file types."
+  ;; TODO: deduplicate. rg outputs both md and markdown.
   (let* ((output (shell-command-to-string (format "%s --type-list" deadgrep-executable)))
          (lines (s-lines (s-trim output)))
-         (types (--map
-                 (s-split (rx ": ") it)
-                 lines)))
-    types))
+         (types-and-exts
+          (--map
+           (s-split (rx ": ") it)
+           lines)))
+    (-map
+     (-lambda ((type exts))
+       (list type (s-split (rx ", ") exts)))
+     types-and-exts)))
 
 (define-button-type 'deadgrep-file-type
   'action #'deadgrep--file-type
   'case nil
-  'help-echo "Change case sensitivity")
+  'help-echo "Change file type")
+
+(defun deadgrep--format-file-type (file-type extensions)
+  (let* ((max-exts 4)
+         (truncated (> (length extensions) max-exts)))
+    (when truncated
+      (setq extensions
+            (append (-take max-exts extensions)
+                    (list "..."))))
+    (format "%s (%s)"
+            file-type
+            (s-join ", " extensions))))
 
 (defun deadgrep--read-file-type (filename)
   "Read a ripgrep file type, defaulting to the type that matches FILENAME."
   (let* ((types-and-exts (deadgrep--type-list))
-         (types (-map #'-first-item types-and-exts))
-         matching-type-and-ext)
-    ;; If we've been given a filename with an extension.
+         (type-choices
+          (-map
+           (-lambda ((type exts))
+             (list
+              (deadgrep--format-file-type type exts)
+              type exts))
+           types-and-exts))
+         default
+         chosen)
+    ;; If we've been given a filename.
     (when (and filename (file-name-extension filename))
-      ;; Get the first type whose list of extensions contains this extension.
-      (setq matching-type-and-ext
-            (-find
-             (-lambda ((_ extensions))
-               (s-contains-p
-                (format "*.%s" (file-name-extension filename))
-                extensions))
-             types-and-exts)))
-    (completing-read "File type: "
-                     types
-                     nil t nil nil
-                     (car-safe matching-type-and-ext))))
+      ;; Try to find a file type that matches it.
+      (setq default
+            (car-safe
+             (-find
+              (-lambda ((_formatted-type . (_type-name extensions)))
+                (or
+                 ;; E.g. Ruby files include 'Gemfile'.
+                 (member filename extensions)
+                 ;; E.g. Ruby files include '*.rb'.
+                 ;; TODO: proper glob matching, e.g. for 'README*' too.
+                 (member
+                  (format "*.%s" (file-name-extension filename))
+                  extensions)))
+              type-choices))))
+    (setq chosen
+          (completing-read "File type: "
+                           type-choices
+                           nil t nil nil
+                           default))
+    (nth 1 (assoc chosen type-choices))))
 
 (defun deadgrep--file-type (button)
   (let ((button-type (button-get button 'file-type)))
@@ -678,12 +728,12 @@ buffer."
               (max deadgrep--position-column-width
                    (length (number-to-string line-number))))
              (i 0)
-             (start-pos 0))
+             (start-pos 0)
+             (line-end-pos (line-end-position)))
 
         (forward-char line-number-width)
 
-        (while (and (not (looking-at "\n"))
-                    (not (bobp)))
+        (while (<= (point) line-end-pos)
           ;; If we've just entered a match, record the start position.
           (when (and (deadgrep--match-face-p (point))
                      (not (deadgrep--match-face-p (1- (point)))))
@@ -698,7 +748,7 @@ buffer."
 
     (nreverse positions)))
 
-(defun deadgrep-visit-result ()
+(defun deadgrep--visit-result (open-fn)
   "Goto the search result at point."
   (interactive)
   (let* ((pos (line-beginning-position))
@@ -707,7 +757,14 @@ buffer."
          (column-offset (when line-number (deadgrep--current-column)))
          (match-positions (when line-number (deadgrep--match-positions))))
     (when file-name
-      (find-file file-name)
+      (when overlay-arrow-position
+        (set-marker overlay-arrow-position nil))
+      ;; Show an arrow next to the last result viewed. This is
+      ;; consistent with `compilation-next-error-function' and also
+      ;; useful with `deadgrep-visit-result-other-window'.
+      (setq overlay-arrow-position (copy-marker pos))
+
+      (funcall open-fn file-name)
       (goto-char (point-min))
       (when line-number
         (forward-line (1- line-number))
@@ -716,7 +773,18 @@ buffer."
           (-lambda ((start end))
             (deadgrep--flash-column-offsets start end)))))))
 
+(defun deadgrep-visit-result-other-window ()
+  "Goto the search result at point, opening in another window."
+  (interactive)
+  (deadgrep--visit-result #'find-file-other-window))
+
+(defun deadgrep-visit-result ()
+  "Goto the search result at point."
+  (interactive)
+  (deadgrep--visit-result #'find-file))
+
 (define-key deadgrep-mode-map (kbd "RET") #'deadgrep-visit-result)
+(define-key deadgrep-mode-map (kbd "o") #'deadgrep-visit-result-other-window)
 ;; TODO: we should still be able to click on buttons.
 
 (define-key deadgrep-mode-map (kbd "g") #'deadgrep-restart)
@@ -771,11 +839,25 @@ Keys are interned filenames, so they compare with `eq'.")
 
 (define-key deadgrep-mode-map (kbd "TAB") #'deadgrep-toggle-file-results)
 
+(defun deadgrep--interrupt-process ()
+  "Gracefully stop the rg process, synchronously."
+  (-when-let (proc (get-buffer-process (current-buffer)))
+    ;; Ensure that our process filter is not called again.
+    (set-process-filter proc #'ignore)
+
+    (interrupt-process proc)
+    ;; Wait for the process to terminate, so we know that
+    ;; `deadgrep--process-sentinel' has been called.
+    (while (process-live-p proc)
+      ;; `redisplay' can trigger process filters or sentinels.
+      (redisplay)
+      (sleep-for 0.1))))
+
 (defun deadgrep-kill-process ()
   "Kill the deadgrep process associated with the current buffer."
   (interactive)
   (if (get-buffer-process (current-buffer))
-      (interrupt-process)
+      (deadgrep--interrupt-process)
     (message "No process running.")))
 
 ;; Keybinding chosen to match `kill-compilation'.
@@ -840,34 +922,58 @@ This will either be a button, a filename, or a search result."
   "Start a ripgrep search."
   (setq deadgrep--spinner (spinner-create 'progress-bar t))
   (spinner-start deadgrep--spinner)
-  (let ((process
-         (start-process-shell-command
-          (format "rg %s" search-term)
-          (current-buffer)
-          (deadgrep--format-command
-           search-term search-type case
-           deadgrep--context))))
+  (let* ((command (deadgrep--format-command
+                   search-term search-type case
+                   deadgrep--context))
+         (process
+          (start-process-shell-command
+           (format "rg %s" search-term)
+           (current-buffer)
+           command)))
+    (setq deadgrep--debug-command command)
     (set-process-filter process #'deadgrep--process-filter)
     (set-process-sentinel process #'deadgrep--process-sentinel)))
 
 (defun deadgrep-restart ()
   "Re-run ripgrep with the current search settings."
   (interactive)
+  ;; If we haven't started yet, start the search if we've been called
+  ;; by the user.
+  (when (and deadgrep--postpone-start
+             (called-interactively-p 'interactive))
+    (setq deadgrep--postpone-start nil))
+
+  ;; Stop the old search, so we don't carry on inserting results from
+  ;; the last thing we searched for.
+  (deadgrep--interrupt-process)
+
   (let ((start-point (point))
         (inhibit-read-only t))
+    ;; Reset UI: remove results, reset items hidden by TAB, and arrow
+    ;; position.
     (erase-buffer)
-    (setq deadgrep--current-file nil)
     (setq deadgrep--hidden-files nil)
+    (when overlay-arrow-position
+      (set-marker overlay-arrow-position nil))
+
+    ;; Reset intermediate search state.
+    (setq deadgrep--current-file nil)
+    (setq deadgrep--spinner nil)
+    (setq deadgrep--remaining-output nil)
+    (setq deadgrep--current-file nil)
+    (setq deadgrep--debug-first-output nil)
 
     (deadgrep--write-heading)
     ;; If the point was in the heading, ensure that we restore its
     ;; position.
     (goto-char (min (point-max) start-point))
 
-    (deadgrep--start
-     deadgrep--search-term
-     deadgrep--search-type
-     deadgrep--search-case)))
+    (if deadgrep--postpone-start
+        (deadgrep--write-postponed)
+      (deadgrep--start
+       deadgrep--search-term
+       deadgrep--search-type
+       deadgrep--search-case))))
 
 (defun deadgrep--read-search-term ()
   "Read a search term from the minibuffer.
@@ -902,12 +1008,23 @@ for a string, offering the current word as a default."
   (let ((projectile-require-project-root nil))
     (projectile-project-root)))
 
+(defun deadgrep--write-postponed ()
+  (let* ((inhibit-read-only t)
+         (restart-key
+          (where-is-internal #'deadgrep-restart deadgrep-mode-map t)))
+    (save-excursion
+      (goto-char (point-max))
+      (insert
+       (format "Press %s to start the search."
+               (key-description restart-key))))))
+
 ;;;###autoload
-(defun deadgrep ()
-  "Start a ripgrep search for SEARCH-TERM."
-  (interactive)
-  (let* ((search-term (deadgrep--read-search-term))
-         (dir (funcall deadgrep-project-root-function))
+(defun deadgrep (search-term)
+  "Start a ripgrep search for SEARCH-TERM.
+If called with a prefix argument, create the results buffer but
+don't actually start the search."
+  (interactive (list (deadgrep--read-search-term)))
+  (let* ((dir (funcall deadgrep-project-root-function))
          (buf (deadgrep--buffer
                search-term
                dir
@@ -924,6 +1041,8 @@ for a string, offering the current word as a default."
 
     (switch-to-buffer buf)
 
+    (setq next-error-function #'deadgrep-next-error)
+
     ;; If we have previous search settings, apply them to our new
     ;; search results buffer.
     (when last-results-buf
@@ -931,10 +1050,61 @@ for a string, offering the current word as a default."
       (setq deadgrep--search-case prev-search-case))
 
     (deadgrep--write-heading)
-    (deadgrep--start
-     search-term
-     deadgrep--search-type
-     deadgrep--search-case)))
+
+    (if current-prefix-arg
+        ;; Don't start the search, just create the buffer and inform
+        ;; the user how to start when they're ready.
+        (progn
+          (setq deadgrep--postpone-start t)
+          (deadgrep--write-postponed))
+      ;; Start the search immediately.
+      (deadgrep--start
+       search-term
+       deadgrep--search-type
+       deadgrep--search-case))))
+
+(defun deadgrep-next-error (arg reset)
+  "Move to the next error.
+If ARG is given, move by that many errors.
+
+This is intended for use with `next-error-function', which see."
+  (when reset
+    (goto-char (point-min)))
+  (beginning-of-line)
+  (let ((direction (> arg 0)))
+    (setq arg (abs arg))
+
+    (while (and
+            (not (zerop arg))
+            (not (eobp)))
+      (if direction
+          (forward-line 1)
+        (forward-line -1))
+      ;; If we are on a specific result (not a heading), we have a line
+      ;; number.
+      (when (get-text-property (point) 'deadgrep-line-number)
+        (cl-decf arg))))
+  (deadgrep-visit-result-other-window))
+
+(defun deadgrep-debug ()
+  "Show a buffer with some debug information about the current search."
+  (interactive)
+  (let ((command deadgrep--debug-command)
+        (output deadgrep--debug-first-output)
+        (buf (get-buffer-create "*deadgrep debug*"))
+        (inhibit-read-only t))
+    (pop-to-buffer buf)
+    (erase-buffer)
+    (special-mode)
+    (setq buffer-read-only t)
+
+    (insert
+     "About your environment:\n"
+     (format "Platform: %s\n" system-type)
+     (format "Emacs version: %s\n" emacs-version)
+     (format "Command: %s\n" command)
+     (format "\nInitial output from ripgrep:\n%S" output)
+     (format "\n\nPlease file bugs at https://github.com/Wilfred/deadgrep/issues/new"))))
 
 (provide 'deadgrep)
 ;;; deadgrep.el ends here

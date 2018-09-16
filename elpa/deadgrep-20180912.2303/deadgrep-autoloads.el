@@ -11,8 +11,10 @@
 
 (autoload 'deadgrep "deadgrep" "\
 Start a ripgrep search for SEARCH-TERM.
+If called with a prefix argument, create the results buffer but
+don't actually start the search.
 
-\(fn)" t nil)
+\(fn SEARCH-TERM)" t nil)
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "deadgrep" '("deadgrep-")))
 
