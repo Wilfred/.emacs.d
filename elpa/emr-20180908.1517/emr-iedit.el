@@ -27,6 +27,7 @@
 (require 'dash)
 (require 'thingatpt)
 (require 'which-func)
+(require 'emr-elisp)
 
 (require 'iedit)
 
@@ -39,7 +40,7 @@
 (defun emr-iedit-global ()
   "Rename a variable appears in current buffer.."
   (interactive)
-  (iedit-mode t))
+  (iedit-mode))
 
 (defun emr-iedit-in-function ()
   "Rename variable appears in current function."
@@ -48,23 +49,28 @@
 
 
 (emr-declare-command 'emr-iedit-in-function
-  :title "rename (in function)"
+  :title "rename"
   :description "in function"
   :modes '(prog-mode)
   :predicate (lambda ()
                (and (not (iedit-region-active))
-                    (emr-iedit:looking-at-iterator?)
-                    (which-function))))
+                    (if (eq major-mode 'emacs-lisp-mode)
+                        (emr-el:looking-at-local-var-p)
+                      (and
+                       (emr-iedit:looking-at-iterator?)
+                       (which-function))))))
 
 (emr-declare-command 'emr-iedit-global
   :title "rename"
-  :description "globally"
+  :description "in file"
   :modes '(prog-mode)
   :predicate (lambda ()
                (and (not (iedit-region-active))
-                    (emr-iedit:looking-at-iterator?))))
-
-(define-key iedit-mode-keymap (kbd "C-c C-c") 'iedit-mode)
+                    (if (eq major-mode 'emacs-lisp-mode)
+                        (and
+                         (emr-el:looking-at-symbol-p)
+                         (not (emr-el:looking-at-local-var-p)))
+                      (emr-iedit:looking-at-iterator?)))))
 
 (provide 'emr-iedit)
 

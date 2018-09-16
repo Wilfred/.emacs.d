@@ -80,7 +80,7 @@ Insert an include for HEADER and tidy the includes in the buffer.
 Key map for `emr-c-mode'.")
 
 (autoload 'emr-c-mode "emr-c" "\
-A minor-mode for C that makes extra key bidings available.
+A minor-mode for C that makes extra key bindings available.
 
 \(fn &optional ARG)" t nil)
 
@@ -89,7 +89,7 @@ Initialize EMR in C buffers and enable the EMR menu.
 
 \(fn)" nil nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "emr-c" '("emr-c")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "emr-c" '("emr-")))
 
 ;;;***
 
@@ -286,6 +286,21 @@ Extract the region or expression at point to a let-binding named SYMBOL.
 (autoload 'emr-el-inline-let-variable "emr-elisp" "\
 Inline the let-bound variable at point.
 
+EXAMPLE:
+
+  (emr-el-inline-let-variable)
+
+BEFORE:
+
+  (let ((x 1)
+        (y| 2))
+    (+ x y))
+
+AFTER:
+
+  (let ((x 1))
+    (+ x 2))
+
 \(fn)" t nil)
 
 (autoload 'emr-el-inline-function "emr-elisp" "\
@@ -326,20 +341,7 @@ Enable the EMR menu for Elisp buffers.
 ;;;### (autoloads nil "emr-lisp" "emr-lisp.el" (0 0 0 0))
 ;;; Generated autoloads from emr-lisp.el
 
-(autoload 'emr-lisp-comment-form "emr-lisp" "\
-Comment out the Lisp form at point.
-
-\(fn)" t nil)
-
-(autoload 'emr-lisp-uncomment-block "emr-lisp" "\
-Uncomment the Lisp form or forms at point.
-
-Searches the comment block for Lisp forms to avoid uncommenting
-textual comments.
-
-\(fn)" t nil)
-
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "emr-lisp" '("emr-lisp")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "emr-lisp" '("emr-lisp-")))
 
 ;;;***
 

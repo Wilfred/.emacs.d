@@ -33,7 +33,6 @@
 (require 'emr)
 (require 'emr-lisp)
 (autoload 'define-compilation-mode "compile")
-(autoload 'redshank-letify-form-up "redshank")
 (autoload 'paredit-splice-sexp-killing-backward "paredit")
 
 (defcustom emr-el-definition-macro-names
@@ -60,14 +59,6 @@ stdin. Bad."
         (print-escape-newlines t)
         )
     (prin1-to-string form)))
-
-;;;; Compatibility
-
-(eval-and-compile
-  (unless (fboundp 'backward-down-list)
-    (defun backward-down-list (&optional arg)
-      (interactive "^p")
-      (down-list (- (or arg 1))))))
 
 ;;;; Navigation commands
 
@@ -111,34 +102,33 @@ stdin. Bad."
   ;; Form traversal can recur infinitely in some quotation scenarios. In
   ;; such cases it is not a problem to bail and unwind the stack.
   (ignore-errors
-   (-uniq
-    (let* (
-           ;; Handle errors in expansion. Expansion errors are common with syntax
-           ;; quotes, for example.
-           (form (or (ignore-errors (macroexpand-all form))
-                     (ignore-errors (macroexpand form))
-                     form))
+    (-uniq
+     (let* (
+            ;; Handle errors in expansion. Expansion errors are common with syntax
+            ;; quotes, for example.
+            (form (or (ignore-errors (macroexpand-all form))
+                      (ignore-errors (macroexpand form))
+                      form))
 
-           (hd (car-safe form))
-           )
-      (cond
-       ((equal 'lambda hd) (emr-el:bindings-in-lambda form))
-       ((equal 'let hd)  (emr-el:bindings-in-let form))
-       ((equal 'let* hd) (emr-el:bindings-in-let form))
-       ((equal 'defalias hd) (emr-el:bindings-in-defalias form))
-       ;; `function' is the quotation form for function objects.
-       ;; Do not bail if the next item is not a lambda.
-       ((equal 'function hd) (condition-case _err
-                                 (-mapcat 'emr-el:bindings-in-lambda (cdr form))
-                               (error
-                                (-mapcat 'emr-el:bound-variables (cdr form)))))
-       ;; FORM is probably a value if we're not looking at a list, and can be
-       ;; ignored.
-       ((listp form)
-        (->> form
-          ;; Handle improper lists.
-          (list-utils-make-proper-copy)
-          (-mapcat 'emr-el:bound-variables))))))))
+            (hd (car-safe form)))
+       (cond
+        ((equal 'lambda hd) (emr-el:bindings-in-lambda form))
+        ((equal 'let hd)  (emr-el:bindings-in-let form))
+        ((equal 'let* hd) (emr-el:bindings-in-let form))
+        ((equal 'defalias hd) (emr-el:bindings-in-defalias form))
+        ;; `function' is the quotation form for function objects.
+        ;; Do not bail if the next item is not a lambda.
+        ((equal 'function hd) (condition-case _err
+                                  (-mapcat 'emr-el:bindings-in-lambda (cdr form))
+                                (error
+                                 (-mapcat 'emr-el:bound-variables (cdr form)))))
+        ;; FORM is probably a value if we're not looking at a list, and can be
+        ;; ignored.
+        ((listp form)
+         (->> form
+              ;; Handle improper lists.
+              (list-utils-make-proper-copy)
+              (-mapcat 'emr-el:bound-variables))))))))
 
 (defun emr-el:unquoted-symbols (form)
   "Return a list of every unquoted symbol in FORM."
@@ -195,11 +185,6 @@ CONTEXT is the top level form that encloses FORM."
 
 ;;;; Definition site tests
 
-(defun emr-el:macro-boundp (symbol)
-  "Test whether SYMBOL is bound as a macro."
-  (and (fboundp symbol)
-       (eq (car (symbol-function symbol)) 'macro)))
-
 (defun emr-el:macro-definition? (form)
   "Return t if FORM expands to a macro definition."
   (ignore-errors
@@ -255,9 +240,11 @@ Returns a list of lines where changes were made."
   (save-excursion
     (goto-char (point-min))
     (save-match-data
-      (let ((match-sym (eval `(rx (not (any "(")) (* space)
-                                  (group symbol-start ,(symbol-name sym)
-                                         symbol-end))))
+      (let ((match-sym
+             (rx-to-string
+              `(seq (not (any "(")) (* space)
+                    (group symbol-start ,(symbol-name sym)
+                           symbol-end))))
             (lines))
         ;; Check for "(" since we don't want to replace function calls.
         (while (and (search-forward-regexp match-sym nil t)
@@ -596,7 +583,7 @@ relying on indentation."
    (cl-loop
     while (ignore-errors (backward-up-list) t)
     do (when (thing-at-point-looking-at
-              (eval `(rx "(" (or ,@(-map 'symbol-name emr-el-definition-macro-names)))))
+              (rx-to-string `(seq "(" (or ,@(-map 'symbol-name emr-el-definition-macro-names)))))
          (return (point))))
    ;; Fall back to using indentation.
    (ignore-errors
@@ -728,14 +715,6 @@ details.
     (--map (or (car-safe it) it))
     (-remove 'null)))
 
-(cl-defun emr-el:let-binding-list ((_let &optional bindings &rest body))
-  "Return the bindings list in the given let form."
-  bindings)
-
-(cl-defun emr-el:let-body ((_let &optional _bindings &rest body))
-  "Return the body forms in the given let form."
-  body)
-
 (defconst emr-el:scope-boundary-forms
   '(lambda defun cl-defun defun* defmacro cl-defmacro defmacro*
      let let* save-excursion unwind-protect
@@ -743,6 +722,13 @@ details.
      ert-deftest)
   "A list of forms that define some kind of scope or context.
 They will bound upward searches when looking for places to insert let forms.")
+
+(defun emr-lisp-peek-back-upwards ()
+  "Return the car of the enclosing form."
+  (save-excursion
+    (when (ignore-errors (backward-up-list) t)
+      (forward-char 1)
+      (sexp-at-point))))
 
 (defun emr-el:simplify-let-form-at-point ()
   "Tidy the let form at point.
@@ -752,8 +738,7 @@ form or replace with `progn'."
     (emr-el:goto-start-of-let-binding)
     ;; Move into list.
     (forward-char 1)
-    (let ((bindings (emr-el:let-binding-list (list-at-point)))
-          (body     (emr-el:let-body (list-at-point))))
+    (-let (((let-keyword bindings . body) (list-at-point)))
       ;; Move to position after bindings list.
       (forward-list 1)
       (cond
@@ -773,12 +758,8 @@ form or replace with `progn'."
 
        ;; Replace `let*' with `let' if there's only a single binding form.
        ((equal 1 (length bindings))
-        (save-excursion
-          (emr-el:goto-start-of-let-binding)
-          (forward-char 1)
-          (when (search-forward-regexp (rx "let*")
-                                       (save-excursion (forward-sexp) (point)) t)
-            (replace-match "let"))))
+        (when (eq let-keyword 'let*)
+          (emr-el-toggle-let*)))
 
        ;; Otherwise replace `let' with `progn'.
        ((null bindings)
@@ -823,22 +804,117 @@ form or replace with `progn'."
 (defun emr-el:goto-containing-body-form ()
   "Search upwards for the first function or macro declaration enclosing point.
 Move to that body form that encloses point."
-  (cl-loop
-   while (ignore-errors (backward-up-list) t)
-   do (when (-contains? emr-el:scope-boundary-forms (emr-lisp-peek-back-upwards))
-        (return (point)))))
+  ;; Ensure we're at the start of the current symbol.
+  (when (looking-at (rx symbol-end))
+    (backward-sexp))
+  (catch 'found
+    (while t
+      (when (-contains-p emr-el:scope-boundary-forms (emr-lisp-peek-back-upwards))
+        (throw 'found (point)))
+      (condition-case nil
+          (backward-up-list)
+        (error
+         ;; Outer sexp, can't go up any further. We didn't find any
+         ;; body form.
+         (throw 'found nil))))))
+
+(defun emr-el:let-start-pos ()
+  "Search upward form point to find the start position of
+the innermost let."
+  (let ((positions
+         (list
+          (emr-lisp-find-upwards 'let)
+          (emr-lisp-find-upwards 'let*)
+          (emr-lisp-find-upwards '-let)
+          (emr-lisp-find-upwards '-let*))))
+    (setq positions (-non-nil positions))
+    (when positions
+      (-max positions))))
+
+;; TODO: the example is redundant here.
+(defun emr-el-toggle-let* ()
+  "Toggle between let and let* in the enclosing let form.
+
+EXAMPLE:
+
+  (emr-el-toggle-let*)
+
+BEFORE:
+
+  (let* ((x 1))
+    (+| x 1))
+
+AFTER:
+
+  (let ((x 1))
+    (+ x 1))
+"
+  (interactive)
+  (save-excursion
+    (goto-char (emr-el:let-start-pos))
+    (forward-char 1)
+    (forward-sexp)
+    ;; TODO: reindent afterwards
+    (if (eq (char-before (point)) ?*)
+        (delete-char -1)
+      (insert "*"))))
 
 (defun emr-el:wrap-body-form-at-point-with-let ()
-  "Search upward for an enclosing LET statement. If one is not found,
-wrap the form with a let statement at a sensible place."
+  "Wrap the form with a let statement at a sensible place."
   (emr-el:goto-containing-body-form)
-  ;; Wrap with empty let statement.
-  (insert "(")
-  (save-excursion
+  (let ((start-pos (point)))
     (forward-sexp)
-    (insert ")"))
-  (insert "let ()\n  ")
+    (insert ")")
+    (goto-char start-pos))
+  (insert "(let ()\n  ")
   (emr-lisp-reindent-defun))
+
+;; https://github.com/Wilfred/emacs-refactor/issues/35
+(defun emr-el:add-let-binding (var val)
+  "Add a binding for symbol VAR assigned to VAL to the
+innermost let form at point.
+
+Ensures that VAR is inserted before point.
+
+VAL should be a string of elisp source code."
+  (-let* ((let-form-start (emr-el:let-start-pos))
+          ;; Read the whole let form.
+          ((let-keyword let-vars . _)
+           (save-excursion
+             (goto-char let-form-start)
+             (read (current-buffer))))
+          (vars-end
+           (save-excursion
+             (goto-char let-form-start)
+             ;; Step over opening paren.
+             (forward-char)
+             ;; Step over let keyword.
+             (forward-sexp)
+             ;; Step over the vars.
+             (forward-sexp)
+             (point))))
+    (save-excursion
+      (if (> (point) vars-end)
+          ;; We're extracting a let binding from the body, so we'll insert
+          ;; this new var after all the existing vars.
+          (progn
+            (goto-char vars-end)
+            (backward-char))
+        ;; We're extracting a new let binding from a value used for an
+        ;; existing let binding, so we'll insert before the current var.
+        (goto-char (nth 1 (syntax-ppss)))
+        ;; Move to the end of the previous sexp, if present.
+        (if (> (length let-vars) 1)
+            (progn
+              (backward-sexp)
+              (forward-sexp)))
+        ;; Convert let to let* if we only had a single binding.
+        (when (and (= (length let-vars) 1)
+                   (eq let-keyword 'let))
+          (emr-el-toggle-let*)))
+
+      (newline-and-indent)
+      (insert (format "(%s %s)" var val)))))
 
 ;;;###autoload
 (defun emr-el-extract-to-let (symbol)
@@ -850,51 +926,47 @@ wrap the form with a let statement at a sensible place."
   the current context (e.g. the enclosing `defun' or `lambda' form)."
   (interactive "*SVariable name: ")
   (atomic-change-group
-    (save-excursion
-      (let (did-wrap-form?)
+   (let (val-start-pos
+         val-end-pos
+         val)
 
-        ;; Wrap with a let-form if one does not exist.
-        ;;
-        ;; Redshank provides its own wrapping logic, but it wraps only the
-        ;; sexp it's extracting. Instead, we want the let form to be as close to the
-        ;; containing defun as possible.
-        (save-excursion
-          (unless (or (emr-lisp-find-upwards 'let)
-                      (emr-lisp-find-upwards 'let*))
-            (emr-el:wrap-body-form-at-point-with-let)
-            (setq did-wrap-form? t)))
+     ;; Get the position of the expression that will be the value
+     ;; for our extrcted var.
+     (if (use-region-p)
+         (progn
+           (setq val-start-pos (region-start))
+           (setq val-end-pos (region-end))
+           (deactivate-mark))
+       (save-excursion
+         (emr-lisp-back-to-open-round)
+         (setq val-start-pos (point))
+         (setq val-end-pos (progn (forward-sexp) (point)))))
 
-        ;; Extract the form.
-        ;;
-        ;; Redshank extracts by killing forward, so start from the beginning of
-        ;; the list or region.
-        (if (region-active-p)
-            (goto-char (region-beginning))
-          (emr-lisp-back-to-open-round))
-        (redshank-letify-form-up (symbol-name symbol))
+     (setq val
+           (buffer-substring-no-properties val-start-pos val-end-pos))
 
-        ;; Tidy let binding after insertion.
-        ;;
-        ;; Redshank leaves an extra newline when inserting into an empty
-        ;; let-form. Find that let-form and remove the extra newline.
-        (when did-wrap-form?
-          (goto-char (emr-lisp-find-upwards 'let))
-          (end-of-line)
-          (forward-char)
-          (join-line))))))
+     ;; Replace the expression with our new variable.
+     (goto-char val-start-pos)
+     (delete-region val-start-pos val-end-pos)
+     (insert (symbol-name symbol))
+
+     ;; If we're not inside a let, add one.
+     (save-excursion
+       (unless (emr-el:let-start-pos)
+         (emr-el:wrap-body-form-at-point-with-let)))
+
+     ;; Insert the new var in the let form.
+     (emr-el:add-let-binding symbol val))))
 
 ; ------------------
 
 (defun emr-el:goto-start-of-let-binding ()
   "Move to the opening paren of the let-expression at point.
   Otherwise move to the previous one in the current top level form."
-  (cl-flet ((max-safe (&rest ns) (apply 'max (--map (or it 0) ns))))
-
-    (-when-let (pos (max-safe (emr-lisp-find-upwards 'let)
-                              (emr-lisp-find-upwards 'let*)))
-      (when (< 0 pos)
-        (goto-char pos)
-        (point)))))
+  (-when-let (pos (emr-el:let-start-pos))
+    (when (< 0 pos)
+      (goto-char pos)
+      (point))))
 
 (defun emr-el:find-in-tree (elt tree)
   "Return non-nil if ELT is in TREE."
@@ -903,31 +975,77 @@ wrap the form with a let statement at a sensible place."
          (--reduce-from (or acc (emr-el:find-in-tree elt it))
                         nil tree))))
 
+(defun emr-el:point-sexp-index ()
+  "Return the position of point in the current sexp.
+
+For example:
+  (foo| foo) => 0
+  (foo fo|o) => 1"
+  (let ((init-pos (point))
+        (result 0)
+        sexp-start sexp-end)
+    (save-excursion
+      ;; Find the boundaries of the containing sexp.
+      (backward-up-list)
+      (setq sexp-start (point))
+
+      (forward-sexp)
+      (setq sexp-end (point))
+
+      ;; Move over the opening paren of the containing sexp.
+      (goto-char (1+ sexp-start))
+
+      ;; Move forward, counting subitems until we pass the original
+      ;; point position.
+      (while (and
+              (< (point) init-pos)
+              (< (point) sexp-end))
+        (forward-sexp)
+        (setq result (1+ result))))
+
+    ;; When we stop, we've gone past the original position, so we've
+    ;; overcounted by 1.
+    (max (1- result)
+         0)))
+
 (defun emr-el:looking-at-let-binding-symbol? ()
   "Non-nil if point is on a binding symbol in a let-binding form."
   (when (symbol-at-point)
-    (ignore-errors
-      (let ((maybe-binding-list
-             (save-excursion
-               (emr-lisp-back-to-open-round)
-               (list-at-point))))
-        (save-excursion
-          ;; Select binding list for the let expression.
-          (emr-el:goto-start-of-let-binding)
-          (let ((bindings (progn
-                            ;; Move inside let form.
-                            (forward-char 1)
-                            (emr-el:let-binding-list (list-at-point)))))
-            (equal maybe-binding-list bindings)))))))
+    (let* ((let-form
+            (save-excursion
+              (emr-el:goto-start-of-let-binding)
+              (read (current-buffer))))
+           (vars-sexp
+            (-second-item let-form))
+           (enclosing-form
+            (save-excursion
+              (ignore-errors
+                (backward-up-list 1)
+                (read (current-buffer)))))
+           (enclosing-form-2
+            (save-excursion
+              (ignore-errors
+                (backward-up-list 2)
+                (read (current-buffer))))))
+      (and let-form
+           (or
+            ;; If the immediately enclosing form is the vars form,
+            ;; then we were in a form (let (x y| z) ...).
+            (equal vars-sexp enclosing-form)
+            ;; If the next enclosing form is the vars form, we are in
+            ;; a form (let ((x| y)) ...). Ensure we're also at the
+            ;; var, not its value.
+            (and (equal vars-sexp enclosing-form-2)
+                 (zerop (emr-el:point-sexp-index))))))))
 
 (defun emr-el:let-bindings-recursively-depend? (elt bindings)
   "Non-nil if the given let bindings list has recursive dependency on ELT."
   (-when-let* ((b   (--first (equal elt (emr-el:first-atom it)) bindings))
                (pos (cl-position b bindings :test 'equal)))
     (-> (-split-at (1+ pos) bindings)
-      (cl-second)
-      (-flatten)
-      (-contains? elt))))
+        (cl-second)
+        (-flatten)
+        (-contains? elt))))
 
 (cl-defun emr-el:let-binding-is-used? (symbol (_let &optional bindings &rest body))
   "Non-nil if SYMBOL is used in the body or other bindings of the given let expression."
@@ -957,7 +1075,23 @@ bindings or body of the enclosing let expression."
 
 ;;;###autoload
 (defun emr-el-inline-let-variable ()
-  "Inline the let-bound variable at point."
+  "Inline the let-bound variable at point.
+
+EXAMPLE:
+
+  (emr-el-inline-let-variable)
+
+BEFORE:
+
+  (let ((x 1)
+        (y| 2))
+    (+ x y))
+
+AFTER:
+
+  (let ((x 1))
+    (+ x 2))
+"
   (interactive "*")
   (cl-assert (emr-el:looking-at-let-binding-symbol?))
   (save-excursion
@@ -979,7 +1113,7 @@ bindings or body of the enclosing let expression."
           (goto-char (point-min))
           ;; Replace occurences of SYM with VALUE.
           (while (search-forward-regexp
-                  (eval `(rx symbol-start (group-n 1 ,sym) symbol-end))
+                  (rx-to-string `(seq symbol-start (group-n 1 ,sym) symbol-end))
                   nil t)
             (unless (or (emr-looking-at-string?)
                         (emr-looking-at-comment?))
@@ -1101,13 +1235,13 @@ Replaces all usages in the current buffer."
             ;; the car of a list, or indirectly using funcall/apply. Handle
             ;; all these cases.
             (while (search-forward-regexp
-                    (eval `(rx "("
-                               ;; Optional use of apply/funcall.
-                               (? (or "apply" "funcall")
-                                  (+ (any space "\n" "\t"))
-                                  "'")
-                               ;; Usage of name.
-                               ,fname symbol-end))
+                    (rx-to-string `(seq "("
+                                        ;; Optional use of apply/funcall.
+                                        (? (or "apply" "funcall")
+                                           (+ (any space "\n" "\t"))
+                                           "'")
+                                        ;; Usage of name.
+                                        ,fname symbol-end))
                     nil t)
               ;; Move to start of the usage form.
               (search-backward "(")
@@ -1146,7 +1280,7 @@ the cdr is the usage form."
       (save-excursion
         (goto-char (point-min))
         (while (search-forward-regexp
-                (eval `(rx symbol-start ,(format "%s" sym) symbol-end))
+                (rx-to-string `(seq symbol-start ,(symbol-name sym) symbol-end))
                 nil t)
           (-when-let (form (list-at-point))
             (unless (equal definition-form form)
@@ -1180,8 +1314,8 @@ The result is a list of `emr-el-ref'."
       ;; This will search the buffer for known defun forms. As a special
       ;; cases, forms with a preceding autoload directive are ignored.
       (while (search-forward-regexp
-              (eval `(rx "(" (or ,@(-map 'symbol-name emr-el-definition-macro-names))
-                         symbol-end))
+              (rx-to-string `(seq "(" (or ,@(-map 'symbol-name emr-el-definition-macro-names))
+                                  symbol-end))
               nil t)
         (unless (or (emr-looking-at-string?)
                     (emr-looking-at-comment?)
@@ -1208,6 +1342,7 @@ The result is a list of `emr-el-ref'."
   (set (make-local-variable 'compilation-disable-input) t)
   (set (make-local-variable 'compilation-error-face) compilation-info-face))
 
+;; TODO: This is fooled by recursive functions.
 ;;;###autoload
 (defun emr-el-find-unused-definitions ()
   "Search the buffer for functions and variables that have no usages.
@@ -1264,6 +1399,11 @@ popup window."
 ; ------------------
 
 ;;;; EMR declarations
+
+(emr-declare-command 'emr-el-toggle-let*
+  :title "toggle let/let*"
+  :modes 'emacs-lisp-mode
+  :predicate #'emr-el:let-start-pos)
 
 (emr-declare-command 'emr-el-implement-function
   :title "implement function"
@@ -1342,18 +1482,24 @@ popup window."
                     (emr-el:let-bound-var-at-point-has-usages?))))
 
 (emr-declare-command 'emr-el-extract-autoload
-  :title "autoload"
+  :title "add autoload"
   :description "autoload"
   :modes 'emacs-lisp-mode
   :predicate (lambda ()
-               (and (not (emr-el:autoload-exists? (symbol-at-point) (buffer-string)))
-                    (not (emr-el:looking-at-definition?))
-                    (not (emr-el:variable-definition? (list-at-point)))
-                    (or (functionp (symbol-at-point))
-                        (emr-el:macro-boundp (symbol-at-point))))))
+               (let ((sym (symbol-at-point)))
+                 (and (not (emr-el:autoload-exists? sym (buffer-string)))
+                      (not (emr-el:looking-at-definition?))
+                      (not (emr-el:variable-definition? (list-at-point)))
+                      (or (functionp sym)
+                          (macrop sym))
+                      ;; Don't offer autoload if this function is
+                      ;; defined in the current file.
+                      (not (equal
+                            (cdr-safe (find-function-library sym))
+                            (buffer-file-name)))))))
 
 (emr-declare-command 'emr-el-insert-autoload-directive
-  :title "autoload"
+  :title "autoload cookie"
   :description "directive"
   :modes 'emacs-lisp-mode
   :predicate (lambda ()
@@ -1384,6 +1530,35 @@ popup window."
                (and (emr-el:looking-at-definition?)
                     (not (emr-el:autoload-directive-exsts-above-defun?))
                     (not (emr-el:def-find-usages (list-at-point))))))
+
+
+(defun emr-el:looking-at-symbol-p ()
+  "Is point looking at an unquoted symbol?"
+  (save-excursion
+    (-let (((_ _ _ in-string in-comment . _) (syntax-ppss))
+           (sym-bounds (bounds-of-thing-at-point 'symbol))
+           (sexp nil))
+      (when (and
+             (not in-string)
+             (not in-comment)
+             sym-bounds)
+        (goto-char (car sym-bounds))
+        (setq sexp (read (current-buffer)))
+
+        (and
+         (symbolp sexp)
+         (not (null sexp))
+         (not (keywordp sexp)))))))
+
+(defun emr-el:looking-at-local-var-p ()
+  "Is point looking at a symbol for a locally bound variable?"
+  (when (emr-el:looking-at-symbol-p)
+    (let ((sym (symbol-at-point))
+          form)
+      (save-excursion
+        (emr-el:beginning-of-defun)
+        (setq form (read (current-buffer)))
+        (memq sym (emr-el:bound-variables form))))))
 
 ;;;; Setup
 
