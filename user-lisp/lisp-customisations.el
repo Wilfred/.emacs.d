@@ -40,6 +40,9 @@ test with the same name."
       (unless (wh/was-compiled-p it)
         (byte-recompile-directory it 0)))))
 
+(use-package elisp-def
+  :diminish "")
+
 ;; I often end up looking up libraries.
 (global-set-key (kbd "C-c l") #'counsel-find-library)
 
