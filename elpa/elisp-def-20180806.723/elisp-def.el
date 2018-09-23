@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2018  Wilfred Hughes
 ;; Version: 1.1
-;; Package-Version: 20180410.224
+;; Package-Version: 20180806.723
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Keywords: lisp
@@ -133,13 +133,15 @@ This is the function _slot_ of SYM, so SYM may be a function or macro."
 
         ;; Based on `find-function-noselect'.
         (with-current-buffer buf
-          ;; If the symbol is defined outside the current range, widen, otherwise preserve narrowing.
+          ;; Temporarily widen to search the whole buffer.
           (save-restriction
             (widen)
             (setq pos
                   (if primitive-p
                       (cdr (find-function-C-source sym path nil))
                     (cdr (find-function-search-for-symbol sym nil path)))))
+          ;; If the definition was found outside of the currently
+          ;; narrowed region, widen.
           (when (and pos
                      (or (< pos (point-min))
                          (> pos (point-max))))
@@ -153,7 +155,51 @@ This is the function _slot_ of SYM, so SYM may be a function or macro."
                         edebug-info)]
           (setq buf (marker-buffer marker))
           (setq pos (marker-position marker))))))
+    (when (and buf (not pos))
+      (setq pos (elisp-def--find-by-macroexpanding buf sym t)))
     (list buf pos)))
+
+(defun elisp-def--tree-any-p (pred tree)
+  "Walk TREE, applying PRED to every subtree.
+Return t if PRED ever returns t."
+  (cond
+   ((null tree) nil)
+   ((funcall pred tree) t)
+   ((not (consp tree)) nil)
+   (t (or
+       (elisp-def--tree-any-p pred (car tree))
+       (elisp-def--tree-any-p pred (cdr tree))))))
+
+(defun elisp-def--find-by-macroexpanding (buf sym callable-p)
+  "Search BUF for the definition of SYM by macroexpanding
+interesting forms in BUF.
+
+Assumes SYM is a variable, not a function."
+  (catch 'found
+    (with-current-buffer buf
+      (save-excursion
+        (goto-char (point-min))
+        (condition-case nil
+            (while t
+              (let ((form (read (current-buffer)))
+                    (var-def-p
+                     (lambda (sexp)
+                       (and (eq (car-safe sexp) 'defvar)
+                            (eq (car-safe (cdr sexp)) sym))))
+                    (fn-def-p
+                     (lambda (sexp)
+                       ;; `defun' ultimately expands to `defalias'.
+                       (and (eq (car-safe sexp) 'defalias)
+                            (equal (car-safe (cdr sexp)) `(quote ,sym))))))
+                (setq form (elisp-def--macroexpand-try form))
+
+                (when (elisp-def--tree-any-p
+                       (if callable-p fn-def-p var-def-p)
+                       form)
+                  ;; `read' puts point at the end of the form, so go
+                  ;; back to the start.
+                  (throw 'found (scan-sexps (point) -1)))))
+          (end-of-file nil))))))
 
 (defun elisp-def--find-variable (sym)
   "Find the buffer and position where variable SYM is defined."
@@ -168,6 +214,10 @@ This is the function _slot_ of SYM, so SYM may be a function or macro."
       ;; get an error about not finding source. Try
       ;; `default-tab-width' against Emacs trunk.
       (error nil))
+    ;; If we found the containing buffer, but not the symbol, attempt
+    ;; to find it by macroexpanding interesting forms.
+    (when (and buf (not pos))
+      (setq pos (elisp-def--find-by-macroexpanding buf sym nil)))
     (list buf pos)))
 
 (defun elisp-def--defined-in (sym)
@@ -253,6 +303,19 @@ point."
         (setq end-pos (point)))
       (list start-pos end-pos))))
 
+(defun elisp-def--macroexpand-try (form)
+  "Try to fully macroexpand FORM.
+If it fails, attempt to partially macroexpand FORM."
+  (catch 'result
+    (ignore-errors
+      ;; Happy path: we can fully expand the form.
+      (throw 'result (macroexpand-all form)))
+    (ignore-errors
+      ;; Attempt one level of macroexpansion.
+      (throw 'result (macroexpand-1 form)))
+    ;; Fallback: just return the original form.
+    form))
+
 (defun elisp-def--namespace-at-point ()
   "Is the symbol at point a function/macro, a global variable, a
 quoted variable, or a let-bound variable?
@@ -274,7 +337,7 @@ quoted variables, because they aren't being used at point."
                       (read src)
                     (end-of-file nil)))
             ;; TODO: what if SYM disappears after expanding? E.g. inside rx.
-            (expanded-form (macroexpand-all form))
+            (expanded-form (elisp-def--macroexpand-try form))
             (use (elisp-def--use-position expanded-form placeholder)))
       ;; If it's being used as a variable, see if it's let-bound.
       (when (memq use (list 'variable 'string-or-comment))
@@ -286,6 +349,15 @@ quoted variables, because they aren't being used at point."
           (when (eq use 'string-or-comment)
             (setq use 'quoted))))
       use)))
+
+(defun elisp-def--proper-list-p (val)
+  "Is VAL a proper list?"
+  (if (fboundp 'proper-list-p)
+      ;; Function was added in Emacs master:
+      ;; http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=2fde6275b69fd113e78243790bf112bbdd2fe2bf
+      (with-no-warnings (proper-list-p val))
+    ;; Emacs 26 only had this function in ERT.
+    (with-no-warnings (ert--proper-list-p val))))
 
 (defun elisp-def--use-position (form sym &optional quoted)
   "Is SYM being used as a function, a global variable, a
@@ -340,7 +412,7 @@ Assumes FORM has been macro-expanded."
       (if quoted 'quoted 'function))
      ;; See if this is a quoted form that contains SYM.
      ((eq (car form) 'quote)
-      (if (ert--proper-list-p (cdr form))
+      (if (elisp-def--proper-list-p (cdr form))
           (--any (elisp-def--use-position it sym t) (cdr form))
         (elisp-def--use-position (cdr form) sym t)))
      ;; (cond (x 1) ((foo-p) 2))
@@ -351,7 +423,7 @@ Assumes FORM has been macro-expanded."
         (--any (elisp-def--use-position it sym quoted) expressions)))
      ;; Recurse on the form to see if any arguments contain SYM.
      (t
-      (if (ert--proper-list-p form)
+      (if (elisp-def--proper-list-p form)
           (--any (elisp-def--use-position it sym quoted) form)
         (or
          (elisp-def--use-position (car form) sym quoted)
@@ -523,7 +595,7 @@ for macro-expanding."
        ;; contains SYM. We know that it introduces no new bindings. It is
        ;; actually possible to introduce a global with `setq', but we
        ;; ignore that.
-       ((ert--proper-list-p form)
+       ((elisp-def--proper-list-p form)
         (--each form
           (-when-let (accum (elisp-def--bound-syms-1 it sym accum))
             (throw 'done accum))))))))
@@ -540,9 +612,11 @@ for macro-expanding."
 Ignores unquote-splicing punctuation."
   (let (start end)
     (save-excursion
-      (setq end (re-search-forward (rx symbol-end)))
+      (setq end (re-search-forward
+                 (rx (or symbol-end buffer-end))))
 
-      (setq start (re-search-backward (rx symbol-start)))
+      (setq start (re-search-backward
+                   (rx (or symbol-start buffer-start))))
       ;; See if we're looking at ,@foo and move over the @ if so.
       (condition-case nil
           (save-excursion
@@ -645,7 +719,7 @@ wrong place. This should be very rare."
                 (src (elisp-def--source-with-placeholder
                       start end placeholder))
                 (form (read src))
-                (expanded-form (macroexpand-all form))
+                (expanded-form (elisp-def--macroexpand-try form))
                 (bound-syms (elisp-def--bound-syms
                              expanded-form placeholder)))
           ;; If this enclosing form introduces a binding for the
@@ -754,6 +828,42 @@ Or for let-bound variables:
       ;; for many macros like `destructuring-bind'.
       (goto-char form-start))))
 
+(defun elisp-def--show-occurrence (sym)
+  "Go to and highlight SYM in the form after point.
+Point is placed on the first character of SYM.
+
+If SYM isn't present, use the most relevant symbol."
+  (let ((form-end-pos (scan-sexps (point) 1))
+        sym-end-pos)
+    (when
+        (re-search-forward
+         (rx-to-string `(seq symbol-start ,(symbol-name sym) symbol-end))
+         form-end-pos
+         t)
+      (setq sym-end-pos (point)))
+
+    ;; If we couldn't find the symbol, use the second symbol in the
+    ;; form. This is the best we can do when the symbol doesn't occur
+    ;; (e.g. a foo-mode-hook variable or a make-foo function from a
+    ;; struct).
+    (unless sym-end-pos
+      ;; Move past the opening paren.
+      (forward-char)
+      ;; Move past the first sexp.
+      (forward-sexp)
+      (forward-char)
+      ;; Move the second symbol.
+      (setq
+       sym-end-pos
+       (re-search-forward (rx symbol-end) form-end-pos t)))
+
+    ;; Put point on the first character of the symbol.
+    (goto-char (scan-sexps sym-end-pos -1))
+
+    ;; TODO: this doesn't work properly in c-mode buffers. It works for
+    ;; e.g. `point', but not for `re-search-forward'.
+    (elisp-def--flash-region (point) sym-end-pos)))
+
 ;;;###autoload
 (defun elisp-def ()
   "Go to the definition of the symbol at point."
@@ -813,20 +923,7 @@ Or for let-bound variables:
     (when (eq namespace 'bound)
       (elisp-def--go-to-bind-definition (point) init-pos))
 
-    ;; Move to the first occurrence of SYM after point.
-    (let (sym-end-pos)
-      (when
-          (re-search-forward
-           (rx-to-string `(seq symbol-start ,(symbol-name sym) symbol-end))
-           nil
-           t)
-        (setq sym-end-pos (point))
-        (backward-sexp))
-
-      (when sym-end-pos
-        ;; TODO: this doesn't work properly in c-mode buffers. It
-        ;; works for e.g. `point', but not for `re-search-forward'.
-        (elisp-def--flash-region (point) sym-end-pos)))))
+    (elisp-def--show-occurrence sym)))
 
 (defvar elisp-def-mode-map
   (let ((map (make-sparse-keymap)))
