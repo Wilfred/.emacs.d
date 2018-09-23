@@ -22,6 +22,7 @@
         jump-char-process-char
         kill-or-delete-region
         kill-visual-line
+        lispy-backward-kill-word
         lispy-braces
         lispy-brackets
         lispy-delete
