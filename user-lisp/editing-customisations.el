@@ -397,6 +397,7 @@ a symmetrically-encrypted GPG file. Require explict saving in this case."
         (t
          (insert (file-relative-name filename)))))
 
+(require 'bool-flip)
 (global-set-key (kbd "C-c t") #'bool-flip-do-flip)
 
 ;; http://stackoverflow.com/a/4459159/509706
