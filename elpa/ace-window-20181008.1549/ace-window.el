@@ -5,7 +5,7 @@
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 ;; Maintainer: Oleh Krehel <ohwoeowho@gmail.com>
 ;; URL: https://github.com/abo-abo/ace-window
-;; Package-Version: 20180607.1223
+;; Package-Version: 20181008.1549
 ;; Version: 0.9.0
 ;; Package-Requires: ((avy "0.2.0"))
 ;; Keywords: window, location
@@ -83,6 +83,15 @@
           (const :tag "visible frames" visible)
           (const :tag "global" global)
           (const :tag "frame" frame)))
+
+(defcustom aw-translate-char-function #'identity
+  "Function to translate user input key into another key.
+For example, to make SPC do the same as ?a, use
+\(lambda (c) (if (= c 32) ?a c))."
+  :type '(choice
+          (const :tag "Off" #'identity)
+          (const :tag "Ignore Case" #'downcase)
+          (function :tag "Custom")))
 
 (defcustom aw-minibuffer-flag nil
   "When non-nil, also display `ace-window-mode' string in the minibuffer when ace-window is active."
@@ -488,7 +497,7 @@ Amend MODE-LINE to the mode line for the duration of the selection."
                    (remove-hook 'post-command-hook 'helm--maybe-update-keymap)
                    (unwind-protect
                         (let* ((avy-handler-function aw-dispatch-function)
-                               (avy-translate-char-function #'identity)
+                               (avy-translate-char-function aw-translate-char-function)
                                (res (avy-read (avy-tree candidate-list aw-keys)
                                               #'aw--lead-overlay
                                               #'avy--remove-leading-chars)))
@@ -560,8 +569,13 @@ window."
 ;;* Utility
 (unless (fboundp 'frame-position)
   (defun frame-position (&optional frame)
-    (cons (frame-parameter frame 'left)
-          (frame-parameter frame 'top))))
+    (let ((pl (frame-parameter frame 'left))
+          (pt (frame-parameter frame 'top)))
+      (when (consp pl)
+        (setq pl (eval pl)))
+      (when (consp pt)
+        (setq pt (eval pt)))
+      (cons pl pt))))
 
 (defun aw-window< (wnd1 wnd2)
   "Return true if WND1 is less than WND2.
