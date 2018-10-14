@@ -24,21 +24,27 @@
 
 ;;; Code:
 
-(if (version< emacs-version "24.4")
+(if (version< emacs-version "26.1")
     (progn
-      (defsubst string-trim-left (string)
-        "Remove leading whitespace from STRING."
-        (if (string-match "\\`[ \t\n\r]+" string)
+      (defsubst string-trim-left (string &optional regexp)
+        "Trim STRING of leading string matching REGEXP.
+
+REGEXP defaults to \"[ \\t\\n\\r]+\"."
+        (if (string-match (concat "\\`\\(?:" (or regexp "[ \t\n\r]+") "\\)") string)
             (replace-match "" t t string)
           string))
-      (defsubst string-trim-right (string)
-        "Remove trailing whitespace from STRING."
-        (if (string-match "[ \t\n\r]+\\'" string)
+      (defsubst string-trim-right (string &optional regexp)
+        "Trim STRING of trailing string matching REGEXP.
+
+REGEXP defaults to  \"[ \\t\\n\\r]+\"."
+        (if (string-match (concat "\\(?:" (or regexp "[ \t\n\r]+") "\\)\\'") string)
             (replace-match "" t t string)
           string))
-      (defsubst string-trim (string)
-        "Remove leading and trailing whitespace from STRING."
-        (string-trim-left (string-trim-right string))))
+      (defsubst string-trim (string &optional trim-left trim-right)
+        "Trim STRING of leading and trailing strings matching TRIM-LEFT and TRIM-RIGHT.
+
+TRIM-LEFT and TRIM-RIGHT default to \"[ \\t\\n\\r]+\"."
+        (string-trim-left (string-trim-right string trim-right) trim-left)))
   (require 'subr-x))
 
 (defgroup lispy-faces nil
@@ -101,7 +107,8 @@ The caller of `lispy--show' might use a substitute e.g. `describe-function'."
   :group 'lispy)
 
 (defvar lispy-elisp-modes
-  '(emacs-lisp-mode lisp-interaction-mode eltex-mode minibuffer-inactive-mode)
+  '(emacs-lisp-mode lisp-interaction-mode eltex-mode minibuffer-inactive-mode
+                    suggest-mode)
   "Modes for which `lispy--eval-elisp' and related functions are appropriate.")
 
 (defvar lispy-clojure-modes
@@ -124,6 +131,8 @@ The caller of `lispy--show' might use a substitute e.g. `describe-function'."
 (declare-function lispy--lisp-describe "le-lisp")
 (declare-function lispy--back-to-paren "lispy")
 (declare-function lispy--current-function "lispy")
+(declare-function lispy--in-comment-p "lispy")
+(declare-function lispy--bounds-string "lispy")
 
 ;; ——— Commands ————————————————————————————————————————————————————————————————
 (defun lispy--back-to-python-function ()
@@ -182,19 +191,6 @@ The caller of `lispy--show' might use a substitute e.g. `describe-function'."
 
             (t (error "%s isn't supported currently" major-mode))))))
 
-(defun lispy--delete-help-windows ()
-  "Delete help windows.
-Return t if at least one was deleted."
-  (let (deleted)
-    (mapc (lambda (window)
-            (when (eq (with-current-buffer (window-buffer window)
-                        major-mode)
-                      'help-mode)
-              (delete-window window)
-              (setq deleted t)))
-          (window-list))
-    deleted))
-
 (defvar lispy--di-window-config nil
   "Store window configuration before `lispy-describe-inline'.")
 
@@ -204,7 +200,9 @@ Return t if at least one was deleted."
     (cond ((region-active-p)
            (goto-char (region-beginning)))
           ((eq major-mode 'python-mode)
-           (goto-char (beginning-of-thing 'sexp)))
+           (condition-case nil
+               (goto-char (beginning-of-thing 'sexp))
+             (error (up-list -1))))
           (t
            (lispy--back-to-paren)))
     (point)))
@@ -242,28 +240,15 @@ Return t if at least one was deleted."
   "Get the docstring for SYM."
   (cond
     ((memq major-mode lispy-elisp-modes)
-     (let (dc)
-       (setq sym (intern-soft sym))
-       (cond ((fboundp sym)
-              (if (lispy--show-fits-p
-                   (setq dc (or (documentation sym)
-                                "undocumented")))
-                  dc
-                (setq lispy--di-window-config (current-window-configuration))
-                (save-selected-window
-                  (describe-function sym))
-                nil))
-             ((boundp sym)
-              (if (lispy--show-fits-p
-                   (setq dc (or (documentation-property
-                                 sym 'variable-documentation)
-                                "undocumented")))
-                  dc
-                (setq lispy--di-window-config (current-window-configuration))
-                (save-selected-window
-                  (describe-variable sym))
-                nil))
-             (t "unbound"))))
+     (setq sym (intern-soft sym))
+     (cond ((fboundp sym)
+            (or (documentation sym)
+                "undocumented"))
+           ((boundp sym)
+            (or (documentation-property
+                 sym 'variable-documentation)
+                "undocumented"))
+           (t "unbound")))
     ((or (memq major-mode lispy-clojure-modes)
          (memq major-mode '(cider-repl-mode)))
      (require 'le-clojure)
@@ -291,18 +276,21 @@ Return t if at least one was deleted."
      (require 'le-lisp)
      (lispy--lisp-describe sym))
     ((eq major-mode 'python-mode)
-     (semantic-mode 1)
-     (let ((sym (semantic-ctxt-current-symbol)))
-       (if sym
-           (progn
-             (setq sym (mapconcat #'identity sym "."))
-             (require 'le-python)
-             (or
-              (lispy--python-docstring sym)
-              (progn
-                (message "no doc: %s" sym)
-                nil)))
-         (error "The point is not on a symbol"))))
+     (require 'le-python)
+     (if sym
+         (lispy--python-docstring sym)
+       (require 'semantic)
+       (semantic-mode 1)
+       (let ((sym (semantic-ctxt-current-symbol)))
+         (if sym
+             (progn
+               (setq sym (mapconcat #'identity sym "."))
+               (or
+                (lispy--python-docstring sym)
+                (progn
+                  (message "no doc: %s" sym)
+                  nil)))
+           (error "The point is not on a symbol")))))
     (t
      (format "%s isn't supported currently" major-mode))))
 
@@ -311,14 +299,12 @@ Return t if at least one was deleted."
 (defun lispy-describe-inline ()
   "Display documentation for `lispy--current-function' inline."
   (interactive)
-  (if (cl-some (lambda (window)
-                 (eq (with-current-buffer (window-buffer window)
-                       major-mode)
-                     'help-mode))
-               (window-list))
-      (if (window-configuration-p lispy--di-window-config)
-          (set-window-configuration lispy--di-window-config)
-        (lispy--delete-help-windows))
+  (if (cl-some
+       (lambda (window)
+         (equal (buffer-name (window-buffer window)) "*lispy-help*"))
+       (window-list))
+      (when (window-configuration-p lispy--di-window-config)
+        (set-window-configuration lispy--di-window-config))
     (lispy--describe-inline)))
 
 (declare-function lispy--python-docstring "le-python")
