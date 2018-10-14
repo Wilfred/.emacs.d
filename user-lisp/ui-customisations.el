@@ -137,7 +137,8 @@ Defaults to `t'.")
 (use-package ace-window
   :config
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
-  (setq aw-char-position 'left))
+  (setq aw-char-position 'left)
+  (setq aw-translate-char-function #'downcase))
 
 (global-set-key (kbd "C-x o") #'ace-window)
 
