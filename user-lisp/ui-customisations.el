@@ -34,6 +34,13 @@
 Defaults to `t'.")
 (make-variable-buffer-local 'use-hl-line)
 
+(use-package hl-line
+  :config
+  ;; Only highlight the active line in the current window. This is
+  ;; useful when the frame is split but the same buffer is visible in
+  ;; multiple places.
+  (setq hl-line-sticky-flag nil))
+
 (defun wh/activate-hl-line ()
   "Enable `hl-line-mode' unless `use-hl-line` says otherwise."
   (when (and use-hl-line (not (active-minibuffer-window)))
