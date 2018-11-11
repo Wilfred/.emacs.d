@@ -2,6 +2,15 @@
 
 (setq load-prefer-newer t)
 
+(defun wh/trace-fn-at-point ()
+  (interactive)
+  (save-excursion
+    (beginning-of-defun)
+    (let* ((form (read (current-buffer)))
+           (sym (nth 1 form)))
+      (trace-function sym)
+      (message "Tracing: %S" sym))))
+
 (use-package elisp-mode
   :config
   (defun wh/run-ert-test ()
