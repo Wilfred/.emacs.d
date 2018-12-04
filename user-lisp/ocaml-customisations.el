@@ -11,6 +11,9 @@
   (define-key merlin-mode-map (kbd "M-.") #'merlin-locate)
   (define-key merlin-mode-map (kbd "M-,") #'merlin-pop-stack)
 
+  ;; Don't change window when jumping to a definition.
+  (setq merlin-locate-in-new-window 'never)
+
   ;; Show types in eldoc, and highlight other references to the same
   ;; symbol.
   (add-hook 'merlin-mode-hook #'merlin-eldoc-setup)
