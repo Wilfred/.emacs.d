@@ -4,10 +4,10 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; URL: https://github.com/Wilfred/deadgrep
-;; Package-Version: 20181001.345
+;; Package-Version: 20181021.1349
 ;; Keywords: tools
 ;; Version: 0.7
-;; Package-Requires: ((emacs "25.1") (dash "2.12.0") (s "1.11.0") (spinner "1.7.3") (projectile "0.14.0"))
+;; Package-Requires: ((emacs "25.1") (dash "2.12.0") (s "1.11.0") (spinner "1.7.3"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -36,7 +36,6 @@
 (require 's)
 (require 'dash)
 (require 'spinner)
-(require 'projectile)
 
 (defgroup deadgrep nil
   "A powerful text search UI using ripgrep."
@@ -258,7 +257,10 @@ We save the last line here, in case we need to append more text to it.")
   (match-string 1 s))
 
 (defconst deadgrep--filename-regexp
-  (rx bos "\x1b[0m\x1b[3" (or "5" "6") "m" (group (+? anything)) "\x1b[")
+  (rx bos "\x1b[0m\x1b[3" (or "5" "6") "m"
+      (? "./")
+      (group (+? anything))
+      "\x1b[")
   "Extracts the filename from a ripgrep line with ANSI color sequences.
 We use the color sequences to extract the filename exactly, even
 if the path contains colons.")
@@ -373,7 +375,11 @@ with Emacs text properties."
 
 (defun deadgrep--type-list ()
   "Query the rg executable for available file types."
-  (let* ((output (shell-command-to-string (format "%s --type-list" deadgrep-executable)))
+  (let* ((output (with-output-to-string
+                   (with-current-buffer standard-output
+                     (process-file-shell-command
+                      (format "%s --type-list" deadgrep-executable)
+                      nil '(t nil)))))
          (lines (s-lines (s-trim output)))
          (types-and-globs
           (--map
@@ -1019,7 +1025,7 @@ This will either be a button, a filename, or a search result."
                    search-term search-type case
                    deadgrep--context))
          (process
-          (start-process-shell-command
+          (start-file-process-shell-command
            (format "rg %s" search-term)
            (current-buffer)
            command)))
@@ -1098,8 +1104,9 @@ for a string, offering the current word as a default."
 
 (defun deadgrep--project-root ()
   "Guess the project root of the given FILE-PATH."
-  (let ((projectile-require-project-root nil))
-    (projectile-project-root)))
+  (-if-let (project (project-current))
+      (cdr project)
+    default-directory))
 
 (defun deadgrep--write-postponed ()
   (let* ((inhibit-read-only t)
@@ -1196,6 +1203,7 @@ This is intended for use with `next-error-function', which see."
      (format "Platform: %s\n" system-type)
      (format "Emacs version: %s\n" emacs-version)
      (format "Command: %s\n" command)
+     (format "default-directory: %S\n" default-directory)
      (format "\nInitial output from ripgrep:\n%S" output)
      (format "\n\nPlease file bugs at https://github.com/Wilfred/deadgrep/issues/new"))))
 
