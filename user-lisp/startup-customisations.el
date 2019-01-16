@@ -28,15 +28,24 @@
   (goto-char (point-min))
   (fill-paragraph))
 
-; create a separate scratch buffer for elisp experimentation
+;; create a separate scratch buffer for elisp experimentation
 (with-current-buffer (get-buffer-create "*scratch-elisp*")
   (emacs-lisp-mode))
 
-; create a scratch Python buffer too
+;; create a scratch Python buffer too
 (with-current-buffer (get-buffer-create "*scratch-python*")
   (python-mode))
 
-; start in the scratch buffer
+;; create a scratch Python buffer too
+(with-current-buffer (get-buffer-create "*scratch-hack*")
+  ;; hack-mode may not be installed.
+  (ignore-errors (hack-mode)))
+
+(with-current-buffer (get-buffer-create "*scratch-ocaml*")
+  ;; hack-mode may not be installed.
+  (tuareg-mode))
+
+;; start in the scratch buffer
 (switch-to-buffer  (get-buffer-create "*scratch*"))
 
 (provide 'startup-customisations)
