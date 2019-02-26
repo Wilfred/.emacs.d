@@ -16,7 +16,9 @@
 (setq tags-case-fold-search nil)
 
 (global-set-key (kbd "M-.") #'xref-find-definitions)
-(global-set-key (kbd "C-c M-.") #'xref-find-definitions-other-window)
 (global-set-key (kbd "M-,") #'xref-pop-marker-stack)
+
+(global-set-key (kbd "C-c M-.") #'dumb-jump-go)
+(global-set-key (kbd "C-c M-,") #'dumb-jump-back)
 
 (provide 'tags-customisations)
