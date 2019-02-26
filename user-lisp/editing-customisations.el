@@ -223,6 +223,7 @@ copy to the clipboard."
 ;; Delete the whole line, without adding to the kill ring.
 ;; If the region is active, delete that instead.
 (global-set-key (kbd "C-S-k") #'whole-line-or-region-delete)
+(global-set-key (kbd "C-c k") #'whole-line-or-region-delete)
 
 ;; Copy the whole line to the kill ring.
 (global-set-key (kbd "C-c C-k")
