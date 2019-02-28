@@ -43,8 +43,10 @@
 (diff-hl-flydiff-mode)
 
 ;; Set up keybindings for moving between changes in a file.
+(global-set-key (kbd "C-c n") #'diff-hl-next-hunk)
 (global-set-key (kbd "C-.") #'diff-hl-next-hunk)
 (global-set-key (kbd "C-,") #'diff-hl-previous-hunk)
+(global-set-key (kbd "C-c p") #'diff-hl-previous-hunk)
 ;; Remove the old keybindings, so smex suggests the keybindings above.
 (define-key diff-hl-command-map (kbd "[") nil)
 (define-key diff-hl-command-map (kbd "]") nil)
