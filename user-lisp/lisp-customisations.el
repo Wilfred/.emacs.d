@@ -2,7 +2,8 @@
 
 (setq load-prefer-newer t)
 
-(defun wh/trace-fn-at-point ()
+(defun wh/trace-enclosing-fn-at-point ()
+  "Mark the top-level defun enclosing point for tracing."
   (interactive)
   (save-excursion
     (beginning-of-defun)
@@ -10,6 +11,13 @@
            (sym (nth 1 form)))
       (trace-function sym)
       (message "Tracing: %S" sym))))
+
+(defun wh/trace-symbol-at-point ()
+  "Mark the symbol at point for tracing."
+  (interactive)
+  (let* ((sym (symbol-at-point)))
+    (trace-function sym)
+    (message "Tracing: %S" sym)))
 
 (use-package elisp-mode
   :config
