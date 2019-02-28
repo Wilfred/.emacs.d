@@ -388,7 +388,10 @@ to type. I use super (usually the windows key) keybindings too (so
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (define-key smartparens-mode-map (kbd "s-f") #'sp-forward-sexp)
+  (define-key smartparens-mode-map (kbd "C-M-f") #'sp-forward-sexp)
+
   (define-key smartparens-mode-map (kbd "s-b") #'sp-backward-sexp)
+  (define-key smartparens-mode-map (kbd "C-M-b") #'sp-backward-sexp)
 
   (define-key smartparens-mode-map (kbd "s-u") #'sp-backward-up-sexp)
 #+END_SRC
