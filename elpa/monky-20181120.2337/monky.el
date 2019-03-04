@@ -484,7 +484,9 @@ refreshes buffers."
                 (with-current-buffer buffer
                   (bury-buffer))))
       (setq default-directory dir)
-      (let ((monky-cmd-process (monky-start-process "monky-hg" buf "sh" "-c" "hg --config extensions.mq= serve --cmdserver pipe 2> /dev/null")))
+      (let ((monky-cmd-process (monky-start-process
+                                "monky-hg" buf "sh" "-c"
+                                (format "%s --config extensions.mq= serve --cmdserver pipe 2> /dev/null" monky-hg-executable))))
         (set-process-coding-system monky-cmd-process 'no-conversion 'no-conversion)
         (set-process-sentinel monky-cmd-process #'monky-cmdserver-sentinel)
         (setq monky-cmd-hello-message
@@ -589,7 +591,7 @@ refreshes buffers."
 
 (defun monky-process-file (&rest args)
   "Same as `process-file' in the current hg environment.
-This function either call `monky-process-file-cmdserver' or
+This function either calls `monky-cmdserver-process-file' or
 `monky-process-file-single' depending on whether the hg
 command-server should be used."
   (apply (cond
@@ -699,6 +701,7 @@ FUNC should leave point at the end of the modified region"
     (define-key map (kbd ":") 'monky-hg-command)
     (define-key map (kbd "l l") 'monky-log-current-branch)
     (define-key map (kbd "l a") 'monky-log-all)
+    (define-key map (kbd "l r") 'monky-log-revset)
     (define-key map (kbd "b") 'monky-branches)
     (define-key map (kbd "Q") 'monky-queue)
     (define-key map (kbd "q") 'monky-quit-window)
@@ -925,9 +928,8 @@ CMD is an external command that will be run with ARGS as arguments"
                             (goto-char (point-min))
                             (funcall washer)
                             (goto-char (point-max)))))))
-      (if (= body-beg (point))
-          (monky-cancel-section section)
-        (insert "\n"))
+      (when (= body-beg (point))
+        (monky-cancel-section section))
       section)))
 
 (defun monky-cancel-section (section)
@@ -1210,7 +1212,8 @@ IF FLAG-OR-FUNC is a Boolean value, the section will be hidden if its true, show
         (message msg)))
     (when (not successp)
       (let ((msg (monky-abort-message (process-buffer process))))
-        (and msg (message msg))))
+        (when msg
+          (message msg))))
     (setq monky-process nil)
     (monky-set-mode-line-process nil)
     (if (buffer-live-p monky-process-client-buffer)
@@ -1788,11 +1791,11 @@ before the last command."
 
 (defun monky-get-tramp-root-dir ()
   (let ((root (monky-hg-string "root"))
-	(tramp-path (tramp-dissect-file-name default-directory)))
+        (tramp-path (vconcat (tramp-dissect-file-name default-directory))))
     (if root
-	(progn (aset tramp-path 3 root)
-	       (concat (apply 'tramp-make-tramp-file-name (append tramp-path ()))
-		       "/"))
+        (progn (aset tramp-path 6 root)
+               (concat (apply 'tramp-make-tramp-file-name (cdr (append tramp-path nil)))
+                       "/"))
       (user-error "Not inside a hg repo"))))
 
 (defun monky-find-buffer (submode &optional dir)
@@ -1893,7 +1896,8 @@ before the last command."
    (monky-with-wash-status status file
      (monky-with-section file 'file
        (monky-set-section-info file)
-       (insert "\t" file "\n")))))
+       (insert file "\n"))
+     (insert "\n"))))
 
 ;; Hunk
 
@@ -1907,8 +1911,6 @@ before the last command."
   (save-excursion
     (beginning-of-line)
     (let ((line (line-number-at-pos)))
-      (if (looking-at "-")
-          (error "Can't visit removed lines"))
       (goto-char (monky-section-beginning hunk))
       (if (not (looking-at "@@+ .* \\+\\([0-9]+\\),[0-9]+ @@+"))
           (error "Hunk header not found"))
@@ -2241,6 +2243,10 @@ PROPERTIES is the arguments for the function `propertize'."
   (interactive)
   (monky-log nil))
 
+(defun monky-log-revset (revset)
+  (interactive  "sRevset: ")
+  (monky-log revset))
+
 (defun monky-log (revs)
   (monky-with-process
     (let ((topdir (monky-get-root-dir)))
@@ -2258,7 +2264,7 @@ PROPERTIES is the arguments for the function `propertize'."
    "<tags>\\(.?*\\)</tags>"             ; 4. tags
    "<bookmarks>\\(.?*\\)</bookmarks>"   ; 5. bookmarks
    "<phase>\\(.?*\\)</phase>"           ; 6. phase
-   "<author>\\([^ ]+?\\) .*?</author>"  ; 7. author
+   "<author>\\(.*?\\)</author>"         ; 7. author
    "<monky-date>\\([0-9]+\\).?*</monky-date>" ; 8. date
    "\\(.*\\)$"                          ; 9. msg
    ))
@@ -2284,6 +2290,24 @@ Example:
 (defvar monky-log-count ()
   "Internal var used to count the number of logs actually added in a buffer.")
 
+(defun monky--author-name (s)
+  "Extract the name from a Mercurial author string."
+  (save-match-data
+    (cond
+     ((string-match
+       ;; If S contains a space, take the first word.
+       (rx (group (1+ (not space)))
+           space)
+       s)
+      (match-string 1 s))
+     ((string-match
+       ;; If S is just an email, take the username.
+       (rx (group (1+ (not (any "@"))))
+           "@")
+       s)
+      (match-string 1 s))
+     (t s))))
+
 (defun monky-wash-log-line ()
   (if (looking-at monky-log-graph-re)
       (let ((width (window-total-width))
@@ -2293,7 +2317,7 @@ Example:
             (tags (match-string 4))
             (bookmarks (match-string 5))
             (phase (match-string 6))
-            (author (match-string 7))
+            (author (monky--author-name (match-string 7)))
             (date (format-time-string "%Y-%m-%d" (seconds-to-time (string-to-number (match-string 8)))))
             (msg (match-string 9)))
         (monky-delete-line)
@@ -2434,14 +2458,22 @@ With a non numeric prefix ARG, show all entries"
   (interactive)
   (monky-with-process
     (let ((file-name (buffer-file-name))
-	  (topdir (monky-get-root-dir)))
+	  (topdir (monky-get-root-dir))
+          (line-num (line-number-at-pos))
+          (column (current-column)))
       (pop-to-buffer
        (format "*monky-blame: %s*"
                (file-name-nondirectory buffer-file-name)))
       (monky-mode-init topdir 'blame #'monky-refresh-blame-buffer file-name)
-      (monky-blame-mode t))))
-
-
+      (monky-blame-mode t)
+      ;; Put point on the same line number as the original file.
+      (forward-line (1- line-num))
+      (while (and (not (looking-at ":")) (not (eolp)))
+        (forward-char))
+      ;; Step over the blame information columns.
+      (forward-char (length ":  "))
+      ;; Put point at the same column as the original file.
+      (forward-char column))))
 
 ;;; Commit mode
 
@@ -2491,13 +2523,16 @@ With a non numeric prefix ARG, show all entries"
 (defun monky-refresh-commit-buffer (commit)
   (monky-create-buffer-sections
     (monky-hg-section nil nil
-                      'monky-wash-commit
+                      #'monky-wash-commit
                       "-v"
                       "log"
+                      "--stat"
                       "--patch"
                       "--rev" commit)))
 
 (defun monky-wash-commit ()
+  (save-excursion
+    (monky-wash-parent))
   (let ((case-fold-search nil))
    (while (and (not (eobp)) (not (looking-at "^diff ")) )
      (forward-line))
@@ -3092,9 +3127,11 @@ With a non numeric prefix ARG, show all entries"
 (defun monky-log-edit ()
   "Bring up a buffer to allow editing of commit messages."
   (interactive)
-  (if (not (or monky-staged-files (monky-merge-p)))
-      (user-error "Nothing staged")
-    (monky-pop-to-log-edit 'commit)))
+  (when (not (or monky-staged-files (monky-merge-p)))
+    (if (y-or-n-p "Nothing staged. Stage and commit all changes? ")
+        (monky-stage-all)
+      (user-error "Nothing staged")))
+  (monky-pop-to-log-edit 'commit))
 
 (defun monky-commit-amend ()
   "Amends previous commit.
