@@ -11,6 +11,7 @@
 
 (require 'merlin)
 (require 'company)
+(require 'cl-lib)
 
 ;; (require 'merlin-company) should be enough to get merlin to work within
 ;; company.
@@ -85,12 +86,12 @@
     (interactive (list 'interactive))
     (when merlin-mode
       (case command
-        (interactive (company-begin-backend 'company-my-backend))
+        (interactive (company-begin-backend 'merlin-company-backend))
         (prefix
          (let* ((bounds (merlin/completion-bounds))
                 (result (merlin/buffer-substring (car bounds) (cdr bounds))))
            (when (and (boundp 'company-candidates-cache)
-                      (or (string-match "\\.$" result)
+                      (or (string-match-p "\\.$" result)
                           (member '("" "") company-candidates-cache)))
              ;; for some reason, company doesn't always clear its cache
              (setq company-candidates-cache nil))
@@ -109,13 +110,13 @@
                  (cons filename linum))))))
         (candidates
          (let ((prefix (merlin/completion-prefix arg)))
-           (mapcar #'(lambda (x)
-                       (propertize (merlin/completion-entry-text prefix x)
-                                   'merlin-compl-type
-                                    (merlin/completion-entry-short-description x)
-                                   'merlin-arg-type (cdr (assoc 'argument_type x))
-                                   'merlin-compl-doc (cdr (assoc 'info x))))
-                   (merlin/complete arg))))
+           (cl-loop for x in (merlin/complete arg)
+                    collect
+                    (propertize (merlin/completion-entry-text prefix x)
+                                'merlin-compl-type
+                                (merlin/completion-entry-short-description x)
+                                'merlin-arg-type (cdr (assoc 'argument_type x))
+                                'merlin-compl-doc (cdr (assoc 'info x))))))
         (post-completion
          (let ((minibuffer-message-timeout nil))
            (minibuffer-message "%s : %s" arg (merlin-company--get-candidate-type arg))))
