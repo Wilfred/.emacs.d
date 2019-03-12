@@ -80,7 +80,7 @@
                " (successive calls will expand aliases)"))
       (t default))))
 
-(defun merlin-company-in-comment-or-string-p ()
+(defun merlin-company--in-comment-or-string-p ()
   "Return non-nil if point is in a comment or string."
   (let ((state (syntax-ppss)))
     (or (nth 3 state) (nth 4 state))))
