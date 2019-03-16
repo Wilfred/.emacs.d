@@ -3,8 +3,8 @@
 ;; Copyright (C) 2012-2015 Magnar Sveen
 
 ;; Author: Magnar Sveen <magnars@gmail.com>
-;; Version: 1.10.0
-;; Package-Version: 20160711.525
+;; Version: 1.12.0
+;; Package-Version: 20180406.808
 ;; Keywords: strings
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -28,26 +28,34 @@
 
 ;;; Code:
 
-(require 'ucs-normalize)
+;; Silence byte-compiler
+(defvar ucs-normalize-combining-chars)  ; Defined in `ucs-normalize'
+(autoload 'slot-value "eieio")
 
 (defun s-trim-left (s)
   "Remove whitespace at the beginning of S."
-  (if (string-match "\\`[ \t\n\r]+" s)
-      (replace-match "" t t s)
-    s))
+  (declare (pure t) (side-effect-free t))
+  (save-match-data
+    (if (string-match "\\`[ \t\n\r]+" s)
+        (replace-match "" t t s)
+      s)))
 
 (defun s-trim-right (s)
   "Remove whitespace at the end of S."
-  (if (string-match "[ \t\n\r]+\\'" s)
-      (replace-match "" t t s)
-    s))
+  (save-match-data
+    (declare (pure t) (side-effect-free t))
+    (if (string-match "[ \t\n\r]+\\'" s)
+        (replace-match "" t t s)
+      s)))
 
 (defun s-trim (s)
   "Remove whitespace at the beginning and end of S."
+  (declare (pure t) (side-effect-free t))
   (s-trim-left (s-trim-right s)))
 
 (defun s-collapse-whitespace (s)
   "Convert all adjacent whitespace characters to a single space."
+  (declare (pure t) (side-effect-free t))
   (replace-regexp-in-string "[ \t\n\r]+" " " s))
 
 (defun s-split (separator s &optional omit-nulls)
@@ -55,7 +63,9 @@
 If OMIT-NULLS is non-nil, zero-length substrings are omitted.
 
 This is a simple wrapper around the built-in `split-string'."
-  (split-string s separator omit-nulls))
+  (declare (side-effect-free t))
+  (save-match-data
+    (split-string s separator omit-nulls)))
 
 (defun s-split-up-to (separator s n &optional omit-nulls)
   "Split S up to N times into substrings bounded by matches for regexp SEPARATOR.
@@ -63,6 +73,7 @@ This is a simple wrapper around the built-in `split-string'."
 If OMIT-NULLS is non-nil, zero-length substrings are omitted.
 
 See also `s-split'."
+  (declare (side-effect-free t))
   (save-match-data
     (let ((op 0)
           (r nil))
@@ -85,26 +96,32 @@ See also `s-split'."
 
 (defun s-lines (s)
   "Splits S into a list of strings on newline characters."
+  (declare (pure t) (side-effect-free t))
   (s-split "\\(\r\n\\|[\n\r]\\)" s))
 
 (defun s-join (separator strings)
   "Join all the strings in STRINGS with SEPARATOR in between."
+  (declare (pure t) (side-effect-free t))
   (mapconcat 'identity strings separator))
 
 (defun s-concat (&rest strings)
   "Join all the string arguments into one string."
+  (declare (pure t) (side-effect-free t))
   (apply 'concat strings))
 
 (defun s-prepend (prefix s)
   "Concatenate PREFIX and S."
+  (declare (pure t) (side-effect-free t))
   (concat prefix s))
 
 (defun s-append (suffix s)
   "Concatenate S and SUFFIX."
+  (declare (pure t) (side-effect-free t))
   (concat s suffix))
 
 (defun s-repeat (num s)
   "Make a string of S repeated NUM times."
+  (declare (pure t) (side-effect-free t))
   (let (ss)
     (while (> num 0)
       (setq ss (cons s ss))
@@ -113,6 +130,7 @@ See also `s-split'."
 
 (defun s-chop-suffix (suffix s)
   "Remove SUFFIX if it is at end of S."
+  (declare (pure t) (side-effect-free t))
   (let ((pos (- (length suffix))))
     (if (and (>= (length s) (length suffix))
              (string= suffix (substring s pos)))
@@ -121,6 +139,7 @@ See also `s-split'."
 
 (defun s-chop-suffixes (suffixes s)
   "Remove SUFFIXES one by one in order, if they are at the end of S."
+  (declare (pure t) (side-effect-free t))
   (while suffixes
     (setq s (s-chop-suffix (car suffixes) s))
     (setq suffixes (cdr suffixes)))
@@ -128,6 +147,7 @@ See also `s-split'."
 
 (defun s-chop-prefix (prefix s)
   "Remove PREFIX if it is at the start of S."
+  (declare (pure t) (side-effect-free t))
   (let ((pos (length prefix)))
     (if (and (>= (length s) (length prefix))
              (string= prefix (substring s 0 pos)))
@@ -136,6 +156,7 @@ See also `s-split'."
 
 (defun s-chop-prefixes (prefixes s)
   "Remove PREFIXES one by one in order, if they are at the start of S."
+  (declare (pure t) (side-effect-free t))
   (while prefixes
     (setq s (s-chop-prefix (car prefixes) s))
     (setq prefixes (cdr prefixes)))
@@ -143,6 +164,7 @@ See also `s-split'."
 
 (defun s-shared-start (s1 s2)
   "Returns the longest prefix S1 and S2 have in common."
+  (declare (pure t) (side-effect-free t))
   (let ((search-length (min (length s1) (length s2)))
         (i 0))
     (while (and (< i search-length)
@@ -152,6 +174,7 @@ See also `s-split'."
 
 (defun s-shared-end (s1 s2)
   "Returns the longest suffix S1 and S2 have in common."
+  (declare (pure t) (side-effect-free t))
   (let* ((l1 (length s1))
          (l2 (length s2))
          (search-length (min l1 l2))
@@ -171,24 +194,36 @@ See also `s-split'."
 
 (defun s-chomp (s)
   "Remove one trailing `\\n`, `\\r` or `\\r\\n` from S."
+  (declare (pure t) (side-effect-free t))
   (s-chop-suffixes '("\n" "\r") s))
 
-(defun s-truncate (len s)
-  "If S is longer than LEN, cut it down to LEN - 3 and add ... at the end."
+(defun s-truncate (len s &optional ellipsis)
+  "If S is longer than LEN, cut it down and add ELLIPSIS to the end.
+
+The resulting string, including ellipsis, will be LEN characters
+long.
+
+When not specified, ELLIPSIS defaults to ‘...’."
+  (declare (pure t) (side-effect-free t))
+  (unless ellipsis
+    (setq ellipsis "..."))
   (if (> (length s) len)
-      (format "%s..." (substring s 0 (- len 3)))
+      (format "%s%s" (substring s 0 (- len (length ellipsis))) ellipsis)
     s))
 
 (defun s-word-wrap (len s)
   "If S is longer than LEN, wrap the words with newlines."
-  (with-temp-buffer
-    (insert s)
-    (let ((fill-column len))
-      (fill-region (point-min) (point-max)))
-    (buffer-substring (point-min) (point-max))))
+  (declare (side-effect-free t))
+  (save-match-data
+    (with-temp-buffer
+      (insert s)
+      (let ((fill-column len))
+        (fill-region (point-min) (point-max)))
+      (buffer-substring (point-min) (point-max)))))
 
 (defun s-center (len s)
   "If S is shorter than LEN, pad it with spaces so it is centered."
+  (declare (pure t) (side-effect-free t))
   (let ((extra (max 0 (- len (length s)))))
     (concat
      (make-string (ceiling extra 2) ? )
@@ -197,24 +232,28 @@ See also `s-split'."
 
 (defun s-pad-left (len padding s)
   "If S is shorter than LEN, pad it with PADDING on the left."
+  (declare (pure t) (side-effect-free t))
   (let ((extra (max 0 (- len (length s)))))
     (concat (make-string extra (string-to-char padding))
             s)))
 
 (defun s-pad-right (len padding s)
   "If S is shorter than LEN, pad it with PADDING on the right."
+  (declare (pure t) (side-effect-free t))
   (let ((extra (max 0 (- len (length s)))))
     (concat s
             (make-string extra (string-to-char padding)))))
 
 (defun s-left (len s)
   "Returns up to the LEN first chars of S."
+  (declare (pure t) (side-effect-free t))
   (if (> (length s) len)
       (substring s 0 len)
     s))
 
 (defun s-right (len s)
   "Returns up to the LEN last chars of S."
+  (declare (pure t) (side-effect-free t))
   (let ((l (length s)))
     (if (> l len)
         (substring s (- l len) l)
@@ -227,12 +266,11 @@ If IGNORE-CASE is non-nil, the comparison is done without paying
 attention to case differences.
 
 Alias: `s-suffix?'"
+  (declare (pure t) (side-effect-free t))
   (let ((start-pos (- (length s) (length suffix))))
     (and (>= start-pos 0)
          (eq t (compare-strings suffix nil nil
                                 s start-pos nil ignore-case)))))
-
-(defalias 's-ends-with-p 's-ends-with?)
 
 (defun s-starts-with? (prefix s &optional ignore-case)
   "Does S start with PREFIX?
@@ -242,16 +280,11 @@ attention to case differences.
 
 Alias: `s-prefix?'. This is a simple wrapper around the built-in
 `string-prefix-p'."
+  (declare (pure t) (side-effect-free t))
   (string-prefix-p prefix s ignore-case))
 
-(defalias 's-starts-with-p 's-starts-with?)
-
-(defalias 's-suffix? 's-ends-with?)
-(defalias 's-prefix? 's-starts-with?)
-(defalias 's-suffix-p 's-ends-with?)
-(defalias 's-prefix-p 's-starts-with?)
-
 (defun s--truthy? (val)
+  (declare (pure t) (side-effect-free t))
   (not (null val)))
 
 (defun s-contains? (needle s &optional ignore-case)
@@ -259,55 +292,61 @@ Alias: `s-prefix?'. This is a simple wrapper around the built-in
 
 If IGNORE-CASE is non-nil, the comparison is done without paying
 attention to case differences."
+  (declare (pure t) (side-effect-free t))
   (let ((case-fold-search ignore-case))
     (s--truthy? (string-match-p (regexp-quote needle) s))))
-
-(defalias 's-contains-p 's-contains?)
 
 (defun s-equals? (s1 s2)
   "Is S1 equal to S2?
 
 This is a simple wrapper around the built-in `string-equal'."
+  (declare (pure t) (side-effect-free t))
   (string-equal s1 s2))
-
-(defalias 's-equals-p 's-equals?)
 
 (defun s-less? (s1 s2)
   "Is S1 less than S2?
 
 This is a simple wrapper around the built-in `string-lessp'."
+  (declare (pure t) (side-effect-free t))
   (string-lessp s1 s2))
-
-(defalias 's-less-p 's-less?)
 
 (defun s-matches? (regexp s &optional start)
   "Does REGEXP match S?
 If START is non-nil the search starts at that index.
 
 This is a simple wrapper around the built-in `string-match-p'."
+  (declare (side-effect-free t))
   (s--truthy? (string-match-p regexp s start)))
-
-(defalias 's-matches-p 's-matches?)
 
 (defun s-blank? (s)
   "Is S nil or the empty string?"
+  (declare (pure t) (side-effect-free t))
   (or (null s) (string= "" s)))
+
+(defun s-blank-str? (s)
+  "Is S nil or the empty string or string only contains whitespace?"
+  (declare (pure t) (side-effect-free t))
+  (or (s-blank? s) (s-blank? (s-trim s))))
 
 (defun s-present? (s)
   "Is S anything but nil or the empty string?"
+  (declare (pure t) (side-effect-free t))
   (not (s-blank? s)))
 
 (defun s-presence (s)
   "Return S if it's `s-present?', otherwise return nil."
+  (declare (pure t) (side-effect-free t))
   (and (s-present? s) s))
 
 (defun s-lowercase? (s)
   "Are all the letters in S in lower case?"
+  (declare (side-effect-free t))
   (let ((case-fold-search nil))
     (not (string-match-p "[[:upper:]]" s))))
 
 (defun s-uppercase? (s)
   "Are all the letters in S in upper case?"
+  (declare (side-effect-free t))
   (let ((case-fold-search nil))
     (not (string-match-p "[[:lower:]]" s))))
 
@@ -320,24 +359,31 @@ This is a simple wrapper around the built-in `string-match-p'."
 
 (defun s-capitalized? (s)
   "In S, is the first letter upper case, and all other letters lower case?"
+  (declare (side-effect-free t))
   (let ((case-fold-search nil))
     (s--truthy?
      (string-match-p "^[[:upper:]][^[:upper:]]*$" s))))
 
 (defun s-numeric? (s)
   "Is S a number?"
+  (declare (pure t) (side-effect-free t))
   (s--truthy?
    (string-match-p "^[0-9]+$" s)))
 
 (defun s-replace (old new s)
   "Replaces OLD with NEW in S."
+  (declare (pure t) (side-effect-free t))
   (replace-regexp-in-string (regexp-quote old) new s t t))
 
+(defalias 's-replace-regexp 'replace-regexp-in-string)
+
 (defun s--aget (alist key)
+  (declare (pure t) (side-effect-free t))
   (cdr (assoc-string key alist)))
 
 (defun s-replace-all (replacements s)
   "REPLACEMENTS is a list of cons-cells. Each `car` is replaced with `cdr` in S."
+  (declare (pure t) (side-effect-free t))
   (replace-regexp-in-string (regexp-opt (mapcar 'car replacements))
                             (lambda (it) (s--aget replacements it))
                             s t t))
@@ -346,22 +392,26 @@ This is a simple wrapper around the built-in `string-match-p'."
   "Convert S to lower case.
 
 This is a simple wrapper around the built-in `downcase'."
+  (declare (side-effect-free t))
   (downcase s))
 
 (defun s-upcase (s)
   "Convert S to upper case.
 
 This is a simple wrapper around the built-in `upcase'."
+  (declare (side-effect-free t))
   (upcase s))
 
 (defun s-capitalize (s)
   "Convert the first word's first character to upper case and the rest to lower case in S."
+  (declare (side-effect-free t))
   (concat (upcase (substring s 0 1)) (downcase (substring s 1))))
 
 (defun s-titleize (s)
   "Convert each word's first character to upper case and the rest to lower case in S.
 
 This is a simple wrapper around the built-in `capitalize'."
+  (declare (side-effect-free t))
   (capitalize s))
 
 (defmacro s-with (s form &rest more)
@@ -383,22 +433,26 @@ last item in second form, etc."
 
 If IGNORE-CASE is non-nil, the comparison is done without paying
 attention to case differences."
+  (declare (pure t) (side-effect-free t))
   (let ((case-fold-search ignore-case))
     (string-match-p (regexp-quote needle) s)))
 
 (defun s-reverse (s)
   "Return the reverse of S."
-  (if (multibyte-string-p s)
-      (let ((input (string-to-list s))
-            (output ()))
-        (while input
-          ;; Handle entire grapheme cluster as a single unit
-          (let ((grapheme (list (pop input))))
-            (while (memql (car input) ucs-normalize-combining-chars)
-              (push (pop input) grapheme))
-            (setq output (nconc (nreverse grapheme) output))))
-        (concat output))
-    (concat (nreverse (string-to-list s)))))
+  (declare (pure t) (side-effect-free t))
+  (save-match-data
+    (if (multibyte-string-p s)
+        (let ((input (string-to-list s))
+              output)
+          (require 'ucs-normalize)
+          (while input
+            ;; Handle entire grapheme cluster as a single unit
+            (let ((grapheme (list (pop input))))
+              (while (memql (car input) ucs-normalize-combining-chars)
+                (push (pop input) grapheme))
+              (setq output (nconc (nreverse grapheme) output))))
+          (concat output))
+      (concat (nreverse (string-to-list s))))))
 
 (defun s-match-strings-all (regex string)
   "Return a list of matches for REGEX in STRING.
@@ -406,32 +460,36 @@ attention to case differences."
 Each element itself is a list of matches, as per
 `match-string'. Multiple matches at the same position will be
 ignored after the first."
-  (let ((all-strings ())
-        (i 0))
-    (while (and (< i (length string))
-                (string-match regex string i))
-      (setq i (1+ (match-beginning 0)))
-      (let (strings
-            (num-matches (/ (length (match-data)) 2))
-            (match 0))
-        (while (/= match num-matches)
-          (push (match-string match string) strings)
-          (setq match (1+ match)))
-        (push (nreverse strings) all-strings)))
-    (nreverse all-strings)))
+  (declare (side-effect-free t))
+  (save-match-data
+    (let ((all-strings ())
+          (i 0))
+      (while (and (< i (length string))
+                  (string-match regex string i))
+        (setq i (1+ (match-beginning 0)))
+        (let (strings
+              (num-matches (/ (length (match-data)) 2))
+              (match 0))
+          (while (/= match num-matches)
+            (push (match-string match string) strings)
+            (setq match (1+ match)))
+          (push (nreverse strings) all-strings)))
+      (nreverse all-strings))))
 
 (defun s-matched-positions-all (regexp string &optional subexp-depth)
   "Return a list of matched positions for REGEXP in STRING.
 SUBEXP-DEPTH is 0 by default."
+  (declare (side-effect-free t))
   (if (null subexp-depth)
       (setq subexp-depth 0))
-  (let ((pos 0) result)
-    (while (and (string-match regexp string pos)
-                (< pos (length string)))
-      (let ((m (match-end subexp-depth)))
-        (push (cons (match-beginning subexp-depth) (match-end subexp-depth)) result)
-        (setq pos (match-end 0))))
-    (nreverse result)))
+  (save-match-data
+    (let ((pos 0) result)
+      (while (and (string-match regexp string pos)
+                  (< pos (length string)))
+        (let ((m (match-end subexp-depth)))
+          (push (cons (match-beginning subexp-depth) (match-end subexp-depth)) result)
+          (setq pos (match-end 0))))
+      (nreverse result))))
 
 (defun s-match (regexp s &optional start)
   "When the given expression matches the string, this function returns a list
@@ -439,6 +497,7 @@ of the whole matching string and a string for each matched subexpressions.
 If it did not match the returned value is an empty list (nil).
 
 When START is non-nil the search will start at that index."
+  (declare (side-effect-free t))
   (save-match-data
     (if (string-match regexp s start)
         (let ((match-data-list (match-data))
@@ -454,6 +513,7 @@ When START is non-nil the search will start at that index."
 
 (defun s-slice-at (regexp s)
   "Slices S up at every index matching REGEXP."
+  (declare (side-effect-free t))
   (if (= 0 (length s)) (list "")
     (save-match-data
       (let (i)
@@ -465,6 +525,7 @@ When START is non-nil the search will start at that index."
 
 (defun s-split-words (s)
   "Split S into list of words."
+  (declare (side-effect-free t))
   (s-split
    "[^[:word:]0-9]+"
    (let ((case-fold-search nil))
@@ -480,31 +541,38 @@ When START is non-nil the search will start at that index."
 
 (defun s-lower-camel-case (s)
   "Convert S to lowerCamelCase."
+  (declare (side-effect-free t))
   (s-join "" (s--mapcar-head 'downcase 'capitalize (s-split-words s))))
 
 (defun s-upper-camel-case (s)
   "Convert S to UpperCamelCase."
+  (declare (side-effect-free t))
   (s-join "" (mapcar 'capitalize (s-split-words s))))
 
 (defun s-snake-case (s)
   "Convert S to snake_case."
+  (declare (side-effect-free t))
   (s-join "_" (mapcar 'downcase (s-split-words s))))
 
 (defun s-dashed-words (s)
   "Convert S to dashed-words."
+  (declare (side-effect-free t))
   (s-join "-" (mapcar 'downcase (s-split-words s))))
 
 (defun s-capitalized-words (s)
   "Convert S to Capitalized words."
+  (declare (side-effect-free t))
   (let ((words (s-split-words s)))
     (s-join " " (cons (capitalize (car words)) (mapcar 'downcase (cdr words))))))
 
 (defun s-titleized-words (s)
   "Convert S to Titleized Words."
+  (declare (side-effect-free t))
   (s-join " " (mapcar 's-titleize (s-split-words s))))
 
 (defun s-word-initials (s)
   "Convert S to its initials."
+  (declare (side-effect-free t))
   (s-join "" (mapcar (lambda (ss) (substring ss 0 1))
                      (s-split-words s))))
 
@@ -572,6 +640,7 @@ transformation."
 
 (defun s-lex-fmt|expand (fmt)
   "Expand FMT into lisp."
+  (declare (side-effect-free t))
   (list 's-format fmt (quote 'aget)
         (append '(list)
                 (mapcar
@@ -602,12 +671,45 @@ interpolated with \"%S\"."
 (defun s-count-matches (regexp s &optional start end)
   "Count occurrences of `regexp' in `s'.
 
-`start', inclusive, and `end', exclusive, delimit the part of `s'
-to match. "
-  (with-temp-buffer
-    (insert s)
-    (goto-char (point-min))
-    (count-matches regexp (or start 1) (or end (point-max)))))
+`start', inclusive, and `end', exclusive, delimit the part of `s' to
+match.  `start' and `end' are both indexed starting at 1; the initial
+character in `s' is index 1.
+
+This function starts looking for the next match from the end of the
+previous match.  Hence, it ignores matches that overlap a previously
+found match.  To count overlapping matches, use
+`s-count-matches-all'."
+  (declare (side-effect-free t))
+  (save-match-data
+    (with-temp-buffer
+      (insert s)
+      (goto-char (point-min))
+      (count-matches regexp (or start 1) (or end (point-max))))))
+
+(defun s-count-matches-all (regexp s &optional start end)
+  "Count occurrences of `regexp' in `s'.
+
+`start', inclusive, and `end', exclusive, delimit the part of `s' to
+match.  `start' and `end' are both indexed starting at 1; the initial
+character in `s' is index 1.
+
+This function starts looking for the next match from the second
+character of the previous match.  Hence, it counts matches that
+overlap a previously found match.  To ignore matches that overlap a
+previously found match, use `s-count-matches'."
+  (declare (side-effect-free t))
+  (let* ((anchored-regexp (format "^%s" regexp))
+         (match-count 0)
+         (i 0)
+         (narrowed-s (substring s
+                                (when start (1- start))
+                                (when end (1- end)))))
+    (save-match-data
+      (while (< i (length narrowed-s))
+        (when (s-matches? anchored-regexp (substring narrowed-s i))
+          (setq match-count (1+ match-count)))
+        (setq i (1+ i))))
+    match-count))
 
 (defun s-wrap (s prefix &optional suffix)
   "Wrap string S with PREFIX and optionally SUFFIX.
@@ -615,7 +717,31 @@ to match. "
 Return string S with PREFIX prepended.  If SUFFIX is present, it
 is appended, otherwise PREFIX is used as both prefix and
 suffix."
+  (declare (pure t) (side-effect-free t))
   (concat prefix s (or suffix prefix)))
 
+
+;;; Aliases
+
+(defalias 's-blank-p 's-blank?)
+(defalias 's-blank-str-p 's-blank-str?)
+(defalias 's-capitalized-p 's-capitalized?)
+(defalias 's-contains-p 's-contains?)
+(defalias 's-ends-with-p 's-ends-with?)
+(defalias 's-equals-p 's-equals?)
+(defalias 's-less-p 's-less?)
+(defalias 's-lowercase-p 's-lowercase?)
+(defalias 's-matches-p 's-matches?)
+(defalias 's-mixedcase-p 's-mixedcase?)
+(defalias 's-numeric-p 's-numeric?)
+(defalias 's-prefix-p 's-starts-with?)
+(defalias 's-prefix? 's-starts-with?)
+(defalias 's-present-p 's-present?)
+(defalias 's-starts-with-p 's-starts-with?)
+(defalias 's-suffix-p 's-ends-with?)
+(defalias 's-suffix? 's-ends-with?)
+(defalias 's-uppercase-p 's-uppercase?)
+
+
 (provide 's)
 ;;; s.el ends here
