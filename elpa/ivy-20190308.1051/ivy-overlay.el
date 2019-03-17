@@ -1,6 +1,6 @@
 ;;; ivy-overlay.el --- Overlay display functions for Ivy  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2016-2018  Free Software Foundation, Inc.
+;; Copyright (C) 2016-2019  Free Software Foundation, Inc.
 
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 ;; Keywords: convenience
@@ -16,7 +16,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -64,12 +64,14 @@ Lines are truncated to the window width."
   "Display STR in an overlay at point.
 
 First, fill each line of STR with spaces to the current column.
-Then attach the overlay the character before point."
+Then attach the overlay to the character before point."
   (if ivy-overlay-at
       (progn
         (move-overlay ivy-overlay-at (1- (point)) (line-end-position))
         (overlay-put ivy-overlay-at 'invisible nil))
     (setq ivy-overlay-at (make-overlay (1- (point)) (line-end-position)))
+    ;; Specify face to avoid clashing with other overlays.
+    (overlay-put ivy-overlay-at 'face 'default)
     (overlay-put ivy-overlay-at 'priority 9999))
   (overlay-put ivy-overlay-at 'display str)
   (overlay-put ivy-overlay-at 'after-string ""))
@@ -84,14 +86,17 @@ Then attach the overlay the character before point."
 (declare-function ivy--get-window "ivy")
 (declare-function ivy-state-current "ivy")
 (declare-function ivy-state-window "ivy")
+(declare-function ivy--remove-prefix "ivy")
 
 (defun ivy-overlay-impossible-p (str)
   (or
+   (and (eq major-mode 'org-mode)
+        (plist-get (text-properties-at (point)) 'src-block))
    (<= (window-height) (+ ivy-height 3))
    (= (point) (point-min))
    (< (- (+ (window-width) (window-hscroll)) (current-column))
       (apply #'max
-             (mapcar #'length
+             (mapcar #'string-width
                      (split-string str "\n"))))))
 
 (defun ivy-display-function-overlay (str)
@@ -114,22 +119,24 @@ Hide the minibuffer contents and cursor."
           (setq ivy--old-cursor-type cursor-type))
         (setq cursor-type nil)
         (let ((overlay-str
-               (concat
-                (buffer-substring (max 1 (1- (point))) (point))
+               (apply
+                #'concat
+                (buffer-substring (max (point-min) (1- (point))) (point))
                 ivy-text
-                (if (eolp)
-                    " "
-                  "")
+                (and (eolp) " ")
                 (buffer-substring (point) (line-end-position))
-                (ivy-left-pad
-                 str
-                 (+ (if (and (eq major-mode 'org-mode)
-                             (bound-and-true-p org-indent-mode))
-                        (* org-indent-indentation-per-level (org-current-level))
-                      0)
-                    (save-excursion
-                      (goto-char ivy-completion-beg)
-                      (current-column)))))))
+                (and (> (length str) 0)
+                     (list "\n"
+                           (ivy-left-pad
+                            (ivy--remove-prefix "\n" str)
+                            (+ (if (and (eq major-mode 'org-mode)
+                                        (bound-and-true-p org-indent-mode))
+                                   (* org-indent-indentation-per-level
+                                      (org-current-level))
+                                 0)
+                               (save-excursion
+                                 (goto-char ivy-completion-beg)
+                                 (current-column)))))))))
           (ivy-add-face-text-property cursor-pos (1+ cursor-pos)
                                       'ivy-cursor overlay-str t)
           (ivy-overlay-show-after overlay-str))))))

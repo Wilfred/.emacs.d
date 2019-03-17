@@ -1,6 +1,6 @@
 ;;; colir.el --- Color blending library -*- lexical-binding: t -*-
 
-;; Copyright (C) 2015-2018  Free Software Foundation, Inc.
+;; Copyright (C) 2015-2019  Free Software Foundation, Inc.
 
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 
@@ -17,7 +17,7 @@
 ;; GNU General Public License for more details.
 
 ;; For a full copy of the GNU General Public License
-;; see <http://www.gnu.org/licenses/>.
+;; see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -27,7 +27,7 @@
 ;; background face, their blended sum is used.
 ;;
 ;; The blend mode functions are taken from URL
-;; `http://en.wikipedia.org/wiki/Blend_modes'.
+;; `https://en.wikipedia.org/wiki/Blend_modes'.
 
 ;;; Code:
 

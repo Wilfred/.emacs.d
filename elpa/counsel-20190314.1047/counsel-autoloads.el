@@ -50,29 +50,19 @@ to `ivy-highlight-face'.
 
 \(fn)" t nil)
 
-(autoload 'counsel-set-variable "counsel" "\
-Set a variable, with completion.
-
-When the selected variable is a `defcustom' with the type boolean
-or radio, offer completion of all possible values.
-
-Otherwise, offer a variant of `eval-expression', with the initial
-input corresponding to the chosen variable.
-
-With a prefix arg, restrict list to variables defined using
-`defcustom'.
-
-\(fn SYM)" t nil)
+(defface counsel-variable-documentation '((t :inherit font-lock-comment-face)) "\
+Face for displaying Lisp documentation." :group (quote ivy-faces))
 
 (autoload 'counsel-apropos "counsel" "\
 Show all matching symbols.
-See `apropos' for further information about what is considered
+See `apropos' for further information on what is considered
 a symbol and how to search for them.
 
 \(fn)" t nil)
 
 (autoload 'counsel-info-lookup-symbol "counsel" "\
-Forward to `info-lookup-symbol' with ivy completion.
+Forward SYMBOL to `info-lookup-symbol' with ivy completion.
+With prefix arg MODE a query for the symbol help mode is offered.
 
 \(fn SYMBOL &optional MODE)" t nil)
 
@@ -124,7 +114,7 @@ INITIAL-INPUT can be given as the initial minibuffer input.
 \(fn &optional INITIAL-INPUT)" t nil)
 
 (autoload 'counsel-git-grep "counsel" "\
-Grep for a string in the current git repository.
+Grep for a string in the current Git repository.
 When CMD is a string, use it as a \"git grep\" command.
 When CMD is non-nil, prompt for a specific \"git grep\" command.
 INITIAL-INPUT can be given as the initial minibuffer input.
@@ -164,6 +154,14 @@ Find a file on `recentf-list'.
 
 (autoload 'counsel-bookmark "counsel" "\
 Forward to `bookmark-jump' or `bookmark-set' if bookmark doesn't exist.
+
+\(fn)" t nil)
+
+(autoload 'counsel-bookmarked-directory "counsel" "\
+Ivy interface for bookmarked directories.
+
+With a prefix argument, this command creates a new bookmark which points to the
+current value of `default-directory'.
 
 \(fn)" t nil)
 
@@ -263,20 +261,17 @@ When non-nil, INITIAL-INPUT is the initial search pattern.
 
 \(fn &optional INITIAL-INPUT)" t nil)
 
-(autoload 'counsel-org-tag "counsel" "\
-Add or remove tags in `org-mode'.
+(autoload 'counsel--org-get-tags "counsel" "\
 
-\(fn)" t nil)
+
+\(fn)" nil nil)
 
 (autoload 'counsel-org-tag-agenda "counsel" "\
 Set tags for the current agenda item.
 
 \(fn)" t nil)
 
-(autoload 'counsel-org-goto "counsel" "\
-Go to a different location in the current file.
-
-\(fn)" t nil)
+(defalias 'counsel-org-goto #'counsel-outline)
 
 (autoload 'counsel-org-goto-all "counsel" "\
 Go to a different location in any org file.
@@ -310,10 +305,12 @@ Text-mode emulation of looking and choosing from a menubar.
 
 (autoload 'counsel-yank-pop "counsel" "\
 Ivy replacement for `yank-pop'.
-ARG has the same meaning as in `yank-pop', but its default value
-can be controlled with `counsel-yank-pop-preselect-last', which
-see.  See also `counsel-yank-pop-filter' for how to filter
-candidates.
+With a plain prefix argument (\\[universal-argument]),
+temporarily toggle the value of `counsel-yank-pop-after-point'.
+Any other value of ARG has the same meaning as in `yank-pop', but
+`counsel-yank-pop-preselect-last' determines its default value.
+See also `counsel-yank-pop-filter' for how to filter candidates.
+
 Note: Duplicate elements of `kill-ring' are always deleted.
 
 \(fn &optional ARG)" t nil)
@@ -336,10 +333,14 @@ And insert it into the minibuffer.  Useful during `eval-expression'.
 
 \(fn)" t nil)
 
+(make-obsolete 'counsel-expression-history 'counsel-minibuffer-history '"0.10.0 <2017-11-13 Mon>")
+
 (autoload 'counsel-shell-command-history "counsel" "\
 Browse shell command history.
 
 \(fn)" t nil)
+
+(make-obsolete 'counsel-shell-command-history 'counsel-minibuffer-history '"0.10.0 <2017-11-13 Mon>")
 
 (autoload 'counsel-minibuffer-history "counsel" "\
 Browse minibuffer history.
@@ -357,7 +358,7 @@ Browse shell history.
 \(fn)" t nil)
 
 (autoload 'counsel-outline "counsel" "\
-Jump to outline with completion.
+Jump to an outline heading with completion.
 
 \(fn)" t nil)
 
@@ -397,12 +398,25 @@ selected color.
 (autoload 'counsel-rhythmbox "counsel" "\
 Choose a song from the Rhythmbox library to play or enqueue.
 
-\(fn)" t nil)
+\(fn &optional ARG)" t nil)
 
 (autoload 'counsel-linux-app "counsel" "\
 Launch a Linux desktop application, similar to Alt-<F2>.
+When ARG is non-nil, ignore NoDisplay property in *.desktop files.
+
+\(fn &optional ARG)" t nil)
+
+(autoload 'counsel-switch-buffer "counsel" "\
+Switch to another buffer.
+Display a preview of the selected ivy completion candidate buffer
+in the current window.
 
 \(fn)" t nil)
+
+(autoload 'counsel-compile "counsel" "\
+Call `compile' completing with smart suggestions, optionally for DIR.
+
+\(fn &optional DIR)" t nil)
 
 (defvar counsel-mode nil "\
 Non-nil if Counsel mode is enabled.
@@ -418,7 +432,10 @@ or call the function `counsel-mode'.")
 Toggle Counsel mode on or off.
 Turn Counsel mode on if ARG is positive, off otherwise. Counsel
 mode remaps built-in emacs functions that have counsel
-replacements. 
+replacements.
+
+Local bindings (`counsel-mode-map'):
+\\{counsel-mode-map}
 
 \(fn &optional ARG)" t nil)
 
