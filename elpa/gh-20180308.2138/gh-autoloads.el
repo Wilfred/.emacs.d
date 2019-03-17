@@ -1,9 +1,12 @@
 ;;; gh-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
+
+(add-to-list 'load-path (directory-file-name
+                         (or (file-name-directory #$) (car load-path))))
+
 
-;;;### (autoloads nil "gh-api" "gh-api.el" (22697 45756 28009 508000))
+;;;### (autoloads nil "gh-api" "gh-api.el" (0 0 0 0))
 ;;; Generated autoloads from gh-api.el
 
 (require 'eieio)
@@ -22,10 +25,11 @@
 
 (eieio-defclass-autoload 'gh-api-callback '(gh-url-callback) "gh-api" nil)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "gh-api" '("gh-" "initialize-instance" "logito-log")))
+
 ;;;***
 
-;;;### (autoloads nil "gh-auth" "gh-auth.el" (22697 45756 441337
-;;;;;;  643000))
+;;;### (autoloads nil "gh-auth" "gh-auth.el" (0 0 0 0))
 ;;; Generated autoloads from gh-auth.el
 
 (require 'eieio)
@@ -38,10 +42,11 @@
 
 (eieio-defclass-autoload 'gh-oauth-authenticator '(gh-authenticator) "gh-auth" "Oauth-based authenticator")
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "gh-auth" '("gh-" "initialize-instance")))
+
 ;;;***
 
-;;;### (autoloads nil "gh-cache" "gh-cache.el" (22697 45756 264673
-;;;;;;  199000))
+;;;### (autoloads nil "gh-cache" "gh-cache.el" (0 0 0 0))
 ;;; Generated autoloads from gh-cache.el
 
 (require 'eieio)
@@ -50,20 +55,22 @@
 
 (eieio-defclass-autoload 'gh-cache-entry '(pcache-entry) "gh-cache" nil)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "gh-cache" '("gh-cache-" "pcache-")))
+
 ;;;***
 
-;;;### (autoloads nil "gh-comments" "gh-comments.el" (22697 45755
-;;;;;;  818012 149000))
+;;;### (autoloads nil "gh-comments" "gh-comments.el" (0 0 0 0))
 ;;; Generated autoloads from gh-comments.el
 
 (require 'eieio)
 
 (eieio-defclass-autoload 'gh-comments-api-mixin 'nil "gh-comments" :abstract)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "gh-comments" '("gh-comments-")))
+
 ;;;***
 
-;;;### (autoloads nil "gh-common" "gh-common.el" (22697 45756 128008
-;;;;;;  251000))
+;;;### (autoloads nil "gh-common" "gh-common.el" (0 0 0 0))
 ;;; Generated autoloads from gh-common.el
 
 (require 'eieio)
@@ -86,10 +93,11 @@
 
 (gh-defclass gh-comment (gh-ref-object) ((body :initarg :body) (user :initarg :user :initform nil :marshal-type gh-user) (created-at :initarg :created_at) (updated-at :initarg :updated_at)) "Github comment object")
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "gh-common" '("gh-" "slot-unbound")))
+
 ;;;***
 
-;;;### (autoloads nil "gh-gist" "gh-gist.el" (22697 45755 904677
-;;;;;;  726000))
+;;;### (autoloads nil "gh-gist" "gh-gist.el" (0 0 0 0))
 ;;; Generated autoloads from gh-gist.el
 
 (require 'eieio)
@@ -108,18 +116,19 @@
 
 (gh-defclass gh-gist-gist-file (gh-object) ((filename :initarg :filename) (size :initarg :size) (url :initarg :url :marshal ((alist . raw_url))) (content :initarg :content)))
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "gh-gist" '("gh-gist-" "constructor")))
+
 ;;;***
 
 ;;;### (autoloads nil "gh-issue-comments" "gh-issue-comments.el"
-;;;;;;  (22697 45756 198007 370000))
+;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from gh-issue-comments.el
 
 (require 'eieio)
 
 ;;;***
 
-;;;### (autoloads nil "gh-issues" "gh-issues.el" (22697 45756 298006
-;;;;;;  113000))
+;;;### (autoloads nil "gh-issues" "gh-issues.el" (0 0 0 0))
 ;;; Generated autoloads from gh-issues.el
 
 (require 'eieio)
@@ -136,10 +145,11 @@
 
 (gh-defclass gh-issues-comment (gh-comment) nil)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "gh-issues" '("gh-issues-")))
+
 ;;;***
 
-;;;### (autoloads nil "gh-oauth" "gh-oauth.el" (22697 45755 861344
-;;;;;;  939000))
+;;;### (autoloads nil "gh-oauth" "gh-oauth.el" (0 0 0 0))
 ;;; Generated autoloads from gh-oauth.el
 
 (require 'eieio)
@@ -152,10 +162,11 @@
 
 (gh-defclass gh-oauth-app (gh-object) ((url :initarg :url) (name :initarg :name)))
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "gh-oauth" '("gh-oauth-auth-" "initialize-instance")))
+
 ;;;***
 
-;;;### (autoloads nil "gh-orgs" "gh-orgs.el" (22697 45756 164674
-;;;;;;  456000))
+;;;### (autoloads nil "gh-orgs" "gh-orgs.el" (0 0 0 0))
 ;;; Generated autoloads from gh-orgs.el
 
 (require 'eieio)
@@ -168,18 +179,26 @@
 
 (gh-defclass gh-orgs-org (gh-orgs-org-stub) ((name :initarg :name) (company :initarg :company) (blog :initarg :blog) (location :initarg :location) (email :initarg :email) (public-repos :initarg :public-repos) (public-gists :initarg :public-gists) (followers :initarg :followers) (following :initarg :following) (created-at :initarg :created-at) (type :initarg :type) (total-private-repos :initarg :total-private-repos) (owned-private-repos :initarg :owned-private-repos) (private-gists :initarg :private-gists) (disk-usage :initarg :disk-usage) (collaborators :initarg :collaborators) (billing-email :initarg :billing-email) (plan :initarg :plan :initform nil :marshal-type gh-orgs-plan)) "Class for GitHub organizations")
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "gh-orgs" '("gh-orgs-")))
+
 ;;;***
 
-;;;### (autoloads nil "gh-pull-comments" "gh-pull-comments.el" (22697
-;;;;;;  45756 398004 855000))
+;;;### (autoloads nil "gh-profile" "gh-profile.el" (0 0 0 0))
+;;; Generated autoloads from gh-profile.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "gh-profile" '("gh-profile-")))
+
+;;;***
+
+;;;### (autoloads nil "gh-pull-comments" "gh-pull-comments.el" (0
+;;;;;;  0 0 0))
 ;;; Generated autoloads from gh-pull-comments.el
 
 (require 'eieio)
 
 ;;;***
 
-;;;### (autoloads nil "gh-pulls" "gh-pulls.el" (22697 45756 358005
-;;;;;;  358000))
+;;;### (autoloads nil "gh-pulls" "gh-pulls.el" (0 0 0 0))
 ;;; Generated autoloads from gh-pulls.el
 
 (require 'eieio)
@@ -194,10 +213,11 @@
 
 (gh-defclass gh-pulls-request (gh-pulls-request-stub) ((merged :initarg :merged) (mergeable :initarg :mergeable) (merged-by :initarg :merged-by) (comments :initarg :comments) (user :initarg :user :initform nil :marshal-type gh-user) (commits :initarg :commits) (additions :initarg :additions) (deletions :initarg :deletions) (changed-files :initarg :changed-files)) "Git pull requests API")
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "gh-pulls" '("gh-pulls-")))
+
 ;;;***
 
-;;;### (autoloads nil "gh-repos" "gh-repos.el" (22697 45756 231340
-;;;;;;  284000))
+;;;### (autoloads nil "gh-repos" "gh-repos.el" (0 0 0 0))
 ;;; Generated autoloads from gh-repos.el
 
 (require 'eieio)
@@ -210,17 +230,20 @@
 
 (gh-defclass gh-repos-ref (gh-object) ((label :initarg :label) (ref :initarg :ref :initform nil) (sha :initarg :sha :initform nil) (user :initarg :user :initform nil :marshal-type gh-user) (repo :initarg :repo :initform nil :marshal-type gh-repos-repo)))
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "gh-repos" '("gh-repos-")))
+
 ;;;***
 
-;;;### (autoloads nil "gh-search" "gh-search.el" (22697 45755 944677
-;;;;;;  223000))
+;;;### (autoloads nil "gh-search" "gh-search.el" (0 0 0 0))
 ;;; Generated autoloads from gh-search.el
 
 (eieio-defclass-autoload 'gh-search-api '(gh-api-v3) "gh-search" nil)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "gh-search" '("gh-search-")))
+
 ;;;***
 
-;;;### (autoloads nil "gh-url" "gh-url.el" (22697 45755 728013 281000))
+;;;### (autoloads nil "gh-url" "gh-url.el" (0 0 0 0))
 ;;; Generated autoloads from gh-url.el
 
 (require 'eieio)
@@ -231,10 +254,11 @@
 
 (eieio-defclass-autoload 'gh-url-callback 'nil "gh-url" nil)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "gh-url" '("gh-url-")))
+
 ;;;***
 
-;;;### (autoloads nil "gh-users" "gh-users.el" (22697 45756 94675
-;;;;;;  336000))
+;;;### (autoloads nil "gh-users" "gh-users.el" (0 0 0 0))
 ;;; Generated autoloads from gh-users.el
 
 (require 'eieio)
@@ -243,10 +267,11 @@
 
 (gh-defclass gh-users-user (gh-user) ((gravatar-id :initarg :gravatar-id) (html-url :initarg :html-url) (followers-url :initarg :followers-url) (following-url :initarg :following-url) (gists-url :initarg :gists-url) (starred-url :initarg :starred-url) (subscriptions-url :initarg :subscriptions-url) (organizations-url :initarg :organizations-url) (repos-url :initarg :repos-url) (events-url :initarg :events-url) (received-events-url :initarg :received-events-url) (type :initarg :type) (site-admin :initarg :site-admin) (name :initarg :name) (company :initarg :company) (blog :initarg :blog) (location :initarg :location) (email :initarg :email) (hireable :initarg :hireable) (bio :initarg :bio) (public-repos :initarg :public-repos) (public-gists :initarg :public-gists) (followers :initarg :followers) (following :initarg :following) (created-at :initarg :created-at) (update-at :initarg :update-at)))
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "gh-users" '("gh-users-")))
+
 ;;;***
 
-;;;### (autoloads nil nil ("gh-pkg.el" "gh-profile.el" "gh.el") (22697
-;;;;;;  45756 61342 421000))
+;;;### (autoloads nil nil ("gh-pkg.el" "gh.el") (0 0 0 0))
 
 ;;;***
 
@@ -254,5 +279,6 @@
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
+;; coding: utf-8
 ;; End:
 ;;; gh-autoloads.el ends here

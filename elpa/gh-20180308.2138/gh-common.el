@@ -31,11 +31,10 @@
 
 ;;;###autoload
 (require 'eieio)
-
-(require 'dash)
 (require 'marshal)
-(require 's)
-(require 'gh-profile)
+
+(autoload 'gh-profile-current-profile "gh-profile")
+(autoload 'gh-profile-default-profile "gh-profile")
 
 (defgroup gh nil
   "Github API client libraries."
@@ -55,7 +54,7 @@ Emacs. This makes a difference when running with TRAMP."
 (defun gh-namespaced-key (key)
   (let ((profile (gh-profile-current-profile)))
     (concat "github."
-            (if (string= profile gh-profile-default-profile)
+            (if (string= profile (gh-profile-default-profile))
                 ""
               (concat profile "."))
             key)))
@@ -79,13 +78,26 @@ Emacs. This makes a difference when running with TRAMP."
     (with-output-to-string
       (apply runner git nil standard-output nil args))))
 
+(defun gh-sanitize-content (content)
+  "Remove all non-unicode characters. This can be used to
+sanitize API calls that need to handle potentially dirty data."
+  (let (res skipped)
+    (mapc (lambda (c)
+            (if (eq 'Cn (get-char-code-property c 'general-category))
+                (setq skipped t)
+              (push c res)))
+          content)
+    (when skipped
+      (warn "Content contained non-unicode characters"))
+    (apply #'string (nreverse res))))
+
 ;;; Base classes for common objects
 
 ;;;###autoload
 (defun gh-marshal-default-spec (slot)
   (let ((slot-name (symbol-name slot)))
     (list (cons 'alist
-                (intern (s-replace "-" "_" slot-name))))))
+                (intern (replace-regexp-in-string "-" "_" slot-name))))))
 
 ;;;###autoload
 (defmacro gh-defclass (name superclass slots &rest options-and-doc)
@@ -127,10 +139,10 @@ Emacs. This makes a difference when running with TRAMP."
 
 (defmethod gh-ref-object-base ((obj gh-ref-object))
   (let ((url (oref obj :url)))
-    (--> (s-split "/" url t)
-      (-slice it 2)
-      (s-join "/" it)
-      (concat "/" it))))
+    (concat "/"
+            (mapconcat #'identity
+                       (cddr (split-string url "/" t))
+                       "/"))))
 
 (defmethod gh-ref-object-base (obj)
   (if (stringp obj) obj
