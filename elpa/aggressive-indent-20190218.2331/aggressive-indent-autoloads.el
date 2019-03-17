@@ -1,10 +1,13 @@
 ;;; aggressive-indent-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
+
+(add-to-list 'load-path (directory-file-name
+                         (or (file-name-directory #$) (car load-path))))
+
 
 ;;;### (autoloads nil "aggressive-indent" "aggressive-indent.el"
-;;;;;;  (22697 45830 233742 408000))
+;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from aggressive-indent.el
 
 (autoload 'aggressive-indent-indent-defun "aggressive-indent" "\
@@ -16,8 +19,8 @@ If L and R are provided, use them for finding the start and end of defun.
 
 (autoload 'aggressive-indent-indent-region-and-on "aggressive-indent" "\
 Indent region between L and R, and then some.
-Call `indent-region' between L and R, and then keep indenting
-until nothing more happens.
+Call `aggressive-indent-region-function' between L and R, and
+then keep indenting until nothing more happens.
 
 \(fn L R)" t nil)
 
@@ -54,11 +57,14 @@ See `aggressive-indent-mode' for more information on Aggressive-Indent mode.
 
 (defalias 'aggressive-indent-global-mode #'global-aggressive-indent-mode)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "aggressive-indent" '("aggressive-indent-")))
+
 ;;;***
 
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
+;; coding: utf-8
 ;; End:
 ;;; aggressive-indent-autoloads.el ends here
