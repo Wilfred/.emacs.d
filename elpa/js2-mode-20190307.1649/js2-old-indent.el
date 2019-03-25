@@ -58,7 +58,6 @@
 
 (defvar js2-language-version)
 
-(declare-function js2-mark-safe-local "js2-mode")
 (declare-function js2-backward-sws "js2-mode")
 (declare-function js2-forward-sws "js2-mode")
 (declare-function js2-same-line "js2-mode")
@@ -356,7 +355,8 @@ In particular, return the buffer position of the first `for' kwd."
                      (re-search-forward "[^,]]* \\(for\\) " end t)
                      ;; not inside comment or string literal
                      (let ((state (parse-partial-sexp bracket (point))))
-                       (not (or (nth 3 state) (nth 4 state)))))
+                       (and (= 1 (car state))
+                            (not (nth 8 state)))))
                 (match-beginning 1))))))))
 
 (defun js2-array-comp-indentation (parse-status for-kwd)
