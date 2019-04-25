@@ -19,15 +19,17 @@
 ;; dabbrev-expand should match case
 (require 'dabbrev)
 (setq dabbrev-case-fold-search nil)
-(require 'company)
-(require 'company-dabbrev)
-(setq company-dabbrev-ignore-case nil)
-(setq company-dabbrev-downcase nil)
-(setq company-dabbrev-other-buffers t)
-(require 'company-dabbrev-code)
 
-;; Use company-dabbrev-code in all modes.
-(setq company-dabbrev-code-modes t)
+(use-package company-dabbrev
+  :config
+  (setq company-dabbrev-ignore-case nil)
+  (setq company-dabbrev-downcase nil)
+  (setq company-dabbrev-other-buffers t)
+  (require 'company-dabbrev-code)
+
+  ;; Use company-dabbrev-code in all modes.
+  (setq company-dabbrev-code-modes t))
+
 
 (global-set-key (kbd "s-/") #'company-dabbrev)
 
@@ -97,57 +99,59 @@
   (add-hook 'emacs-lisp-mode-hook
             (lambda () (setq-local company-backends
                                    (list 'company-elisp 'company-dabbrev-code))))
+  ;; Offer idle completion for three characters or more. (1 is very
+  ;; noisy, and 2 hurts typing performance a little.)
+  (setq company-minimum-prefix-length 3)
+
+  ;; Show a list of numbers next to completion options, where M-1
+  ;; selects the first option and so on.
+  (setq company-show-numbers t)
+
+  ;; In the completion list, wrap around so going backwards from the
+  ;; last option shows the first.
+  (setq company-selection-wrap-around t)
+
+  ;; Allow typing keys that don't match any candidates. This is useful
+  ;; for imports, e.g. when we want to type foo::* in Rust but '*' isn't
+  ;; in the candidates.
+  (setq company-require-match nil)
+
+  ;; Align annotations to they're not shown immediately next to the
+  ;; candidate. Otherwise, we end with a function foo shown as "foof".
+  (setq company-tooltip-align-annotations t)
+
+  ;; Use C-n and C-p when company is active (for consistency with helm).
+  (define-key company-active-map (kbd "C-n") #'company-select-next)
+  (define-key company-active-map (kbd "C-p") #'company-select-previous)
+
+  (define-key company-active-map (kbd "RET") #'company-complete-selection)
+
+  ;; Remember which completions we've used before, and sort those first.
+  (add-hook 'after-init-hook #'company-statistics-mode)
+
+  (defadvice company-etags--candidates (around wh/etags-blacklist-modes activate)
+    "Don't offer etags completion in modes where it's not helpful."
+    (unless (memq major-mode '(asm-mode))
+      ad-do-it))
+
   :diminish "Comp")
 
-(require 'company)
-
-(defadvice company-etags--candidates (around wh/etags-blacklist-modes activate)
-  "Don't offer etags completion in modes where it's not helpful."
-  (unless (memq major-mode '(asm-mode))
-    ad-do-it))
-
-(require 'company-css)
-(require 'company-clang)
-(require 'company-tern)
-(require 'company-anaconda)
-(add-to-list 'company-backends 'company-c-headers)
 (add-hook 'prog-mode-hook #'company-mode)
 
-;; Offer idle completion for three characters or more. (1 is very
-;; noisy, and 2 hurts typing performance a little.)
-(setq company-minimum-prefix-length 3)
+(use-package python
+  :config
+  (require 'company-anaconda))
 
-;; Show a list of numbers next to completion options, where M-1
-;; selects the first option and so on.
-(setq company-show-numbers t)
+(require 'company-tern)
 
-;; In the completion list, wrap around so going backwards from the
-;; last option shows the first.
-(setq company-selection-wrap-around t)
-
-;; Allow typing keys that don't match any candidates. This is useful
-;; for imports, e.g. when we want to type foo::* in Rust but '*' isn't
-;; in the candidates.
-(setq company-require-match nil)
-
-;; Align annotations to they're not shown immediately next to the
-;; candidate. Otherwise, we end with a function foo shown as "foof".
-(setq company-tooltip-align-annotations t)
-
-;; Use C-n and C-p when company is active (for consistency with helm).
-(define-key company-active-map (kbd "C-n") #'company-select-next)
-(define-key company-active-map (kbd "C-p") #'company-select-previous)
-
-(define-key company-active-map (kbd "RET") #'company-complete-selection)
-
-;; Remember which completions we've used before, and sort those first.
-(add-hook 'after-init-hook #'company-statistics-mode)
+(add-to-list 'company-backends 'company-c-headers)
 
 (require 'company-jit)
 (add-hook 'css-mode-hook #'company-jit-mode)
 
-(require 'rust-mode)
-(add-hook 'rust-mode-hook 'racer-mode)
+(use-package rust-mode
+  :config
+  (add-hook 'rust-mode-hook 'racer-mode))
 
 (require 'company-whole-line)
 
