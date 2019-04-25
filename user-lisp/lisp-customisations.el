@@ -354,4 +354,12 @@ and `defcustom' forms reset their default values."
 ;; `describe-coding-system' isn't very useful, so lookup commands instead.
 (global-set-key (kbd "C-h C") #'helpful-command)
 
+(defun wh/expand-struct (struct)
+  "Convert value STRUCT to a list of slot names and values."
+  (let* ((type (type-of struct))
+	 (slots (cl-struct-slot-info type)))
+    (--map-indexed (list (intern (format ":%S" (car it)))
+			 (aref struct it-index))
+		   slots)))
+
 (provide 'lisp-customisations)
