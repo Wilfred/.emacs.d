@@ -41,7 +41,7 @@
 ;;                       Syntax highlighting
 
 (defface tuareg-opam-error-face
-  '((t (:foreground "yellow" :background "red" :bold t)))
+  '((t (:inherit error)))
   "Face for constructs considered as errors (e.g. deprecated constructs)."
   :group 'tuareg-opam)
 
@@ -51,49 +51,60 @@
 (defconst tuareg-opam-keywords
   '("opam-version" "name" "version" "maintainer" "authors"
     "license" "homepage" "doc" "bug-reports" "dev-repo"
-    "tags" "patches" "substs" "build" "install"
-    "build-doc" "remove" "depends" "depopts" "conflicts"
+    "tags" "patches" "substs" "build" "install" "run-test"
+    "remove" "depends" "depopts" "conflicts" "conflict-class"
     "depexts" "messages" "post-messages" "available"
-    "flags")
+    "flags" "features" "synopsis" "description" "url" "setenv"
+    "build-env" "extra-files" "pin-depends")
   "Kewords in OPAM files.")
 
 (defconst tuareg-opam-keywords-regex
   (regexp-opt tuareg-opam-keywords 'symbols))
 
 (defconst tuareg-opam-variables-regex
-  (regexp-opt '("user" "group" "make" "os" "root" "prefix" "lib"
-                "bin" "sbin" "doc" "stublibs" "toplevel" "man"
-                "share" "etc"
-                "name" "pinned"
-                "ocaml-version" "opam-version" "compiler" "preinstalled"
-                "switch" "jobs" "ocaml-native" "ocaml-native-tools"
-                "ocaml-native-dynlink" "arch")
+  (regexp-opt '("opam-version" "root" "jobs" "make" "arch"
+                "os" "os-distribution" "os-family" "os-version"
+                "switch" "prefix" "lib" "bin" "sbin" "share" "doc"
+                "etc" "man" "toplevel" "stublibs" "user" "group"
+                "name" "version" "pinned")
               'symbols)
   "Variables declared in OPAM.")
 
 (defconst tuareg-opam-pkg-variables-regex
   (regexp-opt '("name" "version" "depends" "installed" "enable" "pinned"
                 "bin" "sbin" "lib" "man" "doc" "share" "etc" "build"
-                "hash")
+                "hash" "dev" "build-id")
               'symbols)
   "Package variables in OPAM.")
 
+(defconst tuareg-opam-scopes-regex
+  (regexp-opt '("build" "with-test" "with-doc"
+                "pinned"
+                "true" "false")
+              'symbols)
+  "Package scopes")
+
 (defconst tuareg-opam-deprecated-regex
-  (eval-when-compile (regexp-opt '("build-test") 'symbols)))
+  (eval-when-compile (regexp-opt '("build-test" "build-doc") 'symbols)))
 
 (defvar tuareg-opam-font-lock-keywords
   `((,tuareg-opam-deprecated-regex . tuareg-opam-error-face)
-    (,(concat tuareg-opam-keywords-regex ":")
+    (,(concat "^" tuareg-opam-keywords-regex ":")
      1 font-lock-keyword-face)
-    (,(regexp-opt '("build" "test" "doc" "pinned" "true" "false") 'words)
-     . font-lock-constant-face)
+    ("^\\(extra-source\\)\\_>" 1 font-lock-keyword-face)
+    (,(concat "^\\(x-[[:alnum:]]+\\):")
+     1 font-lock-keyword-face)
+    (,tuareg-opam-scopes-regex . font-lock-constant-face)
     (,tuareg-opam-variables-regex . font-lock-variable-name-face)
     (,(concat "%{" tuareg-opam-variables-regex "}%")
      (1 font-lock-variable-name-face t))
+    ("%{\\([a-zA-Z_][a-zA-Z0-9_+-]*\\):\\([a-zA-Z][a-zA-Z0-9_+-]\\)}%"
+     (1 font-lock-constant-face t)
+     (2 font-lock-variable-name-face t))
     (,(concat "%{\\([a-zA-Z_][a-zA-Z0-9_+-]*\\):"
               tuareg-opam-pkg-variables-regex "}%")
      (1 font-lock-constant-face t)
-     (2 font-lock-variable-name-face t)))
+     (2 font-lock-builtin-face t)))
   "Highlighting for OPAM files")
 
 
@@ -180,20 +191,40 @@ See `prettify-symbols-alist' for more information.")
 
 (require 'flymake)
 
+(defalias 'tuareg-opam--flymake-proc-init-create-temp-buffer-copy
+  (if (functionp #'flymake-proc-init-create-temp-buffer-copy)
+      'flymake-proc-init-create-temp-buffer-copy
+    'flymake-init-create-temp-buffer-copy))
+
+(defalias 'tuareg-opam--proc-create-temp-inplace
+  (if (functionp #'flymake-proc-create-temp-inplace)
+      'flymake-proc-create-temp-inplace
+    'flymake-create-temp-inplace))
+
 (defun tuareg-opam-flymake-init ()
-  (let ((fname (flymake-init-create-temp-buffer-copy
-                #'flymake-create-temp-inplace)))
+  (let ((fname (tuareg-opam--flymake-proc-init-create-temp-buffer-copy
+                #'tuareg-opam--proc-create-temp-inplace)))
     (list "opam" (list "lint" fname))))
+
+(defvaralias 'tuareg-opam--flymake-proc-allowed-file-name-masks
+  (if (boundp 'flymake-proc-allowed-file-name-masks)
+      'flymake-proc-allowed-file-name-masks
+    'flymake-allowed-file-name-masks))
 
 (defvar tuareg-opam--allowed-file-name-masks
   '("[./]opam_?\\'" tuareg-opam-flymake-init)
   "Flymake entry for OPAM files.  See `flymake-allowed-file-name-masks'.")
 
+(defvaralias 'tuareg-opam--flymake-proc-err-line-patterns
+  (if (boundp 'flymake-proc-err-line-patterns)
+      'flymake-proc-err-line-patterns
+    'flymake-err-line-patterns))
+
 (defvar tuareg-opam--err-line-patterns
   '(("File \"\\([^\"]+\\)\", line \\([0-9]+\\), \
 characters \\([0-9]+\\)-\\([0-9]+\\): +\\([^\n]*\\)$"
      1 2 3 5))
-  "Value of `flymake-err-line-patterns' for OPAM files.")
+  "Value of `flymake-proc-err-line-patterns' for OPAM files.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;                           Skeleton
@@ -201,7 +232,7 @@ characters \\([0-9]+\\)-\\([0-9]+\\): +\\([^\n]*\\)$"
 (define-skeleton tuareg-opam-insert-opam-form
   "Insert a minimal opam file."
   nil
-  "opam-version: \"1.2\"" > \n
+  "opam-version: \"2.0\"" > \n
   "maintainer: \"" _ "\"" > \n
   "authors: [" _ "]" > \n
   "tags: [" _ "]" > \n
@@ -211,12 +242,18 @@ characters \\([0-9]+\\)-\\([0-9]+\\): +\\([^\n]*\\)$"
   "bug-reports: \"" _ "\"" > \n
   "doc: \"" _ "\"" > \n
   "build: [" > \n
-  "[ \"dune\" \"subst\" ] {pinned}" > \n
-  "[ \"dune\" \"build\" \"-p\" name \"-j\" jobs \"--profile\" \"release\" ]" > \n
+  "[\"dune\" \"subst\" ] {pinned}" > \n
+  "[\"dune\" \"build\" \"-p\" name \"-j\" jobs]" > \n
+  "[\"dune\" \"build\" \"-p\" name \"-j\" jobs \"@doc\"] {with-doc}" > \n
+  "[\"dune\" \"runtest\" \"-p\" name \"-j\" jobs] {with-test}" > \n
   "]" > \n
   "depends: [" > \n
+  "\"ocaml\" {>= \"4.02\"}" > \n
   "\"dune\" {build}" > \n
-  "]" > ?\n)
+  "]" > \n
+  "synopsis: \"\"" > \n
+  "description: \"\"\"" > \n
+  "\"\"\"" > ?\n)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -245,8 +282,10 @@ characters \\([0-9]+\\)-\\([0-9]+\\): +\\([^\n]*\\)$"
   (setq indent-tabs-mode nil)
   (setq-local require-final-newline mode-require-final-newline)
   (smie-setup tuareg-opam-smie-grammar #'tuareg-opam-smie-rules)
-  (push tuareg-opam--allowed-file-name-masks flymake-allowed-file-name-masks)
-  (setq-local flymake-err-line-patterns tuareg-opam--err-line-patterns)
+  (push tuareg-opam--allowed-file-name-masks
+        tuareg-opam--flymake-proc-allowed-file-name-masks)
+  (setq-local tuareg-opam--flymake-proc-err-line-patterns
+              tuareg-opam--err-line-patterns)
   (when (and tuareg-opam-flymake buffer-file-name)
     (flymake-mode t))
   (tuareg-opam-build-menu)

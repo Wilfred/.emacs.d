@@ -1,4 +1,4 @@
-;;; tuareg.el --- OCaml mode for Emacs.  -*- coding: utf-8 -*-
+;;; tuareg.el --- OCaml mode for Emacs.  -*- coding: utf-8; lexical-binding:t -*-
 
 ;; Copyright (C) 1997-2006 Albert Cohen, all rights reserved.
 ;; Copyright (C) 2009-2010 Jane Street Holding, LLC.
@@ -11,8 +11,8 @@
 ;;      Sean McLaughlin <seanmcl@gmail.com>
 ;;      Stefan Monnier <monnier@iro.umontreal.ca>
 ;; Created: 8 Jan 1997
-;; Version: 2.2.0
-;; Package-Requires: ((caml "3.12.0.1"))
+;; Version: 2.3.0
+;; Package-Requires: ((caml "3.12.0.1") (emacs "24.4"))
 ;; Keywords: ocaml languages
 ;; URL: https://github.com/ocaml/tuareg
 ;; EmacsWiki: TuaregMode
@@ -30,7 +30,6 @@
 ;; to a local directory and add the following line to your `.emacs':
 ;;
 ;; (add-to-list 'load-path "DIR")
-
 
 ;;; Usage:
 ;; Tuareg allows you to run batch OCaml compilations from Emacs (using
@@ -72,9 +71,9 @@
 
 ;;; Code:
 
-
-(eval-when-compile (require 'cl))
+(eval-when-compile (require 'cl-lib))
 (require 'easymenu)
+(require 'find-file)
 
 (defconst tuareg-mode-revision
   (eval-when-compile
@@ -120,17 +119,6 @@
   "Tell whether we are editing OCamlLex syntax."
   (string-match-p "\\.mll\\'" (or buffer-file-name (buffer-name))))
 
-(defalias 'tuareg-match-string
-  (if (fboundp 'match-string-no-properties)
-      'match-string-no-properties
-    'match-string))
-
-(or (fboundp 'read-shell-command)
-    (defun read-shell-command  (prompt &optional initial-input history)
-      "Read a string from the minibuffer, using `shell-command-history'."
-      (read-from-minibuffer prompt initial-input nil nil
-                            (or history 'shell-command-history))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                    Import types and help features
 
@@ -140,7 +128,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                       User customizable variables
 
-(require 'smie nil 'noerror)
+(require 'smie)
 
 ;; Use the standard `customize' interface or `tuareg-mode-hook' to
 ;; Configure these variables
@@ -149,6 +137,7 @@
 
 (defgroup tuareg nil
   "Support for the OCaml language."
+  :link '(url-link "https://github.com/ocaml/tuareg")
   :group 'languages)
 
 ;; Indentation defaults
@@ -179,7 +168,7 @@ if it has to."
            (dolist (buf (buffer-list))
              (with-current-buffer buf
                (when (derived-mode-p 'tuareg-mode 'tuareg-interactive-mode)
-                 (tuareg-install-font-lock)))))))
+                 (tuareg--install-font-lock)))))))
 
 (defcustom tuareg-in-indent 0 ; tuareg-default-indent
   "*How many spaces to indent from a `in' keyword.
@@ -198,13 +187,15 @@ show the '|' is aligned with 'match', thus 0 is the default value."
   "*How many spaces to indent a clause of match after a pattern `| ... ->'
 or `... ->' (pattern without preceding `|' in the first clause of a matching).
 To respect <http://caml.inria.fr/resources/doc/guides/guidelines.en.html>
-the default is 1.")
+the default is 1."
+  :type 'integer)
 
 (defcustom tuareg-match-when-indent (+ 4 tuareg-match-clause-indent)
   "*How many spaces from `|' to indent `when' in a pattern match
    | patt
         when cond ->
-      clause")
+      clause"
+  :type 'integer)
 
 (defcustom tuareg-match-patterns-aligned nil
   "Non-nil means that the pipes for multiple patterns of a single case
@@ -239,6 +230,25 @@ Many people find electric keys irritating, so you can disable them by
 setting this variable to nil.  You should probably have this on,
 though, if you also have `tuareg-electric-indent' on."
   :group 'tuareg :type 'boolean)
+
+(defcustom tuareg-highlight-all-operators nil
+  "If t, highlight all operators (as opposed to unusual ones).
+This is not turned on by default because this makes font-lock
+much less efficient."
+  :group 'tuareg :type 'boolean)
+
+(defcustom tuareg-other-file-alist
+  '(("\\.mli\\'" (".ml" ".mll" ".mly"))
+    ("\\.ml\\'" (".mli"))
+    ("\\.mll\\'" (".mli"))
+    ("\\.mly\\'" (".mli"))
+    ("\\.eliomi\\'" (".eliom"))
+    ("\\.eliom\\'" (".eliomi")))
+  "Associative list of alternate extensions to find.
+See `ff-other-file-alist'."
+  :group 'tuareg
+  :type '(repeat (list regexp (choice (repeat string) function))))
+
 
 (defcustom tuareg-interactive-scroll-to-bottom-on-output nil
   "*Controls when to scroll to the bottom of the interactive buffer
@@ -292,7 +302,7 @@ them to the OCaml REPL."
 (defcustom tuareg-browser 'browse-url
   "*Name of function that displays the OCaml reference manual.
 Valid names are `browse-url', `browse-url-firefox', etc."
-  :group 'tuareg)
+  :group 'tuareg :type 'function)
 
 (defcustom tuareg-library-path "/usr/local/lib/ocaml/"
   "*Path to the OCaml library."
@@ -314,7 +324,7 @@ Valid names are `browse-url', `browse-url-firefox', etc."
     ("Read only input" . 'tuareg-interactive-read-only-input))
   "*List of menu-configurable Tuareg options.")
 
-(defvar tuareg-interactive-program "ocaml"
+(defvar tuareg-interactive-program "ocaml -nopromptcont"
   "*Default program name for invoking an OCaml REPL (aka toplevel) from Emacs.")
 ;; Could be interesting to have this variable buffer-local
 ;;   (e.g., ocaml vs. metaocaml buffers)
@@ -398,12 +408,12 @@ problems if you compile under tramp."
 (defvar tuareg-font-lock-label-face
   'tuareg-font-lock-label-face)
 
-(defface tuareg-font-double-colon-face
+(defface tuareg-font-double-semicolon-face
   '((t (:foreground "OrangeRed")))
   "Face description for ;; which is not needed in standard code."
   :group 'tuareg-faces)
-(defvar tuareg-font-double-colon-face
-  'tuareg-font-double-colon-face)
+(defvar tuareg-font-double-semicolon-face
+  'tuareg-font-double-semicolon-face)
 
 (defface tuareg-font-lock-error-face
   '((t (:foreground "yellow" :background "red" :bold t)))
@@ -514,7 +524,7 @@ use `prettify-symbols-mode'."
                           'prettify-symbols-mode "Emacs-24.4"))
 
 (defcustom tuareg-prettify-symbols-full nil
-  "It t, add fun and -> and such to be prettified with symbols.
+  "If non-nil, add fun and -> and such to be prettified with symbols.
 This may sound like a neat trick, but note that it can change the
 alignment and can thus lead to surprises.  By default, only symbols that
 do not perturb in essential ways the alignment are used.  See
@@ -523,94 +533,56 @@ do not perturb in essential ways the alignment are used.  See
   :group 'tuareg :type 'boolean)
 
 (defvar tuareg-prettify-symbols-basic-alist
-  (cond ((fboundp 'decode-char) ;; use a unicode font.
-         `(("sqrt" . ,(decode-char 'ucs 8730))
-           ("&&" . ,(decode-char 'ucs 8743)); 'LOGICAL AND' (U+2227)
-           ("||" . ,(decode-char 'ucs 8744)); 'LOGICAL OR' (U+2228)
-           ("+." . ,(decode-char 'ucs 8724));DOT PLUS (U+2214)
-           ("-." . ,(decode-char 'ucs 8760));DOT MINUS (U+2238)
-           ;;("*." . ,(decode-char 'ucs 215))
-           ("*." . ,(decode-char 'ucs 8729)); BULLET OPERATOR
-           ("/." . ,(decode-char 'ucs 247))
-           ("<-" . ,(decode-char 'ucs 8592))
-           ("<=" . ,(decode-char 'ucs 8804))
-           (">=" . ,(decode-char 'ucs 8805))
-           ("<>" . ,(decode-char 'ucs 8800))
-           ("==" . ,(decode-char 'ucs 8801))
-           ("!=" . ,(decode-char 'ucs 8802))
-           ("<=>" . ,(decode-char 'ucs 8660))
-           ("infinity" . ,(decode-char 'ucs 8734))
-           ;; Some greek letters for type parameters.
-           ("'a" . ,(decode-char 'ucs 945))
-           ("'b" . ,(decode-char 'ucs 946))
-           ("'c" . ,(decode-char 'ucs 947))
-           ("'d" . ,(decode-char 'ucs 948))
-           ("'e" . ,(decode-char 'ucs 949))
-           ("'f" . ,(decode-char 'ucs 966))
-           ("'i" . ,(decode-char 'ucs 953))
-           ("'k" . ,(decode-char 'ucs 954))
-           ("'m" . ,(decode-char 'ucs 956))
-           ("'n" . ,(decode-char 'ucs 957))
-           ("'o" . ,(decode-char 'ucs 969))
-           ("'p" . ,(decode-char 'ucs 960))
-           ("'r" . ,(decode-char 'ucs 961))
-           ("'s" . ,(decode-char 'ucs 963))
-           ("'t" . ,(decode-char 'ucs 964))
-           ("'x" . ,(decode-char 'ucs 958))))
-        ((and (fboundp 'make-char) (fboundp 'charsetp) (charsetp 'symbol))
-         `(("sqrt" . ,(make-char 'symbol 214))
-           ("&&" . ,(make-char 'symbol 217))
-           ("||" . ,(make-char 'symbol 218))
-           ("*." . ,(make-char 'symbol 183))
-           ("/." . ,(make-char 'symbol 184))
-           ("<=" . ,(make-char 'symbol 163))
-           ("<-" . ,(make-char 'symbol 172))
-           (">=" . ,(make-char 'symbol 179))
-           ("<>" . ,(make-char 'symbol 185))
-           ("==" . ,(make-char 'symbol 186))
-           ("<=>" . ,(make-char 'symbol 219))
-           ("=>" . ,(make-char 'symbol 222))
-           ("infinity" . ,(make-char 'symbol 165))
-           ;; Some greek letters for type parameters.
-           ("'a" . ,(make-char 'symbol 97))
-           ("'b" . ,(make-char 'symbol 98))
-           ("'c" . ,(make-char 'symbol 103)) ; sic! 99 is chi, 103 is gamma
-           ("'d" . ,(make-char 'symbol 100))
-           ("'e" . ,(make-char 'symbol 101))
-           ("'f" . ,(make-char 'symbol 102))
-           ("'i" . ,(make-char 'symbol 105))
-           ("'k" . ,(make-char 'symbol 107))
-           ("'m" . ,(make-char 'symbol 109))
-           ("'n" . ,(make-char 'symbol 110))
-           ("'o" . ,(make-char 'symbol 111))
-           ("'p" . ,(make-char 'symbol 112))
-           ("'r" . ,(make-char 'symbol 114))
-           ("'s" . ,(make-char 'symbol 115))
-           ("'t" . ,(make-char 'symbol 116))
-           ("'x" . ,(make-char 'symbol 120))))))
+  `(("sqrt" . ?√)
+    ("&&" . ?∧)        ; 'LOGICAL AND' (U+2227)
+    ("||" . ?∨)        ; 'LOGICAL OR' (U+2228)
+    ("+." . ?∔)        ;DOT PLUS (U+2214)
+    ("-." . ?∸)        ;DOT MINUS (U+2238)
+    ;;("*." . ?×)
+    ("*." . ?∙)   ; BULLET OPERATOR
+    ("/." . ?÷)
+    ("<-" . ?←)
+    ("<=" . ?≤)
+    (">=" . ?≥)
+    ("<>" . ?≠)
+    ("==" . ?≡)
+    ("!=" . ?≢)
+    ("<=>" . ?⇔)
+    ("infinity" . ?∞)
+    ;; Some greek letters for type parameters.
+    ("'a" . ?α)
+    ("'b" . ?β)
+    ("'c" . ?γ)
+    ("'d" . ?δ)
+    ("'e" . ?ε)
+    ("'f" . ?φ)
+    ("'i" . ?ι)
+    ("'k" . ?κ)
+    ("'m" . ?μ)
+    ("'n" . ?ν)
+    ("'o" . ?ω)
+    ("'p" . ?π)
+    ("'r" . ?ρ)
+    ("'s" . ?σ)
+    ("'t" . ?τ)
+    ("'x" . ?ξ)))
 
 (defvar tuareg-prettify-symbols-extra-alist
-  (cond ((fboundp 'decode-char) ;; use a unicode font.
-         `(("fun" . ,(decode-char 'ucs 955))
-           ("not" . ,(decode-char 'ucs 172))
-           ;;("or" . ,(decode-char 'ucs 8744)); should not be used as ||
-           ("[|" . ,(decode-char 'ucs 12314)) ;; 〚
-           ("|]" . ,(decode-char 'ucs 12315)) ;; 〛
-           ("->" . ,(decode-char 'ucs 8594))
-           (":=" . ,(decode-char 'ucs 8656))))
-         ((and (fboundp 'make-char) (fboundp 'charsetp) (charsetp 'symbol))
-          `(("fun" . ,(make-char 'symbol 108))
-            ("not" . ,(make-char 'symbol 216))
-            ;;("or" . ,(make-char 'symbol 218))
-            ("->" . ,(make-char 'symbol 174))
-            (":=" . ,(make-char 'symbol 220))))))
+  `(("fun" . ?λ)
+    ("not" . ?¬)
+    ;;("or" . ?∨); should not be used as ||
+    ("[|" . ?〚)        ;; 〚
+    ("|]" . ?〛)        ;; 〛
+    ("->" . ?→)
+    (":=" . ?⇐)
+    ("::" . ?∷)))
 
-(defun tuareg--prettify-symbols-compose-p (start end _match)
+(defun tuareg--prettify-symbols-compose-p (start end match)
   "Return true iff the symbol MATCH should be composed.
 See `prettify-symbols-compose-predicate'."
   ;; Refine `prettify-symbols-default-compose-p' so as not to compose
   ;; symbols for errors,...
-  (and (prettify-symbols-default-compose-p start end _match)
+  (and (prettify-symbols-default-compose-p start end match)
        (not (memq (get-text-property start 'face)
                   '(tuareg-font-lock-error-face
                     tuareg-font-lock-interactive-output-face
@@ -641,20 +613,19 @@ Regexp match data 0 points to the chars."
   nil)
 
 (defun tuareg-font-lock-symbols-keywords ()
-  (when (fboundp 'compose-region)
-    (let ((alist (if tuareg-prettify-symbols-full
-                     (append tuareg-prettify-symbols-basic-alist
-                             tuareg-prettify-symbols-extra-alist)
-                   tuareg-prettify-symbols-basic-alist)))
-      (dolist (x alist)
-        (when (and (if (fboundp 'char-displayable-p)
-                       (char-displayable-p (cdr x))
-                     t)
-                   (not (assoc (car x) alist))) ; not yet in alist.
-          (push x alist)))
-      (when alist
-        `((,(regexp-opt (mapcar 'car alist) t)
-           (0 (tuareg-font-lock-compose-symbol ',alist))))))))
+  (let ((alist (if tuareg-prettify-symbols-full
+                   (append tuareg-prettify-symbols-basic-alist
+                           tuareg-prettify-symbols-extra-alist)
+                 tuareg-prettify-symbols-basic-alist)))
+    (dolist (x alist)
+      (when (and (if (fboundp 'char-displayable-p)
+                     (char-displayable-p (cdr x))
+                   t)
+                 (not (assoc (car x) alist))) ; not yet in alist.
+        (push x alist)))
+    (when alist
+      `((,(regexp-opt (mapcar #'car alist) t)
+         (0 (tuareg-font-lock-compose-symbol ',alist)))))))
 
 (defvar tuareg-mode-syntax-table
   (let ((st (make-syntax-table)))
@@ -697,46 +668,43 @@ Regexp match data 0 points to the chars."
   '(("\\<\\('\\)\\([^'\\\n]\\|\\\\.[^\\'\n \")]*\\)\\('\\)"
      (1 '(7)) (3 '(7)))))
 
-(defvar syntax-propertize-function)
-
-(when (eval-when-compile (fboundp 'syntax-propertize-rules))
-  (defun tuareg-syntax-propertize (start end)
-    (goto-char start)
-    (tuareg--syntax-quotation end)
-    (funcall
-     (syntax-propertize-rules
-      ;; When we see a '"', knowing whether it's a literal char (as opposed to
-      ;; the end of a string followed by the beginning of a literal char)
-      ;; requires checking syntax-ppss as in:
-      ;; ("\\_<\\('\"'\\)"
-      ;;  (1 (unless (nth 3 (save-excursion (syntax-ppss (match-beginning 0))))
-      ;;       (string-to-syntax "\""))))
-      ;; Not sure if it's worth the trouble since adding a space between the
-      ;; string and the literal char is easy enough and is the usual
-      ;; style anyway.
-      ;; For all other cases we don't need to check syntax-ppss because, if the
-      ;; first quote is within a string (or comment), the whole match is within
-      ;; the string (or comment), so the syntax-properties don't hurt.
-      ;;
-      ;; Note: we can't just use "\\<" here because syntax-propertize is also
-      ;; used outside of font-lock.
-      ("\\_<\\('\\)\\(?:[^'\\\n]\\|\\\\.[^\\'\n \")]*\\)\\('\\)"
-       (1 "\"") (2 "\""))
-      ("\\({\\)[a-z_]*|"
-       (1 (prog1 "|" (tuareg--syntax-quotation end))))
-      )
-     (point) end)))
+(defun tuareg-syntax-propertize (start end)
+  (goto-char start)
+  (tuareg--syntax-quotation end)
+  (funcall
+   (syntax-propertize-rules
+    ;; When we see a '"', knowing whether it's a literal char (as opposed to
+    ;; the end of a string followed by the beginning of a literal char)
+    ;; requires checking syntax-ppss as in:
+    ;; ("\\_<\\('\"'\\)"
+    ;;  (1 (unless (nth 3 (save-excursion (syntax-ppss (match-beginning 0))))
+    ;;       (string-to-syntax "\""))))
+    ;; Not sure if it's worth the trouble since adding a space between the
+    ;; string and the literal char is easy enough and is the usual
+    ;; style anyway.
+    ;; For all other cases we don't need to check syntax-ppss because, if the
+    ;; first quote is within a string (or comment), the whole match is within
+    ;; the string (or comment), so the syntax-properties don't hurt.
+    ;;
+    ;; Note: we can't just use "\\<" here because syntax-propertize is also
+    ;; used outside of font-lock.
+    ("\\_<\\('\\)\\(?:[^'\\\n]\\|\\\\.[^\\'\n \")]*\\)\\('\\)"
+     (1 "\"") (2 "\""))
+    ("\\({\\)[a-z_]*|"
+     (1 (prog1 "|" (tuareg--syntax-quotation end))))
+    )
+   (point) end))
 
 (defun tuareg--syntax-quotation (end)
   (let ((ppss (syntax-ppss)))
     (when (eq t (nth 3 ppss))
-      (ecase (char-after (nth 8 ppss))
-        (?<
+      (pcase (char-after (nth 8 ppss))
+        (`?<
          ;; We're indeed inside a quotation.
          (when (re-search-forward ">>" end 'move)
            (put-text-property (1- (point)) (point)
                               'syntax-table (string-to-syntax "|"))))
-        (?\{
+        (`?\{
          ;; We're inside a quoted string
          ;; http://caml.inria.fr/pub/docs/manual-ocaml/extn.html#sec244
          (let ((id (save-excursion
@@ -746,9 +714,11 @@ Regexp match data 0 points to the chars."
                                               (point))))))
 	   (when (search-forward (concat "|" id "}") end 'move)
              (put-text-property (1- (point)) (point)
-                                'syntax-table (string-to-syntax "|")))))))))
+                                'syntax-table (string-to-syntax "|")))))
+        (c (error "Unexpected char '%c' starting delimited string" c))))))
 
 (defun tuareg-font-lock-syntactic-face-function (state)
+  "`font-lock-syntactic-face-function' for Tuareg."
   (if (nth 3 state)
       font-lock-string-face
     (let ((start (nth 8 state)))
@@ -759,9 +729,15 @@ Regexp match data 0 points to the chars."
           tuareg-doc-face
         font-lock-comment-face))))
 
-;; Initially empty, set in `tuareg-install-font-lock'
+;; Initially empty, set in `tuareg--install-font-lock-1'
 (defvar tuareg-font-lock-keywords ()
-  "Font-Lock patterns for Tuareg mode.")
+  "Font-Lock patterns for Tuareg mode (basic level).")
+
+(defvar tuareg-font-lock-keywords-1 ()
+  "Font-Lock patterns for Tuareg mode (intermediate level).")
+
+(defvar tuareg-font-lock-keywords-2 ()
+  "Font-Lock patterns for Tuareg mode (maximum level).")
 
 (defconst tuareg-font-lock-syntax
   ;; Note: as a general rule, changing syntax-table during font-lock
@@ -775,15 +751,22 @@ Regexp match data 0 points to the chars."
   ;; N spaces in N+1 different ways :-(
   " *\\(?:[\t\n] *\\)?")
 
+(defconst tuareg--id-re "\\_<[A-Za-z_][A-Za-z0-9_']*\\_>"
+  "Regular expression for identifiers.")
+(defconst tuareg--lid-re "\\_<[a-z_][A-Za-z0-9_']*\\_>"
+  "Regular expression for variable names.")
+(defconst tuareg--uid-re "\\_<[A-Z][A-Za-z0-9_']*\\_>"
+  "Regular expression for module and constructor names.")
+
 (defun tuareg--install-font-lock (&optional interactive-p)
   "Setup `font-lock-defaults'.  INTERACTIVE-P says whether it is
 for the interactive mode."
-  (let* ((id "\\<[A-Za-z_][A-Za-z0-9_']*\\>")
-         (lid "\\<[a-z_][A-Za-z0-9_']*\\>")
-         (uid "\\<[A-Z][A-Za-z0-9_']*\\>")
+  (let* ((id tuareg--id-re)
+         (lid tuareg--lid-re)
+         (uid tuareg--uid-re)
 	 (attr-id1 "\\<[A-Za-z_][A-Za-z0-9_']*\\>")
 	 (attr-id (concat attr-id1 "\\(?:\\." attr-id1 "\\)*"))
-	 (maybe-infix-attr (concat "\\(?:%" attr-id "\\)?")); at most 1
+	 (maybe-infix-extension (concat "\\(?:%" attr-id "\\)?")); at most 1
          ;; Matches braces balanced on max 3 levels.
          (balanced-braces
           (let ((b "\\(?:[^()]\\|(")
@@ -810,16 +793,13 @@ for the interactive mode."
           (let ((b "\\(?:[^][]\\|\\[")
                 (e "\\]\\)*"))
             (concat b b b "[^][]*" e e e)))
-	 (maybe-infix-ext
+	 (maybe-infix-attribute
 	  (concat "\\(?:\\[@" attr-id balanced-brackets "\\]\\)*"))
-	 (maybe-infix-attr+ext
-	  (concat maybe-infix-attr maybe-infix-ext))
-         (tuple (concat "(" balanced-braces ")")); much more than tuple!
+	 (maybe-infix-ext+attr
+	  (concat maybe-infix-extension maybe-infix-attribute))
 	 ;; FIXME: module paths with functor applications
          (module-path (concat uid "\\(?:\\." uid "\\)*"))
          (typeconstr (concat "\\(?:" module-path "\\.\\)?" lid))
-         (constructor (concat "\\(?:\\(?:" module-path "\\.\\)?" uid
-                              "\\|`" id "\\)"))
          (extended-module-name
           (concat uid "\\(?: *([ A-Z]" balanced-braces ")\\)*"))
          (extended-module-path
@@ -827,7 +807,7 @@ for the interactive mode."
                   "\\(?: *\\. *" extended-module-name "\\)*"))
          (modtype-path (concat "\\(?:" extended-module-path "\\.\\)*" id))
          (typevar "'[A-Za-z_][A-Za-z0-9_']*\\>")
-         (typeparam (concat "[+-]?" typevar))
+         (typeparam (concat "\\(?:[+-]?" typevar "\\|_\\)"))
          (typeparams (concat "\\(?:" typeparam "\\|( *"
                              typeparam " *\\(?:, *" typeparam " *\\)*)\\)"))
          (typedef (concat "\\(?:" typeparams " *\\)?" lid))
@@ -836,268 +816,516 @@ for the interactive mode."
                                 "present" "automaton" "where" "match"
                                 "with" "do" "done" "unless" "until"
                                 "reset" "every")))
-         (let-binding (concat "\\<\\(?:let" maybe-infix-attr+ext
-			      "\\(?: +" (if (tuareg-editing-ls3) let-ls3 "rec")
-			       "\\)?\\|and\\) +"))
-         ;; group of variables
-         (gvars (concat "\\(\\(?:" tuareg--whitespace-re
-                        "\\(?:" lid "\\|()\\|" tuple ; = any balanced (...)
-                        "\\|[~?]\\(?:" lid
-                        "\\(?::\\(?:" lid "\\|(" balanced-braces ")\\)\\)?"
-                        "\\|(" balanced-braces ")\\)"
-                        "\\)\\)+\\)"))
+         (before-operator-char "[^-!$%&*+./:<=>?@^|~#?]")
+         (operator-char         "[-!$%&*+./:<=>?@^|~]")
+         (operator-char-no>     "[-!$%&*+./:<=?@^|~]"); for "->"
+         (binding-operator-char
+          (concat "\\(?:[-$&*+/<=>@^|]" operator-char "*\\)"))
+         (let-binding-g4 ; 4 groups
+          (concat "\\_<\\(?:\\(let" binding-operator-char "?\\)"
+                  "\\(" maybe-infix-ext+attr
+		  "\\)\\(?: +\\(" (if (tuareg-editing-ls3) let-ls3 "rec")
+		  "\\)\\)?\\|\\(and" binding-operator-char "?\\)\\) +"))
          ;; group for possible class param
-         (class-gparams
-          (concat "\\<class\\>\\(?: +type\\>\\)?\\(?: +virtual\\>\\)?"
-                  "\\( *\\[ *" typevar " *\\(?:, *" typevar " *\\)*\\]\\)?")))
-  (setq
-   tuareg-font-lock-keywords
-   `(("^#[0-9]+ *\\(?:\"[^\"]+\"\\)?" 0 tuareg-font-lock-line-number-face t)
-     ,@(if interactive-p
-           `((,(concat "^# +\\(#" lid "\\)")
-              1 tuareg-font-lock-interactive-directive-face)
-             (,(concat "^ *\\(#" lid "\\)")
-              1 tuareg-font-lock-interactive-directive-face))
-         `((,(concat "^\\(#" lid "\\)")
-            . tuareg-font-lock-interactive-directive-face)))
-     (,(concat (if interactive-p "^ *#\\(?: +#\\)?" "^#")
-               "show\\(?:_module\\)? +\\(" uid "\\)")
-      1 tuareg-font-lock-module-face)
-     (";;+" 0 tuareg-font-double-colon-face)
-     ;; Attributes (`keep' to highlight except strings & chars)
-     (,(concat "\\[@\\(?:@@?\\)?" attr-id balanced-brackets "\\]")
-      0 tuareg-font-lock-attribute-face keep)
-     ;; Extension nodes.
-     (,(concat "\\(\\[%%?" attr-id "\\)" balanced-brackets "\\(\\]\\)")
-      (1 tuareg-font-lock-extension-node-face)
-      (2 tuareg-font-lock-extension-node-face))
-     (,(concat "\\(?:\\<" (regexp-opt '("let" "begin" "module" "val" "val!"
-					"fun" "function" "match"))
-	       "\\|;\\)\\(" maybe-infix-attr "\\)")
-      1 tuareg-font-lock-infix-extension-node-face)
-     ;; cppo
-     (,(concat "^ *#" (regexp-opt '("define" "undef" "if" "ifdef" "ifndef"
+         (gclass-gparams
+          (concat "\\(\\_<class\\(?: +type\\)?\\(?: +virtual\\)?\\>\\)"
+                  " *\\(\\[ *" typevar " *\\(?:, *" typevar " *\\)*\\] *\\)?"))
+         ;; font-lock rules common to all levels
+         (common-keywords
+          `(("^#[0-9]+ *\\(?:\"[^\"]+\"\\)?"
+             0 tuareg-font-lock-line-number-face t)
+            ;; cppo
+            (,(concat "^ *#"
+                      (regexp-opt '("define" "undef" "if" "ifdef" "ifndef"
 				    "else" "elif" "endif" "include"
 				    "warning" "error" "ext" "endext")
-				  'words))
-      . font-lock-preprocessor-face)
-     ("\\<\\(false\\|true\\)\\>" . font-lock-constant-face)
-     (,(regexp-opt '("true" "false" "__LOC__" "__FILE__" "__LINE__"
-                     "__MODULE__" "__POS__" "__LOC_OF__" "__LINE_OF__"
-                     "__POS_OF__")
-                   'words)
-      . font-lock-constant-face)
-     ;; "type" to introduce a local abstract type considered a keyword
-     (,(concat "( *\\(type\\) +\\(" lid " *\\)+)")
-      (1 font-lock-keyword-face)
-      (2 font-lock-type-face))
-     (":[\n]? *\\(\\<type\\>\\)"
-      (1 font-lock-keyword-face))
-     ;; First class modules.  In these contexts, "val" and "module"
-     ;; are not considered as "governing" (main structure of the code).
-     (,(concat "( *\\(module\\) +\\(" module-path "\\) *: +\\("
-	       balanced-braces-no-string "\\))")
-      (1 font-lock-keyword-face)
-      (2 tuareg-font-lock-module-face)
-      (3 tuareg-font-lock-module-face))
-     (,(concat "( *\\(val\\) +\\(" balanced-braces-no-end-operator "\\): +\\("
-	       balanced-braces-no-string "\\))")
-      (1 font-lock-keyword-face)
-      (2 tuareg-font-lock-module-face)
-      (3 tuareg-font-lock-module-face))
-     ("\\<let +exception\\>" . tuareg-font-lock-governing-face)
-     (,(concat "\\<let +exception +\\(" uid "\\)")
-      1 tuareg-font-lock-constructor-face)
-     (,(regexp-opt '("module" "include" "sig" "struct" "functor"
-                     "type" "constraint" "class" "in" "inherit"
-                     "method" "external" "val" "open"
-                     "initializer" "let" "rec" "nonrec"
-                     "object" "and" "begin" "end")
-                   'words)
-      . tuareg-font-lock-governing-face)
-     ,@(if (tuareg-editing-ls3)
-           `((,(concat "\\<\\(let[ \t]+" let-ls3 "\\)\\>")
-              . tuareg-font-lock-governing-face)))
-     (,(let ((kwd '("as" "do" "done" "downto" "else" "for" "if"
-                    "then" "to" "try" "when" "while" "match" "new"
-                    "lazy" "assert" "fun" "function" "exception")))
-         (if (tuareg-editing-ls3)
-             (progn (push "reset" kwd)  (push "merge" kwd)
-                    (push "emit" kwd)  (push "period" kwd)))
-         (regexp-opt kwd 'words))
-      . font-lock-keyword-face)
-     ;; with type: "with" treated as a governing keyword
-     (,(concat "\\<\\(\\(?:with\\|and\\) +type\\(?: +nonrec\\)?\\>\\) *"
-               "\\(" typeconstr "\\)?")
-      (1 tuareg-font-lock-governing-face keep)
-      (2 font-lock-type-face keep t))
-     (,(concat "\\<\\(\\(?:with\\|and\\) +module\\>\\) *\\(?:\\(" module-path
-               "\\) *\\)?\\(?:= *\\(" extended-module-path "\\)\\)?")
-      (1 tuareg-font-lock-governing-face keep)
-      (2 tuareg-font-lock-module-face keep t)
-      (3 tuareg-font-lock-module-face keep t))
-     ;; "module type of" module-expr (here "of" is a governing keyword)
-     ("\\<module +type +of\\>"
-      0 tuareg-font-lock-governing-face keep)
-     (,(concat "\\<module +type +of +\\(" module-path "\\)?")
-      1 tuareg-font-lock-module-face keep t)
-     ;; "!", "mutable", "virtual" treated as governing keywords
-     (,(concat "\\<\\(\\(?:val" maybe-infix-attr+ext
-	       (if (tuareg-editing-ls3) "\\|reset\\|do")
-               "\\)!? +\\(?:mutable\\(?: +virtual\\)?\\>"
-               "\\|virtual\\(?: +mutable\\)?\\>\\)\\|val!"
-	       maybe-infix-attr+ext "\\)\\( *" lid "\\)?")
-      (1 tuareg-font-lock-governing-face keep)
-      (2 font-lock-variable-name-face nil t))
-     ("\\<class\\>\\(?: +type\\>\\)?\\( +virtual\\>\\)?"
-      1 tuareg-font-lock-governing-face nil t)
-     ;; "private" treated as governing keyword
-     (,(concat "\\<method!?\\(?: +\\(private\\(?: +virtual\\)?"
-               "\\|virtual\\(?: +private\\)?\\)\\>\\)?")
-      1 tuareg-font-lock-governing-face keep t)
-     ;; Other uses of "with", "mutable", "private", "virtual"
-     (,(regexp-opt '("of" "with" "mutable" "private" "virtual") 'words)
-      . font-lock-keyword-face)
-     ;;; labels
-     (,(concat "\\([?~]" lid "\\)" tuareg--whitespace-re ":[^:>=]")
-      1 tuareg-font-lock-label-face keep)
-     ;;; label in a type signature
-     (,(concat "\\(?:->\\|:[^:>=]\\)" tuareg--whitespace-re
-               "\\(" lid "\\)[ \t]*:[^:>=]")
-      1 tuareg-font-lock-label-face keep)
-     ;; Polymorphic variants (take precedence on builtin names)
-     (,(concat "`" id) . tuareg-font-lock-constructor-face)
-     (,(concat "\\<open\\(! +\\|\\> *\\)\\(" module-path "\\)?")
-      (1 tuareg-font-lock-governing-face)
-      (2 tuareg-font-lock-module-face keep t))
-     (,(regexp-opt '("failwith" "failwithf" "exit" "at_exit" "invalid_arg"
-                     "parser" "raise" "raise_notrace" "ref" "ignore"
-		     "Match_failure" "Assert_failure" "Invalid_argument"
-		     "Failure" "Not_found" "Out_of_memory" "Stack_overflow"
-		     "Sys_error" "End_of_file" "Division_by_zero"
-		     "Sys_blocked_io" "Undefined_recursive_module")
-                   'words)
-      . font-lock-builtin-face)
-     ;; module paths A.B.
-     (,(concat module-path "\\.") . tuareg-font-lock-module-face)
-     ,@(and tuareg-support-metaocaml
-            '(("[^-@^!*=<>&/%+~?#]\\(\\(?:\\.<\\|\\.~\\|!\\.\\|>\\.\\)+\\)"
-               1 tuareg-font-lock-multistage-face)))
-     (,(concat
-         "[][;,()|{}]\\|[-@^!:*=<>&/%+~?#]\\.?\\|\\.\\.\\.*\\|"
-         (regexp-opt
+				  'symbols))
+             . font-lock-preprocessor-face)
+            ;; Directives
+            ,@(if interactive-p
+                  `((,(concat "^# +\\(#" lid "\\)")
+                     1 tuareg-font-lock-interactive-directive-face)
+                    (,(concat "^ *\\(#" lid "\\)")
+                     1 tuareg-font-lock-interactive-directive-face))
+                `((,(concat "^\\(#" lid "\\)")
+                   . tuareg-font-lock-interactive-directive-face)))
+            (,(concat (if interactive-p "^ *#\\(?: +#\\)?" "^#")
+                      "show\\(?:_module\\)? +\\(" uid "\\)")
+             1 tuareg-font-lock-module-face)
+            (";;+" 0 tuareg-font-double-semicolon-face)
+            ;; Attributes (`keep' to highlight except strings & chars)
+            (,(concat "\\[@\\(?:@@?\\)?" attr-id balanced-brackets "\\]")
+             0 tuareg-font-lock-attribute-face keep)
+            ;; Extension nodes.
+            (,(concat "\\(\\[%%?" attr-id "\\)" balanced-brackets "\\(\\]\\)")
+             (1 tuareg-font-lock-extension-node-face)
+             (2 tuareg-font-lock-extension-node-face))
+            (,(concat "[^;];\\(" maybe-infix-extension "\\)")
+             1 tuareg-font-lock-infix-extension-node-face)
+            (,(concat "\\_<\\(function\\)\\_>\\(" maybe-infix-ext+attr "\\)"
+	              tuareg--whitespace-re "\\(" lid "\\)?")
+             (1 font-lock-keyword-face)
+             (2 tuareg-font-lock-infix-extension-node-face keep)
+             (3 font-lock-variable-name-face nil t))
+            (,(concat "\\_<\\(fun\\|match\\)\\_>\\(" maybe-infix-ext+attr "\\)")
+             (1 font-lock-keyword-face)
+             (2 tuareg-font-lock-infix-extension-node-face keep))
+            ;; "type" to introduce a local abstract type considered a keyword
+            (,(concat "( *\\(type\\) +\\(" lid " *\\)+)")
+             (1 font-lock-keyword-face)
+             (2 font-lock-type-face))
+            (":[\n]? *\\(\\<type\\>\\)"
+             (1 font-lock-keyword-face))
+            ;; (expr: t) and (expr :> t) If `t' is longer then one
+            ;; word, require a space before.  Not only this is more
+            ;; readable but it also avoids that `~label:expr var` is
+            ;; taken as a type annotation when surrounded by
+            ;; parentheses.
+            (,(concat "(" balanced-braces-no-end-operator ":>?\\(['_A-Za-z]+"
+                      "\\| [ \n'_A-Za-z]" balanced-braces-no-string "\\))")
+             1 font-lock-type-face keep)
+            ;; (lid: t), before function definitions
+            (,(concat "(" lid " *:\\(['_A-Za-z]"
+                      balanced-braces-no-string "\\))")
+             1 font-lock-type-face keep)
+            ;; "module type of" module-expr (here "of" is a governing
+            ;; keyword).  Must be before the modules highlighting.
+            (,(concat "\\<\\(module +type +of\\)\\>\\(?: +\\("
+                      module-path "\\)\\)?")
+             (1 tuareg-font-lock-governing-face keep)
+             (2 tuareg-font-lock-module-face keep t))
+            ;; First class modules.  In these contexts, "val" and "module"
+            ;; are not considered as "governing" (main structure of the code).
+            (,(concat "( *\\(module\\) +\\(" module-path "\\) *\\(?:: *\\("
+	              balanced-braces-no-string "\\)\\)?)")
+             (1 font-lock-keyword-face)
+             (2 tuareg-font-lock-module-face)
+             (3 tuareg-font-lock-module-face keep t))
+            (,(concat "( *\\(val\\) +\\("
+                      balanced-braces-no-end-operator "\\): +\\("
+	              balanced-braces-no-string "\\))")
+             (1 font-lock-keyword-face)
+             (2 tuareg-font-lock-module-face)
+             (3 tuareg-font-lock-module-face))
+            ("\\_<let +exception\\_>" . tuareg-font-lock-governing-face)
+            (,(concat (regexp-opt '("sig" "struct" "functor" "inherit"
+                                    "initializer" "object" "begin")
+                                  'symbols)
+                      "\\(" maybe-infix-ext+attr "\\)")
+             (1 tuareg-font-lock-governing-face)
+             (2 tuareg-font-lock-infix-extension-node-face keep))
+            (,(regexp-opt '("constraint" "in" "end") 'symbols)
+             . tuareg-font-lock-governing-face)
+            ,@(if (tuareg-editing-ls3)
+                  `((,(concat "\\<\\(let[ \t]+" let-ls3 "\\)\\>")
+                     . tuareg-font-lock-governing-face)))
+            ;; "with type": "with" treated as a governing keyword
+            (,(concat "\\<\\(\\(?:with\\|and\\) +type\\(?: +nonrec\\)?\\>\\) *"
+                      "\\(" typeconstr "\\)?")
+             (1 tuareg-font-lock-governing-face keep)
+             (2 font-lock-type-face keep t))
+            (,(concat "\\<\\(\\(?:with\\|and\\) +module\\>\\) *\\(?:\\("
+                      module-path "\\) *\\)?\\(?:= *\\("
+                      extended-module-path "\\)\\)?")
+             (1 tuareg-font-lock-governing-face keep)
+             (2 tuareg-font-lock-module-face keep t)
+             (3 tuareg-font-lock-module-face keep t))
+            ;; "!", "mutable", "virtual" treated as governing keywords
+            (,(concat "\\<\\(\\(?:val\\(" maybe-infix-ext+attr "\\)"
+	              (if (tuareg-editing-ls3) "\\|reset\\|do")
+                      "\\)!? +\\(?:mutable\\(?: +virtual\\)?\\>"
+                      "\\|virtual\\(?: +mutable\\)?\\>\\)"
+	              "\\|val!\\(" maybe-infix-ext+attr "\\)\\)"
+                      "\\(?: *\\(" lid "\\)\\)?")
+             (2 tuareg-font-lock-infix-extension-node-face keep t)
+             (3 tuareg-font-lock-infix-extension-node-face keep t)
+             (1 tuareg-font-lock-governing-face keep t)
+             (4 font-lock-variable-name-face nil t))
+            ;; "val" without "!", "mutable" or "virtual"
+            (,(concat "\\_<\\(val\\)\\_>\\(" maybe-infix-ext+attr "\\)"
+	              "\\(?: +\\(" lid "\\)\\)?")
+             (1 tuareg-font-lock-governing-face keep)
+             (2 tuareg-font-lock-infix-extension-node-face keep)
+             (3 font-lock-function-name-face keep t))
+            ;; "private" treated as governing keyword
+            (,(concat "\\(\\<method!?\\(?: +\\(?:private\\(?: +virtual\\)?"
+                      "\\|virtual\\(?: +private\\)?\\)\\)?\\>\\)"
+                      " *\\(" lid "\\)?")
+             (1 tuareg-font-lock-governing-face keep t)
+             (2 font-lock-function-name-face keep t)); method name
+            (,(concat "\\<\\(open\\(?:! +\\|\\> *\\)\\)\\(" module-path "\\)?")
+             (1 tuareg-font-lock-governing-face)
+             (2 tuareg-font-lock-module-face keep t))
+            ;; module paths A.B.
+            (,(concat module-path "\\.") . tuareg-font-lock-module-face)
+            ,@(and tuareg-support-metaocaml
+                   '(("[^-@^!*=<>&/%+~?#]\\(\\(?:\\.<\\|\\.~\\|!\\.\\|>\\.\\)+\\)"
+                      1 tuareg-font-lock-multistage-face)))
+            ;; External function declaration
+            (,(concat "\\_<\\(external\\)\\_>\\(?: +\\(" lid "\\)\\)?")
+             (1 tuareg-font-lock-governing-face)
+             (2 font-lock-function-name-face keep t))
+            ;; Binding operators
+            (,(concat "( *\\(\\(?:let\\|and\\)" binding-operator-char "\\) *)")
+             1 font-lock-function-name-face)
+            ;; Highlight "let" and function names (their argument
+            ;; patterns can then be treated uniformly with variable bindings)
+            (,(concat let-binding-g4 "\\(?:\\(" lid
+                      "\\) *\\(?:[^ =,:a]\\|a[^s]\\)\\)?")
+             (1 tuareg-font-lock-governing-face keep t)
+             (2 tuareg-font-lock-infix-extension-node-face keep t)
+             (3 tuareg-font-lock-governing-face keep t)
+             (4 tuareg-font-lock-governing-face keep t)
+             (5 font-lock-function-name-face keep t))
+            (,(concat "\\_<\\(module\\)\\(" maybe-infix-ext+attr "\\)"
+	              "\\(\\(?: +type\\)?\\(?: +rec\\)?\\)\\>\\(?: *\\("
+                      uid "\\)\\)?")
+             (1 tuareg-font-lock-governing-face)
+             (2 tuareg-font-lock-infix-extension-node-face)
+             (3 tuareg-font-lock-governing-face)
+             (4 tuareg-font-lock-module-face keep t))
+            (,(concat "\\_<\\(include\\)\\_>\\(?: +\\("
+                      extended-module-path "\\|( *"
+                      extended-module-path " *: *" balanced-braces " *)\\)\\)?")
+             (1 tuareg-font-lock-governing-face)
+             (2 tuareg-font-lock-module-face keep t))
+            ;; module type A = B
+            (,(concat "\\_<\\(module +type\\)\\_>\\(?: +" id
+                      " *= *\\(" modtype-path "\\)\\)?")
+             (1 tuareg-font-lock-governing-face)
+             (2 tuareg-font-lock-module-face keep t))
+            ;; "class [params] name"
+            (,(concat gclass-gparams "\\(" lid "\\)?")
+             (1 tuareg-font-lock-governing-face keep)
+             (2 font-lock-type-face keep t)
+             (3 font-lock-function-name-face keep t))
+            ;; "type lid" anywhere (e.g. "let f (type t) x =")
+            ;; introduces a new type
+            (,(concat "\\_<\\(type\\_>\\)\\(" maybe-infix-ext+attr
+                      "\\)\\(?: +\\(nonrec\\_>\\)\\)?\\(?:"
+                      tuareg--whitespace-re
+                      "\\(" typedef "\\)\\)?")
+             (1 tuareg-font-lock-governing-face)
+             (2 tuareg-font-lock-infix-extension-node-face keep)
+             (3 tuareg-font-lock-governing-face keep t)
+             (4 font-lock-type-face keep t))))
+         tuareg-font-lock-keywords-1-extra)
+    (setq
+     tuareg-font-lock-keywords
+     (append
+      common-keywords
+      `(;; Basic way of matching functions
+        (,(concat let-binding-g4 "\\(" lid "\\) *= *\\(fun\\(?:ction\\)?\\)\\>")
+         (5 font-lock-function-name-face)
+         (6 font-lock-keyword-face))
+        )))
+    (setq
+     tuareg-font-lock-keywords-1-extra
+     `(("\\_<\\(false\\|true\\)\\_>" . font-lock-constant-face)
+       (,(regexp-opt '("true" "false" "__LOC__" "__FILE__" "__LINE__"
+                       "__MODULE__" "__POS__" "__LOC_OF__" "__LINE_OF__"
+                       "__POS_OF__")
+                     'symbols)
+        . font-lock-constant-face)
+       (,(let ((kwd '("as" "do" "done" "downto" "else" "for" "if"
+                      "then" "to" "try" "when" "while" "new"
+                      "lazy" "assert" "exception")))
+           (if (tuareg-editing-ls3)
+               (progn (push "reset" kwd)  (push "merge" kwd)
+                      (push "emit" kwd)  (push "period" kwd)))
+           (regexp-opt kwd 'symbols))
+        . font-lock-keyword-face)
+       (,(concat "\\_<exception +\\(" uid "\\)")
+        1 tuareg-font-lock-constructor-face)
+       ;; (M: S) -- only color S here (may be "A.T with type t = s")
+       (,(concat "( *" uid " *: *\\("
+                 modtype-path "\\(?: *\\_<with\\_>"
+                 balanced-braces "\\)?\\) *)")
+        1 tuareg-font-lock-module-face keep)
+       ;; module A(B: _)(C: _) : D = E, including "module A : E"
+       (,(concat "\\_<module +" uid tuareg--whitespace-re
+                 "\\(\\(?:( *" uid " *: *"
+                 modtype-path "\\(?: *\\_<with\\_>" balanced-braces "\\)?"
+                 " *)" tuareg--whitespace-re "\\)*\\)\\(?::"
+                 tuareg--whitespace-re "\\(" modtype-path
+                 "\\) *\\)?\\(?:=" tuareg--whitespace-re
+                 "\\(" extended-module-path "\\)\\)?")
+        (1 font-lock-variable-name-face keep); functor (module) variable
+        (2 tuareg-font-lock-module-face keep t)
+        (3 tuareg-font-lock-module-face keep t))
+       (,(concat "\\_<functor\\> *( *\\(" uid "\\) *: *\\("
+                 modtype-path "\\) *)")
+        (1 font-lock-variable-name-face keep); functor (module) variable
+        (2 tuareg-font-lock-module-face keep))
+       ;; Other uses of "with", "mutable", "private", "virtual"
+       (,(regexp-opt '("of" "with" "mutable" "private" "virtual") 'symbols)
+        . font-lock-keyword-face)
+       ;; labels
+       (,(concat "\\([?~]" lid "\\)" tuareg--whitespace-re ":[^:>=]")
+        1 tuareg-font-lock-label-face keep)
+       ;; label in a type signature
+       (,(concat "\\(?:->\\|:[^:>=]\\)" tuareg--whitespace-re
+                 "\\(" lid "\\)[ \t]*:[^:>=]")
+        1 tuareg-font-lock-label-face keep)
+       ;; Polymorphic variants (take precedence on builtin names)
+       (,(concat "`" id) . tuareg-font-lock-constructor-face)
+       (,(regexp-opt '("failwith" "failwithf" "exit" "at_exit" "invalid_arg"
+                       "parser" "raise" "raise_notrace" "ref" "ignore"
+		       "Match_failure" "Assert_failure" "Invalid_argument"
+		       "Failure" "Not_found" "Out_of_memory" "Stack_overflow"
+		       "Sys_error" "End_of_file" "Division_by_zero"
+		       "Sys_blocked_io" "Undefined_recursive_module")
+                     'symbols)
+        . font-lock-builtin-face)
+       ("\\[[ \t]*\\]" . tuareg-font-lock-constructor-face) ; []
+       ("[])a-zA-Z0-9 \t]\\(::\\)[[(a-zA-Z0-9 \t]" ; :: (not not ::…)
+        1 tuareg-font-lock-constructor-face)
+       ;; Constructors
+       (,(concat "\\(" uid "\\)[^.]")  1 tuareg-font-lock-constructor-face)
+       (,(concat "\\_<let +exception +\\(" uid "\\)")
+        1 tuareg-font-lock-constructor-face)
+       ;; let-bindings (let f : type = fun)
+       (,(concat let-binding-g4 "\\(" lid "\\) *\\(?:: *\\([^=]+\\)\\)?= *"
+                 "fun\\(?:ction\\)?\\>")
+        (5 font-lock-function-name-face nil t)
+        (6 font-lock-type-face keep t))
+       ;; let binding variables
+       (,(concat "\\(?:" let-binding-g4 "\\|" gclass-gparams "\\)")
+        (tuareg--pattern-vars-matcher (tuareg--pattern-pre-form-let) nil
+                                      (0 font-lock-variable-name-face keep))
+        (tuareg--pattern-maybe-type-matcher nil nil ; def followed by type
+                                            (1 font-lock-type-face keep)))
+       (,(concat "\\_<fun\\_>" maybe-infix-ext+attr)
+        (tuareg--pattern-vars-matcher (tuareg--pattern-pre-form-fun) nil
+                                      (0 font-lock-variable-name-face keep)))
+       (,(concat "\\_<method!? +\\(" lid "\\)")
+        (1 font-lock-function-name-face keep t); method name
+        (tuareg--pattern-vars-matcher (tuareg--pattern-pre-form-let) nil
+                                      (0 font-lock-variable-name-face keep))
+        (tuareg--pattern-maybe-type-matcher nil nil ; method followed by type
+                                            (1 font-lock-type-face keep)))
+       (,(concat "\\_<object *(\\(" lid "\\) *\\(?:: *\\("
+                 balanced-braces "\\)\\)?)")
+        (1 font-lock-variable-name-face)
+        (2 font-lock-type-face keep t))
+       (,(concat "\\_<object *( *\\(" typevar "\\|_\\) *)")
+        1 font-lock-type-face)
+       ,@(and tuareg-font-lock-symbols
+              (tuareg-font-lock-symbols-keywords))))
+    (setq
+     tuareg-font-lock-keywords-1
+     (append common-keywords
+             tuareg-font-lock-keywords-1-extra))
+    (setq
+     tuareg-font-lock-keywords-2
+     `(,@common-keywords
+       ;; https://caml.inria.fr/pub/docs/manual-ocaml/lex.html#infix-symbol
+       (,(concat "( *\\([-=<>@^|&+*/$%!]" operator-char
+                 "*\\|[#?~]" operator-char "+\\) *)")
+        1 font-lock-function-name-face)
+       ;; By default do no highlight relation operators (=, <, >) nor
+       ;; arithmetic operators because it is slow.  However,
+       ;; optionally allow it by popular demand.
+       ,@(if tuareg-highlight-all-operators
+             ;; Highlight "@", "+",... after "let…[@…]" but before
+             ;; "let" rules remove the highlighting of "=".
+             `((,(concat before-operator-char
+                         "\\([=<>@^&+*/$%!]" operator-char "*\\|:=\\|"
+                         "[|#?~]" operator-char "+\\)")
+                1 tuareg-font-lock-operator-face)
+               ;; "-" is special: avoid "->" and "-13"
+               (,(concat "\\(-\\)\\(?:[^0-9>]\\|\\("
+                         operator-char-no> operator-char "*\\)\\)")
+                (1 tuareg-font-lock-operator-face)
+                (2 tuareg-font-lock-operator-face keep t))
+               (,(regexp-opt '("type" "module" "module type"
+                               "val" "val mutable")
+                             'symbols)
+                (tuareg--pattern-equal-matcher nil nil nil)))
+           `((,(concat "[@^&$%!]" operator-char "*\\|"
+                       "[|#?~]" operator-char "+")
+              . tuareg-font-lock-operator-face)))
+       (,(regexp-opt
           (if (tuareg-editing-ls3)
               '("asr" "asl" "lsr" "lsl" "or" "lor" "and" "land" "lxor"
                 "not" "lnot" "mod" "fby" "pre" "last" "at")
             '("asr" "asl" "lsr" "lsl" "or" "lor" "land"
               "lxor" "not" "lnot" "mod"))
-          'words))
-      . tuareg-font-lock-operator-face)
-     ;;; (expr: t) and (expr :> t)
-     ;;; If `t' is longer then one word, require a space before.  Not only
-     ;;; this is more readable but it also avoids that `~label:expr var`
-     ;;; is taken as a type annotation when surrounded by parentheses.
-     (,(concat "(" balanced-braces-no-end-operator ":>?\\(['_A-Za-z]+"
-               "\\| [ \n'_A-Za-z]" balanced-braces-no-string "\\))")
-      1 font-lock-type-face keep)
-     ;; (lid: t)
-     (,(concat "(" lid " *:\\(['_A-Za-z]" balanced-braces-no-string "\\))")
-      1 font-lock-type-face keep)
-     (,(concat "\\<external +\\(" lid "\\)")  1 font-lock-function-name-face)
-     (,(concat "\\<exception +\\(" uid "\\)")
-      1 tuareg-font-lock-constructor-face)
-     (,(concat "\\<module" maybe-infix-attr+ext
-	       "\\(?: +type\\)?\\(?: +rec\\)?\\> *\\(" uid "\\)")
-      1 tuareg-font-lock-module-face)
-     ;; (M: S) -- only color S here (may be "A.T with type t = s")
-     (,(concat "( *" uid " *: *\\("
-               modtype-path "\\(?: *\\<with\\>" balanced-braces "\\)?\\) *)")
-      1 tuareg-font-lock-module-face keep)
-     (,(concat "\\<include +\\(" extended-module-path "\\|( *"
-               extended-module-path " *: *" balanced-braces " *)\\)")
-      1 tuareg-font-lock-module-face keep)
-     ;; module type A = B
-     (,(concat "\\<module +type +" id " *= *\\(" modtype-path "\\)")
-      1 tuareg-font-lock-module-face keep)
-     ;; module A(B: _)(C: _) : D = E, including "module A : E"
-     (,(concat "\\<module +" uid tuareg--whitespace-re
-               "\\(\\(?:( *" uid " *: *"
-               modtype-path "\\(?: *\\<with\\>" balanced-braces "\\)?"
-               " *)" tuareg--whitespace-re "\\)*\\)\\(?::"
-               tuareg--whitespace-re "\\(" modtype-path
-               "\\) *\\)?\\(?:=" tuareg--whitespace-re
-               "\\(" extended-module-path "\\)\\)?")
-      (1 font-lock-variable-name-face keep); functor (module) variable
-      (2 tuareg-font-lock-module-face keep t)
-      (3 tuareg-font-lock-module-face keep t))
-     (,(concat "\\<functor\\> *( *\\(" uid "\\) *: *\\(" modtype-path "\\) *)")
-      (1 font-lock-variable-name-face keep); functor (module) variable
-      (2 tuareg-font-lock-module-face keep))
-     ;;; "type lid" anywhere (e.g. "let f (type t) x =") introduces a new type
-     (,(concat "\\<type\\(?: +nonrec\\)?\\>" tuareg--whitespace-re
-               "\\(" typedef "\\)")
-      1 font-lock-type-face keep)
-     ;; Constructors
-     (,(concat "\\(" uid "\\)[^.]")  1 tuareg-font-lock-constructor-face)
-     ;;; let-bindings
-     (,(concat let-binding "\\(" lid "\\) *\\(?:: *\\([^=]+\\)\\)?= *"
-               "fun\\(?:ction\\)?\\>")
-      (1 font-lock-function-name-face nil t)
-      (2 font-lock-type-face keep t))
-     (,(let* ((maybe-constr (concat "\\(?:" constructor " *\\)?"))
-              (var (concat maybe-constr "\\(?:" lid "\\|" tuple "\\)"))
-              (simple-patt (concat var "\\(?: *, *" var "\\)*")))
-         (concat let-binding "\\(" simple-patt
-                 "\\) *\\(?:: *\\([^=]+\\)\\)?="))
-      ;; module paths, types, constructors already colored by the above
-      (1 font-lock-variable-name-face keep)
-      (2 font-lock-type-face keep t))
-     (,(concat let-binding "\\(" lid "\\)" gvars "?\\(?: +:"
-               tuareg--whitespace-re "\\([a-z_]\\|[^ =][^=]*[^ =]\\) *=\\)?")
-      (1 font-lock-function-name-face nil t)
-      (2 font-lock-variable-name-face keep t)
-      (3 font-lock-type-face keep t))
-     (,(concat "\\<function\\>" maybe-infix-attr+ext
-	       tuareg--whitespace-re "\\(" lid "\\)")
-      1 font-lock-variable-name-face)
-     (,(concat "\\<fun" maybe-infix-attr+ext " +" gvars " *->")
-      1 font-lock-variable-name-face keep nil)
-     (,(concat class-gparams " *\\(" lid "\\)")
-      (1 font-lock-type-face keep t)
-      (2 font-lock-function-name-face))
-     (,(concat class-gparams " *" lid gvars "? *=")
-      2 font-lock-variable-name-face keep t)
-     ;; "method": long match first to capture the method name
-     (,(concat "\\<method!? +\\(?:private +\\(?:virtual +\\)?"
-               "\\|virtual +\\(?:private +\\)?\\)\\(" lid "\\)")
-      1 font-lock-function-name-face keep t); method name
-     (,(concat "\\<method!? +\\(" lid "\\)" gvars "?")
-      (1 font-lock-function-name-face keep t); method name
-      (2 font-lock-variable-name-face keep t))
-     (,(concat "\\<object *(\\(" lid "\\) *\\(?:: *\\("
-               balanced-braces "\\)\\)?)")
-      (1 font-lock-variable-name-face)
-      (2 font-lock-type-face keep t))
-     (,(concat "\\<object *( *\\(" typevar "\\|_\\) *)")
-      1 font-lock-type-face)
-     ;; "val" without "!", "mutable" or "virtual"
-     (,(concat "\\<val" maybe-infix-attr+ext
-	       " +\\(" lid "\\)")
-      1 font-lock-function-name-face)
-     ,@(and tuareg-font-lock-symbols
-            (tuareg-font-lock-symbols-keywords)))))
+          'symbols)
+        1 tuareg-font-lock-operator-face)
+       ,@tuareg-font-lock-keywords-1-extra)))
   (setq font-lock-defaults
-        `(tuareg-font-lock-keywords
+        `((tuareg-font-lock-keywords
+           tuareg-font-lock-keywords-1
+           tuareg-font-lock-keywords-2)
           nil nil
           ,tuareg-font-lock-syntax nil
-          ,@(unless (fboundp 'tuareg-syntax-propertize)
-              '((font-lock-syntactic-keywords
-                 . tuareg-font-lock-syntactic-keywords)
-                (parse-sexp-lookup-properties . t)))
           (font-lock-syntactic-face-function
            . tuareg-font-lock-syntactic-face-function)))
   ;; (push 'smie-backward-sexp-command font-lock-extend-region-functions)
   )
+
+(defvar tuareg--pattern-matcher-limit 0
+  "Limit for the matcher of function arguments")
+(make-variable-buffer-local 'tuareg--pattern-matcher-limit)
+
+(defvar tuareg--pattern-matcher-type-limit 0
+  "Limit for the type of a let bound definition.")
+(make-variable-buffer-local 'tuareg--pattern-matcher-type-limit)
+
+(defun tuareg--font-lock-in-string-or-comment ()
+  "Returns t if the point is inside a string or a comment.
+This based on the fontification and is faster than calling `syntax-ppss'."
+  (let* ((face (get-text-property (point) 'face)))
+    (and (symbolp face)
+         (memq face '(font-lock-comment-face
+                      font-lock-comment-delimiter-face
+                      font-lock-doc-face
+                      font-lock-string-face)))))
+
+(defun tuareg--pattern-pre-form-let ()
+  "Return the position of \"=\" marking the end of \"let\"."
+  (if (or (tuareg--font-lock-in-string-or-comment)
+          (looking-at "[ \t\n]*open\\_>")       ; "let open"
+          (looking-at "[ \t\n]*exception\\_>")) ; "let exception"
+      (progn ; bail out
+        (setq tuareg--pattern-matcher-limit (point))
+        (setq tuareg--pattern-matcher-type-limit (point)))
+
+    (let* ((opoint (point))
+           (limit (+ opoint 800))
+           pos)
+      (setq tuareg--pattern-matcher-limit nil)
+      (while (and
+              (setq pos (re-search-forward "[=({:]" limit t))
+              (progn
+                (backward-char)
+                (cond
+                 ((or (char-equal ?\( (char-after))
+                      (char-equal ?{  (char-after)))
+                  ;; Skip balanced braces
+                  (if (ignore-errors (forward-list))
+                      t
+                    (goto-char (1- pos))
+                    nil)) ; If braces are not balanced, stop.
+                 ((char-equal ?: (char-after))
+                  ;; Make sure it is not a label
+                  (skip-chars-backward "a-zA-Z0-9_'")
+                  (if (not (or (char-equal ?~ (char-before))
+                               (char-equal ?? (char-before))))
+                      (setq tuareg--pattern-matcher-limit (1- pos)))
+                  (goto-char pos)
+                  t)
+                 (t nil)))))
+      (setq tuareg--pattern-matcher-type-limit (1+ (point))); include "="
+      (unless tuareg--pattern-matcher-limit
+        (setq tuareg--pattern-matcher-limit (point)))
+      ;; Remove any possible highlithing on "="
+      (put-text-property (point) (1+ (point)) 'face nil)
+      ;; move the point back for the sub-matcher
+      (goto-char opoint))
+    (put-text-property (point) tuareg--pattern-matcher-limit
+                       'font-lock-multiline t)
+    tuareg--pattern-matcher-limit))
+
+(defun tuareg--pattern-pre-form-fun ()
+  "Return the position of \"->\" marking the end of \"fun\"."
+  (if (tuareg--font-lock-in-string-or-comment)
+      (setq tuareg--pattern-matcher-limit (point))
+
+    (let* ((opoint (point))
+           (limit (+ opoint 800))
+           pos)
+      (while (and
+              (setq pos (re-search-forward "[-({]" limit t))
+              (cond
+               ((or (char-equal ?\( (char-before))
+                    (char-equal ?{  (char-before)))
+                (backward-char)
+                (if (ignore-errors (forward-list))
+                    t
+                  (goto-char (1- pos))
+                  nil)) ; If braces are not balanced, stop.
+              (t (not (char-equal ?> (char-after)))))))
+      (setq tuareg--pattern-matcher-limit (point))
+      ;; move the point back for the sub-matcher
+      (goto-char opoint)
+      (put-text-property (point) tuareg--pattern-matcher-limit
+                         'font-lock-multiline t))
+    tuareg--pattern-matcher-limit))
+
+(defun tuareg--pattern-equal-matcher (limit)
+  "Find \"=\" and \"+=\" and remove its highlithing."
+  (unless (tuareg--font-lock-in-string-or-comment)
+    (let (pos)
+      (while (and
+              (<= (point) limit)
+              (setq pos (re-search-forward "[+=({[]" limit t))
+              (progn
+                (backward-char)
+                (cond
+                 ((or (char-equal ?\( (char-after))
+                      (char-equal ?{  (char-after))
+                      (char-equal ?\[ (char-after)))
+                  ;; Skip balanced braces
+                  (if (ignore-errors (forward-list))
+                      t
+                    (goto-char (1- pos))
+                    nil)) ; If braces are not balanced, stop.
+                 ((char-equal ?+ (char-after))
+                  (if (char-equal ?= (char-after pos))
+                      (put-text-property (point) (1+ pos) 'face nil)
+                    (forward-char)
+                    t))
+                 (t
+                  (put-text-property (point) (1+ (point)) 'face nil))))))
+      nil)))
+
+(defun tuareg--pattern-vars-matcher (limit)
+  "Match a variable name after the point.
+If it succeeds, it moves the point after the variable name and set
+`match-data'.  See e.g., `font-lock-keywords'."
+  (when (and (<= (point) tuareg--pattern-matcher-limit)
+             (re-search-forward tuareg--lid-re tuareg--pattern-matcher-limit t))
+    (skip-chars-forward " \t\n")
+    (if (>= (point) tuareg--pattern-matcher-limit)
+        t
+      (cond
+       ((char-equal ?= (char-after))
+        ;; Remove possible fontification of "=" (e.g. as an operator)
+        (put-text-property (point) (1+ (point)) 'face nil)
+        ;; Decide whether it is ?(v =...) or {x = v; x = v}
+        (goto-char (match-beginning 0))
+        (skip-chars-backward " \t\n")
+        (if (char-equal (char-before) ?\() ; (var = expr)
+            (progn (up-list) ; keep match, skip expr
+                   t)
+          ;; This is a label record, variable after
+          (goto-char (match-end 0))
+          (re-search-forward tuareg--lid-re tuareg--pattern-matcher-limit t)))
+       ((char-equal ?: (char-after))
+        (let ((beg-ty (1+ (point))))
+          (goto-char (match-beginning 0))
+          (skip-chars-backward " \t\n")
+          (if (char-equal (char-before) ?\() ; (var : t)
+              (progn
+                (up-list) ; keep match, skip type
+                (put-text-property beg-ty (1- (point)) 'face
+                                   'font-lock-type-face)
+                t)
+            (goto-char (match-end 0)))))
+       (t t)))))
+
+(defun tuareg--pattern-maybe-type-matcher (limit)
+  "Match a possible type after a let binding.
+Run only once."
+  ;; This function is needed because we want to ensure that the search
+  ;; is bounded by the detected "=".
+  (when (and (<= (point) tuareg--pattern-matcher-type-limit)
+             (re-search-forward "[ \t\n]*:\\([^=]+\\)="
+                                tuareg--pattern-matcher-type-limit t))
+    (goto-char limit) ; Do not run a second time
+    t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                                    Keymap
@@ -1166,14 +1394,14 @@ For use on `electric-indent-functions'."
     (let ((syntax (char-syntax char)))
       (if (tuareg-in-indentation-p)
           (or (eq char ?|) (eq syntax ?\)))
-        (or (case char
-              (?\) (char-equal ?* (preceding-char)))
-              (?\} (and (char-equal ?> (preceding-char))
-                        (progn (tuareg-backward-char)
-                               (tuareg-in-indentation-p))))
-              (?\] (and (char-equal ?| (preceding-char))
-                        (progn (tuareg-backward-char)
-                               (tuareg-in-indentation-p)))))
+        (or (pcase char
+              (`?\) (char-equal ?* (preceding-char)))
+              (`?\} (and (char-equal ?> (preceding-char))
+                         (progn (tuareg-backward-char)
+                                (tuareg-in-indentation-p))))
+              (`?\] (and (char-equal ?| (preceding-char))
+                         (progn (tuareg-backward-char)
+                                (tuareg-in-indentation-p)))))
             (and tuareg-electric-indent
                  (not (eq syntax ?w))
                  (let ((end (point)))
@@ -1243,175 +1471,178 @@ For use on `electric-indent-functions'."
   ;;   "module/type" < "and" < "with", so basically all the keywords involved
   ;;   in mod-constraints need to be handled specially in the lexer :-(
   ;; - and then some...
-  (when (fboundp 'smie-prec2->grammar)
-    (let ((bnfprec2
-           (smie-bnf->prec2
-            '((decls (decls "type" decls) (decls "d-let" decls)
-                     (decls "and" decls) (decls ";;" decls)
-                     (decls "exception" decls)
-                     (decls "module" decls)
-                     (decls "class" decls)
-                     (decls "val" decls) (decls "external" decls)
-                     (decls "open" decls) (decls "include" decls)
-                     (exception)
-                     (def)
-                     ;; Hack: at the top-level, a "let D in E" can appear in
-                     ;; decls as well, but the lexer classifies it as "d-let",
-                     ;; so we need to make sure that "d-let D in E" doesn't
-                     ;; end up matching the "in" with some far away thingy.
-                     (def-in-exp))
-              (def-in-exp (defs "in" exp))
-              (def (var "d=" exp) (id "d=" datatype) (id "d=" module))
-              (idtype (id ":" type))
-              (var (id) ("m-type" var) ("d-type" var) ("rec" var)
-                   ("private" var) (idtype)
-                   ("l-module" var) ("l-class" var))
-              (exception (id "of" type))
-              (datatype ("{" typefields "}") (typebranches)
-                        (typebranches "with" id))
-              (typebranches (typebranches "|" typebranches) (id "of" type))
-              (typefields (typefields ";" typefields) (idtype))
-              (type (type "*…" type) (type "t->" type)
-                    ;; ("<" ... ">") ;; FIXME!
-                    (type "as" id))
-              (id)
-              (module ("struct" decls "end")
-                      ("sig" decls "end")
-                      ("functor" id "->" module)
-                      (module "m-with" mod-constraints))
-              (simpledef (id "c=" type))
-              (mod-constraints (mod-constraints "m-and" mod-constraints)
-                               ("w-type" simpledef)
-                               ("w-module" simpledef))
-              ;; http://caml.inria.fr/pub/docs/manual-ocaml/expr.html
-              ;; exp1 is "all exps except for `if exp then'".
-              (exp1 ("begin" exp "end")
-                    ("(" exp:type ")")
-                    ("[|" exp "|]")
-                    ("{" fields "}")
-                    ("if" exp "then" exp1 "else" exp1)
-                    ;; ("if" exp "then" exp)
-                    ("while" exp "do" exp "done")
-                    ("for" forbounds "do" exp "done")
-                    (exp1 ";" exp1)
-                    ("match" exp "with" branches)
-                    ("function" branches)
-                    ("fun" patterns* "->" exp1)
-                    ("try" exp "with" branches)
-                    ("let" defs "in" exp1)
-                    ("let" "exception-let" exception "in" exp1)
-                    ("object" class-body "end")
-                    ("(" exp:>type ")")
-                    ("{<" fields ">}"))
-              ;; Like `exp' but additionally allow if-then without else.
-              (exp (exp1) ("if" exp "then" exp))
-              (forbounds (iddef "to" exp) (iddef "downto" exp))
-              (defs (def) (defs "and" defs) ("l-open" id))
-              (exp:>type (exp:type ":>" type))
-              (exp:type (exp)) ;; (exp ":" type)
-              (fields (fields1) (exp "with" fields1))
-              (fields1 (fields1 ";" fields1) (iddef))
-              (iddef (id "f=" exp1))
-              (branches (branches "|" branches) (branch))
-              (branch (patterns "->" exp1))
-              (patterns* ("-dlpd-" patterns*) (patterns)) ;See use of "-dlpd-".
-              (patterns (pattern) (pattern "when" exp1)
-                        ;; Since OCaml 4.02, `match' expressions allow
-                        ;; `exception' branches.
-                        ("exception-case" pattern))
-              (pattern (id) (pattern "as" id) (pattern "|-or" pattern)
-                       (pattern "," pattern))
-              (class-body (class-body "inherit" class-body)
-                          (class-body "method" class-body)
-                          (class-body "initializer" class-body)
-                          (class-body "val" class-body)
-                          (class-body "constraint" class-body)
-                          (class-field))
-              (class-field (exp) ("mutable" idtype)
-                           ("virtual" idtype) ("private" idtype))
-              ;; We get cyclic dependencies between ; and | because things like
-              ;; "branches | branches" implies that "; > |" whereas "exp ; exp"
-              ;; implies "| > ;" and while those two do not directly conflict
-              ;; because they're constraints on precedences of different sides,
-              ;; they do introduce a cycle later on because those operators are
-              ;; declared associative, which adds a constraint that both sides
-              ;; must be of equal precedence.  So we declare here a dummy rule
-              ;; to force a direct conflict, that we can later resolve with
-              ;; explicit precedence rules.
-              (foo1 (foo1 ";" foo1) (foo1 "|" foo1))
-              ;; "mutable x : int ; y : int".
-              (foo2 ("mutable" id) (foo2 ";" foo2))
-              )
-            ;; Type precedence rules.
-            ;; http://caml.inria.fr/pub/docs/manual-ocaml/types.html
-            '((nonassoc "as") (assoc "t->") (assoc "*…"))
-            ;; Pattern precedence rules.
-            ;; http://caml.inria.fr/pub/docs/manual-ocaml/patterns.html
-            '((nonassoc "as") (assoc "|-or") (assoc ",") (assoc "::"))
-            ;; Resolve "{a=(1;b=2)}" vs "{(a=1);(b=2)}".
-            '((nonassoc ";") (nonassoc "f="))
-            ;; Resolve "(function a -> b) | c -> d".
-            '((nonassoc "function") (nonassoc "|"))
-            ;; Resolve "when (function a -> b) -> c".
-            '((nonassoc "function") (nonassoc "->"))
-            ;; Resolve ambiguity "(let d in e2); e3" vs "let d in (e2; e3)".
-            '((nonassoc "in" "match" "->" "with") (nonassoc ";"))
-            ;; Resolve "(if a then b else c);d" vs "if a then b else (c; d)".
-            '((nonassoc ";") (nonassoc "else")) ;; ("else" > ";")
-            ;; Resolve "match e1 with a → (match e2 with b → e3 | c → e4)"
-            ;;      vs "match e1 with a → (match e2 with b → e3) | c → e4"
-            '((nonassoc "with") (nonassoc "|"))
-            ;; Resolve "functor A -> (M with MC)".
-            '((nonassoc "->") (nonassoc "m-with"))
-            ;; Resolve the conflicts caused by "when" and by SMIE's assumption
-            ;; that all non-terminals can match the empty string.
-            '((nonassoc "with") (nonassoc "->")) ; "when (match a with) -> e"
-            '((nonassoc "|") (nonassoc "->")) ; "when (match a with a|b) -> e"
-            ;; Fix up conflict between (decls "and" decls) and (defs "in" exp).
-            '((nonassoc "in") (nonassoc "and"))
-            ;; Resolve the "artificial" conflict introduced by the `foo1' rule.
-            '((assoc "|") (assoc ";"))
-            ;; Fix up associative declaration keywords.
-            '((assoc "type" "d-let" "exception" "module" "val" "open"
-                     "external" "include" "class" ";;")
-              (assoc "and"))
-            '((assoc "val" "method" "inherit" "constraint" "initializer"))
-            ;; Declare associativity of remaining sequence separators.
-            '((assoc ";")) '((assoc "|")) '((assoc "m-and")))))
-      ;; (dolist (pair '()) ;; ("then" . "|") ("|" . "then")
-      ;;   (display-warning 'prec2 (format "%s %s %s"
-      ;;                                   (car pair)
-      ;;                                   (gethash pair bnfprec2)
-      ;;                                   (cdr pair))))
-      ;; SMIE takes for granted that all non-terminals can match the empty
-      ;; string, which can lead to the addition of unnecessary constraints.
-      ;; Let's remove the ones that cause cycles without causing conflicts.
-      (progn
-        ;; This comes from "exp ; exp" and "function branches", where
-        ;; SMIE doesn't realize that `branches' has to have a -> before ;.
-        (assert (eq '> (gethash (cons "function" ";") bnfprec2)))
-        (remhash (cons "function" ";") bnfprec2))
-      (smie-prec2->grammar
-       (smie-merge-prec2s
-        bnfprec2
-        (smie-precs->prec2
-         ;; Precedence of operators.
-         ;; http://caml.inria.fr/pub/docs/manual-ocaml/expr.html
-         (reverse
-          '((nonassoc ".")
-            ;; function application, constructor application, assert, lazy
-            ;; - -. (prefix)    –
-            (right "**…" "lsl" "lsr" "asr")
-            (nonassoc "*…" "/…" "%…" "mod" "land" "lor" "lxor")
-            (left "+…" "-…")
-            (assoc "::")
-            (right "@…" "^…")
-            (left "=…" "<…" ">…" "|…" "&…" "$…")
-            (right "&" "&&")
-            (right "or" "||")
-            (assoc ",")
-            (right "<-" ":=")
-            (assoc ";")))))))))
+  (let ((bnfprec2
+         (smie-bnf->prec2
+          '((decls (decls "type" decls) (decls "d-let" decls)
+                   (decls "and" decls) (decls ";;" decls)
+                   (decls "exception" decls)
+                   (decls "module" decls)
+                   (decls "class" decls)
+                   (decls "val" decls) (decls "external" decls)
+                   (decls "open" decls) (decls "include" decls)
+                   (exception)
+                   (def)
+                   ;; Hack: at the top-level, a "let D in E" can appear in
+                   ;; decls as well, but the lexer classifies it as "d-let",
+                   ;; so we need to make sure that "d-let D in E" doesn't
+                   ;; end up matching the "in" with some far away thingy.
+                   (def-in-exp))
+            (def-in-exp (defs "in" exp))
+            (def (var "d=" exp) (id "d=" datatype) (id "d=" module))
+            (idtype (id ":" type))
+            (var (id) ("m-type" var) ("d-type" var) ("rec" var)
+                 ("private" var) (idtype)
+                 ("l-module" var) ("l-class" var))
+            (exception (id "of" type))
+            (datatype ("{" typefields "}") (typebranches)
+                      (typebranches "with" id))
+            (typebranches (typebranches "|" typebranches) (id "of" type))
+            (typefields (typefields ";" typefields) (idtype))
+            (type (type "*…" type) (type "t->" type)
+                  ;; ("<" ... ">") ;; FIXME!
+                  (type "as" id))
+            (id)
+            (module ("struct" decls "end")
+                    ("sig" decls "end")
+                    ("functor" id "->" module)
+                    (module "m-with" mod-constraints))
+            (simpledef (id "c=" type))
+            (mod-constraints (mod-constraints "m-and" mod-constraints)
+                             ("w-type" simpledef)
+                             ("w-module" simpledef))
+            ;; http://caml.inria.fr/pub/docs/manual-ocaml/expr.html
+            ;; exp1 is "all exps except for `if exp then'".
+            (exp1 ("begin" exp "end")
+                  ("(" exp:type ")")
+                  ("[|" exp "|]")
+                  ("{" fields "}")
+                  ("if" exp "then" exp1 "else" exp1)
+                  ;; ("if" exp "then" exp)
+                  ("while" exp "do" exp "done")
+                  ("for" forbounds "do" exp "done")
+                  (exp1 ";" exp1)
+                  ("match" exp "with" branches)
+                  ("function" branches)
+                  ("fun" patterns* "->" exp1)
+                  ("try" exp "with" branches)
+                  ("let" defs "in" exp1)
+                  ("let" "exception-let" exception "in" exp1)
+                  ("object" class-body "end")
+                  ("(" exp:>type ")")
+                  ("{<" fields ">}")
+                  ;; MetaOCaml thingies.
+                  ;; Let's not do anything special for .~ for now,
+                  ;; as for !. it's deprecated anyway!
+                  (".<" exp ">."))
+            ;; Like `exp' but additionally allow if-then without else.
+            (exp (exp1) ("if" exp "then" exp))
+            (forbounds (iddef "to" exp) (iddef "downto" exp))
+            (defs (def) (defs "and" defs) ("l-open" id))
+            (exp:>type (exp:type ":>" type))
+            (exp:type (exp)) ;; (exp ":" type)
+            (fields (fields1) (exp "with" fields1))
+            (fields1 (fields1 ";" fields1) (iddef))
+            (iddef (id "f=" exp1))
+            (branches (branches "|" branches) (branch))
+            (branch (patterns "->" exp1))
+            (patterns* ("-dlpd-" patterns*) (patterns)) ;See use of "-dlpd-".
+            (patterns (pattern) (pattern "when" exp1)
+                      ;; Since OCaml 4.02, `match' expressions allow
+                      ;; `exception' branches.
+                      ("exception-case" pattern))
+            (pattern (id) (pattern "as" id) (pattern "|-or" pattern)
+                     (pattern "," pattern))
+            (class-body (class-body "inherit" class-body)
+                        (class-body "method" class-body)
+                        (class-body "initializer" class-body)
+                        (class-body "val" class-body)
+                        (class-body "constraint" class-body)
+                        (class-field))
+            (class-field (exp) ("mutable" idtype)
+                         ("virtual" idtype) ("private" idtype))
+            ;; We get cyclic dependencies between ; and | because things like
+            ;; "branches | branches" implies that "; > |" whereas "exp ; exp"
+            ;; implies "| > ;" and while those two do not directly conflict
+            ;; because they're constraints on precedences of different sides,
+            ;; they do introduce a cycle later on because those operators are
+            ;; declared associative, which adds a constraint that both sides
+            ;; must be of equal precedence.  So we declare here a dummy rule
+            ;; to force a direct conflict, that we can later resolve with
+            ;; explicit precedence rules.
+            (foo1 (foo1 ";" foo1) (foo1 "|" foo1))
+            ;; "mutable x : int ; y : int".
+            (foo2 ("mutable" id) (foo2 ";" foo2))
+            )
+          ;; Type precedence rules.
+          ;; http://caml.inria.fr/pub/docs/manual-ocaml/types.html
+          '((nonassoc "as") (assoc "t->") (assoc "*…"))
+          ;; Pattern precedence rules.
+          ;; http://caml.inria.fr/pub/docs/manual-ocaml/patterns.html
+          '((nonassoc "as") (assoc "|-or") (assoc ",") (assoc "::"))
+          ;; Resolve "{a=(1;b=2)}" vs "{(a=1);(b=2)}".
+          '((nonassoc ";") (nonassoc "f="))
+          ;; Resolve "(function a -> b) | c -> d".
+          '((nonassoc "function") (nonassoc "|"))
+          ;; Resolve "when (function a -> b) -> c".
+          '((nonassoc "function") (nonassoc "->"))
+          ;; Resolve ambiguity "(let d in e2); e3" vs "let d in (e2; e3)".
+          '((nonassoc "in" "match" "->" "with") (nonassoc ";"))
+          ;; Resolve "(if a then b else c);d" vs "if a then b else (c; d)".
+          '((nonassoc ";") (nonassoc "else")) ;; ("else" > ";")
+          ;; Resolve "match e1 with a → (match e2 with b → e3 | c → e4)"
+          ;;      vs "match e1 with a → (match e2 with b → e3) | c → e4"
+          '((nonassoc "with") (nonassoc "|"))
+          ;; Resolve "functor A -> (M with MC)".
+          '((nonassoc "->") (nonassoc "m-with"))
+          ;; Resolve the conflicts caused by "when" and by SMIE's assumption
+          ;; that all non-terminals can match the empty string.
+          '((nonassoc "with") (nonassoc "->")) ; "when (match a with) -> e"
+          '((nonassoc "|") (nonassoc "->"))    ; "when (match a with a|b) -> e"
+          ;; Fix up conflict between (decls "and" decls) and (defs "in" exp).
+          '((nonassoc "in") (nonassoc "and"))
+          ;; Resolve the "artificial" conflict introduced by the `foo1' rule.
+          '((assoc "|") (assoc ";"))
+          ;; Fix up associative declaration keywords.
+          '((assoc "type" "d-let" "exception" "module" "val" "open"
+                   "external" "include" "class" ";;")
+            (assoc "and"))
+          '((assoc "val" "method" "inherit" "constraint" "initializer"))
+          ;; Declare associativity of remaining sequence separators.
+          '((assoc ";")) '((assoc "|")) '((assoc "m-and")))))
+    ;; (dolist (pair '()) ;; ("then" . "|") ("|" . "then")
+    ;;   (display-warning 'prec2 (format "%s %s %s"
+    ;;                                   (car pair)
+    ;;                                   (gethash pair bnfprec2)
+    ;;                                   (cdr pair))))
+    ;; SMIE takes for granted that all non-terminals can match the empty
+    ;; string, which can lead to the addition of unnecessary constraints.
+    ;; Let's remove the ones that cause cycles without causing conflicts.
+    (progn
+      ;; This comes from "exp ; exp" and "function branches", where
+      ;; SMIE doesn't realize that `branches' has to have a -> before ;.
+      (cl-assert (eq '> (gethash (cons "function" ";") bnfprec2)))
+      (remhash (cons "function" ";") bnfprec2))
+    (smie-prec2->grammar
+     (smie-merge-prec2s
+      bnfprec2
+      (smie-precs->prec2
+       ;; Precedence of operators.
+       ;; http://caml.inria.fr/pub/docs/manual-ocaml/expr.html
+       (reverse
+        '((nonassoc ".")
+          ;; function application, constructor application, assert, lazy
+          ;; - -. (prefix)    –
+          (right "**…" "lsl" "lsr" "asr")
+          (nonassoc "*…" "/…" "%…" "mod" "land" "lor" "lxor")
+          (left "+…" "-…")
+          (assoc "::")
+          (right "@…" "^…")
+          (left "=…" "<…" ">…" "|…" "&…" "$…")
+          (right "&" "&&")
+          (right "or" "||")
+          (assoc ",")
+          (right "<-" ":=")
+          (assoc ";"))))))))
 
 (defun tuareg-smie--search-backward (tokens)
   (let (tok)
@@ -1455,9 +1686,9 @@ For use on `electric-indent-functions'."
 
 (defun tuareg-smie--forward-token ()
   (tuareg-skip-blank-and-comments)
-  (buffer-substring-no-properties
-   (point)
-   (progn (if (zerop (skip-syntax-forward "."))
+  (let ((start (point))
+        (end nil))
+    (if (zerop (skip-syntax-forward "."))
               (let ((start (point)))
                 (skip-syntax-forward "w_'")
                 ;; Watch out for floats!
@@ -1471,36 +1702,48 @@ For use on `electric-indent-functions'."
             ;; considered as a single symbol, but in reality, it's part of the
             ;; operator chars, since "+." and friends are operators.
             (while (not (and (zerop (skip-chars-forward "."))
-                             (zerop (skip-syntax-forward "."))))))
-          (point))))
+                             (zerop (skip-syntax-forward ".")))))
+            (when (and (eq (char-before) ?%)
+                       (looking-at "[[:alpha:]]+"))
+              ;; Infix extension nodes, bug#121
+              (setq end (1- (point)))
+              (goto-char (match-end 0))))
+    (buffer-substring-no-properties start (or end (point)))))
 
 (defun tuareg-smie--backward-token ()
   (forward-comment (- (point)))
-  (buffer-substring-no-properties
-   (point)
-   (progn (if (and (zerop (skip-chars-backward "."))
-                   (zerop (skip-syntax-backward ".")))
-              (progn
-                (skip-syntax-backward "w_'")
-                ;; Watch out for floats!
-                (and (memq (char-before) '(?- ?+))
-                     (memq (char-after) '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9 ?0))
-                     (save-excursion
-                       (forward-char -1) (skip-syntax-backward "w_")
-                       (looking-at tuareg-smie--float-re))
-                     (>= (match-end 0) (point))
-                     (goto-char (match-beginning 0))))
-            (cond
-             ((memq (char-after) '(?\; ?,)) nil) ; ".;" is not a token.
-             ((and (eq (char-after) ?\.)
-                   (memq (char-before) '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9 ?0)))
-              (skip-chars-backward "0-9")) ; A float number!
-             (t ;; The "." char is given symbol property so that "M.x" is
-              ;; considered as a single symbol, but in reality, it's part of
-              ;; the operator chars, since "+." and friends are operators.
-              (while (not (and (zerop (skip-chars-backward "."))
-                               (zerop (skip-syntax-backward "."))))))))
-          (point))))
+  (let ((end (point)))
+    (if (and (zerop (skip-chars-backward "."))
+             (zerop (skip-syntax-backward ".")))
+        (progn
+          (skip-syntax-backward "w_'")
+          ;; Watch out for floats!
+          (pcase (char-before)
+            ((or `?- `?+)
+             (and (memq (char-after) '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9 ?0))
+                  (save-excursion
+                    (forward-char -1) (skip-syntax-backward "w_")
+                    (looking-at tuareg-smie--float-re))
+                  (>= (match-end 0) (point))
+                  (goto-char (match-beginning 0))))
+            (`?%                        ;extension node, bug#121
+             (let ((pos (point)))
+               (forward-char -1)
+               (if (and (zerop (skip-chars-backward "."))
+                        (zerop (skip-syntax-backward ".")))
+                   (goto-char pos)
+                 (setq end (1- pos)))))))
+      (cond
+       ((memq (char-after) '(?\; ?,)) nil) ; ".;" is not a token.
+       ((and (eq (char-after) ?\.)
+             (memq (char-before) '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9 ?0)))
+        (skip-chars-backward "0-9"))    ; A float number!
+       (t ;; The "." char is given symbol property so that "M.x" is
+        ;; considered as a single symbol, but in reality, it's part of
+        ;; the operator chars, since "+." and friends are operators.
+        (while (not (and (zerop (skip-chars-backward "."))
+                         (zerop (skip-syntax-backward "."))))))))
+    (buffer-substring-no-properties (point) end)))
 
 (defun tuareg-smie-forward-token ()
   "Move point to the end of the next token and return its SMIE name."
@@ -1513,6 +1756,8 @@ For use on `electric-indent-functions'."
         (match-string 0)))
      ((and (equal tok "|") (looking-at-p "\\]")) (forward-char 1) "|]")
      ((and (equal tok ">") (looking-at-p "}")) (forward-char 1) ">}")
+     ((and (equal tok ".") (memq (char-after) '(?< ?~)))
+      (forward-char 1) (string ?. (char-before)))
      ((or (member tok '("let" "=" "->"
                         "module" "class" "open" "type" "with" "and"
                         "exception"))
@@ -1543,11 +1788,34 @@ For use on `electric-indent-functions'."
   ;;   (dolist (cat tuareg-smie-bnf)
   ;;     (dolist (rule (cdr cat))
   ;;       (setq rule (reverse rule))
-  ;;       (while (setq rule (cdr (memq 'exp rule)))
+  ;;       (while (setq rule (cdr (cl-member 'dummy rule
+  ;;                                         :test (lambda (_ x)
+  ;;                                                 (memq x '(exp exp1))))))
   ;;         (push (car rule) leaders))))
-  ;;   leaders)
-  '("if" "then" "try" "match" "do" "while" "begin" "in" "when"
-    "downto" "to" "else"))
+  ;;   (prin1-to-string (sort (delete-dups leaders) #'string-lessp)))
+  ;; BEWARE: In let-disambiguate, we compare this against the output of
+  ;; tuareg-smie--backward-token which never returns refined tokens like "d=",
+  ;; so we manually replace those with just "=" here!
+  '("->" ".<" ";" "[|" "begin" "=" "do" "downto" "else" "if" "in"
+    "match" "then" "to" "try" "when" "while"))
+
+(defun tuareg-smie--let-disambiguate ()
+  "Return \"d-let\" if \"let\" at point is a decl, or just \"let\" if it's an exp."
+  (save-excursion
+    (let ((prev (tuareg-smie--backward-token)))
+      (if (or (member prev tuareg-smie--exp-leaders)
+              (if (zerop (length prev))
+                  (and (not (bobp))
+                       ;; See if prev char has open-paren syntax.
+                       (eq 4 (mod (car (syntax-after (1- (point)))) 256)))
+                (and (eq ?. (char-syntax (aref prev 0)))
+                     (and (not (equal prev ";;"))
+                          (let ((tokinfo (assoc prev smie-grammar)))
+                            ;; Check that prev is not a closing token like ">."
+                            (or (null tokinfo)
+                                (integerp (nth 2 tokinfo))))))))
+          "let"
+        "d-let"))))
 
 (defun tuareg-smie--label-colon-p ()
   (and (not (zerop (skip-chars-backward "[[:alnum:]]_")))
@@ -1657,17 +1925,8 @@ Return values can be
   (let ((tok (tuareg-smie--backward-token)))
     (cond
      ;; Distinguish a let expression from a let declaration.
-     ((equal tok "let")
-      (save-excursion
-        (let ((prev (tuareg-smie--backward-token)))
-          (if (or (member prev tuareg-smie--exp-leaders)
-                  (if (zerop (length prev))
-                      (and (not (bobp))
-                           (eq 4 (mod (car (syntax-after (1- (point)))) 256)))
-                    (and (eq ?. (char-syntax (aref prev 0)))
-                         (not (equal prev ";;")))))
-              tok
-            "d-let"))))
+     ((equal tok "let") (tuareg-smie--let-disambiguate))
+     ((equal ".<.~" tok) (forward-char 2) ".~") ;FIXME: Likely too ad-hoc!
      ;; Handle "let module" and friends.
      ((member tok '("module" "class" "open"))
       (let ((prev (save-excursion (tuareg-smie--backward-token))))
@@ -1724,7 +1983,7 @@ Return values can be
      ;; See http://caml.inria.fr/pub/docs/manual-ocaml/expr.html.
      ((memq (aref tok 0) '(?* ?/ ?% ?+ ?- ?@ ?^ ?= ?< ?> ?| ?& ?$))
       (cond
-       ((member tok '("|" "||" "&" "&&" "<-" "->")) tok)
+       ((member tok '("|" "||" "&" "&&" "<-" "->" ">.")) tok)
        ((and (eq (aref tok 0) ?*) (> (length tok) 1) (eq (aref tok 1) ?*))
         "**…")
        (t (string (aref tok 0) ?…))))
@@ -1747,6 +2006,8 @@ Return values can be
 (defun tuareg-smie-rules (kind token)
   ;; FIXME: Handling of "= |", "with |", "function |", and "[ |" is
   ;; problematic.
+  ;; FIXME: Start with (pcase (cons kind token) ...) so Edebug jumps
+  ;; straight to the appropriate branch!
   (cond
    ;; Special indentation for module fields.
    ((and (eq kind :after) (member token '("." ";"))
@@ -1776,20 +2037,21 @@ Return values can be
       ;; FIXME: Need a comment explaining what this tries to do.
       ;; FIXME: Should this only apply when (eq kind :before)?
       ;; FIXME: Don't use smie--parent.
-      (goto-char (cadr smie--parent))
-      (smie-indent-forward-token)
-      (tuareg-skip-blank-and-comments)
-      `(column . ,(- (current-column) 2)))
+      (when (bound-and-true-p smie--parent)
+        (goto-char (cadr smie--parent))
+        (smie-indent-forward-token)
+        (tuareg-skip-blank-and-comments)
+        `(column . ,(- (current-column) 2))))
      (t (smie-rule-separator kind))))
    (t
-    (case kind
-      (:elem (cond
-              ((eq token 'basic) tuareg-default-indent)
-              ;; The default tends to indent much too deep.
-              ((eq token 'empty-line-token) ";")))
-      (:list-intro (member token '("fun")))
-      (:close-all t)
-      (:before
+    (pcase kind
+      (`:elem (cond
+               ((eq token 'basic) tuareg-default-indent)
+               ;; The default tends to indent much too deep.
+               ((eq token 'empty-line-token) ";")))
+      (`:list-intro (member token '("fun")))
+      (`:close-all t)
+      (`:before
        (cond
         ((equal token "d=") (smie-rule-parent 2))
         ((member token '("fun" "match"))
@@ -1805,7 +2067,7 @@ Return values can be
          (smie-rule-parent))
         ((and (equal token "with") (smie-rule-parent-p "d="))
          (let ((td (smie-backward-sexp "with")))
-           (assert (equal (nth 2 td) "d="))
+           (cl-assert (equal (nth 2 td) "d="))
            (goto-char (nth 1 td))
            (setq td (smie-backward-sexp "d="))
            ;; Presumably (equal (nth 1 td) "type").
@@ -1847,7 +2109,7 @@ Return values can be
         ;; Apparently, people like their `| pattern when test -> body' to have
         ;;  the `when' indented deeper than the body.
         ((equal token "when") (smie-rule-parent tuareg-match-when-indent))))
-      (:after
+      (`:after
        (cond
         ((equal token "d=")
          (and (smie-rule-parent-p "type")
@@ -1992,7 +2254,7 @@ Return values can be
     (let (pd)
       (while (equal (nth 2 (setq pd (smie-backward-sexp token))) "then")
         (let ((pdi (smie-backward-sexp 'halfsexp)))
-          (assert (equal (nth 2 pdi) "if"))))
+          (cl-assert (equal (nth 2 pdi) "if"))))
       (cond
        ((equal (nth 2 pd) token)
         (goto-char (nth 1 pd))
@@ -2069,106 +2331,190 @@ whereas with a nil value you get
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                 Phrase movements and indentation
 
-(defun tuareg--skip-double-colon ()
-  (when (looking-at "[ \t\n]*;;[ \t\n]*")
+(defun tuareg--skip-backward-comment ()
+  "Skip backward a single comment and at most one preceding newline.
+Return a non-nil value if a comment was skipped."
+  ;; We do not want to skip newlines after the comment (as
+  ;; `forward-comment'), so we skip spaces by hand and check we are at
+  ;; the end of a comment.
+  (skip-chars-backward " \t")
+  (let ((opoint (point)))
+    (if (and (char-equal (preceding-char) ?\)) (forward-comment -1))
+        (progn
+          (skip-chars-backward " \t")
+          (skip-chars-backward "\n" (1- (point)))
+          t)
+      (goto-char opoint)
+      nil)))
+
+(defun tuareg--skip-backward-comments-semicolon ()
+  "Skip 'sticky' comments and ';;' after a definition."
+  ;; Comments after the definition not separated by a blank like
+  ;; ("sticking") are considered part of the definition.
+  (when (looking-at-p "[ \t]*(\\*")
+    (skip-chars-backward " \t")
+    (skip-chars-backward "\n" (1- (point))))
+  (while (tuareg--skip-backward-comment))
+  (skip-chars-backward " \t;"))
+
+(defun tuareg--skip-forward-comment ()
+  "Skip forward a single comment and at most one subsequent newline.
+Return a non-nil value if a comment was skipped."
+  (skip-chars-forward " \t")
+  (let ((opoint (point)))
+    (skip-chars-forward "\n" (1+ (point)))
+    (skip-chars-forward " \t")
+    (if (and (char-equal (following-char) ?\() (forward-comment 1))
+        t
+      (goto-char opoint)
+      nil)))
+
+(defun tuareg--skip-forward-comments-semicolon ()
+  "Skip ';;' and then 'sticky' comments after a definition."
+  (skip-chars-forward " \t;")
+  (while (tuareg--skip-forward-comment)))
+
+(defconst tuareg-starters-syms
+  '("type" "d-let" "exception" "module" "class" "val" "external" "open"))
+
+(defun tuareg-backward-beginning-of-defun ()
+  "Move the point backward to the beginning of a definition.
+Return the token starting the phrase (`nil' if it is an expression)."
+  (let ((state (syntax-ppss)))
+    (if (nth 3 state); in a string
+        (goto-char (nth 8 state))
+      ;; If on a word (e.g., "let" or "end"), move to the end of it.
+      ;; In particular, even if at the beginning of the "let" of a
+      ;; definition, one will not jump to the previous one.
+      (or (/= (skip-syntax-forward "w_") 0)
+          (tuareg--skip-backward-comments-semicolon))))
+  (let (td tok
+        (opoint (point)))
+    (setq td (smie-backward-sexp ";;")); for expressions
+    (cond
+     ((and (car td) (member (nth 2 td) tuareg-starters-syms))
+      (goto-char (nth 1 td)) (setq tok (nth 2 td)))
+     ((and (car td) (string= (nth 2 td) ";;")))
+     (t
+      (goto-char opoint)
+      (while (progn
+               (setq td (smie-backward-sexp 'halfsexp))
+               (cond
+                ((and (car td)
+                      (member (nth 2 td) tuareg-starters-syms))
+                 (goto-char (nth 1 td)) (setq tok (nth 2 td)) nil)
+                ((and (car td) (string= (nth 2 td) ";;"))
+                 nil)
+                ((and (car td) (not (numberp (car td))))
+                 (unless (bobp)
+                   (goto-char (nth 1 td))
+                   ;; Make sure there is not a preceding ;;
+                   (setq opoint (point))
+                   (let ((tok (tuareg-smie-backward-token)))
+                     (goto-char opoint)
+                     (not (string= tok ";;")))))
+                (t t))))))
+    tok))
+
+(defun tuareg--skip-double-semicolon ()
+  (tuareg-skip-blank-and-comments)
+  (when (looking-at ";;[ \t\n]*")
     (goto-char (match-end 0))))
 
-(defconst tuareg--beginning-of-phrase-syms
-  (let* ((prec (cdr (assoc "d-let" tuareg-smie-grammar)))
-         (syms (delq nil
-                     (mapcar (lambda (x) (if (equal (cdr x) prec) (car x)))
-                             tuareg-smie-grammar))))
-    (dolist (k '(";;"))
-      (setq syms (delete k syms)))
-    syms))
+(defun tuareg-end-of-defun ()
+  "Assuming that we are at the beginning of a definition, move to its end.
+See variable `end-of-defun-function'."
+  (interactive)
+  (let ((td (smie-forward-sexp ";;"))) ; for expressions
+    (when (member (nth 2 td) tuareg-starters-syms)
+      (smie-forward-sexp 'halfsexp)))
+  (tuareg--skip-forward-comments-semicolon))
 
-(defun tuareg--beginning-of-phrase ()
-  "Move the point to the beginning of the OCaml phrase on which the point is.
-Return a non nil value if at the beginning of a toplevel phrase (and not an
-expression)."
-  (let ((proper-beginning-of-phrase nil)
-        (state (syntax-ppss)))
-    (if (nth 3 state); in a string
-        (goto-char (nth 8 state)))
-    (while
-        (if (save-excursion
-              (member (tuareg-smie-backward-token)
-                      tuareg--beginning-of-phrase-syms))
-            (progn
-              (tuareg-smie-backward-token)
-              (setq proper-beginning-of-phrase t)
-              nil)
-          (let ((td (smie-backward-sexp 'halfsexp)))
-            (cond
-             ((member (nth 2 td) tuareg--beginning-of-phrase-syms)
-              (setq proper-beginning-of-phrase t)
-              (goto-char (nth 1 td))
-              nil)
-             ((string= (caddr td) ";;") nil)
-             ((and (car td) (not (numberp (car td))))
-              (unless (bobp) (goto-char (nth 1 td)) t))
-             (t t)))))
-    (if (and (bobp) (not proper-beginning-of-phrase))
-        (save-excursion
-          (member (tuareg-smie-forward-token)
-                  tuareg--beginning-of-phrase-syms))
-        proper-beginning-of-phrase)))
+(defun tuareg-beginning-of-defun (&optional arg)
+  "Move point backward to the beginning of a definition.
+See variable `beginning-of-defun-function'."
+  (interactive "^P")
+  (unless arg (setq arg 1))
+  (cond
+   ((> arg 0)
+    (while (and (> arg 0) (not (bobp)))
+      (tuareg-backward-beginning-of-defun)
+      (cl-decf arg)))
+   (t
+    (tuareg-backward-beginning-of-defun)
+    (unless (bobp) (tuareg-end-of-defun))
+    (while (and (< arg 0) (not (eobp)))
+      (tuareg--skip-double-semicolon)
+      (smie-forward-sexp 'halfsexp)
+      (cl-incf arg))
+    (tuareg-backward-beginning-of-defun)))
+  t); whether an experssion or a def, we found something.
 
-(defun tuareg--discover-phrase-forward ()
-  (smie-forward-sexp 'halfsexp))
+(defun tuareg-skip-siblings ()
+  (while (and (not (bobp))
+              (let ((td (smie-backward-sexp)))
+                (or (null (car td))
+                    (and (string= (nth 2 td) ";;")
+                         (tuareg-smie-backward-token)))))
+    (tuareg-backward-beginning-of-defun)
+    (forward-comment (- (point))))
+  (when (looking-at-p "in")
+    ;; Skip over `local...in' and continue.
+    (forward-word 1)
+    (smie-backward-sexp 'halfsexp)
+    (tuareg-skip-siblings)))
 
-(defun tuareg--discover-phrase-forward-expr ()
-  "How to move foward an expr that was not untroduced with a 'let'."
-  (smie-forward-sexp ";;")
-  ;; Since the point may be after the expression and we must go past
-  ;; it to have the full expression, skip all the "space" after the expr.
-  (tuareg--skip-double-colon))
+(defun tuareg--current-fun-name ()
+  (when (tuareg-backward-beginning-of-defun)
+    (save-excursion (tuareg-smie-forward-token)
+                    (tuareg-skip-blank-and-comments)
+                    (let ((name (tuareg-smie-forward-token)))
+                      (if (not (member name '("rec" "type")))
+                          name
+                        (tuareg-skip-blank-and-comments)
+                        (tuareg-smie-forward-token))))))
+
+(defcustom tuareg-max-name-components 3
+  "Maximum number of components to use for the current function name."
+  :type 'integer)
+
+(defun tuareg-current-fun-name ()
+  (save-excursion
+    (let ((count tuareg-max-name-components)
+          fullname name)
+      (end-of-line)
+      (while (and (> count 0)
+                  (setq name (tuareg--current-fun-name)))
+        (cl-decf count)
+        (setq fullname (if fullname (concat name "." fullname) name))
+        ;; Skip all other declarations that we find at the same level.
+        (tuareg-skip-siblings))
+      fullname)))
+
+(define-obsolete-function-alias 'tuareg--beginning-of-phrase
+  'tuareg-backward-beginning-of-defun
+  "Apr 10, 2019")
 
 (defun tuareg-discover-phrase (&optional pos)
   "Return a triplet (BEGIN END END-WITH-COMMENTS) for the OCaml
 phrase around POS.  In case of error, move the point at the
 beginning of the error and return `nil'."
-  (let (begin end end-comment
-        proper-beginning-of-phrase go-forward
-        (complete-phrase t))
+  (let ((complete-phrase t)
+        begin end)
     (save-excursion
       (if pos (goto-char pos)  (setq pos (point)))
-      (tuareg-smie-forward-token)
-      (setq proper-beginning-of-phrase (tuareg--beginning-of-phrase))
+      (tuareg-backward-beginning-of-defun)
       (setq begin (point))
-      (setq go-forward (if proper-beginning-of-phrase
-                           #'tuareg--discover-phrase-forward
-                         #'tuareg--discover-phrase-forward-expr))
+      (tuareg-end-of-defun)
       (setq end (point))
-      (while (progn
-               (funcall go-forward)
-               (cond
-                ((= (point) (point-max))
-                 (setq end (point))
-                 nil)
-                ((= end (point)); no move
-                 (setq complete-phrase nil)
-                 nil)
-                (t
-                 (setq end (point))
-                 (tuareg-skip-blank-and-comments)
-                 (<= (point) pos))))
-        ;; Looks like tuareg--beginning-of-phrase went too far back!
-        (setq begin (point)))
-      (setq end-comment (point))
-      ;; Check if we were not stuck (after POS) because the phrase
-      ;; was not well parenthesized.
+      ;; Check if we were not stuck (after POS) because the phrase was
+      ;; not well parenthesized.
       (when (and complete-phrase (< (point) (point-max)))
         (smie-forward-sexp 'halfsexp)
-        (when (= end-comment (point)); did not move
-          (setq complete-phrase nil)))
-      ;; ";;" is not part of the phrase and neither comments
-      (goto-char begin)
-      (tuareg--skip-double-colon)
-      (tuareg-skip-blank-and-comments)
-      (setq begin (point)))
+        (when (= end (point)); did not move
+          (setq complete-phrase nil))))
     (if complete-phrase
-        (list begin end end-comment)
+        (cons begin end)
       (goto-char end)
       nil)))
 
@@ -2253,7 +2599,7 @@ or indent all lines in the current phrase."
         (tuareg--fill-comment))
        (t (let ((phrase (tuareg-discover-phrase)))
             (if phrase
-                (indent-region (car phrase) (cadr phrase))))))))) 
+                (indent-region (car phrase) (cdr phrase)))))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2316,6 +2662,8 @@ or indent all lines in the current phrase."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                              The major mode
+
+(defalias 'tuareg-find-alternate-file 'ff-get-other-file)
 
 (defun tuareg--switch-outside-build ()
   "If the current buffer refers to a file under a _build
@@ -2382,8 +2730,7 @@ expansion at run-time, if the run-time version of Emacs does know this macro."
         (smie-indent-forward-token))))
 
 (defun tuareg--common-mode-setup ()
-  (when (fboundp 'tuareg-syntax-propertize)
-    (setq-local syntax-propertize-function #'tuareg-syntax-propertize))
+  (setq-local syntax-propertize-function #'tuareg-syntax-propertize)
   (setq-local parse-sexp-ignore-comments t)
   (smie-setup tuareg-smie-grammar #'tuareg-smie-rules
               :forward-token #'tuareg-smie-forward-token
@@ -2397,7 +2744,7 @@ expansion at run-time, if the run-time version of Emacs does know this macro."
                     #'tuareg--hanging-eolp-advice)))
   (add-hook 'smie-indent-functions #'tuareg-smie--args nil t)
   (add-hook 'smie-indent-functions #'tuareg-smie--inside-string nil t)
-  (setq-local add-log-current-defun-function 'tuareg-current-fun-name)
+  (setq-local add-log-current-defun-function #'tuareg-current-fun-name)
   (setq prettify-symbols-alist
         (if tuareg-prettify-symbols-full
             (append tuareg-prettify-symbols-basic-alist
@@ -2409,11 +2756,9 @@ expansion at run-time, if the run-time version of Emacs does know this macro."
 
   (add-hook 'completion-at-point-functions #'tuareg-completion-at-point nil t)
 
-  (when (fboundp 'electric-indent-mode)
-    (add-hook 'electric-indent-functions
-              #'tuareg--electric-indent-predicate nil t))
-  (when (boundp 'post-self-insert-hook)
-    (add-hook 'post-self-insert-hook #'tuareg--electric-close-vector nil t)))
+  (add-hook 'electric-indent-functions
+            #'tuareg--electric-indent-predicate nil t)
+  (add-hook 'post-self-insert-hook #'tuareg--electric-close-vector nil t))
 
 ;;;###autoload(add-to-list 'auto-mode-alist '("\\.ml[ip]?\\'" . tuareg-mode))
 ;;;###autoload(add-to-list 'auto-mode-alist '("\\.eliomi?\\'" . tuareg-mode))
@@ -2421,15 +2766,12 @@ expansion at run-time, if the run-time version of Emacs does know this macro."
 ;;;###autoload                ".annot" ".cmt" ".cmti"))
 ;;;###autoload  (add-to-list 'completion-ignored-extensions ext))
 
-(defalias 'tuareg--prog-mode
-  (if (fboundp 'prog-mode) #'prog-mode #'fundamental-mode))
-
 (defvar compilation-first-column)
 
 (defvar compilation-error-screen-columns)
 
 ;;;###autoload
-(define-derived-mode tuareg-mode tuareg--prog-mode "Tuareg"
+(define-derived-mode tuareg-mode prog-mode "Tuareg"
   "Major mode for editing OCaml code.
 
 Dedicated to Emacs and XEmacs, version 21 and higher.  Provides
@@ -2485,70 +2827,15 @@ Short cuts for interactions with the REPL:
     (setq-local compilation-error-screen-columns nil)
     ;; TABs should NOT be used in OCaml files:
     (setq indent-tabs-mode nil)
+    (setq ff-search-directories '(".")
+          ff-other-file-alist tuareg-other-file-alist)
     (tuareg--common-mode-setup)
     (tuareg--install-font-lock)
-    (when (fboundp 'tuareg-auto-fill-function)
-      ;; Emacs-21's newcomment.el provides this functionality by default.
-      (setq-local normal-auto-fill-function #'tuareg-auto-fill-function))
-
     (setq-local beginning-of-defun-function #'tuareg-beginning-of-defun)
-    
-    (if (functionp 'tuareg-imenu-create-index)
-        (setq-local imenu-create-index-function #'tuareg-imenu-create-index))
+    (setq-local end-of-defun-function #'tuareg-end-of-defun)
+
+    (setq imenu-create-index-function #'tuareg-imenu-create-index)
     (run-mode-hooks 'tuareg-load-hook)))
-
-(defconst tuareg-starters-syms
-  '("module" "type" "let" "d-let" "and"))
-
-(defun tuareg-find-matching-starter (starters)
-  (let (tok)
-    (while
-        (let ((td (smie-backward-sexp 'halfsexp)))
-          (cond
-           ((and (car td)
-                 (member (nth 2 td) starters))
-            (goto-char (nth 1 td)) (setq tok (nth 2 td)) nil)
-           ((and (car td) (not (numberp (car td))))
-            (unless (bobp) (goto-char (nth 1 td)) t))
-           (t t))))
-    tok))
-
-(defun tuareg-skip-siblings ()
-  (while (and (not (bobp))
-              (null (car (smie-backward-sexp))))
-    (tuareg-find-matching-starter tuareg-starters-syms))
-  (when (looking-at-p "in")
-    ;; Skip over `local...in' and continue.
-    (forward-word 1)
-    (smie-backward-sexp 'halfsexp)
-    (tuareg-skip-siblings)))
-
-(defun tuareg-beginning-of-defun ()
-  (when (tuareg-find-matching-starter tuareg-starters-syms)
-	(save-excursion (tuareg-smie-forward-token)
-                        (tuareg-skip-blank-and-comments)
-                        (let ((name (tuareg-smie-forward-token)))
-                          (if (not (member name '("rec" "type")))
-                              name
-                            (tuareg-skip-blank-and-comments)
-                        (tuareg-smie-forward-token))))))
-
-(defcustom tuareg-max-name-components 3
-  "Maximum number of components to use for the current function name."
-  :type 'integer)
-
-(defun tuareg-current-fun-name ()
-  (save-excursion
-    (let ((count tuareg-max-name-components)
-          fullname name)
-      (end-of-line)
-      (while (and (> count 0)
-                  (setq name (tuareg-beginning-of-defun)))
-        (decf count)
-        (setq fullname (if fullname (concat name "." fullname) name))
-        ;; Skip all other declarations that we find at the same level.
-        (tuareg-skip-siblings))
-      fullname)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                               Error processing
@@ -2560,16 +2847,20 @@ Short cuts for interactions with the REPL:
 ;; the language is not English.  Hence we add a regexp.
 
 (defconst tuareg--error-regexp
-  "^[ A-\377]+ \"\\([^\"\n]+\\)\", line \\([0-9]+\\), \
-characters \\([0-9]+\\)-\\([0-9]+\\)"
+  "^ *\\(File \\(\"?\\)\\([^,\" \n\t<>]+\\)\\2, \
+lines? \\([0-9]+\\)-?\\([0-9]+\\)?\
+\\(?:, characters? \\([0-9]+\\)-?\\([0-9]+\\)?\\)?:\\)\
+\\(?:\n[ \t]*\\(?:\\(?:[0-9]+ | .*\\|\\^+\\)\n[ \t]*\\)*\
+\\(Warning\\(?: [0-9]+\\)?\\):\\)?"
   "Regular expression matching the error messages produced by ocamlc/ocamlopt.")
 
 (when (boundp 'compilation-error-regexp-alist-alist)
-    (add-to-list 'compilation-error-regexp-alist-alist
-                 `(ocaml ,tuareg--error-regexp 1 2 (3 . 4))))
+  (push `(ocaml ,tuareg--error-regexp 3 (4 . 5) (6 . 7) (8) 1
+                (8 font-lock-function-name-face))
+        compilation-error-regexp-alist-alist))
 
 (when (boundp 'compilation-error-regexp-alist)
-  (add-to-list 'compilation-error-regexp-alist 'ocaml)
+  (push 'ocaml compilation-error-regexp-alist)
 
   (eval-after-load 'caml
     ;; caml-mode also changes `compilation-error-regexp-alist' with a
@@ -2577,7 +2868,7 @@ characters \\([0-9]+\\)-\\([0-9]+\\)"
     #'(lambda()
         (setq compilation-error-regexp-alist
               (delete 'ocaml compilation-error-regexp-alist))
-        (add-to-list 'compilation-error-regexp-alist 'ocaml))))
+        (push 'ocaml compilation-error-regexp-alist))))
 
 
 ;; Wrapper around next-error.
@@ -2602,8 +2893,8 @@ characters \\([0-9]+\\)-\\([0-9]+\\)"
 ;;        (save-excursion
 ;;          (goto-char (window-point (get-buffer-window (current-buffer) t)))
 ;;          (when (looking-at tuareg-error-chars-regexp)
-;;            (setq beg (string-to-number (tuareg-match-string 1))
-;;                  end (string-to-number (tuareg-match-string 2))))))
+;;            (setq beg (string-to-number (match-string-no-properties 1))
+;;                  end (string-to-number (match-string-no-properties 2))))))
 ;;      (beginning-of-line)
 ;;      (when beg
 ;;        (setq beg (+ (point) beg) end (+ (point) end))
@@ -2659,47 +2950,6 @@ characters \\([0-9]+\\)-\\([0-9]+\\)"
   (unwind-protect
       (caml-complete arg)
     (modify-syntax-entry ?_ "_" tuareg-mode-syntax-table)))
-
-(defun tuareg--try-find-alternate-file (mod-name extensions &optional no-create)
-  "Switch to the file given by MOD-NAME and EXTENSIONS.
-If NO-CREATE is non-nil and the file doesn't exist, don't switch and return nil,
-otherwise return non-nil."
-  (let ((ext extensions)
-        (not-found t))
-    ;; Search for a buffer or filename with the correct extension
-    (while (and not-found (not (null ext)))
-      (let* ((e (car ext))
-             (filename (concat mod-name e))
-             (buffer (get-file-buffer filename)))
-        (cond
-         (buffer (switch-to-buffer buffer)
-                 (setq not-found nil))
-         ((file-exists-p filename) (find-file filename)
-          (setq not-found nil))
-         (t (setq ext (cdr ext))))))
-    (when not-found
-      (let* ((e (car extensions)) ; Create with the first extention?
-             (filename (concat mod-name e))
-             (what (cond ((string= e ".mli") "interface")
-                         (t "implementation"))))
-        (when (and (not no-create)
-                   (y-or-n-p
-                    (format "Create %s file %s " what
-                            (file-name-nondirectory filename))))
-          (find-file filename))))))
-
-(defun tuareg-find-alternate-file ()
-  "Switch Implementation/Interface."
-  (interactive)
-  (let ((name buffer-file-name))
-    (when (string-match "\\`\\(.*\\)\\.ml\\([il]\\)?\\'" name)
-      (let ((mod-name (tuareg-match-string 1 name))
-            (e (tuareg-match-string 2 name)))
-        (cond
-         ((string= e "i")
-            (tuareg--try-find-alternate-file mod-name '(".ml" ".mll")))
-         (t
-          (tuareg--try-find-alternate-file mod-name '(".mli"))))))))
 
 (define-skeleton tuareg-insert-class-form
   "Insert a nicely formatted class-end form, leaving a mark after end."
@@ -2817,7 +3067,7 @@ switch is not installed, `nil' is returned."
 
 
 ;; OPAM compilation
-(defun tuareg--compile-opam (&rest r)
+(defun tuareg--compile-opam (&rest _)
   "Advice to update the OPAM environment to sync it with the OPAM
 switch before compiling."
   (let* ((env (tuareg-opam-config-env)))
@@ -2898,8 +3148,8 @@ switch before compiling."
             (goto-char comint-last-input-end)
             (cond
              ((looking-at tuareg-interactive-error-range-regexp)
-              (let ((beg (string-to-number (tuareg-match-string 1)))
-                    (end (string-to-number (tuareg-match-string 2))))
+              (let ((beg (string-to-number (match-string-no-properties 1)))
+                    (end (string-to-number (match-string-no-properties 2))))
                 (put-text-property
                  (+ comint-last-input-start beg)
                  (+ comint-last-input-start end)
@@ -2948,7 +3198,7 @@ be sent from another buffer in tuareg mode.
 
 Short cuts for interactions with the REPL:
 \\{tuareg-interactive-mode-map}"
-  (add-hook 'comint-output-filter-functions 'tuareg-interactive-filter)
+  (add-hook 'comint-output-filter-functions #'tuareg-interactive-filter)
   (setq comint-prompt-regexp "^#  *")
   (setq comint-process-echoes nil)
   (setq comint-get-old-input 'tuareg-interactive-get-old-input)
@@ -2996,7 +3246,7 @@ I/O via buffer `*OCaml*'."
                                 tuareg-interactive-program))))
   (unless (comint-check-proc tuareg-interactive-buffer-name)
     (let ((cmdlist (tuareg--split-args tuareg-interactive-program))
-          (process-connection-type nil))
+          (process-connection-type t))
       (set-buffer (apply (function make-comint) "OCaml"
                          (car cmdlist) nil (cdr cmdlist)))
       (tuareg-interactive-mode)
@@ -3033,7 +3283,7 @@ otherwise a newline is inserted and the lines are indented."
   (interactive)
   (cond
    ((tuareg-in-literal-or-comment-p) (tuareg-interactive--indent-line))
-   ((or (equal ";;" (save-excursion (caddr (smie-backward-sexp))))
+   ((or (equal ";;" (save-excursion (nth 2 (smie-backward-sexp))))
         (looking-at-p "[ \t\n\r]*;;"))
     (comint-send-input))
    (t (tuareg-interactive--indent-line))))
@@ -3041,7 +3291,7 @@ otherwise a newline is inserted and the lines are indented."
 (defun tuareg-interactive-send-input-end-of-phrase ()
   (interactive)
   (goto-char (point-max))
-  (unless (equal ";;" (save-excursion (caddr (smie-backward-sexp))))
+  (unless (equal ";;" (save-excursion (nth 2 (smie-backward-sexp))))
     (insert ";;"))
   (comint-send-input))
 
@@ -3053,19 +3303,19 @@ It is assumed that the range START-END delimit valid OCaml phrases."
   (let* ((phrases (buffer-substring-no-properties start end))
          (phrases (replace-regexp-in-string "[ \t\n]*\\(;;[ \t\n]*\\)?\\'" ""
                                             phrases))
-         (phrases-colon (concat phrases ";;")))
+         (phrases-semicolon (concat phrases ";;")))
     (if (string= phrases "")
         (message "Cannot send empty commands to OCaml REPL!")
       (with-current-buffer tuareg-interactive-buffer-name
         (goto-char (point-max))
         (setq tuareg-interactive-last-phrase-pos-in-repl (point))
-        (comint-send-string tuareg-interactive-buffer-name phrases-colon)
+        (comint-send-string tuareg-interactive-buffer-name phrases-semicolon)
         (let ((pos (point)))
           (comint-send-input)
           (when tuareg-interactive-echo-phrase
             (save-excursion
               (goto-char pos)
-              (insert phrases-colon)))))))
+              (insert phrases-semicolon)))))))
   (when tuareg-display-buffer-on-eval
     (display-buffer tuareg-interactive-buffer-name)))
 
@@ -3073,45 +3323,40 @@ It is assumed that the range START-END delimit valid OCaml phrases."
   "Eval the current region in the OCaml REPL."
   (interactive "r")
   (setq tuareg-interactive-last-phrase-pos-in-source start)
-  (setq start (car (tuareg-discover-phrase start)))
-  (if start
-      (progn
-        (setq end (cadr (tuareg-discover-phrase end)))
-        (if end
-            (tuareg-interactive--send-region start end)
-          (message "The expression after the point is not well braced.")))
-    (message "The expression after the point is not well braced.")))
-
-(defun tuareg-narrow-to-phrase ()
-  "Narrow the editting window to the surrounding OCaml phrase (or block)."
-  (interactive)
-  (let ((phrase (tuareg-discover-phrase)))
-    (if phrase
-        (narrow-to-region (nth 0 phrase) (nth 1 phrase)))))
-
-(defun tuareg--after-double-colon ()
-  "Non nil if the current position is after or inside ';;'.  In
-this case, the returned value is the position before ';;' (unless
-it is the first position of the buffer)."
   (save-excursion
-    (when (looking-at-p "[;[:blank:]]*$")
-      (skip-chars-backward ";[:blank:]")
-      (if (> (point) 1) (- (point) 1)))))
+    (goto-char start)
+    (setq start (car (tuareg-discover-phrase)))
+    (if start
+        (progn
+          (goto-char end)
+          (setq end (cdr (tuareg-discover-phrase)))
+          (if end
+              (tuareg-interactive--send-region start end)
+            (message "The expression after the point is not well braced.")))
+      (message "The expression after the point is not well braced."))))
+
+(define-obsolete-function-alias 'tuareg-narrow-to-phrase 'narrow-to-defun
+  "Apr 10, 2019")
 
 (defun tuareg-eval-phrase ()
   "Eval the surrounding OCaml phrase (or block) in the OCaml REPL."
   (interactive)
-  (let* ((pos (tuareg--after-double-colon))
-         (pos (if pos pos (point)))
-         (phrase (tuareg-discover-phrase pos)))
-    (if phrase
-        (progn
-          (tuareg-interactive--send-region (nth 0 phrase) (nth 1 phrase))
-          (when tuareg-skip-after-eval-phrase
-            (goto-char (caddr phrase))
-            (tuareg--skip-double-colon)
-            (tuareg-skip-blank-and-comments)))
-      (message "The expression after the point is not well braced."))))
+  (let ((opoint (point)))
+    ;; Move before the comment, if we are in one.
+    (let ((ppss (syntax-ppss)))
+      (if (nth 4 ppss) (goto-char (- (nth 8 ppss) 1))))
+    (let ((phrase (tuareg-discover-phrase)))
+      (if phrase
+          (progn
+            ;; Remove comments after the phrase
+            (goto-char (cdr phrase))
+            (forward-comment (- (point)))
+            (tuareg-interactive--send-region (car phrase) (point))
+            (if tuareg-skip-after-eval-phrase
+              (progn (goto-char (cdr phrase))
+                     (tuareg-skip-blank-and-comments))
+              (goto-char opoint)))
+        (message "The expression after the point is not well braced.")))))
 
 (defun tuareg-eval-buffer ()
   "Send the buffer to the Tuareg Interactive process."
@@ -3134,8 +3379,8 @@ it is the first position of the buffer)."
             (re-search-forward tuareg-interactive-error-range-regexp
                                (point-max) t))
       (when error-pos
-        (setq beg (string-to-number (tuareg-match-string 1))
-              end (string-to-number (tuareg-match-string 2)))))
+        (setq beg (string-to-number (match-string-no-properties 1))
+              end (string-to-number (match-string-no-properties 2)))))
     (if (not error-pos)
         (message "No syntax or typing error in last phrase.")
       (setq beg (+ tuareg-interactive-last-phrase-pos-in-source beg)
@@ -3156,8 +3401,8 @@ it is the first position of the buffer)."
             (re-search-forward tuareg-interactive-error-range-regexp
                                (point-max) t))
       (when error-pos
-        (setq beg (string-to-number (tuareg-match-string 1))
-              end (string-to-number (tuareg-match-string 2)))))
+        (setq beg (string-to-number (match-string-no-properties 1))
+              end (string-to-number (match-string-no-properties 2)))))
     (if (not error-pos)
         (message "No syntax or typing error in last phrase.")
       (setq beg (+ tuareg-interactive-last-phrase-pos-in-repl beg)
@@ -3375,9 +3620,22 @@ Short cuts for interaction within the REPL:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;			    Imenu support
 
-(when (let (abbrevs-changed)            ;Workaround for tuareg#146
-        (require 'caml nil t))
-  (defalias 'tuareg-imenu-create-index 'caml-create-index-function))
+(defun tuareg-imenu-create-index ()
+  "Create an index alist for OCaml files using `merlin-imenu' or `caml-mode'.
+See `imenu-create-index-function'."
+  (or (require 'merlin-imenu nil t)
+      (let (abbrevs-changed)            ;Workaround for tuareg#146
+        (require 'caml nil t)))
+  (cond
+   ((fboundp 'merlin-imenu-create-index)
+    (merlin-imenu-create-index))
+   ((fboundp 'caml-create-index-function)
+    (caml-create-index-function))
+   (t
+    (message "Install Merlin or caml-mode.")
+    ;; Cannot return the empty list `nil' because imenu will issue its
+    ;; own warning.
+    '(("Install Merlin or caml-mode" . 0)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                      Related files & modes
@@ -3389,8 +3647,8 @@ Short cuts for interaction within the REPL:
 (when (require 'speedbar nil t)
   (speedbar-add-supported-extension
    '(".ml" ".mli" ".mll" ".mly" ".mlp" ".ls"))
-  (add-to-list 'speedbar-obj-alist '("\\.mli$" . ".cmi"))
-  (add-to-list 'speedbar-obj-alist '("\\.ml$"  . ".cmo")))
+  (push '("\\.mli$" . ".cmi") speedbar-obj-alist)
+  (push '("\\.ml$"  . ".cmo") speedbar-obj-alist))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                             Hooks and Exit
