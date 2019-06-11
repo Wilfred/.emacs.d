@@ -12,6 +12,7 @@
         c-electric-slash
         c-electric-star
         coffee-dedent-line-backspace
+        crux-move-beginning-of-line
         end-of-visual-line
         forward-sexp
         helm-confirm-and-exit-minibuffer
