@@ -1,0 +1,3 @@
+*.elc
+smalltalk-mode-pkg.el
+smalltalk-mode-autoloads.el
