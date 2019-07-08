@@ -174,6 +174,11 @@ test with the same name."
   (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode)
   :diminish "")
 
+;; Always use spaces for elisp indentation.
+(defun wh/indent-with-spaces ()
+  (setq indent-tabs-mode nil))
+(add-hook 'emacs-lisp-mode-hook #'wh/indent-with-spaces)
+
 (use-package lispy
   :config
   ;; Use lispy-mode in lisp languages.
