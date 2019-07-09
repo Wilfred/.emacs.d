@@ -1,10 +1,12 @@
 ;;; flycheck-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
+
+(add-to-list 'load-path (directory-file-name
+                         (or (file-name-directory #$) (car load-path))))
+
 
-;;;### (autoloads nil "flycheck" "flycheck.el" (23229 24998 341590
-;;;;;;  927000))
+;;;### (autoloads nil "flycheck" "flycheck.el" (0 0 0 0))
 ;;; Generated autoloads from flycheck.el
 
 (autoload 'flycheck-manual "flycheck" "\
@@ -225,10 +227,26 @@ Use this together with the `option', `option-list' and
 
 (function-put 'flycheck-def-option-var 'doc-string-elt '4)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "flycheck" '("flycheck-" "list-flycheck-errors" "locate-rebar3-project-root" "contains-rebar-config" "help-flycheck-checker-d" "read-flycheck-")))
+
 ;;;***
 
-;;;### (autoloads nil nil ("flycheck-buttercup.el" "flycheck-ert.el"
-;;;;;;  "flycheck-pkg.el") (23229 24998 309590 150000))
+;;;### (autoloads nil "flycheck-buttercup" "flycheck-buttercup.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from flycheck-buttercup.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "flycheck-buttercup" '("flycheck-buttercup-format-error-list")))
+
+;;;***
+
+;;;### (autoloads nil "flycheck-ert" "flycheck-ert.el" (0 0 0 0))
+;;; Generated autoloads from flycheck-ert.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "flycheck-ert" '("flycheck-er")))
+
+;;;***
+
+;;;### (autoloads nil nil ("flycheck-pkg.el") (0 0 0 0))
 
 ;;;***
 
@@ -236,5 +254,6 @@ Use this together with the `option', `option-list' and
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
+;; coding: utf-8
 ;; End:
 ;;; flycheck-autoloads.el ends here
