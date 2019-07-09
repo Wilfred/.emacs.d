@@ -27,12 +27,6 @@
   (setq indent-tabs-mode nil)
   (setq js2-basic-offset 2))
 
-(defun wh/configure-js-mode (hook)
-  (add-hook hook #'wh/js-use-2-spaces)
-  (add-hook hook #'tern-mode)
-  (add-hook hook #'flycheck-mode)
-  (add-hook hook #'prettier-js-mode))
-
 (dolist (hook '(js-mode-hook js2-mode-hook js-jsx-mode-hook js2-jsx-mode-hook rjsx-mode-hook))
   (add-hook hook #'wh/js-use-2-spaces)
   (add-hook hook #'tern-mode)
