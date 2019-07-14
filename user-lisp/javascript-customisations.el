@@ -33,6 +33,8 @@
   (add-hook hook #'flycheck-mode)
   (add-hook hook #'prettier-js-mode))
 
+(add-hook 'js2-mode-hook (lambda () (setq mode-name "JS2")))
+
 (require 'company)
 (add-to-list 'company-backends 'company-tern)
 
