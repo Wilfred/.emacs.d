@@ -304,7 +304,8 @@ the kill-ring gets modified by `change-inner'."
 (use-package iedit
   ;; iedit sets up this key binding when you first use it, but it's nice
   ;; to have the keybinding generally available.
-  :bind ("C-;" . iedit-mode))
+  :bind (("C-;" . iedit-mode)
+         ("C-c i" . iedit-mode)))
 
 ;; `comment-dwim' is good, but it adds a comment to end of the line,
 ;; which is rarely useful.
