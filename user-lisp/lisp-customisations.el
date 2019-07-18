@@ -19,17 +19,20 @@
     (trace-function sym)
     (message "Tracing: %S" sym)))
 
+(defun wh/run-ert-test ()
+  "Run ERT test at point. If point is in a function, run the
+test with the same name."
+  (interactive)
+  (save-excursion
+    (beginning-of-defun)
+    (let* ((form (read (current-buffer)))
+           (sym (nth 1 form)))
+      (unless (ert-test-boundp sym)
+        (user-error "Not an ERT test: %s" sym))
+      (ert sym))))
+
 (use-package elisp-mode
   :config
-  (defun wh/run-ert-test ()
-    "Run ERT test at point. If point is in a function, run the
-test with the same name."
-    (interactive)
-    (save-excursion
-      (beginning-of-defun)
-      (let* ((form (read (current-buffer)))
-             (sym (nth 1 form)))
-        (ert sym))))
   (define-key emacs-lisp-mode-map (kbd "C-c r") #'wh/run-ert-test)
 
   (dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook))
