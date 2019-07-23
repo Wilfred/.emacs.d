@@ -4,9 +4,9 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; URL: https://github.com/Wilfred/deadgrep
-;; Package-Version: 20190314.2207
+;; Package-Version: 20190516.2159
 ;; Keywords: tools
-;; Version: 0.7
+;; Version: 0.8
 ;; Package-Requires: ((emacs "25.1") (dash "2.12.0") (s "1.11.0") (spinner "1.7.3"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -42,8 +42,13 @@
   :group 'tools
   :group 'matching)
 
-(defvar deadgrep-executable
-  (executable-find "rg"))
+(defcustom deadgrep-executable
+  "rg"
+  "The rg executable used by deadgrep.
+This will be looked up on `exec-path' if it isn't an absolute
+path to the binary."
+  :type 'string
+  :group 'deadgrep)
 
 (defvar deadgrep-max-buffers
   4
@@ -240,6 +245,9 @@ It is used to create `imenu' index.")
 
             (setq prev-line-num line-num))))))))
 
+(defvar deadgrep-finished-hook nil
+  "Hook run when `deadgrep' search is finished.")
+
 (defun deadgrep--process-sentinel (process output)
   "Update the deadgrep buffer associated with PROCESS as complete."
   (let ((buffer (process-buffer process))
@@ -263,6 +271,7 @@ It is used to create `imenu' index.")
               (goto-char (point-max))
               (insert output))))
 
+        (run-hooks 'deadgrep-finished-hook)
         (message "Deadgrep finished")))))
 
 (defun deadgrep--process-filter (process output)
@@ -844,6 +853,8 @@ Returns a list ordered by the most recently accessed."
 
     (define-key map (kbd "n") #'deadgrep-forward)
     (define-key map (kbd "p") #'deadgrep-backward)
+    (define-key map (kbd "N") #'deadgrep-forward-match)
+    (define-key map (kbd "P") #'deadgrep-backward-match)
 
     map)
   "Keymap for `deadgrep-mode'.")
@@ -1010,9 +1021,10 @@ in the current buffer."
 
     (point)))
 
-(defun deadgrep--filename ()
-  "Get the filename of the result at point."
-  (get-text-property (line-beginning-position) 'deadgrep-filename))
+(defun deadgrep--filename (&optional pos)
+  "Get the filename of the result at point POS.
+If POS is nil, use the beginning position of the current line."
+  (get-text-property (or pos (line-beginning-position)) 'deadgrep-filename))
 
 (defun deadgrep--line-number ()
   "Get the filename of the result at point."
@@ -1132,7 +1144,7 @@ Keys are interned filenames, so they compare with `eq'.")
 (defun deadgrep--item-p (pos)
   "Is there something at POS that we can interact with?"
   (or (button-at pos)
-      (deadgrep--filename)))
+      (deadgrep--filename pos)))
 
 (defun deadgrep--move (forward-p)
   "Move to the next item.
@@ -1169,15 +1181,59 @@ This will either be a button, a filename, or a search result."
 
 (defun deadgrep-forward ()
   "Move forward to the next item.
-This will either be a button, a filename, or a search result."
+This will either be a button, a filename, or a search result. See
+also `deadgrep-forward-match'."
   (interactive)
   (deadgrep--move t))
 
 (defun deadgrep-backward ()
   "Move backward to the previous item.
-This will either be a button, a filename, or a search result."
+This will either be a button, a filename, or a search result. See
+also `deadgrep-backward-match'."
   (interactive)
   (deadgrep--move nil))
+
+(defun deadgrep--move-match (forward-p)
+  "Move point to the beginning of the next/previous match."
+  (interactive)
+  (let ((start-pos (point)))
+    ;; Move over the current match, if we were already on one.
+    (while (eq (get-text-property (point) 'face)
+               'deadgrep-match-face)
+      (if forward-p (forward-char) (backward-char)))
+    (condition-case err
+        (progn
+          ;; Move point to the next match, which may be on the same line.
+          (while (not (eq (get-text-property (point) 'face)
+                          'deadgrep-match-face))
+            (if forward-p (forward-char) (backward-char)))
+          ;; Ensure point is at the beginning of the match.
+          (unless forward-p
+            (while (eq (get-text-property (point) 'face)
+                       'deadgrep-match-face)
+              (backward-char))
+            (forward-char)))
+      ;; Don't move point beyond the last match. However, it's still
+      ;; useful to signal that we're at the end, so users can use this
+      ;; command with macros and terminate when it's done.
+      (beginning-of-buffer
+       (goto-char start-pos)
+       (signal 'beginning-of-buffer nil))
+      (end-of-buffer
+       (goto-char start-pos)
+       (signal 'end-of-buffer nil)))))
+
+(defun deadgrep-forward-match ()
+  "Move point forward to the beginning of next match.
+Note that a result line may contain more than one match, or zero
+matches (if the result line has been truncated)."
+  (interactive)
+  (deadgrep--move-match t))
+
+(defun deadgrep-backward-match ()
+  "Move point backward to the beginning of previous match."
+  (interactive)
+  (deadgrep--move-match nil))
 
 (defun deadgrep--start (search-term search-type case)
   "Start a ripgrep search."

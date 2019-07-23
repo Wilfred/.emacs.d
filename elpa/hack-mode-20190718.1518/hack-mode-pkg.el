@@ -1,0 +1,2 @@
+;;; -*- no-byte-compile: t -*-
+(define-package "hack-mode" "20190718.1518" "Major mode for the Hack programming language" '((emacs "25.1") (s "1.11.0")) :commit "7f94e1fdc18b8722b56028e7532a68aa783138b5" :authors '(("John Allen <jallen@fb.com>, Wilfred Hughes" . "me@wilfred.me.uk")) :maintainer '("John Allen <jallen@fb.com>, Wilfred Hughes" . "me@wilfred.me.uk") :url "https://github.com/hhvm/hack-mode")
