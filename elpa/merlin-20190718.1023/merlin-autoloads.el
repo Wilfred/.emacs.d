@@ -45,7 +45,7 @@ Short cuts:
 
 \(fn COMMAND &optional ARG &rest IGNORED)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "merlin-company" '("merlin-company--")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "merlin-company" '("merlin-company-")))
 
 ;;;***
 
@@ -60,6 +60,18 @@ Short cuts:
 ;;; Generated autoloads from merlin-imenu.el
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "merlin-imenu" '("module-list" "misc-list" "merlin-" "parse-outline-" "class-list" "label-list" "exception-list" "type-list" "value-list")))
+
+;;;***
+
+;;;### (autoloads nil "merlin-xref" "merlin-xref.el" (0 0 0 0))
+;;; Generated autoloads from merlin-xref.el
+
+(autoload 'merlin-xref-backend "merlin-xref" "\
+Merlin backend for Xref.
+
+\(fn)" nil nil)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "merlin-xref" '("merlin-xref--line")))
 
 ;;;***
 
