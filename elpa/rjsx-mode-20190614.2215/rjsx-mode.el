@@ -4,7 +4,7 @@
 
 ;; Author: Felipe Ochoa <felipe@fov.space>
 ;; URL: https://github.com/felipeochoa/rjsx-mode/
-;; Package-Version: 20190312.117
+;; Package-Version: 20190614.2215
 ;; Package-Requires: ((emacs "24.4") (js2-mode "20170504"))
 ;; Version: 1.1
 ;; Keywords: languages
@@ -50,7 +50,7 @@ parsing supports the magic `rjsx-electric-lt' and
   :type 'integer)
 
 ;;;###autoload
-(define-derived-mode rjsx-mode js2-jsx-mode "RJSX"
+(define-derived-mode rjsx-mode js2-mode "RJSX"
   "Major mode for editing JSX files."
   :lighter ":RJSX"
   :group 'rjsx-mode

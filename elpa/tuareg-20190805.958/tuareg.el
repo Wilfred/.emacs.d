@@ -249,19 +249,6 @@ See `ff-other-file-alist'."
   :group 'tuareg
   :type '(repeat (list regexp (choice (repeat string) function))))
 
-(defun tuareg--other-file (path)
-  "Given a PATH \"foo.ml\", return \"foo.mli\" if it exists.
-Return nil otherwise."
-  (when path
-    (let* ((ext (file-name-extension path))
-           (path-no-ext (file-name-sans-extension path))
-           (matching-exts
-            (cadr (assoc (format "\\.%s\\'" ext) tuareg-other-file-alist)))
-           (matching-paths
-            (mapcar (lambda (ext) (concat path-no-ext ext))
-                    matching-exts))
-           (paths (cl-remove-if-not #'file-exists-p matching-paths)))
-      (car paths))))
 
 (defcustom tuareg-interactive-scroll-to-bottom-on-output nil
   "*Controls when to scroll to the bottom of the interactive buffer
@@ -835,10 +822,10 @@ for the interactive mode."
          (binding-operator-char
           (concat "\\(?:[-$&*+/<=>@^|]" operator-char "*\\)"))
          (let-binding-g4 ; 4 groups
-          (concat "\\_<\\(?:\\(let" binding-operator-char "?\\)"
+          (concat "\\_<\\(?:\\(let\\_>" binding-operator-char "?\\)"
                   "\\(" maybe-infix-ext+attr
-		  "\\)\\(?: +\\(" (if (tuareg-editing-ls3) let-ls3 "rec")
-		  "\\)\\)?\\|\\(and" binding-operator-char "?\\)\\) +"))
+		  "\\)\\(?: +\\(" (if (tuareg-editing-ls3) let-ls3 "rec\\_>")
+		  "\\)\\)?\\|\\(and" binding-operator-char "?\\)\\)"))
          ;; group for possible class param
          (gclass-gparams
           (concat "\\(\\_<class\\(?: +type\\)?\\(?: +virtual\\)?\\>\\)"
@@ -920,6 +907,13 @@ for the interactive mode."
              (1 font-lock-keyword-face)
              (2 tuareg-font-lock-module-face)
              (3 tuareg-font-lock-module-face))
+            (,(concat "\\_<\\(module\\)\\(" maybe-infix-ext+attr "\\)"
+	              "\\(\\(?: +type\\)?\\(?: +rec\\)?\\)\\>\\(?: *\\("
+                      uid "\\)\\)?")
+             (1 tuareg-font-lock-governing-face)
+             (2 tuareg-font-lock-infix-extension-node-face)
+             (3 tuareg-font-lock-governing-face)
+             (4 tuareg-font-lock-module-face keep t))
             ("\\_<let +exception\\_>" . tuareg-font-lock-governing-face)
             (,(concat (regexp-opt '("sig" "struct" "functor" "inherit"
                                     "initializer" "object" "begin")
@@ -983,20 +977,13 @@ for the interactive mode."
              1 font-lock-function-name-face)
             ;; Highlight "let" and function names (their argument
             ;; patterns can then be treated uniformly with variable bindings)
-            (,(concat let-binding-g4 "\\(?:\\(" lid
-                      "\\) *\\(?:[^ =,:a]\\|a[^s]\\)\\)?")
+            (,(concat let-binding-g4 " *\\(?:\\(" lid "\\) *"
+                      "\\(?:[^ =,:a]\\|a\\(?:[^s]\\|s[^[:space:]]\\)\\)\\)?")
              (1 tuareg-font-lock-governing-face keep t)
              (2 tuareg-font-lock-infix-extension-node-face keep t)
              (3 tuareg-font-lock-governing-face keep t)
              (4 tuareg-font-lock-governing-face keep t)
              (5 font-lock-function-name-face keep t))
-            (,(concat "\\_<\\(module\\)\\(" maybe-infix-ext+attr "\\)"
-	              "\\(\\(?: +type\\)?\\(?: +rec\\)?\\)\\>\\(?: *\\("
-                      uid "\\)\\)?")
-             (1 tuareg-font-lock-governing-face)
-             (2 tuareg-font-lock-infix-extension-node-face)
-             (3 tuareg-font-lock-governing-face)
-             (4 tuareg-font-lock-module-face keep t))
             (,(concat "\\_<\\(include\\)\\_>\\(?: +\\("
                       extended-module-path "\\|( *"
                       extended-module-path " *: *" balanced-braces " *)\\)\\)?")
@@ -1028,14 +1015,14 @@ for the interactive mode."
      (append
       common-keywords
       `(;; Basic way of matching functions
-        (,(concat let-binding-g4 "\\(" lid "\\) *= *\\(fun\\(?:ction\\)?\\)\\>")
+        (,(concat let-binding-g4 " *\\("
+                  lid "\\) *= *\\(fun\\(?:ction\\)?\\)\\>")
          (5 font-lock-function-name-face)
          (6 font-lock-keyword-face))
         )))
     (setq
      tuareg-font-lock-keywords-1-extra
-     `(("\\_<\\(false\\|true\\)\\_>" . font-lock-constant-face)
-       (,(regexp-opt '("true" "false" "__LOC__" "__FILE__" "__LINE__"
+     `((,(regexp-opt '("true" "false" "__LOC__" "__FILE__" "__LINE__"
                        "__MODULE__" "__POS__" "__LOC_OF__" "__LINE_OF__"
                        "__POS_OF__")
                      'symbols)
@@ -1098,7 +1085,7 @@ for the interactive mode."
        (,(concat "\\_<let +exception +\\(" uid "\\)")
         1 tuareg-font-lock-constructor-face)
        ;; let-bindings (let f : type = fun)
-       (,(concat let-binding-g4 "\\(" lid "\\) *\\(?:: *\\([^=]+\\)\\)?= *"
+       (,(concat let-binding-g4 " *\\(" lid "\\) *\\(?:: *\\([^=]+\\)\\)?= *"
                  "fun\\(?:ction\\)?\\>")
         (5 font-lock-function-name-face nil t)
         (6 font-lock-type-face keep t))
@@ -2824,12 +2811,6 @@ Short cuts for the Tuareg mode:
 Short cuts for interactions with the REPL:
 \\{tuareg-interactive-mode-map}"
 
-  (setq mode-name
-        '(:eval
-          (let ((other-file (tuareg--other-file (buffer-file-name))))
-            (if other-file
-                (format "Tuareg[+%s]" (file-name-extension other-file))
-              "Tuareg"))))
   (unless (tuareg--switch-outside-build)
     ;; Initialize the Tuareg menu
     (tuareg-build-menu)

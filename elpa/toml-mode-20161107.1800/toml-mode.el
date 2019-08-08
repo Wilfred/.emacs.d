@@ -4,7 +4,7 @@
 
 ;; Author: Felix Chern <idryman@gmail.com>
 ;; Keywords: data toml
-;; Package-Version: 20161107.1000
+;; Package-Version: 20161107.1800
 ;; Version: 0.1.3
 ;; Package-Requires: ((emacs "24") (cl-lib "0.5"))
 ;; URL: https://github.com/dryman/toml-mode.el
