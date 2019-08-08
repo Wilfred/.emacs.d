@@ -27,6 +27,10 @@
 ;; It would be nice to define a proper (somewhat stable) interface in merlin.el
 ;; to be used by other modules.
 
+(defcustom merlin-company-everywhere t
+  "Non-nil to offer completions in comments and strings."
+  :type 'boolean)
+
 ;; Internal functions
 
 (defun merlin-company--get-candidate-type (candidate)
@@ -80,11 +84,6 @@
                " (successive calls will expand aliases)"))
       (t default))))
 
-(defun merlin-company--in-comment-or-string-p ()
-  "Return non-nil if point is in a comment or string."
-  (let ((state (syntax-ppss)))
-    (or (nth 3 state) (nth 4 state))))
-
 ;; Public functions
 ;;;###autoload
 (defun merlin-company-backend (command &optional arg &rest ignored)
@@ -114,7 +113,7 @@
                      (linum (cdr (assoc 'line (assoc 'pos data)))))
                  (cons filename linum))))))
         (candidates
-         (unless (merlin-company--in-string-or-comment-p)
+         (when (or merlin-company-everywhere (not (company-in-string-or-comment)))
           (let ((prefix (merlin/completion-prefix arg)))
             (cl-loop for x in (merlin/complete arg)
                      collect
