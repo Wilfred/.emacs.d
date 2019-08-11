@@ -1,6 +1,6 @@
 This is ivy.info, produced by makeinfo version 6.5 from ivy.texi.
 
-Ivy manual, version 0.8.0
+Ivy manual, version 0.11.0
 
    Ivy is an interactive interface for completion in Emacs.  Emacs uses
 completion mechanism in a variety of contexts: code, menus, commands,
@@ -162,12 +162,13 @@ Customizability
      interfaces of completion to tailor the selection process.  For
      example, adding a custom display function that points to a selected
      candidate with ‘>’, instead of highlighting the selected candidate
-     with the ‘ivy-current-match’ face (see ‘ivy-format-function’).  Or
-     take the customization of actions, say after the candidate function
-     is selected.  ‘RET’ uses ‘counsel-describe-function’ to describe
-     the function, whereas ‘M-o d’ jumps to that function’s definition
-     in the code.  The ‘M-o’ prefix can be uniformly used with
-     characters like ‘d’ to group similar actions.
+     with the ‘ivy-current-match’ face (see
+     ‘ivy-format-functions-alist’).  Or take the customization of
+     actions, say after the candidate function is selected.  ‘RET’ uses
+     ‘counsel-describe-function’ to describe the function, whereas ‘M-o
+     d’ jumps to that function’s definition in the code.  The ‘M-o’
+     prefix can be uniformly used with characters like ‘d’ to group
+     similar actions.
 
 Discoverability
 ...............
@@ -325,6 +326,7 @@ Ivy-based interface to standard commands
 Ivy-based interface to shell and system tools
 .............................................
 
+          (global-set-key (kbd "C-c c") 'counsel-compile)
           (global-set-key (kbd "C-c g") 'counsel-git)
           (global-set-key (kbd "C-c j") 'counsel-git-grep)
           (global-set-key (kbd "C-c k") 'counsel-ag)
@@ -385,7 +387,7 @@ File: ivy.info,  Node: Key bindings for navigation,  Next: Key bindings for sing
      ‘ivy-wrap’ is set to ‘t’, ‘ivy-next-line’ and ‘ivy-previous-line’
      will cycle past the last and the first candidates respectively.
 
-     Warp-around behavior is off by default.
+     Wrap-around behavior is off by default.
 
  -- User Option: ivy-height
      Use this option to adjust the minibuffer height, which also affects
@@ -926,6 +928,18 @@ File: ivy.info,  Node: Faces,  Next: Defcustoms,  Up: Customization
 
           (setq ivy-use-virtual-buffers t)
 
+‘ivy-modified-buffer’
+.....................
+
+     Highlights modified buffers when switching buffer.
+
+‘ivy-modified-outside-buffer’
+.............................
+
+     Highlights buffers modified outside Emacs when switching buffer.
+
+     This takes precedence over ‘ivy-modified-buffer’.
+
 
 File: ivy.info,  Node: Defcustoms,  Next: Actions,  Prev: Faces,  Up: Customization
 
@@ -1153,14 +1167,12 @@ File: ivy.info,  Node: Packages,  Prev: Actions,  Up: Customization
 ‘magit’
 .......
 
-     Magit requires this setting for ivy completion:
-
-          (setq magit-completing-read-function 'ivy-completing-read)
+     Uses ivy by default if Ivy is installed.
 
 ‘find-file-in-project’
 ......................
 
-     It uses ivy by default if Ivy is installed.
+     Uses ivy by default if Ivy is installed.
 
 ‘projectile’
 ............
@@ -1175,6 +1187,12 @@ File: ivy.info,  Node: Packages,  Prev: Actions,  Up: Customization
      Helm-make requires this setting for ivy completion.
 
           (setq helm-make-completion-method 'ivy)
+
+automatically integrated packages
+.................................
+
+     Ivy re-uses the following packages if they are installed: ‘avy’,
+     ‘amx’ or ‘smex’, ‘flx’, and ‘wgrep’.
 
 
 File: ivy.info,  Node: Commands,  Next: API,  Prev: Customization,  Up: Top
@@ -1261,9 +1279,34 @@ File: ivy.info,  Node: Using TRAMP,  Up: File Name Completion
 7.1.1 Using TRAMP
 -----------------
 
-From any directory, with the empty input, inputting ‘/ssh:’ and pressing
-‘C-j’ (or ‘RET’, which is the same thing) completes for host and user
-names.
+‘~’ (tilde)
+...........
+
+     Move to the home directory.  Either the local or the remote one,
+     depending on the current directory.  The boolean option
+     ‘ivy-magic-tilde’ decides whether the binding to do this is ‘~’ or
+     ‘~/’.
+
+‘//’ (double slash)
+...................
+
+     Move to the root directory.  Either the local or the remote one,
+     depending on the current directory.  Here, you can also select a
+     TRAMP connection method, such as ‘ssh’ or ‘scpx’.
+
+‘/ C-j’
+.......
+
+     Move the the local root directory.
+
+‘~~’
+....
+
+     Move to the local home directory.
+
+   From any directory, with the empty input, inputting ‘/ssh:’ and
+pressing ‘C-j’ (or ‘RET’, which is the same thing) completes for host
+and user names.
 
    For ‘/ssh:user@’ input, completes the domain name.
 
@@ -1389,13 +1432,17 @@ File: ivy.info,  Node: Optional arguments for ivy-read,  Next: Example - counsel
 ‘preselect’
 ...........
 
-     When set to a string value, select the first candidate matching
-     this value.
+     Determines which one of the candidates to initially select.
 
      When set to an integer value, select the candidate with that index
      value.
 
-     Every time the input becomes empty, the item corresponding to to
+     When set to any other non-nil value, select the first candidate
+     matching this value.  Comparison is first done with ‘equal’.  If
+     this fails, and when applicable, match ‘preselect’ as a regular
+     expression.
+
+     Every time the input becomes empty, the item corresponding to
      ‘preselect’ is selected.
 
 ‘keymap’
@@ -1687,6 +1734,8 @@ Variable Index
 * ivy-minibuffer-match-face-4:           Faces.                (line 29)
 * ivy-minibuffer-shrink:                 Hydra in the minibuffer.
                                                                (line 50)
+* ivy-modified-buffer:                   Faces.                (line 88)
+* ivy-modified-outside-buffer:           Faces.                (line 93)
 * ivy-next-action:                       Hydra in the minibuffer.
                                                                (line 60)
 * ivy-next-history-element:              Key bindings that alter the minibuffer input.
@@ -1747,12 +1796,16 @@ Keystroke Index
 * Menu:
 
 * /:                                     File Name Completion. (line 35)
+* / C-j:                                 Using TRAMP.          (line 24)
 * //:                                    File Name Completion. (line 25)
+* // <1>:                                Using TRAMP.          (line 17)
 * <:                                     Hydra in the minibuffer.
                                                                (line 50)
 * >:                                     Hydra in the minibuffer.
                                                                (line 45)
 * ~:                                     File Name Completion. (line 30)
+* ~ <1>:                                 Using TRAMP.          (line  9)
+* ~~:                                    Using TRAMP.          (line 29)
 * a:                                     Hydra in the minibuffer.
                                                                (line 65)
 * a <1>:                                 Saving the current completion session to a buffer.
@@ -1827,53 +1880,53 @@ Keystroke Index
 
 
 Tag Table:
-Node: Top1360
-Node: Introduction3271
-Node: Installation5782
-Node: Installing from Emacs Package Manager6232
-Node: Installing from the Git repository7346
-Node: Getting started8166
-Node: Basic customization8473
-Node: Key bindings9068
-Node: Global key bindings9260
-Node: Minibuffer key bindings10642
-Node: Key bindings for navigation11874
-Node: Key bindings for single selection action then exit minibuffer13081
-Node: Key bindings for multiple selections and actions keep minibuffer open15728
-Node: Key bindings that alter the minibuffer input18120
-Node: Other key bindings20065
-Node: Hydra in the minibuffer20443
-Node: Saving the current completion session to a buffer22546
-Node: Completion Styles23958
-Node: ivy--regex-plus25709
-Node: ivy--regex-ignore-order27195
-Node: ivy--regex-fuzzy27563
-Node: Customization28060
-Node: Faces28246
-Node: Defcustoms30373
-Node: Actions31667
-Node: What are actions?31993
-Node: How can different actions be called?32811
-Node: How to modify the actions list?33382
-Node: Example - add two actions to each command34042
-Node: How to undo adding the two actions35001
-Node: How to add actions to a specific command35453
-Node: Example - define a new command with several actions35869
-Node: Test the above function with ivy-occur36757
-Node: Packages37599
-Node: Commands38442
-Node: File Name Completion38627
-Node: Using TRAMP40423
-Node: Buffer Name Completion41300
-Node: Counsel commands41915
-Node: API42562
-Node: Required arguments for ivy-read43160
-Node: Optional arguments for ivy-read43679
-Node: Example - counsel-describe-function46895
-Node: Example - counsel-locate50138
-Node: Example - ivy-read-with-extra-properties53888
-Node: Variable Index55096
-Node: Keystroke Index61997
+Node: Top1361
+Node: Introduction3272
+Node: Installation5795
+Node: Installing from Emacs Package Manager6245
+Node: Installing from the Git repository7359
+Node: Getting started8179
+Node: Basic customization8486
+Node: Key bindings9081
+Node: Global key bindings9273
+Node: Minibuffer key bindings10713
+Node: Key bindings for navigation11945
+Node: Key bindings for single selection action then exit minibuffer13152
+Node: Key bindings for multiple selections and actions keep minibuffer open15799
+Node: Key bindings that alter the minibuffer input18191
+Node: Other key bindings20136
+Node: Hydra in the minibuffer20514
+Node: Saving the current completion session to a buffer22617
+Node: Completion Styles24029
+Node: ivy--regex-plus25780
+Node: ivy--regex-ignore-order27266
+Node: ivy--regex-fuzzy27634
+Node: Customization28131
+Node: Faces28317
+Node: Defcustoms30746
+Node: Actions32040
+Node: What are actions?32366
+Node: How can different actions be called?33184
+Node: How to modify the actions list?33755
+Node: Example - add two actions to each command34415
+Node: How to undo adding the two actions35374
+Node: How to add actions to a specific command35826
+Node: Example - define a new command with several actions36242
+Node: Test the above function with ivy-occur37130
+Node: Packages37972
+Node: Commands38937
+Node: File Name Completion39122
+Node: Using TRAMP40918
+Node: Buffer Name Completion42420
+Node: Counsel commands43035
+Node: API43682
+Node: Required arguments for ivy-read44280
+Node: Optional arguments for ivy-read44799
+Node: Example - counsel-describe-function48225
+Node: Example - counsel-locate51468
+Node: Example - ivy-read-with-extra-properties55218
+Node: Variable Index56426
+Node: Keystroke Index63473
 
 End Tag Table
 

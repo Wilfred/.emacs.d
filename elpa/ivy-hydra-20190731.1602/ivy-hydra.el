@@ -1,12 +1,12 @@
 ;;; ivy-hydra.el --- Additional key bindings for Ivy  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2015-2018  Free Software Foundation, Inc.
+;; Copyright (C) 2015-2019  Free Software Foundation, Inc.
 
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 ;; URL: https://github.com/abo-abo/swiper
-;; Package-Version: 20180614.1500
-;; Version: 0.10.0
-;; Package-Requires: ((emacs "24.1") (ivy "0.9.0") (hydra "0.13.4"))
+;; Package-Version: 20190731.1602
+;; Version: 0.12.0
+;; Package-Requires: ((emacs "24.1") (ivy "0.12.0") (hydra "0.13.4"))
 ;; Keywords: convenience
 
 ;; This file is part of GNU Emacs.
@@ -22,7 +22,7 @@
 ;; GNU General Public License for more details.
 
 ;; For a full copy of the GNU General Public License
-;; see <http://www.gnu.org/licenses/>.
+;; see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -47,8 +47,8 @@
   "
 ^ ^ ^ ^ ^ ^ | ^Call^      ^ ^  | ^Cancel^ | ^Options^ | Action _w_/_s_/_a_: %-14s(ivy-action-name)
 ^-^-^-^-^-^-+-^-^---------^-^--+-^-^------+-^-^-------+-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^---------------------------
-^ ^ _k_ ^ ^ | _f_ollow occ_u_r | _i_nsert | _c_: calling %-5s(if ivy-calling \"on\" \"off\") _C_ase-fold: %-10`ivy-case-fold-search
-_h_ ^+^ _l_ | _d_one      ^ ^  | _o_ops   | _m_: matcher %-5s(ivy--matcher-desc)^^^^^^^^^^^^ _t_runcate: %-11`truncate-lines
+^ ^ _k_ ^ ^ | _f_ollow occ_U_r | _i_nsert | _c_: calling %-5s(if ivy-calling \"on\" \"off\") _C_ase-fold: %-10`ivy-case-fold-search
+_h_ ^+^ _l_ | _d_one      ^ ^  | _o_ops   | _M_: matcher %-5s(ivy--matcher-desc)^^^^^^^^^^^^ _T_runcate: %-11`truncate-lines
 ^ ^ _j_ ^ ^ | _g_o        ^ ^  | ^ ^      | _<_/_>_: shrink/grow^^^^^^^^^^^^^^^^^^^^^^^^^^^^ _D_efinition of this menu
 "
   ;; arrows
@@ -56,8 +56,14 @@ _h_ ^+^ _l_ | _d_one      ^ ^  | _o_ops   | _m_: matcher %-5s(ivy--matcher-desc)
   ("j" ivy-next-line)
   ("k" ivy-previous-line)
   ("l" ivy-end-of-buffer)
+  ;; mark
+  ("m" ivy-mark)
+  ("u" ivy-unmark)
+  ("DEL" ivy-unmark-backward)
+  ("t" ivy-toggle-marks)
   ;; actions
   ("o" keyboard-escape-quit :exit t)
+  ("r" ivy-dispatching-done-hydra :exit t)
   ("C-g" keyboard-escape-quit :exit t)
   ("i" nil)
   ("C-o" nil)
@@ -67,15 +73,15 @@ _h_ ^+^ _l_ | _d_one      ^ ^  | _o_ops   | _m_: matcher %-5s(ivy--matcher-desc)
   ("g" ivy-call)
   ("C-m" ivy-done :exit t)
   ("c" ivy-toggle-calling)
-  ("m" ivy-rotate-preferred-builders)
+  ("M" ivy-rotate-preferred-builders)
   (">" ivy-minibuffer-grow)
   ("<" ivy-minibuffer-shrink)
   ("w" ivy-prev-action)
   ("s" ivy-next-action)
   ("a" ivy-read-action)
-  ("t" (setq truncate-lines (not truncate-lines)))
+  ("T" (setq truncate-lines (not truncate-lines)))
   ("C" ivy-toggle-case-fold)
-  ("u" ivy-occur :exit t)
+  ("U" ivy-occur :exit t)
   ("D" (ivy-exit-with-action
         (lambda (_) (find-function 'hydra-ivy/body)))
        :exit t))
@@ -83,14 +89,24 @@ _h_ ^+^ _l_ | _d_one      ^ ^  | _o_ops   | _m_: matcher %-5s(ivy--matcher-desc)
 (defvar ivy-dispatching-done-columns 2
   "Number of columns to use if the hint does not fit on one line.")
 
+(defvar ivy-dispatching-done-idle nil
+  "When non-nil, the hint will be delayed by this many seconds.")
+
+(defvar ivy-dispatching-done-hydra-exit-keys '(("M-o" nil "back")
+                                               ("C-g" nil))
+  "Keys that can be used to exit `ivy-dispatching-done-hydra'.")
+
 (defun ivy-dispatching-done-hydra ()
   "Select one of the available actions and call `ivy-done'."
   (interactive)
   (let* ((actions (ivy-state-action ivy-last))
-         (estimated-len (+ 25 (length
-                               (mapconcat
-                                (lambda (x) (format "[%s] %s" (nth 0 x) (nth 2 x)))
-                                (cdr actions) ", "))))
+         (extra-actions ivy-dispatching-done-hydra-exit-keys)
+         (doc (concat "action: "
+                      (mapconcat
+                       (lambda (x) (format "[%s] %s" (nth 0 x) (nth 2 x)))
+                       (append (cdr actions)
+                               extra-actions) ", ")))
+         (estimated-len (length doc))
          (n-columns (if (> estimated-len (window-width))
                         ivy-dispatching-done-columns
                       nil)))
@@ -98,7 +114,7 @@ _h_ ^+^ _l_ | _d_one      ^ ^  | _o_ops   | _m_: matcher %-5s(ivy--matcher-desc)
         (ivy-done)
       (funcall
        (eval
-        `(defhydra ivy-read-action (:color teal :columns ,n-columns)
+        `(defhydra ivy-read-action (:color teal :columns ,n-columns :idle ,ivy-dispatching-done-idle)
            "action"
            ,@(mapcar (lambda (x)
                        (list (nth 0 x)
@@ -107,10 +123,9 @@ _h_ ^+^ _l_ | _d_one      ^ ^  | _o_ops   | _m_: matcher %-5s(ivy--matcher-desc)
                                 (ivy-done))
                              (nth 2 x)))
                      (cdr actions))
-           ("M-o" nil "back")
-           ("C-g" nil)))))))
+           ,@extra-actions))))))
 
-(define-key ivy-minibuffer-map (kbd "M-o") 'ivy-dispatching-done-hydra)
+(setq ivy-read-action-function (lambda (_) (ivy-dispatching-done-hydra)))
 
 (provide 'ivy-hydra)
 
