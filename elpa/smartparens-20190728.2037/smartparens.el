@@ -610,6 +610,14 @@ Symbol is defined as a chunk of text recognized by
   :type '(repeat symbol)
   :group 'smartparens)
 
+(defcustom sp-c-modes '(
+                        c-mode
+                        c++-mode
+                        )
+  "List of C-related modes."
+  :type '(repeat symbol)
+  :group 'smartparens)
+
 (defcustom sp-no-reindent-after-kill-modes '(
                                              python-mode
                                              coffee-mode
@@ -3260,9 +3268,10 @@ last form; otherwise do nothing."
 ;; why we need each of these.
 (defun sp--save-pre-command-state ()
   "Save some of the buffer state before `pre-command-hook'."
-  (setq sp-point-inside-string (sp-point-in-string))
-  (setq sp-pre-command-point (point))
-  (setq sp-buffer-modified-p (buffer-modified-p)))
+  (when smartparens-mode
+    (setq sp-point-inside-string (sp-point-in-string))
+    (setq sp-pre-command-point (point))
+    (setq sp-buffer-modified-p (buffer-modified-p))))
 
 (add-hook 'pre-command-hook 'sp--save-pre-command-state)
 
@@ -5828,7 +5837,7 @@ Examples: (prefix arg in comment)
 
   (foo bar| baz)   -> (|foo bar baz) ;; 2
 
-  (|(foo bar) baz) -> ((|foo bar) baz)"
+  ((|foo bar) baz) -> (|(foo bar) baz)"
   (interactive "^p")
   (setq arg (or arg 1))
   (if (< arg 0)
@@ -6337,6 +6346,8 @@ The argument INTERACTIVE is for internal use only.
 If called interactively and `sp-navigate-reindent-after-up' is
 enabled for current major-mode, remove the whitespace between end
 of the expression and the last \"thing\" inside the expression.
+This behaviour can be suppressed for syntactic string sexps by
+setting `sp-navigate-reindent-after-up-in-string' to nil.
 
 If `sp-navigate-close-if-unbalanced' is non-nil, close the
 unbalanced expressions automatically.
@@ -6521,7 +6532,7 @@ Examples:
 
  (1 2 3 4 5| 6)    -> (1 2 3 | 6) ;; -2
 
- (1 2 3 4| 5 6)    -> (|5 6)      ;; - \\[universal-argument]
+ (1 2 3 4| 5 6)    -> (|5 6)      ;; \\[negative-argument] \\[universal-argument]
 
  (1 2 |   )        -> (1 2|)      ;; \\[universal-argument], kill useless whitespace
 
@@ -9304,6 +9315,11 @@ the opening delimiter or before the closing delimiter."
   :type 'boolean
   :group 'show-smartparens)
 
+(defcustom sp-show-pair-match-priority 1000
+  "Priority of matching pair highlighting overlays."
+  :type 'integer
+  :group 'show-smartparens)
+
 (defface sp-show-pair-match-face
   '((t (:inherit show-paren-match)))
   "`show-smartparens-mode' face used for a matching pair."
@@ -9392,59 +9408,58 @@ matching paren in the echo area if not visible on screen."
   (when show-smartparens-mode
     (sp--with-case-sensitive
       (save-match-data
-        (while-no-input
-          (cl-labels ((scan-and-place-overlays
-                       (match &optional back)
-                       ;; we can use `sp-get-thing' here because we *are* at some
-                       ;; pair opening, and so only the tag or the sexp can trigger.
-                       (-if-let (ok (sp-get-thing back))
-                           (sp-get ok
-                             (when (or (and back
-                                            (or (= :end (point))
-                                                (= :beg-in (point))))
-                                       (and (not back)
-                                            (or (= :beg (point))
-                                                (= :end-in (point)))))
-                               (sp-show--pair-create-overlays :beg :end :op-l :cl-l)
-                               (when (and sp-echo-match-when-invisible
-                                          (not (or (active-minibuffer-window) cursor-in-echo-area)))
-                                 (sp-show--pair-echo-match :beg :end :op-l :cl-l))))
-                         (if back
-                             (sp-show--pair-create-mismatch-overlay (- (point) (length match))
-                                                                    (length match))
-                           (sp-show--pair-create-mismatch-overlay (point) (length match)))
-                         (setq sp-show-pair-previous-match-positions nil)
-                         (setq sp-show-pair-previous-point nil))))
-            (let* ((pair-list (sp--get-allowed-pair-list))
-                   (opening (sp--get-opening-regexp pair-list))
-                   (closing (sp--get-closing-regexp pair-list))
-                   (allowed (and sp-show-pair-from-inside (sp--get-allowed-regexp))))
-              (cond
-               ;; if we are in a situation "()|", we should highlight the
-               ;; regular pair and not the string pair "from inside"
-               ((and (not (sp--evil-normal-state-p))
-                     (not (sp--evil-motion-state-p))
-                     (not (sp--evil-visual-state-p))
-                     (sp--looking-back (if sp-show-pair-from-inside allowed closing)))
-                (scan-and-place-overlays (match-string 0) :back))
-               ((or (and (or (sp--evil-normal-state-p)
-                             (sp--evil-motion-state-p)
-                             (sp--evil-visual-state-p))
-                         (sp--looking-at (sp--get-allowed-regexp)))
-                    (sp--looking-at (if sp-show-pair-from-inside allowed opening))
-                    (looking-at (sp--get-stringlike-regexp))
-                    (and (memq major-mode sp-navigate-consider-sgml-tags)
-                         (looking-at "<")))
-                (scan-and-place-overlays (match-string 0)))
-               ((or (sp--looking-back (if sp-show-pair-from-inside allowed closing))
-                    (sp--looking-back (sp--get-stringlike-regexp))
-                    (and (memq major-mode sp-navigate-consider-sgml-tags)
-                         (sp--looking-back ">")))
-                (scan-and-place-overlays (match-string 0) :back))
-               (sp-show-pair-overlays
-                (sp-show--pair-delete-overlays)
-                (setq sp-show-pair-previous-match-positions nil)
-                (setq sp-show-pair-previous-point nil))))))))))
+        (cl-labels ((scan-and-place-overlays
+                     (match &optional back)
+                     ;; we can use `sp-get-thing' here because we *are* at some
+                     ;; pair opening, and so only the tag or the sexp can trigger.
+                     (-if-let (ok (sp-get-thing back))
+                         (sp-get ok
+                           (when (or (and back
+                                          (or (= :end (point))
+                                              (= :beg-in (point))))
+                                     (and (not back)
+                                          (or (= :beg (point))
+                                              (= :end-in (point)))))
+                             (sp-show--pair-create-overlays :beg :end :op-l :cl-l)
+                             (when (and sp-echo-match-when-invisible
+                                        (not (or (active-minibuffer-window) cursor-in-echo-area)))
+                               (sp-show--pair-echo-match :beg :end :op-l :cl-l))))
+                       (if back
+                           (sp-show--pair-create-mismatch-overlay (- (point) (length match))
+                                                                  (length match))
+                         (sp-show--pair-create-mismatch-overlay (point) (length match)))
+                       (setq sp-show-pair-previous-match-positions nil)
+                       (setq sp-show-pair-previous-point nil))))
+          (let* ((pair-list (sp--get-allowed-pair-list))
+                 (opening (sp--get-opening-regexp pair-list))
+                 (closing (sp--get-closing-regexp pair-list))
+                 (allowed (and sp-show-pair-from-inside (sp--get-allowed-regexp))))
+            (cond
+             ;; if we are in a situation "()|", we should highlight the
+             ;; regular pair and not the string pair "from inside"
+             ((and (not (sp--evil-normal-state-p))
+                   (not (sp--evil-motion-state-p))
+                   (not (sp--evil-visual-state-p))
+                   (sp--looking-back (if sp-show-pair-from-inside allowed closing)))
+              (scan-and-place-overlays (match-string 0) :back))
+             ((or (and (or (sp--evil-normal-state-p)
+                           (sp--evil-motion-state-p)
+                           (sp--evil-visual-state-p))
+                       (sp--looking-at (sp--get-allowed-regexp)))
+                  (sp--looking-at (if sp-show-pair-from-inside allowed opening))
+                  (looking-at (sp--get-stringlike-regexp))
+                  (and (memq major-mode sp-navigate-consider-sgml-tags)
+                       (looking-at "<")))
+              (scan-and-place-overlays (match-string 0)))
+             ((or (sp--looking-back (if sp-show-pair-from-inside allowed closing))
+                  (sp--looking-back (sp--get-stringlike-regexp))
+                  (and (memq major-mode sp-navigate-consider-sgml-tags)
+                       (sp--looking-back ">")))
+              (scan-and-place-overlays (match-string 0) :back))
+             (sp-show-pair-overlays
+              (sp-show--pair-delete-overlays)
+              (setq sp-show-pair-previous-match-positions nil)
+              (setq sp-show-pair-previous-point nil)))))))))
 
 (defun sp-show--pair-enc-function (&optional thing)
   "Display the show pair overlays for enclosing expression."
@@ -9464,9 +9479,9 @@ matching paren in the echo area if not visible on screen."
     (unless (use-region-p)
       (overlay-put omiddle 'face 'sp-show-pair-match-content-face))
     (overlay-put oright 'face 'sp-show-pair-match-face)
-    (overlay-put oleft 'priority 1000)
+    (overlay-put oleft 'priority sp-show-pair-match-priority)
     (overlay-put omiddle 'priority 1000)
-    (overlay-put oright 'priority 1000)
+    (overlay-put oright 'priority sp-show-pair-match-priority)
     (overlay-put oleft 'type 'show-pair)))
 
 (defun sp-show--pair-echo-match (start end olen clen)

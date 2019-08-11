@@ -101,6 +101,8 @@ ID, ACTION, CONTEXT."
 ;; automatically.  If you want to call sp-local-pair outside this
 ;; macro, you MUST supply the major mode argument.
 
+(--each sp-c-modes
+  (eval-after-load it                      '(require 'smartparens-c)))
 (eval-after-load 'clojure-mode             '(require 'smartparens-clojure))
 (eval-after-load 'crystal-mode             '(require 'smartparens-crystal))
 (eval-after-load 'elixir-mode              '(require 'smartparens-elixir))
@@ -117,6 +119,7 @@ ID, ACTION, CONTEXT."
   (eval-after-load it                      '(require 'smartparens-python)))
 (eval-after-load 'org                      '(require 'smartparens-org))
 (eval-after-load 'racket-mode              '(require 'smartparens-racket))
+(eval-after-load 'rst                      '(require 'smartparens-rst))
 (eval-after-load 'ruby-mode                '(require 'smartparens-ruby))
 (eval-after-load 'rust-mode                '(require 'smartparens-rust))
 (eval-after-load 'scala-mode               '(require 'smartparens-scala))

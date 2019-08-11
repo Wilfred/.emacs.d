@@ -271,7 +271,7 @@ Turn off `show-smartparens-mode'.
 ;;;;;;  0 0))
 ;;; Generated autoloads from smartparens-org.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-org" '("sp--org-skip-asterisk")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-org" '("sp-")))
 
 ;;;***
 
@@ -315,8 +315,9 @@ Turn off `show-smartparens-mode'.
 
 ;;;***
 
-;;;### (autoloads nil nil ("smartparens-javascript.el" "smartparens-ml.el"
-;;;;;;  "smartparens-pkg.el" "smartparens-racket.el") (0 0 0 0))
+;;;### (autoloads nil nil ("smartparens-c.el" "smartparens-javascript.el"
+;;;;;;  "smartparens-ml.el" "smartparens-pkg.el" "smartparens-racket.el"
+;;;;;;  "smartparens-rst.el") (0 0 0 0))
 
 ;;;***
 
