@@ -92,6 +92,7 @@
 (setq projectile-completion-system 'ivy)
 
 (global-set-key (kbd "<f7>") #'counsel-imenu)
+(global-set-key (kbd "C-c m") #'counsel-imenu)
 
 ;; Always use 'y or n' for questions, since 'yes' is tedious to type over and over.
 (fset 'yes-or-no-p 'y-or-n-p)
