@@ -292,7 +292,10 @@ If a prefix argument is given, don't change the kill-ring."
 (define-key smartparens-mode-map (kbd "M-'") #'wh/smartparens-wrap-singlequote)
 
 (define-key smartparens-mode-map (kbd "s-f") #'sp-forward-sexp)
+(define-key smartparens-mode-map (kbd "C-M-f") #'sp-forward-sexp)
+
 (define-key smartparens-mode-map (kbd "s-b") #'sp-backward-sexp)
+(define-key smartparens-mode-map (kbd "C-M-b") #'sp-backward-sexp)
 
 (define-key smartparens-mode-map (kbd "s-u") #'sp-backward-up-sexp)
 
@@ -1062,9 +1065,9 @@ Visit the file after creation."
 
 ;; suspend seems to crash on Gnome 3, and I don't use it anyway, so just disable it
 (setq cannot-suspend t)
-(defun suspend-emacs (&rest)
+(defun suspend-emacs (&rest _)
   (interactive))
-(defun suspend-frame (&rest)
+(defun suspend-frame (&rest _)
   (interactive))
 
 (put 'narrow-to-region 'disabled nil)

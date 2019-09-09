@@ -1285,9 +1285,9 @@ https://github.com/bbatsov/crux/issues/20
 
   ;; suspend seems to crash on Gnome 3, and I don't use it anyway, so just disable it
   (setq cannot-suspend t)
-  (defun suspend-emacs (&rest)
+  (defun suspend-emacs (&rest _)
     (interactive))
-  (defun suspend-frame (&rest)
+  (defun suspend-frame (&rest _)
     (interactive))
 
   (put 'narrow-to-region 'disabled nil)
