@@ -93,6 +93,10 @@
 
 (global-set-key (kbd "<f7>") #'counsel-imenu)
 
+;; Don't truncate long imenu items until 180 chars. 60 is a bit
+;; limited when you're showing types too (e.g. in ocaml code).
+(setq imenu-max-item-length 180)
+
 ;; Always use 'y or n' for questions, since 'yes' is tedious to type over and over.
 (fset 'yes-or-no-p 'y-or-n-p)
 
