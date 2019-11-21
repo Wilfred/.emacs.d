@@ -28,9 +28,10 @@
 (require 'cl-lib)
 
 (defgroup lsp-clojure nil
-  "Settings for clojure."
-  :group 'tools
-  :tag "Language Server")
+  "LSP support for Clojure."
+  :link '(url-link "https://github.com/snoe/clojure-lsp")
+  :group 'lsp-mode
+  :tag "Lsp Clojure")
 
 (defcustom lsp-clojure-server-command  '("bash" "-c" "clojure-lsp")
   "The clojure-lisp server command."
@@ -43,17 +44,22 @@
 (defun lsp-clojure--refactoring-call (refactor-name &rest additional-args)
   "Send an executeCommand request for REFACTOR-NAME with ADDITIONAL-ARGS if there are more arguments expected after the line and column numbers."
   (lsp--cur-workspace-check)
-  (lsp--send-execute-command
-   refactor-name
-   (list* (lsp--buffer-uri)
-          (- (line-number-at-pos) 1) ;; clojure-lsp expects line numbers to start at 0
-          (current-column)
-          additional-args)))
+  (lsp--send-execute-command refactor-name
+                             (apply #'vector
+                                    (cl-list* (lsp--buffer-uri)
+                                              (- (line-number-at-pos) 1) ;; clojure-lsp expects line numbers to start at 0
+                                              (current-column)
+                                              additional-args))))
 
 (defun lsp-clojure-add-missing-libspec ()
   "Apply add-missing-libspec refactoring at point."
   (interactive)
   (lsp-clojure--refactoring-call "add-missing-libspec"))
+
+(defun lsp-clojure-clean-ns ()
+  "Apply clean-ns refactoring at point."
+  (interactive)
+  (lsp-clojure--refactoring-call "clean-ns"))
 
 (defun lsp-clojure-cycle-coll ()
   "Apply cycle-coll refactoring at point."
@@ -88,39 +94,39 @@
 (defun lsp-clojure-thread-first ()
   "Apply thread-first refactoring at point."
   (interactive)
-  (lsp-clojure--refactoring-call "thread-first" binding-name))
+  (lsp-clojure--refactoring-call "thread-first"))
 
 (defun lsp-clojure-thread-first-all ()
   "Apply thread-first-all refactoring at point."
   (interactive)
-  (lsp-clojure--refactoring-call "thread-first-all" binding-name))
+  (lsp-clojure--refactoring-call "thread-first-all"))
 
 (defun lsp-clojure-thread-last ()
   "Apply thread-last refactoring at point."
   (interactive)
-  (lsp-clojure--refactoring-call "thread-last" binding-name))
+  (lsp-clojure--refactoring-call "thread-last"))
 
 (defun lsp-clojure-thread-last-all ()
   "Apply thread-last-all refactoring at point."
   (interactive)
-  (lsp-clojure--refactoring-call "thread-last-all" binding-name))
+  (lsp-clojure--refactoring-call "thread-last-all"))
 
 (defun lsp-clojure-unwind-all ()
   "Apply unwind-all refactoring at point."
   (interactive)
-  (lsp-clojure--refactoring-call "unwind-all" binding-name))
+  (lsp-clojure--refactoring-call "unwind-all"))
 
 (defun lsp-clojure-unwind-thread ()
   "Apply unwind-thread refactoring at point."
   (interactive)
-  (lsp-clojure--refactoring-call "unwind-thread" binding-name))
+  (lsp-clojure--refactoring-call "unwind-thread"))
 
 (defun lsp-clj--file-in-jar (uri)
   (string-match "^\\(jar\\|zip\\):\\(file:.+\\)!/\\(.+\\)" uri)
-  (when-let* ((entry (match-string 3 uri))
-              (path (lsp--uri-to-path (match-string 2 uri)))
-              (name (format "%s:%s" path entry))
-              (content (lsp-send-request (lsp-make-request "clojure/dependencyContents" (list :uri uri)))))
+  (-when-let* ((entry (match-string 3 uri))
+               (path (lsp--uri-to-path (match-string 2 uri)))
+               (name (format "%s:%s" path entry))
+               (content (lsp-send-request (lsp-make-request "clojure/dependencyContents" (list :uri uri)))))
     (if (find-buffer-visiting name)
         (message "buffer %s exists" name)
       (with-current-buffer (generate-new-buffer name)

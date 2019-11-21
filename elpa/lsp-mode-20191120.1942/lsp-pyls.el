@@ -27,177 +27,316 @@
 (require 'lsp-mode)
 
 (defgroup lsp-pyls nil
-  "Settings for pyls."
-  :group 'tools
-  :tag "Language Server")
+  "LSP support for Python, using Palantir's Python Language Server."
+  :group 'lsp-mode
+  :link '(url-link "https://github.com/palantir/python-language-server")
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-clients-python-library-directories '("/usr/")
   "List of directories which will be considered to be libraries."
   :risky t
-  :type '(repeat string))
+  :type '(repeat string)
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
-(defcustom lsp-clients-python-command '("pyls")
-  "PYLS command."
+(define-obsolete-variable-alias
+  'lsp-clients-python-command
+  'lsp-pyls-server-command
+  "6.1")
+
+(defcustom lsp-pyls-server-command '("pyls")
+  "Command to start pyls."
   :risky t
-  :type 'list)
+  :group 'lsp-pyls
+  :type '(repeat string)
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-configuration-sources ["pycodestyle"]
   "List of configuration sources to use."
-  :type '(repeat string))
+  :type '(repeat string)
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-jedi-completion-enabled t
   "Enable or disable the plugin."
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-jedi-completion-include-params t
   "Auto-completes methods and classes with tabstops for each
 parameter."
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
-(defcustom lsp-pyls-plugins-jedi-definition-enabled t "Enable or disable the plugin." :type 'boolean)
+(defcustom lsp-pyls-plugins-jedi-definition-enabled t
+  "Enable or disable the plugin."
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-jedi-definition-follow-imports t
   "The goto call will follow imports."
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-jedi-definition-follow-builtin-imports t
   "If follow_imports is True will decide if it follow builtin
 imports."
-
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-jedi-hover-enabled t
   "Enable or disable the plugin."
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-jedi-references-enabled t
   "Enable or disable the plugin."
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-jedi-signature-help-enabled t
   "Enable or disable the plugin."
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-jedi-symbols-enabled t
   "Enable or disable the plugin."
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-jedi-symbols-all-scopes t
   "If True lists the names of all scopes instead of only the
 module namespace."
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
+
 (defcustom lsp-pyls-plugins-mccabe-enabled t
   "Enable or disable the plugin."
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-mccabe-threshold 15
   "The minimum threshold that triggers warnings about cyclomatic
 complexity."
-  :type 'number)
+  :type 'number
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-preload-enabled t
   "Enable or disable the plugin."
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-preload-modules nil
   "List of modules to import on startup"
-  :type '(repeat string))
+  :type '(repeat string)
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
-(defcustom lsp-pyls-plugins-pylint-enabled t
+(defcustom lsp-pyls-plugins-pylint-enabled nil
   "Enable or disable the plugin."
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
+
+(defcustom lsp-pyls-plugins-pylint-args []
+  "Arguments, passed to pylint"
+  :risky t
+  :type 'lsp-string-vector
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-pycodestyle-enabled t
   "Enable or disable the plugin."
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-pycodestyle-exclude nil
   "Exclude files or directories which match these patterns."
-  :type '(repeat string))
+  :type '(repeat string)
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-pycodestyle-filename nil
   "When parsing directories, only check filenames matching these
 patterns."
-  :type '(repeat string))
+  :type '(repeat string)
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-pycodestyle-select nil
   "Select errors and warnings"
-  :type '(repeat string))
+  :type '(repeat string)
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-pycodestyle-ignore nil
   "Ignore errors and warnings"
-  :type '(repeat string))
+  :type '(repeat string)
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-pycodestyle-hang-closing nil
   "Hang closing bracket instead of matching indentation of
 opening bracket's line."
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-pycodestyle-max-line-length nil
   "Set maximum allowed line length."
-  :type 'number)
+  :type 'number
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-pydocstyle-enabled nil
   "Enable or disable the plugin."
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-pydocstyle-convention nil
   "Choose the basic list of checked errors by specifying an
 existing convention."
-  :type '(choice (:tag "pep257" "numpy")))
+  :type '(choice (:tag "pep257" "numpy"))
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-pydocstyle-add-ignore nil
   "Ignore errors and warnings in addition to the specified
 convention."
-  :type '(repeat string))
+  :type '(repeat string)
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-pydocstyle-add-select nil
   "Select errors and warnings in addition to the specified
 convention."
-  :type '(repeat string))
+  :type '(repeat string)
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-pydocstyle-ignore nil
   "Ignore errors and warnings"
-  :type '(repeat string))
+  :type '(repeat string)
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-pydocstyle-select nil
   "Select errors and warnings"
-  :type '(repeat string))
+  :type '(repeat string)
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-pydocstyle-match "(?!test_).*\\.py"
   "Check only files that exactly match the given regular
 expression; default is to match files that don't start with
 'test_' but end with '.py'."
-  :type 'string)
+  :type 'string
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-pydocstyle-match-dir "[^\\.].*"
   "Search only dirs that exactly match the given regular
 expression; default is to match dirs which do not begin with a
 dot."
-  :type 'string)
+  :type 'string
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-pyflakes-enabled t
   "Enable or disable the plugin."
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
-(defcustom lsp-pyls-plugins-rope-completion-enabled t
+(defcustom lsp-pyls-plugins-rope-completion-enabled nil
   "Enable or disable the plugin."
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-plugins-yapf-enabled t
   "Enable or disable the plugin."
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-rope-extension-modules nil
   "Builtin and c-extension modules that are allowed to be
 imported and inspected by rope."
-  :type 'string)
+  :type 'string
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-pyls-rope-rope-folder nil
   "The name of the folder in which rope stores project
 configurations and data. Pass `null` for not using such a folder
 at all."
-  :type '(repeat string))
+  :type '(repeat string)
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.1"))
+
+(defcustom lsp-pyls-plugins-flake8-enabled nil
+  "Enable or disable the plugin."
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.2"))
+
+(defcustom lsp-pyls-plugins-flake8-exclude nil
+  "List of glob patterns to exclude from checks."
+  :type '(repeat string)
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.2"))
+
+(defcustom lsp-pyls-plugins-flake8-filename nil
+  "List of glob patterns to include for checks."
+  :type '(repeat string)
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.2"))
+
+(defcustom lsp-pyls-plugins-flake8-hang-closing nil
+  "Toggle whether pycodestyle should enforce matching the indentation of the
+opening bracket’s line. When you specify this, it will prefer that you hang the
+closing bracket rather than match the indentation."
+  :type 'boolean
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.2"))
+
+(defcustom lsp-pyls-plugins-flake8-ignore nil
+  "A list of codes to ignore."
+  :type '(repeat string)
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.2"))
+
+(defcustom lsp-pyls-plugins-flake8-max-line-length 80
+  "Set the maximum length that any line (with some exceptions) may be.
+Exceptions include lines that are either strings or comments which are entirely URLs."
+  :type 'integer
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.2"))
+
+(defcustom lsp-pyls-plugins-flake8-select nil
+  "Specify the list of error codes you wish Flake8 to report. Similarly to
+`lsp-pyls-plugins-flake8-ignore'. You can specify a portion of an error code to
+get all that start with that string. For example, you can use E, E4, E43, and
+E431"
+  :type '(repeat string)
+  :group 'lsp-pyls
+  :package-version '(lsp-mode . "6.2"))
 
 (lsp-register-custom-settings
  '(("pyls.rope.ropeFolder" lsp-pyls-rope-rope-folder)
@@ -221,6 +360,14 @@ at all."
    ("pyls.plugins.pycodestyle.exclude" lsp-pyls-plugins-pycodestyle-exclude)
    ("pyls.plugins.pycodestyle.enabled" lsp-pyls-plugins-pycodestyle-enabled t)
    ("pyls.plugins.pylint.enabled" lsp-pyls-plugins-pylint-enabled t)
+   ("pyls.plugins.pylint.args" lsp-pyls-plugins-pylint-args)
+   ("pyls.plugins.flake8.enabled" lsp-pyls-plugins-flake8-enabled)
+   ("pyls.plugins.flake8.exclude" lsp-pyls-plugins-flake8-exclude)
+   ("pyls.plugins.flake8.filename" lsp-pyls-plugins-flake8-filename)
+   ("pyls.plugins.flake8.hangClosing" lsp-pyls-plugins-flake8-hang-closing)
+   ("pyls.plugins.flake8.ignore" lsp-pyls-plugins-flake8-ignore)
+   ("pyls.plugins.flake8.maxLineLength" lsp-pyls-plugins-flake8-max-line-length)
+   ("pyls.plugins.flake8.select" lsp-pyls-plugins-flake8-select)
    ("pyls.plugins.preload.modules" lsp-pyls-plugins-preload-modules)
    ("pyls.plugins.preload.enabled" lsp-pyls-plugins-preload-enabled t)
    ("pyls.plugins.mccabe.threshold" lsp-pyls-plugins-mccabe-threshold)
@@ -240,7 +387,7 @@ at all."
 (lsp-register-client
  (make-lsp-client :new-connection (lsp-stdio-connection
                                    (lambda () lsp-clients-python-command))
-                  :major-modes '(python-mode)
+                  :major-modes '(python-mode cython-mode)
                   :priority -1
                   :server-id 'pyls
                   :library-folders-fn (lambda (_workspace) lsp-clients-python-library-directories)

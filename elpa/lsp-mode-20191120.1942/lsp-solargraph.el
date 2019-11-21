@@ -27,9 +27,10 @@
 (require 'lsp-mode)
 
 (defgroup lsp-solargraph nil
-  "Settings for solargraph."
-  :group 'tools
-  :tag "Language Server")
+  "LSP support for Ruby, using the Solargraph language server."
+  :group 'lsp-mode
+  :link '(url-link "https://github.com/castwide/solargraph")
+  :package-version '(lsp-mode . "6.1"))
 
 ;; (defcustom lsp-solargraph-check-gem-version t
 ;;   "Automatically check if a new version of the Solargraph gem is available."
@@ -37,47 +38,76 @@
 
 (defcustom lsp-solargraph-completion t
   "Enable completion"
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-solargraph
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-solargraph-hover t
   "Enable hover"
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-solargraph
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-solargraph-diagnostics t
   "Enable diagnostics"
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-solargraph
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-solargraph-autoformat nil
   "Enable automatic formatting while typing (WARNING: experimental)"
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-solargraph
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-solargraph-formatting t
   "Enable document formatting"
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-solargraph
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-solargraph-symbols t
   "Enable symbols"
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-solargraph
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-solargraph-definitions t
   "Enable definitions (go to, etc.)"
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-solargraph
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-solargraph-rename t
   "Enable symbol renaming"
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-solargraph
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-solargraph-references t
   "Enable finding references"
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-solargraph
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-solargraph-folding t
   "Enable folding ranges"
-  :type 'boolean)
+  :type 'boolean
+  :group 'lsp-solargraph
+  :package-version '(lsp-mode . "6.1"))
 
 (defcustom lsp-solargraph-log-level "warn"
   "Level of debug info to log. `warn` is least and `debug` is most."
-  :type '(choice (const :tag "warn" "info" "debug" )))
+  :type '(choice (const :tag "warn" "info" "debug"))
+  :group 'lsp-solargraph
+  :package-version '(lsp-mode . "6.1"))
+
+;; https://github.com/castwide/solargraph#solargraph-and-bundler
+(defcustom lsp-solargraph-use-bundler nil
+  "Run solargraph under bundler"
+  :type 'boolean
+  :group 'lsp-solargraph
+  :package-version '(lsp-mode . "6.1"))
 
 (lsp-register-custom-settings
  '(("solargraph.logLevel" lsp-solargraph-log-level)
@@ -90,21 +120,25 @@
    ("solargraph.autoformat" lsp-solargraph-autoformat t)
    ("solargraph.diagnostics" lsp-solargraph-diagnostics t)
    ("solargraph.hover" lsp-solargraph-hover t)
-   ("solargraph.completion" lsp-solargraph-completion t)))
+   ("solargraph.completion" lsp-solargraph-completion t)
+   ("solargraph.useBundler" lsp-solargraph-use-bundler t)))
 
 ;; Ruby
 (lsp-register-client
- (make-lsp-client :new-connection (lsp-stdio-connection '("solargraph" "stdio"))
-                  :major-modes '(ruby-mode enh-ruby-mode)
-                  :priority -1
-                  :multi-root t
-                  :server-id 'ruby-ls
-                  :initialized-fn (lambda (workspace)
-                                    (with-lsp-workspace workspace
-                                      (lsp--set-configuration
-                                       (lsp-configuration-section "solargraph"))))))
-
-
+ (let ((lsp-command '("solargraph" "stdio")))
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection
+                     (if lsp-solargraph-use-bundler
+                         (append '("bundle" "exec") lsp-command)
+                       lsp-command))
+    :major-modes '(ruby-mode enh-ruby-mode)
+    :priority -1
+    :multi-root t
+    :server-id 'ruby-ls
+    :initialized-fn (lambda (workspace)
+                      (with-lsp-workspace workspace
+                        (lsp--set-configuration
+                         (lsp-configuration-section "solargraph")))))))
 
 (provide 'lsp-solargraph)
 ;;; lsp-solargraph.el ends here

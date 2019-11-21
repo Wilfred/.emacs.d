@@ -27,9 +27,9 @@
 (require 'lsp-mode)
 
 (defgroup lsp-gopls nil
-  "Settings for gopls."
-  :group 'tools
-  :tag "Language Server")
+  "LSP support for the Go Programming Language, using the gopls language server."
+  :link '(url-link "https://github.com/golang/go/wiki/gopls")
+  :group 'lsp-mode)
 
 (defcustom lsp-gopls-use-placeholders t
   "Cause gopls to provide placeholder parameter snippets when
@@ -37,27 +37,64 @@ completing function calls."
   :type 'boolean
   :group 'lsp-gopls)
 
+(defcustom lsp-gopls-server-path "gopls"
+  "Path to gopls server binary."
+  :type 'string
+  :group 'lsp-gopls)
+
 (defcustom lsp-gopls-server-args nil
   "Extra CLI arguments for gopls."
   :type '(repeat string)
   :group 'lsp-gopls)
 
+(defcustom lsp-gopls-build-flags []
+  "A vector of flags passed on to the build system when invoked,
+  applied to queries like `go list'."
+  :type 'lsp-string-vector
+  :group 'lsp-gopls
+  :risky t
+  :package-version '(lsp-mode "6.2"))
+
+(defcustom lsp-gopls-env (make-hash-table)
+  "`gopls' has the unusual ability to set environment variables,
+  intended to affect the behavior of commands invoked by `gopls'
+  on the user's behalf. This variable takes a hash table of env
+  var names to desired values."
+  :type '(restricted-sexp :match-alternatives (hash-table-p))
+  :group 'lsp-gopls
+  :risky t
+  :package-version '(lsp-mode "6.2"))
+
+(defcustom lsp-gopls-hover-kind "SynopsisDocumentation"
+  "`gopls' allows the end user to select the desired amount of
+  documentation returned during e.g. hover and thing-at-point
+  operations."
+  :type '(choice (const "SynopsisDocumentation")
+                 (const "NoDocumentation")
+                 (const "FullDocumentation")
+                 (const "SingleLine")
+                 (const "Structured"))
+  :group 'lsp-gopls
+  :risky t
+  :package-version '(lsp-mode "6.2"))
+
 (lsp-register-custom-settings
- '(("gopls.usePlaceholders" lsp-gopls-use-placeholders t)))
+ '(("gopls.usePlaceholders" lsp-gopls-use-placeholders t)
+   ("gopls.hoverKind" lsp-gopls-hover-kind)
+   ("gopls.buildFlags" lsp-gopls-build-flags)
+   ("gopls.env" lsp-gopls-env)))
 
 (lsp-register-client
  (make-lsp-client :new-connection (lsp-stdio-connection
-                                   (lambda () (cons "gopls" lsp-gopls-server-args)))
+                                   (lambda () (cons lsp-gopls-server-path lsp-gopls-server-args)))
                   :major-modes '(go-mode)
                   :priority 0
                   :server-id 'gopls
-                  :library-folders-fn (lambda (_workspace)
-                                        lsp-clients-go-library-directories)))
+                  :library-folders-fn 'lsp-clients-go--library-default-directories))
 
 (defgroup lsp-clients-go nil
-  "Go language."
-  :group 'lsp-mode
-  :tag "Go language")
+  "LSP support for the Go Programming Language."
+  :group 'lsp-mode)
 
 (defcustom lsp-clients-go-server "bingo"
   "The go language server executable to use."
@@ -116,6 +153,35 @@ defaults to half of your CPU cores."
   :risky t
   :type '(repeat string))
 
+(defcustom lsp-clients-go-library-directories-include-go-modules t
+  "Whether or not $GOPATH/pkg/mod should be included as a library directory."
+  :type 'boolean
+  :group 'lsp-clients-go)
+
+(defun lsp-clients-go--library-default-directories (_workspace)
+  "Calculate go library directories.
+
+If `lsp-clients-go-library-directories-include-go-modules' is non-nil
+and the environment variable GOPATH is set this function will return
+$GOPATH/pkg/mod along with the value of
+`lsp-clients-go-library-directories'."
+  (let ((library-dirs lsp-clients-go-library-directories))
+    (when (and lsp-clients-go-library-directories-include-go-modules
+               (or (and (not (file-remote-p default-directory)) (executable-find "go"))
+                   (and (version<= "27.0" emacs-version) (with-no-warnings (executable-find "go" (file-remote-p default-directory))))))
+      (with-temp-buffer
+        (when (zerop (process-file "go" nil t nil "env" "GOPATH"))
+          (setq library-dirs
+                (append
+                 library-dirs
+                 (list
+                  (concat
+                   (string-trim-right (buffer-substring (point-min) (point-max)))
+                   "/pkg/mod")))))))
+    (if (file-remote-p default-directory)
+        (mapcar (lambda (path) (concat (file-remote-p default-directory) path)) library-dirs)
+      library-dirs)))
+
 (define-inline lsp-clients-go--bool-to-json (val)
   (inline-quote (if ,val t :json-false)))
 
@@ -139,8 +205,7 @@ defaults to half of your CPU cores."
                   :priority -1
                   :initialization-options 'lsp-clients-go--make-init-options
                   :server-id 'go-bingo
-                  :library-folders-fn (lambda (_workspace)
-                                        lsp-clients-go-library-directories)))
+                  :library-folders-fn 'lsp-clients-go--library-default-directories))
 
 (lsp-register-client
  (make-lsp-client :new-connection (lsp-stdio-connection "go-langserver")
@@ -148,8 +213,7 @@ defaults to half of your CPU cores."
                   :priority -2
                   :initialization-options 'lsp-clients-go--make-init-options
                   :server-id 'go-ls
-                  :library-folders-fn (lambda (_workspace)
-                                        lsp-clients-go-library-directories)))
+                  :library-folders-fn 'lsp-clients-go--library-default-directories))
 
 (provide 'lsp-go)
 ;;; lsp-go.el ends here
