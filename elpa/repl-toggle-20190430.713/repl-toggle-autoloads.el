@@ -1,18 +1,13 @@
 ;;; repl-toggle-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
+
+(add-to-list 'load-path (directory-file-name
+                         (or (file-name-directory #$) (car load-path))))
+
 
-;;;### (autoloads nil "repl-toggle" "repl-toggle.el" (22567 40178
-;;;;;;  472052 700000))
+;;;### (autoloads nil "repl-toggle" "repl-toggle.el" (0 0 0 0))
 ;;; Generated autoloads from repl-toggle.el
-
-(defvar repl-toggle-mode nil "\
-Non-nil if Repl-Mode mode is enabled.
-See the `repl-toggle-mode' command
-for a description of this minor mode.")
-
-(custom-autoload 'repl-toggle-mode "repl-toggle" nil)
 
 (autoload 'repl-toggle-mode "repl-toggle" "\
 A minor mode to allow uniform repl buffer switching.
@@ -53,11 +48,19 @@ Additional paramters passed will be IGNORED.
 
 \(fn &optional PASSALONG\\=\\? &rest IGNORED)" t nil)
 
+(autoload 'rtog/activate "repl-toggle" "\
+Activate the repl-toggle minor mode.
+
+\(fn)" nil nil)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "repl-toggle" '("repl-toggle-mode-map" "rtog/")))
+
 ;;;***
 
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
+;; coding: utf-8
 ;; End:
 ;;; repl-toggle-autoloads.el ends here

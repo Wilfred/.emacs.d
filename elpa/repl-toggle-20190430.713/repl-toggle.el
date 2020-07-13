@@ -4,8 +4,8 @@
 
 ;; Author: Tom Regner <tom@goochesa.de>
 ;; Maintainer: Tom Regner <tom@goochesa.de>
-;; Version: 0.4.0
-;; Package-Version: 20161203.414
+;; Version: 0.6.1
+;; Package-Version: 20190430.713
 ;; Keywords: repl, buffers, toggle
 ;; Package-Requires: ((fullframe  "0.0.5"))
 
@@ -130,6 +130,11 @@ It associates major modes with a repl command."
   :type 'function
   :group 'repl-toggle)
 
+(defcustom rtog/interactivep nil
+  "If non-nil then call the repl command interactively if possible."
+  :type 'boolean
+  :group 'repl-toggle)
+
 ;; variables
 (defvar rtog/--last-buffer nil
   "Store the jump source in repl buffer.")
@@ -155,7 +160,7 @@ It associates major modes with a repl command."
   nil
   :lighter " rt"
   :keymap repl-toggle-mode-map
-  :global t)
+  :global nil)
 
 ;; internal functions
 
@@ -205,7 +210,10 @@ Additional paramters passed will be IGNORED."
           (if (and rtog/--repl-buffer (buffer-live-p rtog/--repl-buffer))
               (funcall rtog/goto-buffer-fun rtog/--repl-buffer)
             (progn
-              (funcall --mode-cmd)
+              (if (and rtog/interactivep 
+                       (commandp --mode-cmd))
+                  (call-interactively --mode-cmd)
+                (funcall --mode-cmd))
               (repl-toggle-mode 1)
               (setq rtog/--last-buffer --buffer)
               (let ((--repl-buffer (current-buffer)))
