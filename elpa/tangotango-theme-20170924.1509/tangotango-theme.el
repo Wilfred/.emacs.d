@@ -8,7 +8,7 @@
 ;; Author: Julien Barnier
 ;; Adapted-By: Yesudeep Mangalapilly
 ;; Keywords: tango palette color theme emacs
-;; Package-Version: 20170924.809
+;; Package-Version: 20170924.1509
 ;; URL: https://github.com/juba/color-theme-tangotango
 ;; Version: 0.0.6
 
