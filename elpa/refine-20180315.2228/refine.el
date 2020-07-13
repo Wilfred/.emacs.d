@@ -2,11 +2,11 @@
 
 ;; TODO: prompt the user to choose between local and global variables
 
-;; Copyright (C) 2016  
+;; Copyright (C) 2016-2017
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Version: 0.4
-;; Package-Version: 20161205.549
+;; Package-Version: 20180315.2228
 ;; Keywords: convenience
 ;; Package-Requires: ((emacs "24.3") (s "1.11.0") (dash "2.12.0") (list-utils "0.4.4") (loop "1.2"))
 
@@ -34,6 +34,7 @@
 (require 'cl-lib) ;; cl-prettyprint, cl-incf, cl-decf
 (require 'list-utils)
 (require 'loop)
+(require 'pcase)
 (eval-when-compile
   (require 'cl-macs)) ;; cl-assert
 
@@ -56,20 +57,13 @@
 
 (defun refine--possible-elements (symbol)
   "Return a list of the possible list elements SYMBOL can have.
-Returns nil if SYMBOL is not a custom variable."
+Returns nil if SYMBOL is not a custom variable or if we can't
+make useful suggestions."
   (when (custom-variable-p symbol)
-    (let ((custom-type (get symbol 'custom-type))
-          choices)
-      ;; If custom-type takes the form '(repeat (choice (...)))
-      (-when-let ((repeat-sym (choice-sym . repeated-choices)) custom-type)
-        (when (and (eq repeat-sym 'repeat) (eq choice-sym 'choice))
-          (setq choices repeated-choices)))
-      ;; If custom-type takes the form '(set (...))
-      (-when-let ((set-sym . set-choices) custom-type)
-        (when (eq set-sym 'set)
-          (setq choices set-choices)))
-      (when choices
-        (refine--custom-values choices)))))
+    (-some--> (pcase (get symbol 'custom-type)
+                (`(repeat (choice . ,repeated-choices)) repeated-choices)
+                (`(set . ,set-choices) set-choices))
+              (refine--custom-values it))))
 
 (defun refine--possible-values (symbol)
   "Return a list of the possible values SYMBOL can have.
@@ -242,18 +236,27 @@ index."
      'symbol symbol)
     (buffer-string)))
 
+(defun refine--symbol-value (symbol)
+  "Return the value of SYMBOL in the buffer that we're currently connected to."
+  (with-current-buffer (or refine--target-buffer (current-buffer))
+    (symbol-value symbol)))
+
 (defun refine--update (result-buffer target-buffer symbol)
   "Update RESULT-BUFFER with the current value of SYMBOL in TARGET-BUFFER."
-  (let ((value (with-current-buffer target-buffer (symbol-value symbol))))
+  (let (value)
+    (when (boundp symbol)
+      (with-current-buffer target-buffer
+        (setq value (symbol-value symbol))))
     (with-current-buffer result-buffer
       (let* ((current-line (line-number-at-pos))
              (current-column (current-column))
              buffer-read-only)
         (erase-buffer)
-        (insert (format "%s:\n\n" (refine--describe symbol value target-buffer)))
-        (insert (refine--format-with-index value))
-        (insert "\n\n")
-        (insert (refine--help-button symbol) " " (refine--definition-button symbol))
+        (insert (format "%s\n\n" (refine--describe symbol value target-buffer)))
+        (when (boundp symbol)
+          (insert (refine--format-with-index value))
+          (insert "\n\n")
+          (insert (refine--help-button symbol) " " (refine--definition-button symbol)))
         ;; We can't use `save-excursion' because we erased the whole
         ;; buffer. Go back to the previous position.
         (goto-char (point-min))
@@ -264,7 +267,7 @@ index."
   "The symbol being inspected in the current buffer.")
 
 (defvar-local refine--target-buffer nil
-  "When inspecting buffer-local variable, use this buffer.")
+  "When inspecting buffer-local variables, use this buffer.")
 
 (defun refine-update ()
   "Update the current refine buffer."
@@ -303,7 +306,7 @@ This mutates the list.
 If SYMBOL is nil, assigns to SYMBOL instead."
   (interactive)
   (assert (symbolp symbol))
-  (let* ((list (symbol-value symbol))
+  (let* ((list (refine--symbol-value symbol))
          (length (safe-length list)))
     (assert (or (consp list) (null list)))
     (cond
@@ -319,7 +322,7 @@ If SYMBOL is nil, assigns to SYMBOL instead."
 
 This creates a new vector and assigns it to SYMBOL. Vectors have
 fixed length, see *info* (elisp) Arrays."
-  (let* ((vector (symbol-value symbol))
+  (let* ((vector (refine--symbol-value symbol))
          (length (length vector)))
     (assert (and (vectorp vector) (< index length)))
 
@@ -353,7 +356,7 @@ This mutates the list."
 (defun refine--pop (symbol index)
   "Remote the item at INDEX in vectory/list variable SYMBOL.
 Mutates the value where possible."
-  (let ((value (symbol-value symbol)))
+  (let ((value (refine--symbol-value symbol)))
     (cond ((vectorp value)
            (refine--vector-pop symbol index))
           ((equal (length value) 1)
@@ -434,7 +437,7 @@ When called with a prefix, move that many positions."
   ;; Move the element.
   (let ((index (refine--index-at-point)))
     (if (numberp index)
-        (refine--move-element (symbol-value refine--symbol) index arg)
+        (refine--move-element (refine--symbol-value refine--symbol) index arg)
       (user-error "No list element here")))
   (refine-update)
   ;; Move point to match.
@@ -468,7 +471,7 @@ If DISTANCE is too big, move it as far as possible."
 (defun refine--move-point (distance)
   "Move point DISTANCE items forward.
 If DISTANCE is negative, move backwards."
-  (let* ((value (symbol-value refine--symbol)))
+  (let* ((value (refine--symbol-value refine--symbol)))
     ;; If we're dealing with a scalar or the empty list, just move to
     ;; the line where it's shown.
     (if (not (consp value))
@@ -507,13 +510,13 @@ If DISTANCE is negative, move backwards."
 (defun refine-edit (new-value)
   "Edit the current item in the list or vector."
   (interactive
-   (let* ((lst (symbol-value refine--symbol))
+   (let* ((lst (refine--symbol-value refine--symbol))
           (index (refine--index-at-point))
           (prompt (format "Set value at %s: " index))
           (current-value (elt lst index)))
      (list (refine--read-element refine--symbol prompt
                                  (refine--pretty-format current-value)))))
-  (setf (elt (symbol-value refine--symbol) (refine--index-at-point))
+  (setf (elt (refine--symbol-value refine--symbol) (refine--index-at-point))
         new-value)
   (refine-update))
 
@@ -560,45 +563,72 @@ If CURRENT is at the end, or not present, use the first item."
   (and (consp value)
        (not (consp (cdr value))) (not (null (cdr value)))))
 
+(defun refine--local-values (symbol)
+  "Return a list of pairs (buffer, value) for all buffers
+where SYMBOL is set."
+  (let (result)
+    (dolist (buf (buffer-list) result)
+      (when (local-variable-p symbol buf)
+        (push (cons buf (buffer-local-value symbol buf))
+              result)))))
+
 ;; TODO: support hash maps
 (defun refine--describe (symbol value buffer)
   "Return a human-readable description for SYMBOL set to VALUE in BUFFER."
-  (let ((pretty-symbol
-         (propertize (format "%s" symbol)
-                     'face 'font-lock-variable-name-face))
-        (symbol-description
-         (if (local-variable-p symbol buffer)
-             (format "a local variable in buffer %s"
-                     (refine--buffer-button buffer))
-           "a global variable"))
-        (type-description
-         (cond
-          ((stringp value) "a string")
-          ((null value) "nil")
-          ((symbolp value) "a symbol")
-          ((numberp value) "a number")
-          ((and (consp value) (not (consp (cdr value))) (not (null (cdr value))))
-           "a pair")
-          ((and (consp value) (list-utils-cyclic-p value))
-           "an improper list")
-          ((sequencep value)
-           (let* ((type (if (vectorp value) "vector" "list"))
-                  (length (length value))
-                  (units (if (= length 1) "value" "values")))
-             (format "a %s containing %d %s"
-                     type length units)))
-          (:else "an unsupported type"))))
-    (s-word-wrap 65
-                 (format "%s is %s. Its current value is %s"
-                         pretty-symbol symbol-description
-                         type-description))))
+  (let* ((pretty-symbol
+          (propertize (format "%s" symbol)
+                      'face 'font-lock-variable-name-face))
+         (is-local (local-variable-p symbol buffer))
+         (symbol-description
+          (cond
+           ((not (boundp symbol))
+            "an unbound symbol")
+           (is-local
+            (format "a local variable in buffer %s"
+                    (refine--buffer-button buffer)))
+           (t
+            "a global variable")))
+         (local-description
+          (let ((locals (refine--local-values symbol)))
+            (if locals
+                (format " It has a buffer-local value in %d buffers."
+                        (length locals))
+              "")))
+         (type-description
+          (cond
+           ((stringp value) "a string")
+           ((null value) "nil")
+           ((symbolp value) "a symbol")
+           ((numberp value) "a number")
+           ((and (consp value) (not (consp (cdr value))) (not (null (cdr value))))
+            "a pair")
+           ((and (consp value) (list-utils-cyclic-p value))
+            "an improper list")
+           ;; TODO: it would be nice to say 'a list of symbols' etc
+           ;; when all the elements are the same type.
+           ((sequencep value)
+            (let* ((type (if (vectorp value) "vector" "list"))
+                   (length (length value))
+                   (units (if (= length 1) "value" "values")))
+              (format "a %s containing %d %s"
+                      type length units)))
+           (:else "an unsupported type")))
+         (value-description
+          (if (boundp symbol)
+              (format " Its value is %s:"
+                      type-description)
+            "")))
+    (s-word-wrap
+     70
+     (format "%s is %s.%s"
+             pretty-symbol symbol-description value-description))))
 
 ;; TODO: add demo in readme of this command.
 (defun refine-cycle ()
   "Cycle the variable or list element through all possible values.
 For booleans, toggle nil/t."
   (interactive)
-  (let ((value (symbol-value refine--symbol))
+  (let ((value (refine--symbol-value refine--symbol))
         (index (refine--index-at-point))
         (possible-values (refine--possible-values refine--symbol)))
     (cond

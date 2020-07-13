@@ -1,12 +1,11 @@
 ;;; suggest.el --- suggest elisp functions that give the output requested  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2017
+;; Copyright (C) 2017-2018
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
-;; Version: 0.7
-;; Package-Version: 20180421.1243
+;; Version: 0.8
 ;; Keywords: convenience
-;; Package-Requires: ((emacs "24.4") (loop "1.3") (dash "2.13.0") (s "1.11.0") (f "0.18.2"))
+;; Package-Requires: ((emacs "24.4") (loop "1.3") (dash "2.13.0") (s "1.11.0") (f "0.18.2") (spinner "1.7.3"))
 ;; URL: https://github.com/Wilfred/suggest.el
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -30,13 +29,14 @@
 ;;; Code:
 
 (require 'dash)
+(require 'seq)
 (require 'loop)
 (require 's)
 (require 'f)
+(require 'spinner)
 (require 'subr-x)
 (require 'cl-extra) ;; cl-prettyprint
-(eval-when-compile
-  (require 'cl-lib)) ;; cl-incf
+(require 'cl-lib) ;; cl-incf, cl-evenp, cl-oddp
 
 (defcustom suggest-insert-example-on-start t
   "If t, insert example data in suggest buffer, else don't."
@@ -62,8 +62,10 @@
    #'sequencep
    #'stringp
    #'symbolp
+   ;; Sequence predicates
+   #'seq-set-equal-p
+   #'seq-empty-p
    ;; Built-in functions that access or examine lists.
-   ;; TODO: why isn't car marked as pure?
    #'car
    #'cdr
    #'cadr
@@ -86,6 +88,18 @@
    ;; Sequence functions
    #'elt
    #'aref
+   #'seq-subseq
+   #'seq-drop
+   #'seq-take
+   #'seq-sort
+   #'seq-reverse
+   #'seq-concatenate
+   #'seq-into
+   #'seq-position
+   #'seq-uniq
+   #'seq-partition
+   #'seq-intersection
+   #'seq-difference
    ;; CL list functions.
    #'cl-first
    #'cl-second
@@ -176,9 +190,9 @@
    #'ftruncate
    #'1+
    #'1-
-   #'evenp
+   #'cl-evenp
    #'natnump
-   #'oddp
+   #'cl-oddp
    #'zerop
    ;; Logical operators
    #'lsh
@@ -198,6 +212,10 @@
    #'replace-regexp-in-string
    #'format
    #'string-join
+   #'string-prefix-p
+   #'string-suffix-p
+   #'string-remove-prefix
+   #'string-remove-suffix
    #'prin1-to-string
    ;; Quoting strings
    #'shell-quote-argument
@@ -243,6 +261,8 @@
    #'symbol-file
    #'intern
    ;; Converting between types
+   #'float
+   ;; TODO: we don't find the above because we don't consider type.
    #'string-to-list
    #'string-to-number
    #'string-to-char
@@ -333,6 +353,7 @@ consider these, but only with arguments that are known to be safe." )
    #'-cons* '(nil)
    #'-snoc '(nil)
    #'append '(nil)
+   #'vector '(nil)
    ;; `format' has specific formatting strings that are worth trying.
    #'format '("%d" "%o" "%x" "%X" "%e" "%c" "%f" "%s" "%S")
    ;; `-iterate' is great for building incrementing/decrementing lists.
@@ -340,6 +361,10 @@ consider these, but only with arguments that are known to be safe." )
    #'-iterate '(1+ 1-)
    ;; Lists can be sorted in a variety of ways.
    #'-sort '(< > string< string>)
+   #'seq-sort '(< > string< string>)
+   ;; Sequences of type.
+   #'seq-concatenate '(vector string list)
+   #'seq-into '(vector string list)
    ;; For indexing functions, just use non-negative numbers. This
    ;; avoids confusing results like (last nil 5) => nil.
    #'elt '(0 1 2)
@@ -357,6 +382,9 @@ consider these, but only with arguments that are known to be safe." )
    #'-is-suffix-p '()
    #'-is-prefix-p '()
    #'-is-infix-p '()
+   ;; Joining strings is commonly done with spaces or newlines.
+   #'string-join '("\n" " ")            ; default is "" already.
+   #'s-join '("" "\n" " ")
    ;; Remove has some weird behaviours with t: (remove 'foo t) => t.
    ;; Only use nil as an extra value, so we can discover remove as an
    ;; alternative to `-non-nil'.
@@ -373,48 +401,51 @@ This plist associates functions with particular arguments that
 produce good results. If a function isn't explicitly mentioned,
 we look up `t' instead.")
 
-(defun suggest--safe (fn args)
-  "Is FN safe to call with ARGS?
+(defun suggest--unsafe-p (fn args)
+  "Is FN unsafe to call with ARGS?
 
 Safety here means that we:
 
 * don't have any side effects, and
 * don't crash Emacs."
-  (not
-   (or
-    ;; Due to Emacs bug #25684, string functions that call
-    ;; caseify_object in casefiddle.c cause Emacs to segfault when
-    ;; given negative integers.
-    (and (memq fn '(upcase downcase capitalize upcase-initials))
-         (consp args)
-         (null (cdr args))
-         (integerp (car args))
-         (< (car args) 0))
-    ;; If `read' is called with nil or t, it prompts interactively.
-    (and (eq fn 'read)
-         (member args '(nil (nil) (t))))
-    ;; Work around https://github.com/Wilfred/suggest.el/issues/37 on
-    ;; Emacs 24, where it's possible to crash `read' with a list.
-    (and (eq fn 'read)
-         (eq emacs-major-version 24)
-         (consp (car args)))
-    ;; Work around https://github.com/magnars/dash.el/issues/241
-    (and (memq fn '(-interleave -zip))
-         (null args))
-    (and (memq fn suggest-funcall-functions) ;
-         ;; TODO: what about circular lists?
-         ;;
-         ;; Does apply even handle that nicely? It looks like apply
-         ;; tries to get the length of the list and hangs until C-g.
-         (format-proper-list-p args)
-         (--any (or
-                 ;; Don't call any higher order functions with symbols that
-                 ;; aren't known to be safe.
-                 (and (symbolp it) (not (memq it suggest-functions)))
-                 ;; Don't allow callable objects (interpreted or
-                 ;; byte-compiled function objects).
-                 (functionp it))
-                args)))))
+  (or
+   ;; Due to Emacs bug #25684, string functions that call
+   ;; caseify_object in casefiddle.c cause Emacs to segfault when
+   ;; given negative integers.
+   (and (memq fn '(upcase downcase capitalize upcase-initials))
+        (consp args)
+        (null (cdr args))
+        (integerp (car args))
+        (< (car args) 0))
+   ;; If `read' is called with nil or t, it prompts interactively.
+   (and (eq fn 'read)
+        (member args '(nil (nil) (t))))
+   ;; Work around https://github.com/Wilfred/suggest.el/issues/37 on
+   ;; Emacs 24, where it's possible to crash `read' with a list.
+   (and (eq fn 'read)
+        (eq emacs-major-version 24)
+        (consp (car args)))
+   ;; Work around https://github.com/magnars/dash.el/issues/241
+   (and (memq fn '(-interleave -zip))
+        (null args))
+   (and (memq fn suggest-funcall-functions) ;
+        ;; TODO: what about circular lists?
+        ;;
+        ;; Does apply even handle that nicely? It looks like apply
+        ;; tries to get the length of the list and hangs until C-g.
+        (format-proper-list-p args)
+        (--any (or
+                ;; Don't call any higher order functions with symbols that
+                ;; aren't known to be safe.
+                (and (symbolp it) (not (memq it suggest-functions)))
+                ;; Don't allow callable objects (interpreted or
+                ;; byte-compiled function objects).
+                (and (not (symbolp it)) (functionp it)))
+               args))))
+
+(defun suggest--safe-p (fn args)
+  "Is FN safe to call with ARGS?"
+  (not (suggest--unsafe-p fn args)))
 
 (defface suggest-heading
   '((((class color) (background light)) :foreground "DarkGoldenrod4" :weight bold)
@@ -532,7 +563,7 @@ and outputs given."
 N counts from 1."
   (goto-char (point-min))
   (let ((headings-seen 0))
-    (loop-while (< headings-seen n)
+    (while (< headings-seen n)
       (when (suggest--on-heading-p)
         (cl-incf headings-seen))
       (forward-line 1)))
@@ -550,18 +581,41 @@ N counts from 1."
       ;; Insert the text, ensuring it can't be edited.
       (insert (propertize text 'read-only t)))))
 
-(defun suggest--format-output (value)
-  "Format VALUE as the output to a function."
-  (let* ((lines (s-lines (suggest--pretty-format value)))
-         (prefixed-lines
+(defun suggest--join-func-output (formatted-call formatted-value)
+  "Combine strings FORMATTED-CALL and FORMATTED-VALUE and indent."
+  (let* ((prefixed-lines
+          ;; Put a ;=> before FORMATTED-VALUE.
           (--map-indexed
            (if (zerop it-index) (concat ";=> " it) (concat ";   " it))
-           lines)))
-    (s-join "\n" prefixed-lines)))
+           (s-lines formatted-value)))
+         ;; A string of spaces the same length as FORMATTED-CALL.
+         (matching-spaces (s-repeat (length formatted-call) " "))
+         ;; If FORMATTED-VALUE is a multiline string, indent
+         ;; subsequent lines.
+         (formatted-lines
+          (--map-indexed
+           (if (zerop it-index)
+               (format "%s %s" formatted-call it)
+             (format "%s %s" matching-spaces it))
+           prefixed-lines)))
+    (s-join "\n" formatted-lines)))
 
-(defun suggest--format-suggestion (suggestion output)
-  "Format SUGGESTION as a lisp expression returning OUTPUT."
-  (let ((formatted-call ""))
+(defun suggest--format-suggestion (suggestion raw-output)
+  "Format SUGGESTION as a lisp expression returning RAW-OUTPUT.
+RAW-OUTPUT is a string, so we can distinguish literals,
+e.g. decimal 16 from hex #x10."
+  (let* ((formatted-call "")
+         (func-output (plist-get suggestion :output))
+         (desired-output (read raw-output))
+         (formatted-output
+          (if (and (numberp desired-output)
+                   (eq (type-of desired-output) (type-of func-output)))
+              ;; If the user typed a number literal #x10, and we
+              ;; didn't change type (e.g. 1.0 vs 1), we want to show
+              ;; the same literal in the output.
+              raw-output
+            ;; Otherwise, show the actual function output.
+            (pp-to-string func-output))))
     ;; Build up a string "(func1 (func2 ... literal-inputs))"
     (let ((funcs (plist-get suggestion :funcs))
           (literals (plist-get suggestion :literals)))
@@ -578,51 +632,27 @@ N counts from 1."
                     (s-join " " literals)))
       (setq formatted-call
             (concat formatted-call (s-repeat (length funcs) ")"))))
-    (let* (;; A string of spaces the same length as the suggestion.
-           (matching-spaces (s-repeat (length formatted-call) " "))
-           (formatted-output (suggest--format-output output))
-           ;; Append the output to the formatted suggestion. If the
-           ;; output runs over multiple lines, indent appropriately.
-           (formatted-lines
-            (--map-indexed
-             (if (zerop it-index)
-                 (format "%s %s" formatted-call it)
-               (format "%s %s" matching-spaces it))
-             (s-lines formatted-output))))
-      (s-join "\n" formatted-lines))))
+    (suggest--join-func-output formatted-call formatted-output)))
 
-(defun suggest--write-suggestions (suggestions output)
+(defun suggest--write-suggestions (suggestions raw-output)
   "Write SUGGESTIONS to the current *suggest* buffer.
 SUGGESTIONS is a list of forms."
   (->> suggestions
-       (--map (suggest--format-suggestion it output))
+       (--map (suggest--format-suggestion it raw-output))
        (s-join "\n")
        (suggest--write-suggestions-string)))
 
-;; TODO: this is largely duplicated with refine.el and should be
-;; factored out somewhere.
-(defun suggest--pretty-format (value)
-  "Return a pretty-printed version of VALUE."
-  (let ((cl-formatted (with-temp-buffer
-                        (cl-prettyprint value)
-                        (s-trim (buffer-string)))))
-    (cond ((stringp value)
-           ;; TODO: we should format newlines as \n
-           (format "\"%s\"" value))
-          ;; Print nil and t as-is.'
-          ((or (eq t value) (eq nil value))
-           (format "%s" value))
-          ;; Display other symbols, and lists, with a quote, so we
-          ;; show usable syntax.
-          ((or (symbolp value) (consp value))
-           (format "'%s" cl-formatted))
-          (t
-           cl-formatted))))
-
-(defun suggest--read-eval (form)
-  "Read and eval FORM, but don't open a debugger on errors."
+(defun suggest--read (form)
+  "Read FORM, but don't open a debugger on errors."
   (condition-case err
-      (eval (read form))
+      (read form)
+    (error (user-error
+            "Could not parse %s: %s" form err))))
+
+(defun suggest--eval (form)
+  "Eval FORM, but don't open a debugger on errors."
+  (condition-case err
+      (eval form)
     (error (user-error
             "Could not eval %s: %s" form err))))
 
@@ -660,7 +690,11 @@ tend to be progressively more silly.")
 (defsubst suggest--classify-output (inputs func-output target-output)
   "Classify FUNC-OUTPUT so we can decide whether we should keep it."
   (cond
-   ((equal func-output target-output)
+   ((or
+     (and (numberp func-output)
+          (numberp target-output)
+          (= func-output target-output))
+     (equal func-output target-output))
     'match)
    ;; If the function gave us nil, we're not going to
    ;; find any interesting values by further exploring
@@ -683,9 +717,9 @@ tend to be progressively more silly.")
   "Call FUNC with VALUES, ignoring all errors.
 If FUNC returns a value, return a plist (:output ...). Returns
 nil otherwise."
-  (when (suggest--safe func (if variadic-p
-                                (car values)
-                              values))
+  (when (suggest--safe-p func (if variadic-p
+                                  (car values)
+                                values))
     (let ((default-directory "/")
           (file-name-handler-alist nil)
           func-output func-success)
@@ -715,10 +749,10 @@ This is primarily for quoting symbols."
      (not (eq value t)))
     (format "'%s" value))
    (t
-    (format "%S" value))))
+    (s-trim (pp-to-string value)))))
 
-(defun suggest--try-call (iteration func input-values input-literals)
-  "Try to call FUNC with INPUT-VALUES, and return a list of outputs"
+(defsubst suggest--try-call (iteration func input-values input-literals)
+  "Try to call FUNC with arguments INPUT-VALUES, and return a list of outputs"
   (let (outputs)
     ;; See if (func value1 value2...) gives us a value.
     (-when-let (result (suggest--call func input-values input-literals))
@@ -747,6 +781,21 @@ This is primarily for quoting symbols."
     ;; (+ 1 2) over (+ 0 1 2).
     (nreverse outputs)))
 
+(defmacro suggest--dolist-catch (var-val-tag &rest body)
+  "Loop over a list, terminating early if TAG is thrown.
+Evaluate BODY with VAR bound to each car from LIST, in turn.
+
+\(fn (VAR LIST TAG) BODY...)"
+  (declare (indent 1) (debug ((symbolp form &optional form) body)))
+  (unless (consp var-val-tag)
+    (signal 'wrong-type-argument (list 'consp var-val-tag)))
+  (unless (= (length var-val-tag) 3)
+    (signal 'wrong-number-of-arguments (list 3 (length var-val-tag))))
+  (-let [(var val tag) var-val-tag]
+    `(catch ,tag
+       (dolist (,var ,val)
+         ,@body))))
+
 (defun suggest--possibilities (input-literals input-values output)
   "Return a list of possibilities for these INPUTS-VALUES and OUTPUT.
 Each possbility form uses INPUT-LITERALS so we show variables rather
@@ -757,7 +806,12 @@ than their values."
         intermediates
         (intermediates-count 0)
         (value-occurrences (make-hash-table :test #'equal))
-        (funcs (append suggest-functions suggest-funcall-functions)))
+        (funcs (append suggest-functions suggest-funcall-functions))
+        ;; Since we incrementally build a huge list of results,
+        ;; garbage collection does a load of work but doesn't find
+        ;; much to collect. Disable GC, as it significantly improves
+        ;; performance.
+        (gc-cons-threshold 50000000))
     ;; Setup: no function calls, all permutations of our inputs.
     (setq this-iteration
           (-map (-lambda ((values . literals))
@@ -768,65 +822,62 @@ than their values."
                             (suggest--permutations input-literals)))))
     (catch 'done
       (dotimes (iteration suggest--search-depth)
-        (catch 'done-iteration
-          (dolist (func funcs)
-            (loop-for-each item this-iteration
-              (let ((literals (plist-get item :literals))
-                    (values (plist-get item :values))
-                    (funcs (plist-get item :funcs)))
-                ;; Try to call the function, then classify its return values.
-                (dolist (func-result (suggest--try-call iteration func values literals))
-                  (let ((func-output (plist-get func-result :output)))
-                    (cl-case (suggest--classify-output values func-output output)
-                      ;; The function gave us the output we wanted, just save it.
-                      ('match
+        ;; We need to call redisplay so the spinner keeps rotating
+        ;; as we search.
+        (redisplay)
+        (suggest--dolist-catch (func funcs 'done-iteration)
+          (suggest--dolist-catch (item this-iteration 'done-func)
+            (let ((literals (plist-get item :literals))
+                  (values (plist-get item :values))
+                  (funcs (plist-get item :funcs)))
+              ;; Try to call the function, then classify its return values.
+              (dolist (func-result (suggest--try-call iteration func values literals))
+                (let ((func-output (plist-get func-result :output)))
+                  (cl-case (suggest--classify-output values func-output output)
+                    ;; The function gave us the output we wanted, just save it.
+                    ('match
+                     (push
+                      (list :funcs (cons (list :sym func
+                                               :variadic-p (plist-get func-result :variadic-p))
+                                         funcs)
+                            :literals (plist-get func-result :literals)
+                            :output func-output)
+                      possibilities)
+                     (cl-incf possibilities-count)
+                     (when (>= possibilities-count suggest--max-possibilities)
+                       (throw 'done nil))
+
+                     ;; If we're on the first iteration, we're just
+                     ;; searching all input permutations. Don't try any
+                     ;; other permutations, or we end up showing e.g. both
+                     ;; (+ 2 3) and (+ 3 2).
+                     (when (zerop iteration)
+                       (throw 'done-func nil)))
+                    ;; The function returned a different result to what
+                    ;; we wanted. Build a list of these values so we
+                    ;; can explore them.
+                    ('different
+                     (when (and
+                            (< intermediates-count suggest--max-intermediates)
+                            (< (gethash func-output value-occurrences 0)
+                               suggest--max-per-value))
+                       (puthash
+                        func-output
+                        (1+ (gethash func-output value-occurrences 0))
+                        value-occurrences)
+                       (cl-incf intermediates-count)
                        (push
                         (list :funcs (cons (list :sym func
-                                                 :variadic-p (plist-get func-result :variadic-p))
+                                                 :variadic-p (plist-get output :variadic-p))
                                            funcs)
-                              :literals (plist-get func-result :literals))
-                        possibilities)
-                       (cl-incf possibilities-count)
-                       (when (>= possibilities-count suggest--max-possibilities)
-                         (throw 'done nil))
-
-                       ;; If we're on the first iteration, we're just
-                       ;; searching all input permutations. Don't try any
-                       ;; other permutations, or we end up showing e.g. both
-                       ;; (+ 2 3) and (+ 3 2).
-                       (when (zerop iteration)
-                         ;; TODO: (throw 'done-func nil)
-                         (loop-break)))
-                      ;; The function returned a different result to what
-                      ;; we wanted. Build a list of these values so we
-                      ;; can explore them.
-                      ('different
-                       (when  (and
-                               (< intermediates-count suggest--max-intermediates)
-                               (< (gethash func-output value-occurrences 0)
-                                  suggest--max-per-value))
-                         (puthash
-                          func-output
-                          (1+ (gethash func-output value-occurrences 0))
-                          value-occurrences)
-                         (cl-incf intermediates-count)
-                         (push
-                          (list :funcs (cons (list :sym func
-                                                   :variadic-p (plist-get output :variadic-p))
-                                             funcs)
-                                :literals (plist-get func-result :literals)
-                                :values (list func-output))
-                          intermediates))))))))))
+                              :literals (plist-get func-result :literals)
+                              :values (list func-output))
+                        intermediates)))))))))
 
         (setq this-iteration intermediates)
         (setq intermediates nil)
         (setq intermediates-count 0)))
-    ;; Return a plist of just :funcs and :literals, which is all we
-    ;; need to render the result.
-    (-map (lambda (res)
-            (list :funcs (plist-get res :funcs)
-                  :literals (plist-get res :literals)))
-          possibilities)))
+    possibilities))
 
 (defun suggest--cmp-relevance (pos1 pos2)
   "Compare two possibilities such that the more relevant result
@@ -869,33 +920,37 @@ than their values."
      (t
       (< (length (plist-get pos1 :funcs)) (length (plist-get pos2 :funcs)))))))
 
+(defvar suggest--spinner nil)
+
 ;;;###autoload
 (defun suggest-update ()
   "Update the suggestions according to the latest inputs/output given."
   (interactive)
-  ;; TODO: error on multiple inputs on one line.
-  (let* ((raw-inputs (suggest--raw-inputs))
-         (inputs (--map (suggest--read-eval it) raw-inputs))
-         (raw-output (suggest--raw-output))
-         (desired-output (suggest--read-eval raw-output))
-         (possibilities
-          (suggest--possibilities raw-inputs inputs desired-output)))
-    ;; Sort, and take the top 5 most relevant results.
-    (setq possibilities
-          (-take 5
-                 (-sort #'suggest--cmp-relevance possibilities)))
+  (setq suggest--spinner (spinner-create 'progress-bar t))
+  (spinner-start suggest--spinner)
 
-    (if possibilities
-        (suggest--write-suggestions
-         possibilities
-         ;; We show the evalled output, not the raw input, so if
-         ;; users use variables, we show the value of that variable.
-         desired-output)
-      (suggest--write-suggestions-string ";; No matches found.")))
+  (unwind-protect
+      ;; TODO: error on multiple inputs on one line.
+      (let* ((raw-inputs (suggest--raw-inputs))
+             (inputs (--map (suggest--eval (suggest--read it)) raw-inputs))
+             (raw-output (suggest--raw-output))
+             (desired-output (suggest--eval (suggest--read raw-output)))
+             (possibilities
+              (suggest--possibilities raw-inputs inputs desired-output)))
+        ;; Sort, and take the top 5 most relevant results.
+        (setq possibilities
+              (-take 20
+                     (-sort #'suggest--cmp-relevance possibilities)))
+
+        (if possibilities
+            (suggest--write-suggestions possibilities raw-output)
+          (suggest--write-suggestions-string ";; No matches found.")))
+    (setq suggest--spinner nil))
   (suggest--update-needed nil)
   (set-buffer-modified-p nil))
 
-(define-derived-mode suggest-mode emacs-lisp-mode "Suggest"
+(define-derived-mode suggest-mode emacs-lisp-mode
+  '("Suggest" (:eval (spinner-print suggest--spinner)))
   "A major mode for finding functions that provide the output requested.")
 
 (define-key suggest-mode-map (kbd "C-c C-c") #'suggest-update)
