@@ -5,7 +5,7 @@
 ;; Author: Antoine Kalmbach <ane@iki.fi>
 ;; Created: 2016-03-05
 ;; Version: 0.1.0
-;; Package-Version: 20170818.313
+;; Package-Version: 20170818.1013
 ;; Keywords: go
 ;; Package-Requires: ((s "1.10.0") (go-mode "1.3.1") (cl-lib "0.5"))
 
