@@ -1,9 +1,12 @@
 ;;; shut-up-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-(add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
+
+(add-to-list 'load-path (directory-file-name
+                         (or (file-name-directory #$) (car load-path))))
+
 
-;;;### (autoloads nil "shut-up" "shut-up.el" (21967 8659 890984 60000))
+;;;### (autoloads nil "shut-up" "shut-up.el" (0 0 0 0))
 ;;; Generated autoloads from shut-up.el
 
 (autoload 'shut-up "shut-up" "\
@@ -25,7 +28,7 @@ have any affect.
 
 \(fn &rest BODY)" nil t)
 
-(put 'shut-up 'lisp-indent-function '0)
+(function-put 'shut-up 'lisp-indent-function '0)
 
 (autoload 'shut-up-silence-emacs "shut-up" "\
 Silence Emacs.
@@ -37,11 +40,14 @@ call this function in `noninteractive' sessions.
 
 \(fn)" nil nil)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "shut-up" '("shut-up-" "inhibit-message")))
+
 ;;;***
 
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
+;; coding: utf-8
 ;; End:
 ;;; shut-up-autoloads.el ends here
