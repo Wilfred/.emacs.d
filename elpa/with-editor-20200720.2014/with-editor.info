@@ -1,7 +1,7 @@
 This is with-editor.info, produced by makeinfo version 6.5 from
 with-editor.texi.
 
-     Copyright (C) 2015-2018 Jonas Bernoulli <jonas@bernoul.li>
+     Copyright (C) 2015-2020 Jonas Bernoulli <jonas@bernoul.li>
 
      You can redistribute this document and/or modify it under the terms
      of the GNU General Public License as published by the Free Software
@@ -39,9 +39,9 @@ library is made available as a separate package.  It also defines some
 additional functionality which makes it useful even for end-users, who
 don’t use Magit or another package which uses it internally.
 
-This manual is for With-Editor version 2.8.0 (v2.8.0-2-g87c96b3+1).
+This manual is for With-Editor version 2.9.4.
 
-     Copyright (C) 2015-2018 Jonas Bernoulli <jonas@bernoul.li>
+     Copyright (C) 2015-2020 Jonas Bernoulli <jonas@bernoul.li>
 
      You can redistribute this document and/or modify it under the terms
      of the GNU General Public License as published by the Free Software
@@ -58,6 +58,9 @@ This manual is for With-Editor version 2.8.0 (v2.8.0-2-g87c96b3+1).
 * Using the With-Editor package::
 * Using With-Editor as a library::
 * Debugging::
+* Command Index::
+* Function Index::
+* Variable Index::
 
 — The Detailed Node Listing —
 
@@ -176,7 +179,7 @@ it receives a signal.
           trap \"exit 1\" USR2; \
           while true; do sleep 1; done'"
 
-     Note that the unit seperator character () right after the file name
+     Note that the unit separator character () right after the file name
      ($0) is required.
 
      Also note that using this alternative implementation leads to a
@@ -307,7 +310,7 @@ package::.
      NO-STANDARD-FILTER.  Then it calls FILTER.
 
 
-File: with-editor.info,  Node: Debugging,  Prev: Using With-Editor as a library,  Up: Top
+File: with-editor.info,  Node: Debugging,  Next: Command Index,  Prev: Using With-Editor as a library,  Up: Top
 
 3 Debugging
 ***********
@@ -325,15 +328,82 @@ commit in Magit, then please open a new issue at
 about your Emacs installation.  Most importantly how did you install
 Emacs and what is the output of ‘M-x with-editor-debug RET’.
 
+
+File: with-editor.info,  Node: Command Index,  Next: Function Index,  Prev: Debugging,  Up: Top
+
+Appendix A Command Index
+************************
+
+ [index ]
+* Menu:
+
+* with-editor-async-shell-command:       Using With-Editor commands.
+                                                               (line 17)
+* with-editor-export-editor:             Using With-Editor commands.
+                                                               (line 60)
+* with-editor-export-git-editor:         Using With-Editor commands.
+                                                               (line 66)
+* with-editor-export-hg-editor:          Using With-Editor commands.
+                                                               (line 71)
+* with-editor-shell-command:             Using With-Editor commands.
+                                                               (line 22)
+
+
+File: with-editor.info,  Node: Function Index,  Next: Variable Index,  Prev: Command Index,  Up: Top
+
+Appendix B Function Index
+*************************
+
+ [index ]
+* Menu:
+
+* with-editor:                           Using With-Editor as a library.
+                                                               (line 16)
+* with-editor <1>:                       Using With-Editor as a library.
+                                                               (line 32)
+* with-editor-async-shell-command:       Using With-Editor commands.
+                                                               (line 17)
+* with-editor-export-editor:             Using With-Editor commands.
+                                                               (line 60)
+* with-editor-export-git-editor:         Using With-Editor commands.
+                                                               (line 66)
+* with-editor-export-hg-editor:          Using With-Editor commands.
+                                                               (line 71)
+* with-editor-locate-emacsclient:        Configuring With-Editor.
+                                                               (line 42)
+* with-editor-set-process-filter:        Using With-Editor as a library.
+                                                               (line 37)
+* with-editor-shell-command:             Using With-Editor commands.
+                                                               (line 22)
+
+
+File: with-editor.info,  Node: Variable Index,  Prev: Function Index,  Up: Top
+
+Appendix C Variable Index
+*************************
+
+ [index ]
+* Menu:
+
+* shell-command-with-editor-mode:        Using With-Editor commands.
+                                                               (line 37)
+* with-editor-emacsclient-executable:    Configuring With-Editor.
+                                                               (line 13)
+* with-editor-sleeping-editor:           Configuring With-Editor.
+                                                               (line 58)
+
 
 
 Tag Table:
 Node: Top773
-Node: Using the With-Editor package2535
-Node: Configuring With-Editor3121
-Node: Using With-Editor commands7670
-Node: Using With-Editor as a library10865
-Node: Debugging12828
+Node: Using the With-Editor package2569
+Node: Configuring With-Editor3155
+Node: Using With-Editor commands7704
+Node: Using With-Editor as a library10899
+Node: Debugging12862
+Node: Command Index13741
+Node: Function Index14623
+Node: Variable Index16089
 
 End Tag Table
 
