@@ -1,9 +1,12 @@
 ;;; unfill-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
+
+(add-to-list 'load-path (directory-file-name
+                         (or (file-name-directory #$) (car load-path))))
+
 
-;;;### (autoloads nil "unfill" "unfill.el" (22651 54863 164472 918000))
+;;;### (autoloads nil "unfill" "unfill.el" (0 0 0 0))
 ;;; Generated autoloads from unfill.el
 
 (autoload 'unfill-paragraph "unfill" "\
@@ -31,5 +34,6 @@ Toggle filling/unfilling of the current region, or current paragraph if no regio
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
+;; coding: utf-8
 ;; End:
 ;;; unfill-autoloads.el ends here
