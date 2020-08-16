@@ -3,8 +3,7 @@
 ;; Copyright (C) 2012-2016 Free Software Foundation, Inc.
 
 ;; Author: Magnar Sveen <magnars@gmail.com>
-;; Version: 2.15.0
-;; Package-Version: 20190413.1058
+;; Version: 2.17.0
 ;; Keywords: lists
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -33,6 +32,12 @@
 ;;
 
 ;;; Code:
+
+;; TODO: `gv' was introduced in Emacs 24.3, so remove this and all
+;; calls to `defsetf' when support for earlier versions is dropped.
+(eval-when-compile
+  (unless (fboundp 'gv-define-setter)
+    (require 'cl)))
 
 (defgroup dash ()
   "Customize group for dash.el"
@@ -398,7 +403,7 @@ See also: `-remove', `-map-last'"
 (defalias '--reject-last '--remove-last)
 
 (defun -remove-item (item list)
-  "Remove all occurences of ITEM from LIST.
+  "Remove all occurrences of ITEM from LIST.
 
 Comparison is done with `equal'."
   (declare (pure t) (side-effect-free t))
@@ -498,7 +503,7 @@ See also: `-replace-at'"
   (--map-when (equal it old) new list))
 
 (defun -replace-first (old new list)
-  "Replace the first occurence of OLD with NEW in LIST.
+  "Replace the first occurrence of OLD with NEW in LIST.
 
 Elements are compared using `equal'.
 
@@ -507,7 +512,7 @@ See also: `-map-first'"
   (--map-first (equal old it) new list))
 
 (defun -replace-last (old new list)
-  "Replace the last occurence of OLD with NEW in LIST.
+  "Replace the last occurrence of OLD with NEW in LIST.
 
 Elements are compared using `equal'.
 
@@ -683,7 +688,10 @@ See also: `-third-item'.
 
 \(fn LIST)")
 
-(defalias '-third-item 'caddr
+(defalias '-third-item
+  (if (fboundp 'caddr)
+      #'caddr
+    (lambda (list) (car (cddr list))))
   "Return the third item of LIST, or nil if LIST is too short.
 
 See also: `-fourth-item'.
@@ -704,28 +712,18 @@ See also: `-last-item'."
   (declare (pure t) (side-effect-free t))
   (car (cdr (cdr (cdr (cdr list))))))
 
-;; TODO: gv was introduced in 24.3, so we can remove the if statement
-;; when support for earlier versions is dropped
-(eval-when-compile
-  (require 'cl)
-  (if (fboundp 'gv-define-simple-setter)
-      (gv-define-simple-setter -first-item setcar)
-    (require 'cl)
-    (with-no-warnings
-      (defsetf -first-item (x) (val) `(setcar ,x ,val)))))
-
 (defun -last-item (list)
   "Return the last item of LIST, or nil on an empty list."
   (declare (pure t) (side-effect-free t))
   (car (last list)))
 
-;; TODO: gv was introduced in 24.3, so we can remove the if statement
-;; when support for earlier versions is dropped
-(eval-when-compile
+;; Use `with-no-warnings' to suppress unbound `-last-item' or
+;; undefined `gv--defsetter' warnings arising from both
+;; `gv-define-setter' and `defsetf' in certain Emacs versions.
+(with-no-warnings
   (if (fboundp 'gv-define-setter)
       (gv-define-setter -last-item (val x) `(setcar (last ,x) ,val))
-    (with-no-warnings
-      (defsetf -last-item (x) (val) `(setcar (last ,x) ,val)))))
+    (defsetf -last-item (x) (val) `(setcar (last ,x) ,val))))
 
 (defun -butlast (list)
   "Return a list of all items in list except for the last."
@@ -1265,6 +1263,24 @@ The anaphoric form `--zip-with' binds the elements from LIST1 as symbol `it',
 and the elements from LIST2 as symbol `other'."
   (--zip-with (funcall fn it other) list1 list2))
 
+(defun -zip-lists (&rest lists)
+  "Zip LISTS together.  Group the head of each list, followed by the
+second elements of each list, and so on. The lengths of the returned
+groupings are equal to the length of the shortest input list.
+
+The return value is always list of lists, which is a difference
+from `-zip-pair' which returns a cons-cell in case two input
+lists are provided.
+
+See also: `-zip'"
+  (declare (pure t) (side-effect-free t))
+  (when lists
+    (let (results)
+      (while (-none? 'null lists)
+        (setq results (cons (mapcar 'car lists) results))
+        (setq lists (mapcar 'cdr lists)))
+      (nreverse results))))
+
 (defun -zip (&rest lists)
   "Zip LISTS together.  Group the head of each list, followed by the
 second elements of each list, and so on. The lengths of the returned
@@ -1273,8 +1289,12 @@ groupings are equal to the length of the shortest input list.
 If two lists are provided as arguments, return the groupings as a list
 of cons cells. Otherwise, return the groupings as a list of lists.
 
-Please note! This distinction is being removed in an upcoming 3.0
-release of Dash. If you rely on this behavior, use -zip-pair instead."
+Use `-zip-lists' if you need the return value to always be a list
+of lists.
+
+Alias: `-zip-pair'
+
+See also: `-zip-lists'"
   (declare (pure t) (side-effect-free t))
   (when lists
     (let (results)
@@ -1283,7 +1303,7 @@ release of Dash. If you rely on this behavior, use -zip-pair instead."
         (setq lists (mapcar 'cdr lists)))
       (setq results (nreverse results))
       (if (= (length lists) 2)
-          ;; to support backward compatability, return
+          ;; to support backward compatibility, return
           ;; a cons cell if two lists were provided
           (--map (cons (car it) (cadr it)) results)
         results))))
@@ -1306,6 +1326,9 @@ a variable number of arguments, such that
   (-unzip (-zip L1 L2 L3 ...))
 
 is identity (given that the lists are the same length).
+
+Note in particular that calling this on a list of two lists will
+return a list of cons-cells such that the above identity works.
 
 See also: `-zip'"
   (apply '-zip lists))
@@ -1538,7 +1561,8 @@ VARIABLE to the result of the first form, and so forth."
 (defmacro -some-> (x &optional form &rest more)
   "When expr is non-nil, thread it through the first form (via `->'),
 and when that result is non-nil, through the next form, etc."
-  (declare (debug ->))
+  (declare (debug ->)
+           (indent 1))
   (if (null form) x
     (let ((result (make-symbol "result")))
       `(-some-> (-when-let (,result ,x)
@@ -1548,7 +1572,8 @@ and when that result is non-nil, through the next form, etc."
 (defmacro -some->> (x &optional form &rest more)
   "When expr is non-nil, thread it through the first form (via `->>'),
 and when that result is non-nil, through the next form, etc."
-  (declare (debug ->))
+  (declare (debug ->)
+           (indent 1))
   (if (null form) x
     (let ((result (make-symbol "result")))
       `(-some->> (-when-let (,result ,x)
@@ -1556,9 +1581,10 @@ and when that result is non-nil, through the next form, etc."
                  ,@more))))
 
 (defmacro -some--> (x &optional form &rest more)
-  "When expr in non-nil, thread it through the first form (via `-->'),
+  "When expr is non-nil, thread it through the first form (via `-->'),
 and when that result is non-nil, through the next form, etc."
-  (declare (debug ->))
+  (declare (debug ->)
+           (indent 1))
   (if (null form) x
     (let ((result (make-symbol "result")))
       `(-some--> (-when-let (,result ,x)
@@ -1655,7 +1681,7 @@ All returned symbols are guaranteed to be unique."
 
 (defun dash--get-expand-function (type)
   "Get expand function name for TYPE."
-  (intern (format "dash-expand:%s" type)))
+  (intern-soft (format "dash-expand:%s" type)))
 
 (defun dash--match-cons-1 (match-form source &optional props)
   "Match MATCH-FORM against SOURCE.
@@ -2275,9 +2301,22 @@ The test for equality is done with `equal',
 or with `-compare-fn' if that's non-nil.
 
 Alias: `-uniq'"
-  (let (result)
-    (--each list (unless (-contains? result it) (!cons it result)))
-    (nreverse result)))
+  ;; Implementation note: The speedup gained from hash table lookup
+  ;; starts to outweigh its overhead for lists of length greater than
+  ;; 32.  See discussion in PR #305.
+  (let* ((len (length list))
+         (lut (and (> len 32)
+                   ;; Check that `-compare-fn' is a valid hash-table
+                   ;; lookup function or `nil'.
+                   (memq -compare-fn '(nil equal eq eql))
+                   (make-hash-table :test (or -compare-fn #'equal)
+                                    :size len))))
+    (if lut
+        (--filter (unless (gethash it lut)
+                    (puthash it t lut))
+                  list)
+      (--each list (unless (-contains? lut it) (!cons it lut)))
+      (nreverse lut))))
 
 (defalias '-uniq '-distinct)
 
@@ -2330,7 +2369,11 @@ or with `-compare-fn' if that's non-nil."
 
 (defun -inits (list)
   "Return all prefixes of LIST."
-  (nreverse (-map 'reverse (-tails (nreverse list)))))
+  (let ((res (list list)))
+    (setq list (reverse list))
+    (while list
+      (push (reverse (!cdr list)) res))
+    res))
 
 (defun -tails (list)
   "Return all suffixes of LIST"
@@ -2900,6 +2943,7 @@ structure such as plist or alist."
                              "--zip-with"
                              "-zip"
                              "-zip-fill"
+                             "-zip-lists"
                              "-zip-pair"
                              "-cycle"
                              "-pad"
