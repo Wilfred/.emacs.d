@@ -1,12 +1,12 @@
 ;;; super-save.el --- Auto-save buffers, based on your activity. -*- lexical-binding: t -*-
 
-;; Copyright © 2015-2016 Bozhidar Batsov <bozhidar@batsov.com>
+;; Copyright © 2015-2018 Bozhidar Batsov <bozhidar@batsov.com>
 
 ;; Author: Bozhidar Batsov <bozhidar@batsov.com>
 ;; URL: https://github.com/bbatsov/super-save
-;; Package-Version: 20160426.729
+;; Package-Version: 20190806.915
 ;; Keywords: convenience
-;; Version: 0.2.0
+;; Version: 0.3.0
 ;; Package-Requires: ((emacs "24.4"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -40,27 +40,63 @@
   "super-save mode's keymap.")
 
 (defcustom super-save-triggers
-  '("switch-to-buffer" "other-window" "windmove-up" "windmove-down" "windmove-left" "windmove-right")
+  '(switch-to-buffer other-window windmove-up windmove-down windmove-left windmove-right next-buffer previous-buffer)
   "A list of commands which would trigger `super-save-command'."
   :group 'super-save
-  :type '(repeat string))
+  :type '(repeat symbol)
+  :package-version '(super-save . "0.1.0"))
+
+(defcustom super-save-hook-triggers
+  '(mouse-leave-buffer-hook focus-out-hook)
+  "A list of hooks which would trigger `super-save-command'."
+  :group 'super-save
+  :type '(repeat symbol)
+  :package-version '(super-save . "0.3.0"))
 
 (defcustom super-save-auto-save-when-idle nil
   "Save current buffer automatically when Emacs is idle."
   :group 'super-save
-  :type 'boolean)
+  :type 'boolean
+  :package-version '(super-save . "0.2.0"))
 
 (defcustom super-save-idle-duration 5
   "The number of seconds Emacs has to be idle, before auto-saving the current buffer.
 See `super-save-auto-save-when-idle'."
   :group 'super-save
-  :type 'integer)
+  :type 'integer
+  :package-version '(super-save . "0.2.0"))
+
+(defcustom super-save-remote-files t
+  "Save remote files when t, ignore them otherwise."
+  :group 'super-save
+  :type 'boolean
+  :package-version '(super-save . "0.3.0"))
+
+(defcustom super-save-exclude nil
+    "A list of regexps for buffer-file-name excluded from super-save.
+When a buffer-file-name matches any of the regexps it is ignored."
+  :group 'super-save
+  :type '(repeat (choice regexp))
+  :package-version '(super-save . "0.4.0"))
+
+(defun super-save-include-p (filename)
+  "Return non-nil if FILENAME doesn't match any of the `super-save-exclude'."
+  (let ((checks super-save-exclude)
+        (keepit t))
+    (while (and checks keepit)
+      (setq keepit (not (ignore-errors
+                          (if (stringp (car checks))
+                              (string-match (car checks) filename))))
+            checks (cdr checks)))
+    keepit))
 
 (defun super-save-command ()
   "Save the current buffer if needed."
   (when (and buffer-file-name
              (buffer-modified-p (current-buffer))
-             (file-writable-p buffer-file-name))
+             (file-writable-p buffer-file-name)
+             (if (file-remote-p buffer-file-name) super-save-remote-files t)
+             (super-save-include-p buffer-file-name))
     (save-buffer)))
 
 (defvar super-save-idle-timer)
@@ -72,13 +108,13 @@ See `super-save-auto-save-when-idle'."
 (defun super-save-advise-trigger-commands ()
   "Apply super-save advice to the commands listed in `super-save-triggers'."
   (mapc (lambda (command)
-          (advice-add (intern command) :before #'super-save-command-advice))
+          (advice-add command :before #'super-save-command-advice))
         super-save-triggers))
 
 (defun super-save-remove-advice-from-trigger-commands ()
   "Remove super-save advice from to the commands listed in `super-save-triggers'."
   (mapc (lambda (command)
-          (advice-remove (intern command) #'super-save-command-advice))
+          (advice-remove command #'super-save-command-advice))
         super-save-triggers))
 
 (defun super-save-initialize-idle-timer ()
@@ -96,15 +132,15 @@ See `super-save-auto-save-when-idle'."
   "Setup super-save's advices and hooks."
   (super-save-advise-trigger-commands)
   (super-save-initialize-idle-timer)
-  (add-hook 'mouse-leave-buffer-hook #'super-save-command)
-  (add-hook 'focus-out-hook #'super-save-command))
+  (dolist (hook super-save-hook-triggers)
+    (add-hook hook #'super-save-command)))
 
 (defun super-save-stop ()
   "Cleanup super-save's advices and hooks."
   (super-save-remove-advice-from-trigger-commands)
   (super-save-stop-idle-timer)
-  (remove-hook 'mouse-leave-buffer-hook #'super-save-command)
-  (remove-hook 'focus-out-hook #'super-save-command))
+  (dolist (hook super-save-hook-triggers)
+    (remove-hook hook #'super-save-command)))
 
 ;;;###autoload
 (define-minor-mode super-save-mode
