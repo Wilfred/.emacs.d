@@ -1,13 +1,15 @@
-;;; flycheck-package.el --- A Flycheck checker for elisp package authors
+;;; flycheck-package.el --- A Flycheck checker for elisp package authors  -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2014-2016  Steve Purcell, Fanael Linithien
 
 ;; Author: Steve Purcell <steve@sanityinc.com>
 ;;         Fanael Linithien <fanael4@gmail.com>
 ;; Keywords: lisp
-;; Package-Version: 20161111.1451
+;; Package-Version: 20200304.2151
+;; Package-Commit: 64cf27d69051e02a32e3c517cbfea23f9d2d7557
 ;; Version: 0
-;; Package-Requires: ((flycheck "0.22") (package-lint "0.2"))
+;; URL: https://github.com/purcell/flycheck-package
+;; Package-Requires: ((emacs "24.1") (flycheck "0.22") (package-lint "0.2"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -44,14 +46,15 @@
   "Flycheck start function for CHECKER, invoking CALLBACK."
   (funcall callback
            'finished
-           (mapcar (lambda (x)
-                     (apply #'flycheck-error-new-at `(,@x :checker ,checker)))
-                   (condition-case err
-                       (when (package-lint-looks-like-a-package-p)
-                         (package-lint-buffer (current-buffer)))
-                     (error
-                      (funcall callback 'errored (error-message-string err))
-                      (signal (car err) (cdr err)))))))
+           (flycheck-increment-error-columns
+            (mapcar (lambda (x)
+                      (apply #'flycheck-error-new-at `(,@x :checker ,checker)))
+                    (condition-case err
+                        (when (package-lint-looks-like-a-package-p)
+                          (package-lint-buffer (current-buffer)))
+                      (error
+                       (funcall callback 'errored (error-message-string err))
+                       (signal (car err) (cdr err))))))))
 
 
 ;;; Checker definition
