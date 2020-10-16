@@ -15,7 +15,12 @@ places
 games
 recentf
 tramp
+
+# Used by amx/smex to record recently used commands
+amx-items
 smex-items
+
+
 bookmarks
 session.*
 url/

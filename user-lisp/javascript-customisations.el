@@ -30,8 +30,11 @@
 (dolist (hook '(js-mode-hook js2-mode-hook js-jsx-mode-hook js2-jsx-mode-hook rjsx-mode-hook))
   (add-hook hook #'wh/js-use-2-spaces)
   (add-hook hook #'tern-mode)
-  (add-hook hook #'flycheck-mode)
-  (add-hook hook #'prettier-js-mode))
+  (add-hook hook #'flycheck-mode))
+
+;; Enable prettier in every relevant mode.
+(use-package prettier-js
+  :hook (js-mode js2-mode js-jsx-mode rjsx-mode typescript-mode))
 
 (add-hook 'js2-mode-hook (lambda () (setq mode-name "JS2")))
 
