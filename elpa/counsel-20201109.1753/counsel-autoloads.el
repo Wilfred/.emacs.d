@@ -9,26 +9,6 @@
 ;;;### (autoloads nil "counsel" "counsel.el" (0 0 0 0))
 ;;; Generated autoloads from counsel.el
 
-(autoload 'counsel-el "counsel" "\
-Elisp completion at point.
-
-\(fn)" t nil)
-
-(autoload 'counsel-cl "counsel" "\
-Common Lisp completion at point.
-
-\(fn)" t nil)
-
-(autoload 'counsel-jedi "counsel" "\
-Python completion at point.
-
-\(fn)" t nil)
-
-(autoload 'counsel-clj "counsel" "\
-Clojure completion at point.
-
-\(fn)" t nil)
-
 (autoload 'counsel-company "counsel" "\
 Complete using `company-candidates'.
 
@@ -52,6 +32,11 @@ Forward to `describe-function'.
 
 Interactive functions (i.e., commands) are highlighted according
 to `ivy-highlight-face'.
+
+\(fn)" t nil)
+
+(autoload 'counsel-describe-symbol "counsel" "\
+Forward to `describe-symbol'.
 
 \(fn)" t nil)
 
@@ -141,11 +126,12 @@ INITIAL-INPUT can be given as the initial minibuffer input.
 
 (autoload 'counsel-git-grep "counsel" "\
 Grep for a string in the current Git repository.
+INITIAL-INPUT can be given as the initial minibuffer input.
+INITIAL-DIRECTORY, if non-nil, is used as the root directory for search.
 When CMD is a string, use it as a \"git grep\" command.
 When CMD is non-nil, prompt for a specific \"git grep\" command.
-INITIAL-INPUT can be given as the initial minibuffer input.
 
-\(fn &optional CMD INITIAL-INPUT)" t nil)
+\(fn &optional INITIAL-INPUT INITIAL-DIRECTORY CMD)" t nil)
 
 (autoload 'counsel-git-stash "counsel" "\
 Search through all available git stashes.
@@ -223,6 +209,11 @@ INITIAL-INPUT can be given as the initial minibuffer input.
 
 \(fn &optional INITIAL-INPUT)" t nil)
 
+(autoload 'counsel-tracker "counsel" "\
+
+
+\(fn)" t nil)
+
 (autoload 'counsel-fzf "counsel" "\
 Open a file using the fzf shell command.
 INITIAL-INPUT can be given as the initial minibuffer input.
@@ -258,12 +249,18 @@ INITIAL-DIRECTORY, if non-nil, is used as the root directory for search.
 \(fn &optional INITIAL-INPUT INITIAL-DIRECTORY)" t nil)
 
 (autoload 'counsel-ag "counsel" "\
-Grep for a string in the current directory using ag.
+Grep for a string in a root directory using ag.
+
+By default, the root directory is the first directory containing a .git subdirectory.
+
 INITIAL-INPUT can be given as the initial minibuffer input.
 INITIAL-DIRECTORY, if non-nil, is used as the root directory for search.
-EXTRA-AG-ARGS string, if non-nil, is appended to `counsel-ag-base-command'.
+EXTRA-AG-ARGS, if non-nil, is appended to `counsel-ag-base-command'.
 AG-PROMPT, if non-nil, is passed as `ivy-read' prompt argument.
 CALLER is passed to `ivy-read'.
+
+With a `\\[universal-argument]' prefix argument, prompt for INITIAL-DIRECTORY.
+With a `\\[universal-argument] \\[universal-argument]' prefix argument, prompt additionally for EXTRA-AG-ARGS.
 
 \(fn &optional INITIAL-INPUT INITIAL-DIRECTORY EXTRA-AG-ARGS AG-PROMPT &key CALLER)" t nil)
 
@@ -291,7 +288,7 @@ EXTRA-RG-ARGS string, if non-nil, is appended to `counsel-rg-base-command'.
 RG-PROMPT, if non-nil, is passed as `ivy-read' prompt argument.
 
 Example input with inclusion and exclusion file patterns:
-    -g*.py -g!*test* -- ...
+    require i -- -g*.el
 
 \(fn &optional INITIAL-INPUT INITIAL-DIRECTORY EXTRA-RG-ARGS RG-PROMPT)" t nil)
 
@@ -370,11 +367,23 @@ Choose from headers of `org-mode' files in the agenda.
 
 \(fn)" t nil)
 
+(autoload 'counsel-org-link "counsel" "\
+Insert a link to an headline with completion.
+
+\(fn)" t nil)
+
 (autoload 'counsel-mark-ring "counsel" "\
 Browse `mark-ring' interactively.
 Obeys `widen-automatically', which see.
 
 \(fn)" t nil)
+
+(autoload 'counsel-evil-marks "counsel" "\
+Ivy replacement for `evil-show-marks'.
+By default, this function respects `counsel-evil-marks-exclude-registers'.
+When ARG is non-nil, display all active evil registers.
+
+\(fn &optional ARG)" t nil)
 
 (autoload 'counsel-package "counsel" "\
 Install or delete packages.
@@ -445,6 +454,11 @@ Browse shell history.
 
 \(fn)" t nil)
 
+(autoload 'counsel-slime-repl-history "counsel" "\
+Browse Slime REPL history.
+
+\(fn)" t nil)
+
 (autoload 'counsel-hydra-heads "counsel" "\
 Call a head of the current/last hydra.
 
@@ -498,6 +512,32 @@ selected color.
 
 \(fn)" t nil)
 
+(autoload 'counsel-fonts "counsel" "\
+Show a list of all supported font families for a particular frame.
+
+You can insert or kill the name of the selected font.
+
+\(fn)" t nil)
+
+(autoload 'counsel-kmacro "counsel" "\
+Interactively choose and run a keyboard macro.
+
+With prefix argument, run macro that many times.
+
+Macros are run using the current value of `kmacro-counter-value'
+and their respective counter format. Displayed next to each macro is
+the counter's format and initial value.
+
+One can use actions to copy the counter format or initial counter
+value of a macro, using them for a new macro.
+
+\(fn)" t nil)
+
+(autoload 'counsel-geiser-doc-look-up-manual "counsel" "\
+Search Scheme documentation.
+
+\(fn)" t nil)
+
 (autoload 'counsel-rhythmbox "counsel" "\
 Choose a song from the Rhythmbox library to play or enqueue.
 
@@ -531,6 +571,10 @@ in the current window.
 (autoload 'counsel-compile "counsel" "\
 Call `compile' completing with smart suggestions, optionally for DIR.
 
+Additional actions:
+
+\\{counsel-compile-map}
+
 \(fn &optional DIR)" t nil)
 
 (autoload 'counsel-compile-env "counsel" "\
@@ -555,6 +599,16 @@ Additional actions:\\<ivy-minibuffer-map>
 
 (autoload 'counsel-major "counsel" "\
 
+
+\(fn)" t nil)
+
+(autoload 'counsel-compilation-errors "counsel" "\
+Compilation errors.
+
+\(fn)" t nil)
+
+(autoload 'counsel-flycheck "counsel" "\
+Flycheck errors.
 
 \(fn)" t nil)
 

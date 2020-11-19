@@ -17,9 +17,11 @@
 ;;; Generated autoloads from ivy.el
 
 (autoload 'ivy-resume "ivy" "\
-Resume the last completion session.
+Resume the last completion session, or SESSION if non-nil.
+With a prefix arg, try to restore a recorded completion session,
+if one exists.
 
-\(fn)" t nil)
+\(fn &optional SESSION)" t nil)
 
 (autoload 'ivy-read "ivy" "\
 Read a string in the minibuffer, with completion.
@@ -60,7 +62,8 @@ When SORT is non-nil, `ivy-sort-functions-alist' determines how
 to sort candidates before displaying them.
 
 ACTION is a function to call after selecting a candidate.
-It takes the candidate, which is a string, as its only argument.
+It takes one argument, the selected candidate. If COLLECTION is
+an alist, the argument is a cons cell, otherwise it's a string.
 
 MULTI-ACTION, when non-nil, is called instead of ACTION when
 there are marked candidates. It takes the list of candidates as
@@ -79,11 +82,14 @@ list of candidates, and returns the list of matching candidates.
 DYNAMIC-COLLECTION is a boolean specifying whether the list of
 candidates is updated after each input by calling COLLECTION.
 
+EXTRA-PROPS is a plist that can be used to store
+collection-specific session-specific data.
+
 CALLER is a symbol to uniquely identify the caller to `ivy-read'.
 It is used, along with COLLECTION, to determine which
 customizations apply to the current completion session.
 
-\(fn PROMPT COLLECTION &key PREDICATE REQUIRE-MATCH INITIAL-INPUT HISTORY PRESELECT DEF KEYMAP UPDATE-FN SORT ACTION MULTI-ACTION UNWIND RE-BUILDER MATCHER DYNAMIC-COLLECTION CALLER)" nil nil)
+\(fn PROMPT COLLECTION &key PREDICATE REQUIRE-MATCH INITIAL-INPUT HISTORY PRESELECT DEF KEYMAP UPDATE-FN SORT ACTION MULTI-ACTION UNWIND RE-BUILDER MATCHER DYNAMIC-COLLECTION EXTRA-PROPS CALLER)" nil nil)
 
 (autoload 'ivy-completing-read "ivy" "\
 Read a string in the minibuffer, with completion.
@@ -94,7 +100,7 @@ This interface conforms to `completing-read' and can be used for
 PROMPT is a string that normally ends in a colon and a space.
 COLLECTION is either a list of strings, an alist, an obarray, or a hash table.
 PREDICATE limits completion to a subset of COLLECTION.
-REQUIRE-MATCH is a boolean value.  See `completing-read'.
+REQUIRE-MATCH is a boolean value or a symbol.  See `completing-read'.
 INITIAL-INPUT is a string inserted into the minibuffer initially.
 HISTORY is a list of previously selected inputs.
 DEF is the default value.
@@ -152,7 +158,8 @@ Switch to another buffer in another window.
 
 ;;;***
 
-;;;### (autoloads nil nil ("elpa.el" "ivy-pkg.el") (0 0 0 0))
+;;;### (autoloads nil nil ("elpa.el" "ivy-faces.el" "ivy-pkg.el")
+;;;;;;  (0 0 0 0))
 
 ;;;***
 
