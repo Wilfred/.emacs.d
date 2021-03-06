@@ -17,15 +17,31 @@
 
 ;; Author: John Allen <jallen@fb.com>, Wilfred Hughes <me@wilfred.me.uk>
 ;; Version: 1.2.0
-;; Package-Version: 20190718.1518
+;; Package-Version: 20201006.43
+;; Package-Commit: 847fd910e9d0ac76e2cfeb87512e6923a39d7d5f
 ;; Package-Requires: ((emacs "25.1") (s "1.11.0"))
 ;; URL: https://github.com/hhvm/hack-mode
 
 ;;; Commentary:
 ;;
 ;; Implements `hack-mode' for the Hack programming language.  This
-;; includes basic support for highlighting and indentation.
+;; includes support for highlighting and indentation.
 ;;
+;;; Formatting:
+;;
+;; `hack-mode' provides `hack-format-buffer' to run hackfmt on the
+;; whole file. If you'd like this automatically run on save, add it to
+;; your hooks.
+;;
+;; (add-hook 'hack-mode-hook #'hack-enable-format-on-save)
+;;
+;;; Replacing `php-mode':
+;;
+;; If you also have `php-mode' installed, Emacs will use `php-mode'
+;; for .php files. You can use `hack-mode' for .php by adding the
+;; following to your configuration:
+;;
+;; (add-to-list 'auto-mode-alist '("\\.php\\'" . hack-mode))
 
 ;;; Code:
 (require 's)
@@ -197,6 +213,8 @@ If we find one, move point to its end, and set match data."
   "Ensure < is not treated a < delimiter in other syntactic contexts."
   (let ((start (1- (point))))
     (when (or (looking-at "?hh")
+              ;; Ignore comparisons $x <= $y.
+              (looking-at "=")
               ;; Ignore left shift operators 1 << 2.
               (looking-at "< ")
               ;; If there's a following space, assume it's 1 < 2.
@@ -622,17 +640,17 @@ If PROPERTIZE-TAGS is non-nil, apply `hack-xhp-tag' to tag names."
   (regexp-opt
    '(;; This is the list of keywords from full_fidelity_lexer.ml, but
      ;; removing types (boolean etc) and constants (true, false, null).
-     "__halt_compiler" "abstract" "and" "as" "break"
+     "abstract" "as" "break"
      "case" "catch" "class" "clone" "const" "continue" "declare" "default"
      "die" "do" "echo" "else" "elseif" "empty" "enddeclare" "endfor"
      "endforeach" "endif" "endswitch" "endwhile" "eval" "exit" "extends"
      "final" "finally" "for" "foreach" "function" "global" "goto" "if"
-     "implements" "include" "include_once" "instanceof" "insteadof"
-     "interface" "isset" "list" "namespace" "new" "or" "parent"
+     "implements" "include" "include_once" "insteadof"
+     "interface" "is" "isset" "list" "namespace" "new" "parent"
      "print" "private" "protected" "public" "require" "require_once"
      "return" "self" "static" "switch" "throw" "trait"
      "try" "unset" "use" "var" "while"
-     "xor" "yield"
+     "yield"
      "inout" "using"
 
      ;; Contextual keywords.
@@ -1648,7 +1666,7 @@ Repeated parens on the same line are consider a single paren."
 	"==" "!=" "===" "!==" "<=>"
 	"&" "^" "|" "&&" "||" "?:" "??" "|>"
 	"=" "+=" "-=" ".=" "*=" "/=" "%=" "<<=" ">>=" "&=" "^=" "|="
-	"instanceof" "is" "as" "?as")
+	"is" "as" "?as")
     (0+ space)
     line-end)
    str))
@@ -1704,14 +1722,6 @@ Preserves point position in the line where possible."
          (paren-depth (hack--paren-depth-for-indent (line-beginning-position)))
 
          (ppss (syntax-ppss (line-beginning-position)))
-         (current-paren-pos (nth 1 ppss))
-         (text-after-paren
-          (when current-paren-pos
-            (save-excursion
-              (goto-char current-paren-pos)
-              (buffer-substring
-               (1+ current-paren-pos)
-               (line-end-position)))))
          (in-multiline-comment-p (nth 4 ppss))
          (current-line (hack--current-line)))
     ;; If the current line is just a closing paren, unindent by one level.
@@ -1733,18 +1743,6 @@ Preserves point position in the line where possible."
       (when (or (string-match-p (rx bol (0+ space) "*") current-line)
                 (string= "" current-line))
         (hack--indent-preserve-point (1+ (* hack-indent-offset paren-depth)))))
-     ;; Indent according to the last paren position, if there is text
-     ;; after the paren. For example:
-     ;; foo(bar,
-     ;;     baz, <- this line
-     ((and
-       text-after-paren
-       (not (string-match-p (rx bol (0+ space) eol) text-after-paren)))
-      (let (open-paren-column)
-        (save-excursion
-          (goto-char current-paren-pos)
-          (setq open-paren-column (current-column)))
-        (hack--indent-preserve-point (1+ open-paren-column))))
      ;; Indent according to the amount of nesting.
      (t
       (let ((current-line (s-trim current-line))
@@ -1807,6 +1805,9 @@ Preserves point position in the line where possible."
 (add-to-list 'auto-mode-alist '("\\.hack$" . hack-mode))
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.hck$" . hack-mode))
+
+;;;###autoload
+(add-to-list 'interpreter-mode-alist (cons (purecopy "hhvm") 'hack-mode))
 
 (defun hack-format ()
   "Format the current buffer or region with hackfmt."
@@ -1879,7 +1880,8 @@ Preserves point position in the line where possible."
 \\{hack-mode-map\\}"
   ;; Remove any old text properties, so we don't get stuck with
   ;; incorrect regions of hack-xhp-expression.
-  (set-text-properties (point-min) (point-max) nil)
+  (with-silent-modifications
+    (set-text-properties (point-min) (point-max) nil))
 
   (setq-local font-lock-defaults '(hack-font-lock-keywords))
   (set (make-local-variable 'syntax-propertize-function)
@@ -1887,6 +1889,9 @@ Preserves point position in the line where possible."
 
   (setq-local compile-command (concat hack-client-program-name " --from emacs"))
   (setq-local indent-line-function #'hack-indent-line)
+  ;; Always use spaces for indentation
+  (setq-local indent-tabs-mode nil)
+
   (setq-local comment-start "// ")
   (setq-local fill-paragraph-function #'hack-fill-paragraph)
   (setq imenu-generic-expression

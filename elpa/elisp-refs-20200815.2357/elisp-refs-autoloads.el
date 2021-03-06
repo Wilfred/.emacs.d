@@ -1,10 +1,12 @@
 ;;; elisp-refs-autoloads.el --- automatically extracted autoloads
 ;;
 ;;; Code:
-(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
+
+(add-to-list 'load-path (directory-file-name
+                         (or (file-name-directory #$) (car load-path))))
+
 
-;;;### (autoloads nil "elisp-refs" "elisp-refs.el" (23283 24488 256803
-;;;;;;  60000))
+;;;### (autoloads nil "elisp-refs" "elisp-refs.el" (0 0 0 0))
 ;;; Generated autoloads from elisp-refs.el
 
 (autoload 'elisp-refs-function "elisp-refs" "\
@@ -53,11 +55,14 @@ search.
 
 \(fn SYMBOL &optional PATH-PREFIX)" t nil)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "elisp-refs" '("elisp-refs-")))
+
 ;;;***
 
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
+;; coding: utf-8
 ;; End:
 ;;; elisp-refs-autoloads.el ends here

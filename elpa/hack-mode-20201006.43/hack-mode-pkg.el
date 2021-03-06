@@ -1,0 +1,2 @@
+;;; Generated package description from /home/wilfred/.emacs.d/elpa/hack-mode-20201006.43/hack-mode.el  -*- no-byte-compile: t -*-
+(define-package "hack-mode" "20201006.43" "Major mode for the Hack programming language" '((emacs "25.1") (s "1.11.0")) :commit "847fd910e9d0ac76e2cfeb87512e6923a39d7d5f" :authors '(("John Allen <jallen@fb.com>, Wilfred Hughes" . "me@wilfred.me.uk")) :maintainer '("John Allen <jallen@fb.com>, Wilfred Hughes" . "me@wilfred.me.uk") :url "https://github.com/hhvm/hack-mode")

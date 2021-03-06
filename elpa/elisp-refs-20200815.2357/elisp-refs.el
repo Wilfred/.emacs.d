@@ -1,12 +1,13 @@
 ;;; elisp-refs.el --- find callers of elisp functions or macros -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2016  
+;; Copyright (C) 2016-2020  Wilfred Hughes <me@wilfred.me.uk>
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
-;; Version: 1.3
-;; Package-Version: 20180331.1206
+;; Version: 1.4
+;; Package-Version: 20200815.2357
+;; Package-Commit: b3634a4567c655a1cda51b217629849cba0ac6a7
 ;; Keywords: lisp
-;; Package-Requires: ((dash "2.12.0") (loop "1.2") (s "1.11.0"))
+;; Package-Requires: ((dash "2.12.0") (s "1.11.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -34,15 +35,18 @@
 ;;; Code:
 
 (require 'dash)
-(require 'loop)
 (require 's)
 (require 'format)
 (eval-when-compile (require 'cl-lib))
 
+;;; Internal
+
+(defvar elisp-refs-verbose t)
+
 (defun elisp-refs--format-int (integer)
   "Format INTEGER as a string, with , separating thousands."
-  (let* ((number (abs integer))
-         (parts nil))
+  (let ((number (abs integer))
+        (parts nil))
     (while (> number 999)
       (push (format "%03d" (mod number 1000))
             parts)
@@ -55,7 +59,8 @@
 (defsubst elisp-refs--start-pos (end-pos)
   "Find the start position of form ending at END-POS
 in the current buffer."
-  (scan-sexps end-pos -1))
+  (let ((parse-sexp-ignore-comments t))
+    (scan-sexps end-pos -1)))
 
 (defun elisp-refs--sexp-positions (buffer start-pos end-pos)
   "Return a list of start and end positions of all the sexps
@@ -68,18 +73,18 @@ Not recursive, so we don't consider subelements of nested sexps."
   (let ((positions nil))
     (with-current-buffer buffer
       (condition-case _err
-          ;; Loop until we can't read any more.
-          (loop-while t
-            (let* ((sexp-end-pos (let ((parse-sexp-ignore-comments t))
-                                   (scan-sexps start-pos 1))))
-              ;; If we've reached a sexp beyond the range requested,
-              ;; or if there are no sexps left, we're done.
-              (when (or (null sexp-end-pos) (> sexp-end-pos end-pos))
-                (loop-break))
-              ;; Otherwise, this sexp is in the range requested.
-              (push (list (elisp-refs--start-pos sexp-end-pos) sexp-end-pos)
-                    positions)
-              (setq start-pos sexp-end-pos)))
+	  (catch 'done
+            (while t
+              (let* ((sexp-end-pos (let ((parse-sexp-ignore-comments t))
+                                     (scan-sexps start-pos 1))))
+		;; If we've reached a sexp beyond the range requested,
+		;; or if there are no sexps left, we're done.
+		(when (or (null sexp-end-pos) (> sexp-end-pos end-pos))
+                  (throw 'done nil))
+		;; Otherwise, this sexp is in the range requested.
+		(push (list (elisp-refs--start-pos sexp-end-pos) sexp-end-pos)
+                      positions)
+		(setq start-pos sexp-end-pos))))
         ;; Terminate when we see "Containing expression ends prematurely"
         (scan-error nil)))
     (nreverse positions)))
@@ -120,6 +125,15 @@ Internal implementation detail.")
            (error "Unexpected error whilst reading %s position %s: %s"
                   (abbreviate-file-name elisp-refs--path) (point) err)))))))
 
+(defun elisp-refs--proper-list-p (val)
+  "Is VAL a proper list?"
+  (if (fboundp 'format-proper-list-p)
+      ;; Emacs stable.
+      (with-no-warnings (format-proper-list-p val))
+    ;; Function was renamed in Emacs master:
+    ;; http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=2fde6275b69fd113e78243790bf112bbdd2fe2bf
+    (with-no-warnings (proper-list-p val))))
+
 (defun elisp-refs--walk (buffer form start-pos end-pos symbol match-p &optional path)
   "Walk FORM, a nested list, and return a list of sublists (with
 their positions) where MATCH-P returns t. FORM is traversed
@@ -149,7 +163,7 @@ START-POS and END-POS should be the position of FORM within BUFFER."
                ;; Kludge: `elisp-refs--sexp-positions' excludes the ` when
                ;; calculating positions. So, to find the inner
                ;; positions when walking from `(...) to (...), we
-               ;; don't need to increment the start posion.
+               ;; don't need to increment the start position.
                (cons nil (elisp-refs--sexp-positions buffer start-pos end-pos))
              ;; Calculate the positions after the opening paren.
              (elisp-refs--sexp-positions buffer (1+ start-pos) end-pos))))
@@ -157,7 +171,7 @@ START-POS and END-POS should be the position of FORM within BUFFER."
       (--each (-zip form subforms-positions)
         (-let [(subform subform-start subform-end) it]
           (when (or
-                 (and (consp subform) (format-proper-list-p subform))
+                 (and (consp subform) (elisp-refs--proper-list-p subform))
                  (and (symbolp subform) (eq subform symbol)))
             (-when-let (subform-matches
                         (elisp-refs--walk
@@ -197,6 +211,9 @@ START-POS and END-POS should be the position of FORM within BUFFER."
    ((or
      (equal (cl-second path) '(let . 1))
      (equal (cl-second path) '(let* . 1)))
+    nil)
+   ;; Ignore (declare-function NAME  (ARGS...))
+   ((equal (car path) '(declare-function . 3))
     nil)
    ;; (SYMBOL ...)
    ((eq (car form) symbol)
@@ -338,6 +355,9 @@ Where the file was a .elc, return the path to the .el file instead."
 Works around the fact that Emacs won't allow multiple buffers
 visiting the same file."
   (let ((fresh-buffer (generate-new-buffer (format " *refs-%s*" path)))
+        ;; Be defensive against users overriding encoding
+        ;; configurations (Helpful bugs #75 and #147).
+        (coding-system-for-read nil)
         (file-name-handler-alist
          '(("\\(?:\\.dz\\|\\.txz\\|\\.xz\\|\\.lzma\\|\\.lz\\|\\.g?z\\|\\.\\(?:tgz\\|svgz\\|sifz\\)\\|\\.tbz2?\\|\\.bz2\\|\\.Z\\)\\(?:~\\|\\.~[-[:alnum:]:#@^._]+\\(?:~[[:digit:]]+\\)?~\\)?\\'" .
             jka-compr-handler)
@@ -535,33 +555,32 @@ KIND should be 'function, 'macro, 'variable, 'special or 'symbol."
 render a friendly results buffer."
   (let ((buf (get-buffer-create (format "*refs: %s*" symbol))))
     (switch-to-buffer buf)
-    (setq buffer-read-only nil)
-    (erase-buffer)
-    ;; Insert the header.
-    (insert
-     (elisp-refs--format-count
-      description
-      (-sum (--map (length (car it)) results))
-      (length results)
-      searched-file-count
-      prefix)
-     "\n\n")
-    ;; Insert the results.
-    (--each results
-      (-let* (((forms . buf) it)
-              (path (with-current-buffer buf elisp-refs--path)))
+    (let ((inhibit-read-only t))
+      (erase-buffer)
+      (save-excursion
+        ;; Insert the header.
         (insert
-         (propertize "File: " 'face 'bold)
-         (elisp-refs--path-button path) "\n")
-        (--each forms
-          (-let [(_ start-pos end-pos) it]
-            (insert (elisp-refs--containing-lines buf start-pos end-pos)
-                    "\n")))
-        (insert "\n")))
-    ;; Prepare the buffer for the user.
-    (goto-char (point-min))
-    (elisp-refs-mode)
-    (setq buffer-read-only t)
+         (elisp-refs--format-count
+          description
+          (-sum (--map (length (car it)) results))
+          (length results)
+          searched-file-count
+          prefix)
+         "\n\n")
+        ;; Insert the results.
+        (--each results
+          (-let* (((forms . buf) it)
+                  (path (with-current-buffer buf elisp-refs--path)))
+            (insert
+             (propertize "File: " 'face 'bold)
+             (elisp-refs--path-button path) "\n")
+            (--each forms
+              (-let [(_ start-pos end-pos) it]
+                (insert (elisp-refs--containing-lines buf start-pos end-pos)
+                        "\n")))
+            (insert "\n")))
+        ;; Prepare the buffer for the user.
+        (elisp-refs-mode)))
     ;; Cleanup buffers created when highlighting results.
     (kill-buffer elisp-refs--highlighting-buffer)))
 
@@ -593,10 +612,12 @@ MATCH-FN should return a list where each element takes the form:
             (push (cons matching-forms buf) forms-and-bufs))
           ;; Give feedback to the user on our progress, because
           ;; searching takes several seconds.
-          (when (zerop (mod searched 10))
+          (when (and (zerop (mod searched 10))
+                     elisp-refs-verbose)
             (message "Searched %s/%s files" searched total-bufs))
           (cl-incf searched)))
-      (message "Searched %s/%s files" total-bufs total-bufs)
+      (when elisp-refs-verbose
+        (message "Searched %s/%s files" total-bufs total-bufs))
       forms-and-bufs)))
 
 (defun elisp-refs--search (symbol description match-fn &optional path-prefix)
@@ -638,6 +659,8 @@ t."
                       (-if-let (sym (thing-at-point 'symbol))
                           (when (funcall filter (read sym))
                             sym))))))
+
+;;; Commands
 
 ;;;###autoload
 (defun elisp-refs-function (symbol &optional path-prefix)
@@ -741,6 +764,22 @@ search."
                         (elisp-refs--read-and-find-symbol buf symbol))
                       path-prefix))
 
+;;; Mode
+
+(defvar elisp-refs-mode-map
+  (let ((map (make-sparse-keymap)))
+    ;; TODO: it would be nice for TAB to navigate to file buttons too,
+    ;; like *Help* does.
+    (set-keymap-parent map special-mode-map)
+    (define-key map (kbd "<tab>") #'elisp-refs-next-match)
+    (define-key map (kbd "<backtab>") #'elisp-refs-prev-match)
+    (define-key map (kbd "n") #'elisp-refs-next-match)
+    (define-key map (kbd "p") #'elisp-refs-prev-match)
+    (define-key map (kbd "q") #'kill-this-buffer)
+    (define-key map (kbd "RET") #'elisp-refs-visit-match)
+    map)
+  "Keymap for `elisp-refs-mode'.")
+
 (define-derived-mode elisp-refs-mode special-mode "Refs"
   "Major mode for refs results buffers.")
 
@@ -751,7 +790,6 @@ search."
          (pos (get-text-property (point) 'elisp-refs-start-pos))
          (unindent (get-text-property (point) 'elisp-refs-unindented))
          (column-offset (current-column))
-         (target-offset (+ column-offset unindent))
          (line-offset -1))
     (when (null path)
       (user-error "No match here"))
@@ -769,7 +807,8 @@ search."
     ;; on in the results buffer.
     (forward-line line-offset)
     (beginning-of-line)
-    (let ((i 0))
+    (let ((target-offset (+ column-offset unindent))
+          (i 0))
       (while (< i target-offset)
         (if (looking-at "\t")
             (cl-incf i tab-width)
@@ -785,13 +824,14 @@ If DIRECTION is -1, moves backwards instead."
     (condition-case _err
         (progn
           ;; Move forward/backwards until we're on the next/previous match.
-          (loop-while t
-            (setq current-match-pos
-                  (get-text-property (point) 'elisp-refs-start-pos))
-            (when (and current-match-pos
-                       (not (equal match-pos current-match-pos)))
-              (loop-break))
-            (forward-char direction))
+          (catch 'done
+            (while t
+              (setq current-match-pos
+                    (get-text-property (point) 'elisp-refs-start-pos))
+              (when (and current-match-pos
+                         (not (equal match-pos current-match-pos)))
+                (throw 'done nil))
+              (forward-char direction)))
           ;; Move to the beginning of that match.
           (while (equal (get-text-property (point) 'elisp-refs-start-pos)
                         (get-text-property (1- (point)) 'elisp-refs-start-pos))
@@ -818,15 +858,6 @@ If DIRECTION is -1, moves backwards instead."
   "Move to the next search result in the Refs buffer."
   (interactive)
   (elisp-refs--move-to-match 1))
-
-;; TODO: it would be nice for TAB to navigate to file buttons too,
-;; like *Help* does.
-(define-key elisp-refs-mode-map (kbd "<tab>") #'elisp-refs-next-match)
-(define-key elisp-refs-mode-map (kbd "<backtab>") #'elisp-refs-prev-match)
-(define-key elisp-refs-mode-map (kbd "n") #'elisp-refs-next-match)
-(define-key elisp-refs-mode-map (kbd "p") #'elisp-refs-prev-match)
-(define-key elisp-refs-mode-map (kbd "q") #'kill-this-buffer)
-(define-key elisp-refs-mode-map (kbd "RET") #'elisp-refs-visit-match)
 
 (provide 'elisp-refs)
 ;;; elisp-refs.el ends here

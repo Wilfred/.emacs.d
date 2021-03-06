@@ -10,12 +10,15 @@
 ;;; Generated autoloads from elisp-def.el
 
 (autoload 'elisp-def "elisp-def" "\
-Go to the definition of the symbol at point.
-
-\(fn)" t nil)
+Go to the definition of the symbol at point." t nil)
 
 (autoload 'elisp-def-mode "elisp-def" "\
 Minor mode for finding definitions with `elisp-def'.
+
+If called interactively, enable Elisp-Def mode if ARG is
+positive, and disable it if ARG is zero or negative.  If called
+from Lisp, also enable the mode if ARG is omitted or nil, and
+toggle it if ARG is `toggle'; disable the mode otherwise.
 
 \\{elisp-def-mode-map}
 

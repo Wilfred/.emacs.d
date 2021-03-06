@@ -12,10 +12,14 @@
 (autoload 'helpful-function "helpful" "\
 Show help for function named SYMBOL.
 
+See also `helpful-macro', `helpful-command' and `helpful-callable'.
+
 \(fn SYMBOL)" t nil)
 
 (autoload 'helpful-command "helpful" "\
 Show help for interactive function named SYMBOL.
+
+See also `helpful-function'.
 
 \(fn SYMBOL)" t nil)
 
@@ -32,7 +36,7 @@ Show help for macro named SYMBOL.
 (autoload 'helpful-callable "helpful" "\
 Show help for function, macro or special form named SYMBOL.
 
-See also `helpful-macro' and `helpful-function'.
+See also `helpful-macro', `helpful-function' and `helpful-command'.
 
 \(fn SYMBOL)" t nil)
 
@@ -49,9 +53,7 @@ Show help for variable named SYMBOL.
 \(fn SYMBOL)" t nil)
 
 (autoload 'helpful-at-point "helpful" "\
-Show help for the symbol at point.
-
-\(fn)" t nil)
+Show help for the symbol at point." t nil)
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "helpful" '("helpful-")))
 

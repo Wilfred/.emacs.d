@@ -17,6 +17,8 @@
 
 (add-to-list 'auto-mode-alist '("\\.hck$" . hack-mode))
 
+(add-to-list 'interpreter-mode-alist (cons (purecopy "hhvm") 'hack-mode))
+
 (autoload 'hack-mode "hack-mode" "\
 Major mode for editing Hack code.
 
