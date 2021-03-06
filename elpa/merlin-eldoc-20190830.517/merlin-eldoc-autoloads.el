@@ -10,19 +10,13 @@
 ;;; Generated autoloads from merlin-eldoc.el
 
 (autoload 'merlin-eldoc-setup "merlin-eldoc" "\
-Setup eldoc for OCaml/Reasonml based on merlin.
-
-\(fn)" t nil)
+Setup eldoc for OCaml/Reasonml based on merlin." t nil)
 
 (autoload 'merlin-eldoc-disable "merlin-eldoc" "\
-Cleanup hooks created by merlin-eldoc.
-
-\(fn)" t nil)
+Cleanup hooks created by merlin-eldoc." t nil)
 
 (autoload 'merlin-eldoc-customize "merlin-eldoc" "\
-Open the customize buffer for the group merlin-eldoc.
-
-\(fn)" t nil)
+Open the customize buffer for the group merlin-eldoc." t nil)
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "merlin-eldoc" '("merlin-eldoc-")))
 

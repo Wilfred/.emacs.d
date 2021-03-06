@@ -5,7 +5,8 @@
 ;; Author: Louis Roché <louis@louisroche.net>
 ;; Created: 27 April 2018
 ;; Version: 1.3
-;; Package-Version: 20180830.1016
+;; Package-Version: 20190830.517
+;; Package-Commit: db7fab1eddfe34781b7e79694f8923b285698032
 ;; Keywords: merlin ocaml languages eldoc
 ;; Homepage: https://github.com/khady/merlin-eldoc
 ;; Package-Requires: ((emacs "24.4") (merlin "3.0"))
@@ -31,7 +32,7 @@
 ;; code.
 
 ;; Installation:
-;; You need merlin-mode amd merlin installed on your
+;; You need merlin-mode and merlin installed on your
 ;; system (ocamlmerlin binary) for merlin-eldoc to work.
 
 ;;; Code:
@@ -528,7 +529,7 @@ Occurrences and position are meant to be used by
       (merlin-eldoc--store-occurrences bounds))))
 
 (defun merlin-eldoc--on-overlay-p (id)
-  "Return whether point is on a tide overlay of type ID."
+  "Return whether point is on a merlin-eldoc overlay of type ID."
   (cl-find-if (lambda (el)
                 (eq (overlay-get el 'merlin-eldoc) id))
               (overlays-at (point))))

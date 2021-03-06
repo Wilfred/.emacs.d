@@ -217,7 +217,9 @@ The association list can contain the following optional keys:
 
 - `logfile': path to the logfile
 
-- `name': a short name for this configuration, displayed in user notifications."
+- `name': a short name for this configuration, displayed in user notifications.
+
+- `do-not-cache-config': if set, refreshes the config on every command"
 )
 
 (defvar-local merlin-buffer-packages nil
@@ -543,22 +545,21 @@ return (LOC1 . LOC2)."
 
 (defun merlin/call (command &rest args)
   "Execute a command and parse output: return an sexp on success or throw an error"
-  (let ((result (merlin--call-merlin command args)))
+  (let* ((binary (merlin-command))
+         (result (merlin--call-merlin command args)))
     (condition-case err
         (setq result (car (read-from-string result)))
       (error
-        (merlin-client-logger
-          (merlin-command) command -1 "failure")
+        (merlin-client-logger binary command -1 "failure")
         (error "merlin: error %s trying to parse answer: %s"
                err result))
       (quit
-        (merlin-client-logger
-          (merlin-command) command -1 "interrupted")))
+        (merlin-client-logger binary command -1 "interrupted")))
     (let* ((notifications (cdr-safe (assoc 'notifications result)))
            (timing (cdr-safe (assoc 'timing result)))
            (class (cdr-safe (assoc 'class result)))
            (value (cdr-safe (assoc 'value result))))
-      (merlin-client-logger (merlin-command) command timing class)
+      (merlin-client-logger binary command timing class)
       (dolist (notification notifications)
         (message "(merlin) %s" notification))
       (cond ((string-equal class "return") value)
@@ -574,8 +575,11 @@ return (LOC1 . LOC2)."
   (unless merlin-mode (message "Buffer is not managed by merlin."))
   (when merlin-mode
     (merlin--call-merlin "stop-server")
-    (setq merlin-erroneous-buffer nil)
-    (setq merlin-buffer-configuration nil)))
+    ;; These are buffer-local variables, so reset them in all buffers.
+    (dolist (buf (buffer-list))
+      (with-current-buffer buf
+        (kill-local-variable 'merlin-buffer-configuration)
+        (kill-local-variable 'merlin-erroneous-buffer)))))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; FILE SWITCHING ;;
@@ -1483,6 +1487,7 @@ Empty string defaults to jumping to all these."
 
 (defun merlin--occurrence-text (line-num marker start end source-buf)
   (concat (propertize (format "%7d:" line-num)
+                      'font-lock-face 'shadow
                       'occur-prefix t
                       'occur-target marker
                       'follow-link t
@@ -1513,8 +1518,11 @@ Empty string defaults to jumping to all these."
         (occ-buff (merlin--get-occ-buff))
         (positions
          (mapcar (lambda (pos)
-                   (merlin--point-of-pos (assoc 'start pos))
-                   (cons (cons 'marker (point-marker)) pos))
+                   (cons
+                    (cons 'marker
+                          (copy-marker
+                           (merlin--point-of-pos (assoc 'start pos))))
+                    pos))
                  lst)))
     (with-current-buffer occ-buff
       (let ((inhibit-read-only t)
@@ -1672,7 +1680,8 @@ Empty string defaults to jumping to all these."
 
 (defun merlin-command ()
   "Return or update path of ocamlmerlin binary selected by configuration"
-  (unless merlin-buffer-configuration
+  (when (or (not merlin-buffer-configuration)
+            (merlin-lookup 'do-not-cache-config merlin-buffer-configuration))
     (setq merlin-buffer-configuration (merlin--configuration)))
 
   (let ((command (merlin-lookup 'command merlin-buffer-configuration)))
@@ -1685,7 +1694,7 @@ Empty string defaults to jumping to all these."
         ((equal merlin-command 'opam)
          (with-temp-buffer
            (if (eq (call-process-shell-command
-                    "opam config var bin" nil (current-buffer) nil) 0)
+                    "opam var bin" nil (current-buffer) nil) 0)
                (let ((bin-path
                       (replace-regexp-in-string "\n$" "" (buffer-string))))
                  ;; the opam bin dir needs to be on the path, so if merlin
@@ -1701,7 +1710,7 @@ Empty string defaults to jumping to all these."
              ;; best effort if opam is not available, lookup for the binary in
              ;; the existing env
              (progn
-               (message "merlin-command: opam config failed (%S)"
+               (message "merlin-command: opam var failed (%S)"
                         (buffer-string))
                "ocamlmerlin"))))))
 
@@ -1809,12 +1818,12 @@ Empty string defaults to jumping to all these."
 (defun merlin/sync ())
 (make-obsolete 'merlin/sync nil "Synchronization happens automatically since Merlin 3.0")
 
-(define-obsolete-function-alias 'merlin-project-check 'merlin-configuration-check)
+(define-obsolete-function-alias 'merlin-project-check 'merlin-configuration-check "v3.0.0")
 
-(define-obsolete-function-alias 'merlin--copy-enclosing 'merlin-copy-enclosing)
-(define-obsolete-function-alias 'merlin--destruct-enclosing 'merlin-destruct-enclosing)
+(define-obsolete-function-alias 'merlin--copy-enclosing 'merlin-copy-enclosing "v3.0.0")
+(define-obsolete-function-alias 'merlin--destruct-enclosing 'merlin-destruct-enclosing "v3.0.0")
 
-(define-obsolete-function-alias 'merlin-restart-process 'merlin-stop-server)
+(define-obsolete-function-alias 'merlin-restart-process 'merlin-stop-server "v3.0.0")
 
 ;;;###autoload
 (define-minor-mode merlin-mode

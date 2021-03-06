@@ -13,19 +13,24 @@
 Minor mode for interacting with a merlin process.
 Runs a merlin process in the background and perform queries on it.
 
+If called interactively, enable Merlin mode if ARG is positive,
+and disable it if ARG is zero or negative.  If called from Lisp,
+also enable the mode if ARG is omitted or nil, and toggle it if
+ARG is `toggle'; disable the mode otherwise.
+
 Short cuts:
 \\{merlin-mode-map}
 
 \(fn &optional ARG)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "merlin" '("merlin" "bounds-of-ocaml-atom-at-point")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "merlin" '("bounds-of-ocaml-atom-at-point" "merlin")))
 
 ;;;***
 
 ;;;### (autoloads nil "merlin-ac" "merlin-ac.el" (0 0 0 0))
 ;;; Generated autoloads from merlin-ac.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "merlin-ac" '("merlin-ac-" "ac-merlin-locate")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "merlin-ac" '("ac-merlin-locate" "merlin-ac-")))
 
 ;;;***
 
@@ -59,7 +64,10 @@ Short cuts:
 ;;;### (autoloads nil "merlin-imenu" "merlin-imenu.el" (0 0 0 0))
 ;;; Generated autoloads from merlin-imenu.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "merlin-imenu" '("module-list" "misc-list" "merlin-" "parse-outline-" "class-list" "label-list" "exception-list" "type-list" "value-list")))
+(autoload 'merlin-use-merlin-imenu "merlin-imenu" "\
+Merlin: use the custom imenu feature from Merlin" t nil)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "merlin-imenu" '("merlin-imenu-")))
 
 ;;;***
 
@@ -67,9 +75,7 @@ Short cuts:
 ;;; Generated autoloads from merlin-xref.el
 
 (autoload 'merlin-xref-backend "merlin-xref" "\
-Merlin backend for Xref.
-
-\(fn)" nil nil)
+Merlin backend for Xref." nil nil)
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "merlin-xref" '("merlin-xref--line")))
 
