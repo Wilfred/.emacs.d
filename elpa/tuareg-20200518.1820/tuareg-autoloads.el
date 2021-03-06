@@ -19,7 +19,7 @@ the ocamldebug commands `cd DIR' and `directory'.
 
 (defalias 'camldebug 'ocamldebug)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "ocamldebug" '("ocamldebug-" "def-ocamldebug")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "ocamldebug" '("def-ocamldebug" "ocamldebug-")))
 
 ;;;***
 
@@ -74,9 +74,7 @@ Short cuts for interactions with the REPL:
 \(fn)" t nil)
 
 (autoload 'tuareg-run-ocaml "tuareg" "\
-Run an OCaml REPL process.  I/O via buffer `*OCaml*'.
-
-\(fn)" t nil)
+Run an OCaml REPL process.  I/O via buffer `*OCaml*'." t nil)
 
 (defalias 'run-ocaml 'tuareg-run-ocaml)
 
@@ -124,9 +122,14 @@ Major mode to edit opam files.
 
 \(fn)" t nil)
 
+(autoload 'tuareg-opam-update-env "tuareg-opam" "\
+Update the environment to follow current OPAM switch configuration.
+
+\(fn SWITCH)" t nil)
+
 (add-to-list 'auto-mode-alist '("[./]opam_?\\'" . tuareg-opam-mode))
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "tuareg-opam" '("tuareg-opam-" "verbose-tuareg-opam-smie-rules")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "tuareg-opam" '("tuareg-" "verbose-tuareg-opam-smie-rules")))
 
 ;;;***
 
@@ -134,7 +137,7 @@ Major mode to edit opam files.
 ;;;;;;  0 0 0))
 ;;; Generated autoloads from tuareg-site-file.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "tuareg-site-file" '("run-ocaml" "camldebug")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "tuareg-site-file" '("camldebug" "run-ocaml")))
 
 ;;;***
 

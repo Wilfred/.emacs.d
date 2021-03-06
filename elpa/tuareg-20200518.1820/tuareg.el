@@ -330,21 +330,6 @@ Valid names are `browse-url', `browse-url-firefox', etc."
 ;;   (e.g., ocaml vs. metaocaml buffers)
 ;; (make-variable-buffer-local 'tuareg-interactive-program)
 
-(defcustom tuareg-opam-insinuate nil
-  "By default, Tuareg will use the environment that Emacs was
-launched in.  That environment may not contain an OCaml
-compiler (say, because Emacs was launched graphically and the
-path is set in ~/.bashrc) and will remain unchanged when one
-issue an \"opam switch\" in a shell.  If this variable is set to
-t, Tuareg will try to use opam to set the right environment for
-`compile', `run-ocaml' and `merlin-mode' based on the current
-opam switch at the time the command is run (provided opam is
-found).  You may also use `tuareg-opam-update-env' to set the
-environment for another compiler from within emacs (without
-changing the opam switch).  Beware that setting it to t causes
-problems if you compile under tramp."
-  :group 'tuareg :type 'boolean)
-
 (defgroup tuareg-faces nil
   "Special faces for the Tuareg mode."
   :group 'tuareg)
@@ -825,10 +810,10 @@ for the interactive mode."
           (concat "\\_<\\(?:\\(let\\_>" binding-operator-char "?\\)"
                   "\\(" maybe-infix-ext+attr
 		  "\\)\\(?: +\\(" (if (tuareg-editing-ls3) let-ls3 "rec\\_>")
-		  "\\)\\)?\\|\\(and" binding-operator-char "?\\)\\)"))
+		  "\\)\\)?\\|\\(and\\_>" binding-operator-char "?\\)\\)"))
          ;; group for possible class param
          (gclass-gparams
-          (concat "\\(\\_<class\\(?: +type\\)?\\(?: +virtual\\)?\\>\\)"
+          (concat "\\(\\_<class\\(?: +type\\)?\\(?: +virtual\\)?\\_>\\)"
                   " *\\(\\[ *" typevar " *\\(?:, *" typevar " *\\)*\\] *\\)?"))
          ;; font-lock rules common to all levels
          (common-keywords
@@ -876,14 +861,6 @@ for the interactive mode."
              (2 font-lock-type-face))
             (":[\n]? *\\(\\<type\\>\\)"
              (1 font-lock-keyword-face))
-            ;; (expr: t) and (expr :> t) If `t' is longer then one
-            ;; word, require a space before.  Not only this is more
-            ;; readable but it also avoids that `~label:expr var` is
-            ;; taken as a type annotation when surrounded by
-            ;; parentheses.
-            (,(concat "(" balanced-braces-no-end-operator ":>?\\(['_A-Za-z]+"
-                      "\\| [ \n'_A-Za-z]" balanced-braces-no-string "\\))")
-             1 font-lock-type-face keep)
             ;; (lid: t), before function definitions
             (,(concat "(" lid " *:\\(['_A-Za-z]"
                       balanced-braces-no-string "\\))")
@@ -927,7 +904,7 @@ for the interactive mode."
                   `((,(concat "\\<\\(let[ \t]+" let-ls3 "\\)\\>")
                      . tuareg-font-lock-governing-face)))
             ;; "with type": "with" treated as a governing keyword
-            (,(concat "\\<\\(\\(?:with\\|and\\) +type\\(?: +nonrec\\)?\\>\\) *"
+            (,(concat "\\<\\(\\(?:with\\|and\\) +type\\(?: +nonrec\\)?\\_>\\) *"
                       "\\(" typeconstr "\\)?")
              (1 tuareg-font-lock-governing-face keep)
              (2 font-lock-type-face keep t))
@@ -940,8 +917,8 @@ for the interactive mode."
             ;; "!", "mutable", "virtual" treated as governing keywords
             (,(concat "\\<\\(\\(?:val\\(" maybe-infix-ext+attr "\\)"
 	              (if (tuareg-editing-ls3) "\\|reset\\|do")
-                      "\\)!? +\\(?:mutable\\(?: +virtual\\)?\\>"
-                      "\\|virtual\\(?: +mutable\\)?\\>\\)"
+                      "\\)!? +\\(?:mutable\\(?: +virtual\\)?\\_>"
+                      "\\|virtual\\(?: +mutable\\)?\\_>\\)"
 	              "\\|val!\\(" maybe-infix-ext+attr "\\)\\)"
                       "\\(?: *\\(" lid "\\)\\)?")
              (2 tuareg-font-lock-infix-extension-node-face keep t)
@@ -963,6 +940,18 @@ for the interactive mode."
             (,(concat "\\<\\(open\\(?:! +\\|\\> *\\)\\)\\(" module-path "\\)?")
              (1 tuareg-font-lock-governing-face)
              (2 tuareg-font-lock-module-face keep t))
+            ;; (expr: t) and (expr :> t) If `t' is longer then one
+            ;; word, require a space before.  Not only this is more
+            ;; readable but it also avoids that `~label:expr var` is
+            ;; taken as a type annotation when surrounded by
+            ;; parentheses.  Done last so that it does not apply if
+            ;; already highlighted (let x : t = u in ...) but before
+            ;; module paths (expr : X.t).
+            (,(concat "(" balanced-braces-no-end-operator ":>? *\\(?:\n *\\)?"
+                      "\\(['_A-Za-z]" balanced-braces-no-string
+                      "\\|(" balanced-braces-no-string ")"
+                      balanced-braces-no-string"\\))")
+             1 font-lock-type-face)
             ;; module paths A.B.
             (,(concat module-path "\\.") . tuareg-font-lock-module-face)
             ,@(and tuareg-support-metaocaml
@@ -973,7 +962,8 @@ for the interactive mode."
              (1 tuareg-font-lock-governing-face)
              (2 font-lock-function-name-face keep t))
             ;; Binding operators
-            (,(concat "( *\\(\\(?:let\\|and\\)" binding-operator-char "\\) *)")
+            (,(concat "( *\\(\\(?:let\\|and\\)\\_>"
+                      binding-operator-char "\\) *)")
              1 font-lock-function-name-face)
             ;; Highlight "let" and function names (their argument
             ;; patterns can then be treated uniformly with variable bindings)
@@ -1201,8 +1191,7 @@ This based on the fontification and is faster than calling `syntax-ppss'."
               (progn
                 (backward-char)
                 (cond
-                 ((or (char-equal ?\( (char-after))
-                      (char-equal ?{  (char-after)))
+                 ((memq (char-after) '(?\( ?\{))
                   ;; Skip balanced braces
                   (if (ignore-errors (forward-list))
                       t
@@ -1211,8 +1200,7 @@ This based on the fontification and is faster than calling `syntax-ppss'."
                  ((char-equal ?: (char-after))
                   ;; Make sure it is not a label
                   (skip-chars-backward "a-zA-Z0-9_'")
-                  (if (not (or (char-equal ?~ (char-before))
-                               (char-equal ?? (char-before))))
+                  (if (not (memq (char-before) '(?~ ??)))
                       (setq tuareg--pattern-matcher-limit (1- pos)))
                   (goto-char pos)
                   t)
@@ -1220,8 +1208,9 @@ This based on the fontification and is faster than calling `syntax-ppss'."
       (setq tuareg--pattern-matcher-type-limit (1+ (point))); include "="
       (unless tuareg--pattern-matcher-limit
         (setq tuareg--pattern-matcher-limit (point)))
-      ;; Remove any possible highlithing on "="
-      (put-text-property (point) (1+ (point)) 'face nil)
+      ;; Remove any possible highlighting on "="
+      (unless (eobp)
+        (put-text-property (point) (1+ (point)) 'face nil))
       ;; move the point back for the sub-matcher
       (goto-char opoint))
     (put-text-property (point) tuareg--pattern-matcher-limit
@@ -1350,7 +1339,6 @@ Run only once."
     (define-key map "\C-c\C-k" 'tuareg-kill-ocaml)
     (define-key map "\C-c\C-n" 'tuareg-next-phrase)
     (define-key map "\C-c\C-p" 'tuareg-previous-phrase)
-    (define-key map [(backspace)] 'backward-delete-char-untabify)
     (define-key map [(control c) (home)]
       'tuareg-move-inside-module-or-class-opening)
     (define-key map "\C-c`" 'tuareg-interactive-next-error-source)
@@ -2048,7 +2036,7 @@ Return values can be
       (`:elem (cond
                ((eq token 'basic) tuareg-default-indent)
                ;; The default tends to indent much too deep.
-               ((eq token 'empty-line-token) ";")))
+               ((eq token 'empty-line-token) ";;")))
       (`:list-intro (member token '("fun")))
       (`:close-all t)
       (`:before
@@ -2290,6 +2278,7 @@ whereas with a nil value you get
   (unless (or tuareg-indent-align-with-first-arg
               (nth 8 (syntax-ppss))
               (looking-at comment-start-skip)
+              (looking-at "[ \t]*$") ;; bug#179
               (numberp (nth 1 (save-excursion (smie-indent-forward-token))))
               (numberp (nth 2 (save-excursion (smie-indent-backward-token)))))
     (save-excursion
@@ -2495,17 +2484,17 @@ See variable `beginning-of-defun-function'."
   'tuareg-backward-beginning-of-defun
   "Apr 10, 2019")
 
-(defun tuareg-discover-phrase (&optional pos)
-  "Return a triplet (BEGIN END END-WITH-COMMENTS) for the OCaml
-phrase around POS.  In case of error, move the point at the
-beginning of the error and return `nil'."
+(defun tuareg-region-of-defun (&optional pos)
+  "Return a couple (BEGIN . END) for the OCaml phrase around POS,
+including comments after the phrase.  In case of error, move the
+point at the beginning of the error and return `nil'."
   (let ((complete-phrase t)
         begin end)
     (save-excursion
-      (if pos (goto-char pos)  (setq pos (point)))
+      (if pos (goto-char pos))
       (tuareg-backward-beginning-of-defun)
       (setq begin (point))
-      (tuareg-end-of-defun)
+      (tuareg-end-of-defun) ; OK as point is as beginning of defun
       (setq end (point))
       ;; Check if we were not stuck (after POS) because the phrase was
       ;; not well parenthesized.
@@ -2517,6 +2506,19 @@ beginning of the error and return `nil'."
         (cons begin end)
       (goto-char end)
       nil)))
+
+(defun tuareg-discover-phrase (&optional pos)
+  "Return a triplet (BEGIN END END-WITH-COMMENTS) for the OCaml
+phrase around POS.  In case of error, move the point at the
+beginning of the error and return `nil'."
+  (let ((r (tuareg-region-of-defun pos))
+        end-without-comments)
+    (when r
+      ;; Remove possible comments after the phrase.
+      (goto-char (cdr r))
+      (forward-comment (- (point)))
+      (setq end-without-comments (point))
+      (list (car r) end-without-comments (cdr r)))))
 
 (defun tuareg--string-boundaries ()
   "Assume point is inside a string and return (START . END), the
@@ -2597,7 +2599,7 @@ or indent all lines in the current phrase."
         (tuareg--fill-string))
        ((nth 4 ppss)
         (tuareg--fill-comment))
-       (t (let ((phrase (tuareg-discover-phrase)))
+       (t (let ((phrase (tuareg-region-of-defun)))
             (if phrase
                 (indent-region (car phrase) (cdr phrase)))))))))
 
@@ -2995,87 +2997,7 @@ lines? \\([0-9]+\\)-?\\([0-9]+\\)?\
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                               OPAM
 
-(defconst tuareg-opam-compilers
-  (when (file-directory-p "~/.opam")
-    (let ((c (directory-files "~/.opam" t "[0-9]+\\.[0-9]+\\.[0-9]+")))
-      (if (file-directory-p "~/.opam/system")
-	  (cons "~/.opam/system" c)
-	c)))
-  "The list of OPAM directories for the installed compilers.")
-
-(defvar tuareg-opam
-  (let ((opam (executable-find "opam")))
-    (if opam opam
-      (let ((opam (locate-file "bin/opam" tuareg-opam-compilers)))
-        (if (and opam (file-executable-p opam)) opam)))) ; or nil
-  "The full path of the opam executable or `nil' if opam wasn't found.")
-
-(defun tuareg-shell-command-to-string (command)
-  "Similar to shell-command-to-string, but returns nil when the
-process return code is not 0 (shell-command-to-string returns the
-error message as a string)."
-  (let* ((return-value 0)
-         (return-string
-          (with-output-to-string
-            (with-current-buffer standard-output
-              (setq return-value
-                    (process-file shell-file-name nil '(t nil)
-                                  nil shell-command-switch command))))))
-    (if (= return-value 0) return-string nil)))
-
-(defun tuareg-opam-config-env (&optional switch)
-  "Get the opam environment for the given switch (or the default
-switch if none is provied) and return a list of lists of the
-form (n v) where n is the name of the environment variable and v
-its value (both being strings).  If opam is not found or the
-switch is not installed, `nil' is returned."
-  (let* ((switch (if switch (concat " --switch " switch)))
-	 (get-env (concat tuareg-opam " config env --sexp" switch))
-	 (opam-env (tuareg-shell-command-to-string get-env)))
-    (if opam-env
-	(car (read-from-string opam-env)))))
-
-(defun tuareg-opam-installed-compilers ()
-  (let* ((cmd1 (concat tuareg-opam " switch list -i -s"))
-         (cmd2 (concat tuareg-opam " switch list -s")); opam2
-	 (cpl (or (tuareg-shell-command-to-string cmd1)
-                  (tuareg-shell-command-to-string cmd2))))
-    (if cpl (split-string cpl "[ \f\t\n\r\v]+" t) '())))
-
-(defun tuareg-opam-current-compiler ()
-  (let* ((cmd (concat tuareg-opam " switch show -s"))
-	 (cpl (tuareg-shell-command-to-string cmd)))
-    (when cpl
-      (replace-regexp-in-string "[ \t\n]*" "" cpl))))
-
-(defun tuareg-opam-update-env (switch)
-  "Update the environment to follow current OPAM switch configuration."
-  (interactive
-   (let* ((compl (tuareg-opam-installed-compilers))
-	  (current (tuareg-opam-current-compiler))
-	  (default (if current current "current"))
-	  (prompt (format "opam switch (default: %s): " default)))
-     (list (completing-read prompt compl))))
-  (let* ((switch (if (string= switch "") nil switch))
-	 (env (tuareg-opam-config-env switch)))
-    (if env
-	(dolist (v env)
-	  (setenv (car v) (cadr v))
-	  (when (string= (car v) "PATH")
-	    (setq exec-path (split-string (cadr v) path-separator))))
-      (message "Switch %s does not exist (or opam not found)" switch))))
-
-
-;; OPAM compilation
-(defun tuareg--compile-opam (&rest _)
-  "Advice to update the OPAM environment to sync it with the OPAM
-switch before compiling."
-  (let* ((env (tuareg-opam-config-env)))
-    (when env
-      (setq-local compilation-environment
-                  (mapcar (lambda(v) (concat (car v) "=" (cadr v)))
-                          (tuareg-opam-config-env))))))
-
+(require 'tuareg-opam)
 (when (and tuareg-opam-insinuate tuareg-opam)
   (setq tuareg-interactive-program
         (concat tuareg-opam " config exec -- ocaml"))
@@ -3325,14 +3247,11 @@ It is assumed that the range START-END delimit valid OCaml phrases."
   (setq tuareg-interactive-last-phrase-pos-in-source start)
   (save-excursion
     (goto-char start)
-    (setq start (car (tuareg-discover-phrase)))
-    (if start
-        (progn
-          (goto-char end)
-          (setq end (cdr (tuareg-discover-phrase)))
-          (if end
-              (tuareg-interactive--send-region start end)
-            (message "The expression after the point is not well braced.")))
+    (tuareg-backward-beginning-of-defun)
+    (setq start (point))
+    (setq end (cdr (tuareg-region-of-defun end)))
+    (if end
+        (tuareg-interactive--send-region start end)
       (message "The expression after the point is not well braced."))))
 
 (define-obsolete-function-alias 'tuareg-narrow-to-phrase 'narrow-to-defun
@@ -3348,12 +3267,9 @@ It is assumed that the range START-END delimit valid OCaml phrases."
     (let ((phrase (tuareg-discover-phrase)))
       (if phrase
           (progn
-            ;; Remove comments after the phrase
-            (goto-char (cdr phrase))
-            (forward-comment (- (point)))
-            (tuareg-interactive--send-region (car phrase) (point))
+            (tuareg-interactive--send-region (car phrase) (cadr phrase))
             (if tuareg-skip-after-eval-phrase
-              (progn (goto-char (cdr phrase))
+              (progn (goto-char (caddr phrase))
                      (tuareg-skip-blank-and-comments))
               (goto-char opoint)))
         (message "The expression after the point is not well braced.")))))
