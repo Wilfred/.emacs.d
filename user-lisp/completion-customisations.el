@@ -142,8 +142,6 @@
   :config
   (require 'company-anaconda))
 
-(require 'company-tern)
-
 (add-to-list 'company-backends 'company-c-headers)
 
 (require 'company-jit)

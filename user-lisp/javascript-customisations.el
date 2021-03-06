@@ -39,10 +39,9 @@
 (add-hook 'js2-mode-hook (lambda () (setq mode-name "JS2")))
 
 (require 'company)
-(add-to-list 'company-backends 'company-tern)
 
 (defun wh/company-in-js2-mode ()
-  (setq-local company-backends (list #'company-tern #'company-keywords #'company-dabbrev))
+  (setq-local company-backends (list #'company-keywords #'company-dabbrev))
   (setq-local company-idle-delay 0.2))
 
 (add-hook 'js2-mode-hook #'wh/company-in-js2-mode)
