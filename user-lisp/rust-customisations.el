@@ -1,8 +1,3 @@
-(use-package racer
-  :config
-  (require 'f)
-  (setq racer-cmd (f-expand "~/.cargo/bin/racer")))
-
 (use-package rust-mode
   :config
   (add-hook 'rust-mode-hook #'flycheck-mode)
@@ -22,8 +17,6 @@
 
   (add-hook 'rust-mode-hook #'wh/rust-company-settings)
 
-  (define-key rust-mode-map (kbd "M-.") #'racer-find-definition)
-
   (defun wh/rust-toggle-visibility ()
     "Toggle the public visibility of the function at point."
     (interactive)
@@ -38,19 +31,6 @@
         (insert "pub "))))
 
   (define-key rust-mode-map (kbd "C-c v") #'wh/rust-toggle-visibility)
-
-  (defun wh/rust-toggle-mutability ()
-    "Toggle the mutability of the variable at point."
-    (interactive)
-    (save-excursion
-      (racer-find-definition)
-      (back-to-indentation)
-      (forward-char 4)
-      (if (looking-at "mut ")
-          (delete-char 4)
-        (insert "mut "))))
-
-  (define-key rust-mode-map (kbd "C-c m") #'wh/rust-toggle-mutability)
 
   (defun wh/rust-vec-as-slice ()
     "Convert the vector expression at point to a slice.
