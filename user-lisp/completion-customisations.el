@@ -147,10 +147,6 @@
 (require 'company-jit)
 (add-hook 'css-mode-hook #'company-jit-mode)
 
-(use-package rust-mode
-  :config
-  (add-hook 'rust-mode-hook 'racer-mode))
-
 (require 'company-whole-line)
 
 ;; always spaces, never tabs
