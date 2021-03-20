@@ -2,9 +2,6 @@
   :config
   (add-hook 'rust-mode-hook #'flycheck-mode)
 
-  (with-eval-after-load 'rust-mode
-    (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
-
   ;; Work around https://github.com/flycheck/flycheck-rust/issues/47
   (setq flycheck-rust-check-tests nil)
 
