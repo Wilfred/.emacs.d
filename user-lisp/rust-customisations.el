@@ -55,4 +55,7 @@ foo -> &foo[..]"
 
     (define-key rust-mode-map (kbd "C-c C-c") #'multi-compile-run)))
 
+;; For some reason icons aren't currently rendering, so don't show them.
+(setq lsp-modeline-code-actions-segments '(count))
+
 (provide 'rust-customisations)
