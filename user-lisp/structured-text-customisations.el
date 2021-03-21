@@ -17,6 +17,8 @@
 ;; markdown mode
 (add-to-list 'auto-mode-alist '("\\.md$" . gfm-mode))
 (add-to-list 'auto-mode-alist '("\\.markdown$" . markdown-mode))
+;; Don't try to be smart with ```, I find it rarely useful.
+(setq markdown-gfm-use-electric-backquote nil)
 
 (require 's)
 (require 'dash)
