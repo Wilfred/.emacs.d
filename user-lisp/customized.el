@@ -42,6 +42,7 @@
  '(hl-sexp-face ((t (:background "gray14"))))
  '(info-title-2 ((t (:inherit info-title-3))))
  '(js2-function-param-face ((((class color)) (:foreground "Green"))))
+ '(lsp-lsp-flycheck-warning-unnecessary-face ((t (:underline "Orange"))) t)
  '(magit-section-highlight ((t (:background "grey14"))))
  '(org-date ((((class color)) (:underline nil))))
  '(org-level-1 ((t (:foreground "dodger blue" :weight bold :height 1.0))))
