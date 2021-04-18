@@ -48,6 +48,7 @@
         sp-backward-kill-word
         sp-backward-sexp
         sp-forward-sexp
+        sp-kill-hybrid-sexp
         sp-kill-word
         sp-remove-active-pair-overlay
         sp-slurp-hybrid-sexp
@@ -124,6 +125,7 @@
         wh/decrement-number-decimal
         wh/increment-number-decimal
         wh/kill-symbol
+        wh/smartparens-wrap-round
         wh/toggle-case-next-char
         yaml-electric-backspace
         yaml-electric-dash-and-dot
