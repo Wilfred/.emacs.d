@@ -39,6 +39,17 @@ foo -> &foo[..]"
 
   (define-key rust-mode-map (kbd "C-c s") #'wh/rust-vec-as-slice)
 
+  (defun wh/rust-wrap-dbg (start end)
+    "Wrap the current selection in dbg!(..)."
+    (interactive "r")
+    (save-excursion
+      (goto-char end)
+      (insert ")")
+      (goto-char start)
+      (insert "dbg!(")))
+
+  (define-key rust-mode-map (kbd "C-c d") #'wh/rust-wrap-dbg)
+
   (require 'projectile)
 
   (defun wh/rust-run-test ()
