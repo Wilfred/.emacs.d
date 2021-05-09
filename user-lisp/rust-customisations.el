@@ -1,10 +1,5 @@
 (use-package rust-mode
   :config
-  (add-hook 'rust-mode-hook #'flycheck-mode)
-
-  ;; Work around https://github.com/flycheck/flycheck-rust/issues/47
-  (setq flycheck-rust-check-tests nil)
-
   (require 'f)
   (add-to-list 'exec-path (f-expand "~/.cargo/bin"))
 
