@@ -8,3 +8,5 @@
 ;; Don't override my navigation bindings.
 (define-key lsp-signature-mode-map (kbd "M-n") nil)
 (define-key lsp-signature-mode-map (kbd "M-p") nil)
+
+(define-key lsp-mode-map (kbd "C-c f") #'lsp-format-buffer)
