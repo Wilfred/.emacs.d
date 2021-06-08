@@ -43,23 +43,7 @@ foo -> &foo[..]"
       (goto-char start)
       (insert "dbg!(")))
 
-  (define-key rust-mode-map (kbd "C-c d") #'wh/rust-wrap-dbg)
-
-  (require 'projectile)
-
-  (defun wh/rust-run-test ()
-    "Run the test at point."
-    (interactive)
-    (let ((default-directory (projectile-project-root)))
-      (compilation-start
-       (format "cargo test %s" (which-function))))
-
-    (define-key rust-mode-map (kbd "C-c t") #'wh/rust-run-test)
-
-    ;; Use 'cargo check' as a build command, as it's much faster.
-    (projectile-register-project-type 'rust-cargo '("Cargo.toml") "cargo check" "cargo test")
-
-    (define-key rust-mode-map (kbd "C-c C-c") #'multi-compile-run)))
+  (define-key rust-mode-map (kbd "C-c d") #'wh/rust-wrap-dbg))
 
 ;; For some reason icons aren't currently rendering, so don't show them.
 (setq lsp-modeline-code-actions-segments '(count))
