@@ -45,7 +45,6 @@ foo -> &foo[..]"
 
   (define-key rust-mode-map (kbd "C-c d") #'wh/rust-wrap-dbg))
 
-;; For some reason icons aren't currently rendering, so don't show them.
-(setq lsp-modeline-code-actions-segments '(count))
+(require 'lsp-customisations)
 
 (provide 'rust-customisations)

@@ -1,4 +1,4 @@
-
+;; For some reason icons aren't currently rendering, so don't show them.
 (setq lsp-modeline-code-actions-segments '(count name))
 
 (setq lsp-rust-clippy-preference "on")
@@ -10,3 +10,5 @@
 (define-key lsp-signature-mode-map (kbd "M-p") nil)
 
 (define-key lsp-mode-map (kbd "C-c f") #'lsp-format-buffer)
+
+(provide 'lsp-customisations)
