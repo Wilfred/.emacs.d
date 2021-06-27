@@ -4,8 +4,9 @@
 ;;
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 21 August 2013
-;; Version: 0.4
-;; Package-Version: 20170814.621
+;; Version: 0.5
+;; Package-Version: 20210525.2222
+;; Package-Commit: 3202cf4644ed3b6549284c3816b90bb230970a5b
 ;; Package-Requires: ((dash "1.2.0") (s "1.11.0"))
 
 ;;; Commentary:
@@ -92,6 +93,16 @@ of this string."
        (s-replace "\n" "\\n")
        (s-truncate 50)))
 
+(defun ez-query-replace/remember (description from-string to-string)
+  "Rembmer this item in history, or bring to the head if already in history."
+  (let ((choice (list description from-string to-string)))
+    (if (member choice ez-query-replace/history)
+        ;; Move this item to the head of the list.
+        (setq ez-query-replace/history
+              (cons choice
+                    (-remove-item choice ez-query-replace/history)))
+      (push choice ez-query-replace/history))))
+
 ;;;###autoload
 (defun ez-query-replace ()
   "Replace occurrences of FROM-STRING with TO-STRING, defaulting
@@ -106,14 +117,8 @@ to the symbol at point."
                               from-string to-string)))
 
     (ez-query-replace/backward from-string)
+    (ez-query-replace/remember history-entry from-string to-string)
 
-    (if (member history-entry ez-query-replace/history)
-        ;; Move this item to the head of the list.
-        (setq ez-query-replace/history
-              (cons history-entry
-                    (-remove-item history-entry ez-query-replace/history)))
-      (push history-entry ez-query-replace/history))
-    
     (deactivate-mark)
     (perform-replace from-string to-string t nil nil)))
 
@@ -131,6 +136,7 @@ to the symbol at point."
          (from-string (first from-with-to))
          (to-string (second from-with-to)))
     (ez-query-replace/backward from-string)
+    (ez-query-replace/remember choice from-string to-string)
 
     (deactivate-mark)
     (perform-replace from-string to-string
