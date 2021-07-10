@@ -5,7 +5,7 @@
 
   (defun wh/rust-company-settings ()
     "Set up company settings for rust buffers."
-    (setq-local company-idle-delay 0.1))
+    (setq-local company-idle-delay 0.3))
 
   (add-hook 'rust-mode-hook #'wh/rust-company-settings)
 
