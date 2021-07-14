@@ -1,4 +1,4 @@
-;;; docker-process.el --- Emacs interface to Docker  -*- lexical-binding: t -*-
+;;; docker-faces.el --- Emacs interface to docker-container  -*- lexical-binding: t -*-
 
 ;; Author: Philippe Vaucher <philippe.vaucher@gmail.com>
 
@@ -26,23 +26,28 @@
 (require 's)
 (require 'dash)
 
-(defcustom docker-run-as-root nil
-  "Run docker as root."
-  :type 'boolean
-  :group 'docker)
+(require 'docker-core)
 
-(defcustom docker-command "docker"
-  "The docker binary."
-  :type 'string
-  :group 'docker)
+(defgroup docker-faces nil
+  "Docker faces."
+  :group 'docker
+  :group 'faces)
 
-(defun docker (action &rest args)
-  "Execute docker ACTION passing arguments ARGS."
-  (let ((default-directory (if (and docker-run-as-root (not (file-remote-p default-directory))) "/sudo::" default-directory)))
-    (let ((command (format "%s %s %s" docker-command action (s-join " " (-non-nil args)))))
-      (message command)
-      (shell-command-to-string command))))
+(defface docker-face-status-up
+  '((t :inherit success))
+  "Face used when the status is up."
+  :group 'docker-faces)
 
-(provide 'docker-process)
+(defface docker-face-status-down
+  '((t :inherit error))
+  "Face used when the status is down"
+  :group 'docker-faces)
 
-;;; docker-process.el ends here
+(defface docker-face-status-other
+  '((t :inherit warning))
+  "Face used when the status is not up/down."
+  :group 'docker-faces)
+
+(provide 'docker-faces)
+
+;;; docker-faces.el ends here
