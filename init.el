@@ -5,7 +5,7 @@
 
 
 (defun wh/export-init-org ()
-  "Generate init.html and init.html from the current init.org file."
+  "Generate init.el and init.html from the current init.org file."
   (interactive)
   (call-interactively #'org-babel-tangle)
   ;; Export as HTML 5, and include our styling overrides.
