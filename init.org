@@ -1256,6 +1256,7 @@ https://github.com/bbatsov/crux/issues/20
   (require 'sh-customisations)
   (require 'xml-customisations)
   (require 'html-customisations)
+  (require 'lsp-customisations)
 
   (require 'startup-customisations)
 

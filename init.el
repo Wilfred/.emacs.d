@@ -1036,6 +1036,7 @@ Visit the file after creation."
 (require 'sh-customisations)
 (require 'xml-customisations)
 (require 'html-customisations)
+(require 'lsp-customisations)
 
 (require 'startup-customisations)
 
