@@ -13,6 +13,7 @@
   (define-key lsp-signature-mode-map (kbd "M-p") nil)
 
   (define-key lsp-mode-map (kbd "C-c f") #'lsp-format-buffer)
+  (define-key lsp-mode-map (kbd "C-c r") #'lsp-rename)
 
   (add-hook 'rust-mode-hook #'lsp-mode))
 
