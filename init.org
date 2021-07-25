@@ -56,10 +56,10 @@ Clone the repo:
   git clone git://github.com/Wilfred/.emacs.d.git
 #+END_SRC
 
-** Emacs 25
+** Emacs
 
-I use this repository with Emacs 25. Older Emacsen are used
-occasionally, but will probably have bugs.
+I use this repository with the most recent major Emacs release. Older
+Emacsen are used occasionally, but will probably have bugs.
 
 ** Python
 
