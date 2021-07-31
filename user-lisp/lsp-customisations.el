@@ -4,6 +4,7 @@
   ;; For some reason icons aren't currently rendering, so don't show them.
   (setq lsp-modeline-code-actions-segments '(count name))
 
+  (setq lsp-rust-analyzer-cargo-watch-command "clippy")
   (setq lsp-rust-clippy-preference "on")
 
   (set-face-attribute 'lsp-lsp-flycheck-warning-unnecessary-face nil :foreground nil)
