@@ -15,6 +15,8 @@
 
   (define-key lsp-mode-map (kbd "C-c f") #'lsp-format-buffer)
   (define-key lsp-mode-map (kbd "C-c r") #'lsp-rename)
+  ;; Mnemonic: show references in Xref.
+  (define-key lsp-mode-map (kbd "C-c x") #'lsp-find-references)
 
   (add-hook 'rust-mode-hook #'lsp-mode))
 
