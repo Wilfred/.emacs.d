@@ -18,6 +18,10 @@
   ;; Mnemonic: show references in Xref.
   (define-key lsp-mode-map (kbd "C-c x") #'lsp-find-references)
 
+  ;; Disable intrusive signature popup
+  ;; https://github.com/emacs-lsp/lsp-mode/issues/1535
+  (setq lsp-signature-auto-activate nil)
+
   (add-hook 'rust-mode-hook #'lsp-mode))
 
 (provide 'lsp-customisations)
