@@ -46,10 +46,14 @@ foo -> &foo[..]"
   (define-key rust-mode-map (kbd "C-c d") #'wh/rust-wrap-dbg))
 
 (defun wh/rust-unwrap-dbg ()
-  "Remove dbg!(foo) to just foo at point."
+  "Remove dbg!(foo) to just foo on the line at point."
   (interactive)
-  (sp-splice-sexp)
-  (backward-delete-char 4))
+
+  (save-excursion
+    (beginning-of-line)
+    (search-forward "dbg!(")
+    (sp-splice-sexp)
+    (backward-delete-char 4)))
 
 (require 'lsp-customisations)
 
