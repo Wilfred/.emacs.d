@@ -4,10 +4,10 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; URL: https://github.com/Wilfred/deadgrep
-;; Package-Version: 20210219.748
-;; Package-Commit: ca16c37ffa5caa5f698bc049012489a2e3071bcc
+;; Package-Version: 20210830.656
+;; Package-Commit: 4ec21e644ef482a913c64f068ec8d602eedac1c6
 ;; Keywords: tools
-;; Version: 0.10
+;; Version: 0.11
 ;; Package-Requires: ((emacs "25.1") (dash "2.12.0") (s "1.11.0") (spinner "1.7.3"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -389,7 +389,7 @@ with a text face property `deadgrep-match-face'."
   'help-echo "Change search term")
 
 (defun deadgrep--search-prompt (&optional default)
-  "."
+  "The prompt shown to the user when starting a deadgrep search."
   (let ((kind (if (eq deadgrep--search-type 'regexp)
                   "by regexp" "for text")))
     (if default
@@ -397,6 +397,11 @@ with a text face property `deadgrep-match-face'."
       (format "Search %s: " kind))))
 
 (defun deadgrep--search-term (_button)
+  (deadgrep-search-term))
+
+(defun deadgrep-search-term ()
+  "Change the current search term and restart the search."
+  (interactive)
   (setq deadgrep--search-term
         (read-from-minibuffer
          (deadgrep--search-prompt)
@@ -511,7 +516,7 @@ with a text face property `deadgrep-match-face'."
             (cl-incf j)
             (setq result (concat result
                                  (substring glob i j)))
-            (setq i (1+ j))))
+            (setq i j)))
          (t
           (setq result (concat result (char-to-string char)))
           (cl-incf i)))))
@@ -607,7 +612,11 @@ with a text face property `deadgrep-match-face'."
   'help-echo "Change base directory")
 
 (defun deadgrep--directory (_button)
+  (deadgrep-directory))
+
+(defun deadgrep-directory ()
   "Prompt the user for a new search directory, then restart the search."
+  (interactive)
   (setq default-directory
         (expand-file-name
          (read-directory-name "Search files in: ")))
@@ -891,10 +900,12 @@ Returns a list ordered by the most recently accessed."
     (define-key map (kbd "o") #'deadgrep-visit-result-other-window)
     ;; TODO: we should still be able to click on buttons.
 
+    (define-key map (kbd "S") #'deadgrep-search-term)
+    (define-key map (kbd "D") #'deadgrep-directory)
     (define-key map (kbd "g") #'deadgrep-restart)
 
-    ;; TODO: this should work when point in anywhere in file, not just
-    ;; on its heading.
+    ;; TODO: this should work when point is anywhere in the file, not
+    ;; just on its heading.
     (define-key map (kbd "TAB") #'deadgrep-toggle-file-results)
 
     ;; Keybinding chosen to match `kill-compilation'.
@@ -1427,7 +1438,8 @@ Otherwise, return PATH as is."
   (let ((root default-directory)
         (project (project-current)))
     (when project
-      (setq root (cdr project)))
+      (when-let ((roots (project-roots project)))
+        (setq root (car roots))))
     (when root
       (deadgrep--lookup-override root))))
 
