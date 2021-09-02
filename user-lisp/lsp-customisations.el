@@ -26,6 +26,10 @@
   (setq lsp-headerline-breadcrumb-icons-enable
         nil)
 
+  ;; Limit the headerline to things inside the current file.
+  ;; https://emacs-lsp.github.io/lsp-mode/page/main-features/#breadcrumb-on-headerline
+  (setq lsp-headerline-breadcrumb-segments '(symbols))
+
   (add-hook 'rust-mode-hook #'lsp-mode))
 
 (provide 'lsp-customisations)
