@@ -22,6 +22,10 @@
   ;; https://github.com/emacs-lsp/lsp-mode/issues/1535
   (setq lsp-signature-auto-activate nil)
 
+  ;; Disable icons in the headerline: I find them redundant.
+  (setq lsp-headerline-breadcrumb-icons-enable
+        nil)
+
   (add-hook 'rust-mode-hook #'lsp-mode))
 
 (provide 'lsp-customisations)
