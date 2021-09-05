@@ -26,6 +26,14 @@
   (setq lsp-headerline-breadcrumb-icons-enable
         nil)
 
+  ;; Not sure I want this.
+  (setq lsp-ui-doc-enable t)
+  ;; Maybe a bigger delay?
+  (setq lsp-ui-doc-delay 2.0)
+
+  ;; Code actions are already in the modeline.
+  (setq lsp-ui-sideline-show-code-actions nil)
+
   ;; Limit the headerline to things inside the current file.
   ;; https://emacs-lsp.github.io/lsp-mode/page/main-features/#breadcrumb-on-headerline
   (setq lsp-headerline-breadcrumb-segments '(symbols))
