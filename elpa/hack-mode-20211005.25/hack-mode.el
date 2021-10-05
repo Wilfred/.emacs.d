@@ -16,9 +16,9 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;; Author: John Allen <jallen@fb.com>, Wilfred Hughes <me@wilfred.me.uk>
-;; Version: 1.2.0
-;; Package-Version: 20201006.43
-;; Package-Commit: 847fd910e9d0ac76e2cfeb87512e6923a39d7d5f
+;; Version: 1.3.0
+;; Package-Version: 20211005.25
+;; Package-Commit: 211b5a8f43b852e9e73de83013f51cb01855a530
 ;; Package-Requires: ((emacs "25.1") (s "1.11.0"))
 ;; URL: https://github.com/hhvm/hack-mode
 
@@ -81,7 +81,7 @@
 (defun hack--propertize-xhp ()
   "Put syntax properties on XHP blocks."
   (let* ((start-pos (match-beginning 1))
-         (ppss (syntax-ppss start-pos))
+         (ppss (save-excursion (syntax-ppss start-pos)))
          (in-comment (nth 4 ppss)))
     (unless in-comment
       (hack--forward-parse-xhp start-pos nil)
@@ -200,11 +200,14 @@ If we find one, move point to its end, and set match data."
     (save-excursion
       (while (and (not end-pos)
                   (re-search-forward hack-xhp-start-regex limit t))
-        ;; Ignore XHP in comments.
-        (unless (nth 4 (syntax-ppss (match-beginning 1)))
-          (setq start-pos (match-beginning 1))
-          (hack--forward-parse-xhp start-pos limit t)
-          (setq end-pos (point)))))
+        (let* ((ppss-start
+                (save-excursion (syntax-ppss (match-beginning 1))))
+               (in-comment (nth 4 ppss-start)))
+          ;; Ignore XHP in comments.
+          (unless in-comment
+            (setq start-pos (match-beginning 1))
+            (hack--forward-parse-xhp start-pos limit t)
+            (setq end-pos (point))))))
     (when end-pos
       (set-match-data (list start-pos end-pos))
       (goto-char end-pos))))
@@ -306,57 +309,6 @@ E.g. Foo<int> has a paired delimiter, 1 > 2 does not."
 	      (goto-char comment-start)
 	      (when (re-search-forward
 		     (rx point "//" (0+ whitespace) (group "FALLTHROUGH"))
-		     limit t)
-		(setq found-pos (point))
-		(setq match-data (match-data))))))))
-    (when found-pos
-      (set-match-data match-data)
-      (goto-char found-pos))))
-
-(defun hack-font-lock-unsafe (limit)
-  "Search for UNSAFE comments."
-  (let ((case-fold-search nil)
-	(found-pos nil)
-	(match-data nil))
-    ;; UNSAFE must start with //, and can have any text afterwards. See
-    ;; full_fidelity_lexer.ml.
-    (save-excursion
-      ;; TODO: this 'not found-pos' is a common pattern, factor it out.
-      (while (and (not found-pos)
-		  (search-forward "UNSAFE" limit t))
-	(let* ((ppss (syntax-ppss))
-	       (in-comment (nth 4 ppss))
-	       (comment-start (nth 8 ppss)))
-	  (when in-comment
-	    (save-excursion
-	      (goto-char comment-start)
-	      (when (re-search-forward
-		     (rx point "//" (0+ whitespace) (group "UNSAFE"))
-		     limit t)
-		(setq found-pos (point))
-		(setq match-data (match-data))))))))
-    (when found-pos
-      (set-match-data match-data)
-      (goto-char found-pos))))
-
-(defun hack-font-lock-unsafe-expr (limit)
-  "Search for UNSAFE_EXPR comments."
-  (let ((case-fold-search nil)
-	(found-pos nil)
-	(match-data nil))
-    ;; UNSAFE_EXPR must start with /*, and can have any text afterwards. See
-    ;; full_fidelity_lexer.ml.
-    (save-excursion
-      (while (and (not found-pos)
-		  (search-forward "UNSAFE_EXPR" limit t))
-	(let* ((ppss (syntax-ppss))
-	       (in-comment (nth 4 ppss))
-	       (comment-start (nth 8 ppss)))
-	  (when in-comment
-	    (save-excursion
-	      (goto-char comment-start)
-	      (when (re-search-forward
-		     (rx point "/*" (0+ whitespace) (group "UNSAFE_EXPR"))
 		     limit t)
 		(setq found-pos (point))
 		(setq match-data (match-data))))))))
@@ -529,8 +481,11 @@ If PROPERTIZE-TAGS is non-nil, apply `hack-xhp-tag' to tag names."
           (when close-p
             (forward-char 1))
           ;; Get the name of the current tag.
-          (re-search-forward
-           (rx (+ (or (syntax word) (syntax symbol) ":" "-"))))
+          (unless
+              (re-search-forward
+               (rx (+ (or (syntax word) (syntax symbol) ":" "-"))) nil t)
+            ;; Incomplete XHP tag, e.g. the user has just written "<".
+            (throw 'done t))
           (setq tag-name (match-string 0))
 	  (setq tag-name-start (match-beginning 0))
           (setq tag-name-end (match-end 0))
@@ -684,7 +639,7 @@ If PROPERTIZE-TAGS is non-nil, apply `hack-xhp-tag' to tag names."
      ;; even though users can't shadow this anyway.
      "==>"
 
-     ;; Treat self:: and static:: as keywords.
+     ;; Treat self:: and parent:: as keywords.
      "self"
      "parent")
    'symbols))
@@ -855,7 +810,7 @@ If PROPERTIZE-TAGS is non-nil, apply `hack-xhp-tag' to tag names."
      "date_parse" "date_parse_from_format" "date_sub" "date_sun_info" "date_sunrise"
      "date_sunset" "date_time_set" "date_timestamp_get" "date_timestamp_set" "date_timezone_get"
      "date_timezone_set" "dcgettext" "dcngettext" "debug_backtrace" "debug_print_backtrace"
-     "debug_zval_dump" "decbin" "dechex" "decoct" "define"
+     "debug_zval_dump" "decbin" "dechex" "decoct"
      "define_syslog_variables" "defined" "deg2rad" "dgettext" "dir"
      "dirname" "disk_free_space" "disk_total_space" "diskfreespace" "dl"
      "dngettext" "dns_check_record" "dns_get_mx" "dns_get_record" "dom_import_simplexml"
@@ -1282,10 +1237,6 @@ interpolating inside the XHP expression."
 
     (hack-font-lock-fallthrough
      (1 'font-lock-keyword-face t))
-    (hack-font-lock-unsafe
-     (1 'error t))
-    (hack-font-lock-unsafe-expr
-     (1 'error t))
     (hack-font-lock-fixme
      (1 'error t))
     (hack-font-lock-ignore-error
@@ -1340,6 +1291,9 @@ interpolating inside the XHP expression."
     ;; < and > are paired delimiters.
     (modify-syntax-entry ?< "(>" table)
     (modify-syntax-entry ?> ")<" table)
+
+    ;; ` is a paired delimiter for expression trees
+    (modify-syntax-entry ?\` "$" table)
 
     table))
 
