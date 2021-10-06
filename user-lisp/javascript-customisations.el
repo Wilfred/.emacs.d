@@ -33,8 +33,8 @@
   (add-hook hook #'flycheck-mode))
 
 ;; Enable prettier in every relevant mode.
-(use-package prettier-js
-  :hook (js-mode js2-mode js-jsx-mode rjsx-mode))
+;; (use-package prettier-js
+;;   :hook (js-mode js2-mode js-jsx-mode rjsx-mode))
 
 (add-hook 'js2-mode-hook (lambda () (setq mode-name "JS2")))
 
