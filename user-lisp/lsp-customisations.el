@@ -29,7 +29,7 @@
   ;; Not sure I want this.
   (setq lsp-ui-doc-enable t)
   ;; Maybe a bigger delay?
-  (setq lsp-ui-doc-delay 2.0)
+  (setq lsp-ui-doc-delay 3.0)
 
   ;; Code actions are already in the modeline.
   (setq lsp-ui-sideline-show-code-actions nil)
