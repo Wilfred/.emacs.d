@@ -1,6 +1,6 @@
 ;;; rust-mode.el --- A major-mode for editing Rust source code -*-lexical-binding: t-*-
 
-;; Version: 0.5.0
+;; Version: 1.0.0
 ;; Author: Mozilla
 ;; Url: https://github.com/rust-lang/rust-mode
 ;; Keywords: languages
@@ -267,7 +267,7 @@ Use idomenu (imenu with `ido-mode') for best mileage.")
 (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-mode))
 
 (defvar rust-top-item-beg-re
-  (concat "\\s-*"
+  (concat "\\s-*\\(?:priv\\|pub\\)?\\s-*"
           ;; TODO some of this does only make sense for `fn' (unsafe, extern...)
           ;; and not other items
           (rust-re-shy (concat (rust-re-shy rust-re-vis) "[[:space:]]+")) "?"
@@ -275,7 +275,7 @@ Use idomenu (imenu with `ido-mode') for best mileage.")
           (rust-re-shy (concat (rust-re-shy rust-re-unsafe) "[[:space:]]+")) "?"
           (regexp-opt
            '("enum" "struct" "union" "type" "mod" "use" "fn" "static" "impl"
-             "extern" "trait"))
+             "extern" "trait" "async"))
           "\\_>")
   "Start of a Rust item.")
 
@@ -289,7 +289,7 @@ Use idomenu (imenu with `ido-mode') for best mileage.")
     "box" "break"
     "const" "continue" "crate"
     "do" "dyn"
-    "else" "enum" "extern"
+    "else" "enum" "extern" "existential"
     "false" "fn" "for"
     "if" "impl" "in"
     "let" "loop"

@@ -75,24 +75,26 @@
               (erase-buffer)
               (insert-file-contents tmpf)
               (rust--format-fix-rustfmt-buffer (buffer-name buf))
-              (error "Rustfmt could not format some lines, see *rustfmt* buffer for details"))
+              (error "Rustfmt could not format some lines, see %s buffer for details"
+                     rust-rustfmt-buffername))
              (t
               (erase-buffer)
               (insert-file-contents tmpf)
               (rust--format-fix-rustfmt-buffer (buffer-name buf))
-              (error "Rustfmt failed, see *rustfmt* buffer for details"))))
+              (error "Rustfmt failed, see %s buffer for details"
+                     rust-rustfmt-buffername))))
         (delete-file tmpf)))))
 
 ;; Since we run rustfmt through stdin we get <stdin> markers in the
 ;; output. This replaces them with the buffer name instead.
 (defun rust--format-fix-rustfmt-buffer (buffer-name)
-  (with-current-buffer (get-buffer rust-rustfmt-buffername)
-    (let ((inhibit-read-only t))
-      (goto-char (point-min))
-      (while (re-search-forward "--> <stdin>:" nil t)
-        (replace-match (format "--> %s:" buffer-name)))
-      (while (re-search-forward "--> stdin:" nil t)
-        (replace-match (format "--> %s:" buffer-name))))))
+  (save-match-data
+    (with-current-buffer (get-buffer rust-rustfmt-buffername)
+      (let ((inhibit-read-only t)
+            (fixed (format "--> %s:" buffer-name)))
+          (goto-char (point-min))
+          (while (re-search-forward "--> \\(?:<stdin>\\|stdin\\):" nil t)
+            (replace-match fixed))))))
 
 ;; If rust-mode has been configured to navigate to source of the error
 ;; or display it, do so -- and return true. Otherwise return nil to
@@ -118,7 +120,7 @@ rustfmt complain in the echo area."
   ;; buffer it is from.
   (let ((rustfmt (get-buffer rust-rustfmt-buffername)))
     (if (not rustfmt)
-        (message "No *rustfmt*, no problems.")
+        (message "No %s, no problems." rust-rustfmt-buffername)
       (let ((target-buffer (with-current-buffer rustfmt
                              (save-excursion
                                (goto-char (point-min))
@@ -361,7 +363,8 @@ Return the created process."
         ;; KLDUGE: re-run the error handlers -- otherwise message area
         ;; would show "Wrote ..." instead of the error description.
         (or (rust--format-error-handler)
-            (message "rustfmt detected problems, see *rustfmt* for more."))))))
+            (message "rustfmt detected problems, see %s for more."
+                     rust-rustfmt-buffername))))))
 
 ;;; _
 (provide 'rust-rustfmt)
