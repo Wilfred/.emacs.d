@@ -3,11 +3,9 @@
 ;; Copyright (c) 2011  S. Irie
 
 ;; Author: S. Irie
-;; Maintainer: S. Irie
 ;; Keywords: window
-;; Package-Version: 20151126.626
-
-(defconst transpose-frame-version "0.1.0")
+;; Package-Version: 20200307.2119
+;; Package-Commit: 12e523d70ff78cc8868097b56120848befab5dbc
 
 ;; This program is free software.
 
@@ -100,39 +98,8 @@
 ;;
 ;; This program is tested on GNU Emacs 22, 23.
 
-;;
-;; Installation:
-;;
-;; First, save this file as transpose-frame.el and byte-compile in a directory
-;; that is listed in load-path.
-;;
-;; Put the following in your .emacs file:
-;;
-;;   (require 'transpose-frame)
-;;
-;; To swap x-direction and y-direction of windows arrangement, for example,
-;; just type as:
-;;
-;;   M-x transpose-frame
-;;
-;; Have fun!
-;;
-
-;;; ChangeLog:
-
-;; 2011-03-01  S. Irie
-;;        * Version 0.1.0
-;;        * Save more information such as hscroll, margins, fringes, etc.
-;;        * Bug fix
-;; 2011-02-28  S. Irie
-;;        * Version 0.0.1
-;;        * Initial version
-
-;;; ToDo:
-
 ;;; Code:
-
-;; Internal functions
+;;; Internal functions
 
 (defun transpose-frame-get-arrangement (&optional frame subtree)
   (let ((tree (or subtree
@@ -181,12 +148,12 @@
           (apply 'set-window-fringes window (pop config))
           (set-window-dedicated-p window (pop config))
           (set-window-redisplay-end-trigger window (pop config))
-          (let ((orig-window (pop config))
-                (ol-func (lambda (ol)
-                           (if (eq (overlay-get ol 'window) orig-window)
-                               (overlay-put ol 'window window))))
-                (ol-lists (with-current-buffer buffer
-                            (overlay-lists))))
+          (let* ((orig-window (pop config))
+                 (ol-func (lambda (ol)
+                            (when (eq (overlay-get ol 'window) orig-window)
+                              (overlay-put ol 'window window))))
+                 (ol-lists (with-current-buffer buffer
+                             (overlay-lists))))
             (mapc ol-func (car ol-lists))
             (mapc ol-func (cdr ol-lists)))
           (if (car config) (select-window window)))
@@ -209,7 +176,7 @@
         (apply 'transpose-frame-set-arrangement
                (caar config) window how)))))
 
-;; User commands
+;;; User commands
 
 ;;;###autoload
 (defun transpose-frame (&optional frame)
@@ -218,7 +185,7 @@ Omitting FRAME means currently selected frame."
   (interactive)
   (transpose-frame-set-arrangement (transpose-frame-get-arrangement frame) frame
                                    'transpose)
-  (if (interactive-p) (recenter)))
+  (when (called-interactively-p 'any) (recenter)))
 
 ;;;###autoload
 (defun flip-frame (&optional frame)
@@ -251,7 +218,7 @@ Omitting FRAME means currently selected frame."
   (interactive)
   (transpose-frame-set-arrangement (transpose-frame-get-arrangement frame) frame
                                    'transpose 'flop)
-  (if (interactive-p) (recenter)))
+  (when (called-interactively-p 'any) (recenter)))
 
 ;;;###autoload
 (defun rotate-frame-anticlockwise (&optional frame)
@@ -260,9 +227,11 @@ Omitting FRAME means currently selected frame."
   (interactive)
   (transpose-frame-set-arrangement (transpose-frame-get-arrangement frame) frame
                                    'transpose 'flip)
-  (if (interactive-p) (recenter)))
+  (when (called-interactively-p 'any) (recenter)))
 
+;;; _
+;; Local Variables:
+;; indent-tabs-mode: nil
+;; End:
 (provide 'transpose-frame)
-
-;;;
 ;;; transpose-frame.el ends here
