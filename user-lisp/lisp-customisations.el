@@ -166,10 +166,10 @@ test with the same name."
    (remove '("\\.rkt\\'" . scheme-mode) auto-mode-alist)))
 
 ;; Common Lisp configuration
-(use-package slime
+(setq inferior-lisp-program "/usr/bin/sbcl")
+(use-package sly
   :config
-  (setq inferior-lisp-program "/usr/bin/sbcl")
-  (define-key slime-mode-map (kbd "C-c e") 'slime-eval-defun))
+  (define-key sly-mode-map (kbd "C-c e") 'sly-eval-defun))
 
 ;; Ensure elisp code is continuously indented.
 (use-package aggressive-indent
