@@ -1,3 +1,29 @@
+(defun wh/rust-wrap-dbg (start end)
+  "Wrap the current selection in dbg!(..)."
+  (interactive "r")
+  (save-excursion
+    (goto-char end)
+    (insert ")")
+    (goto-char start)
+    (insert "dbg!(")))
+
+(defun wh/rust-unwrap-dbg ()
+  "Remove dbg!(foo) to just foo on the line at point."
+  (interactive)
+
+  (save-excursion
+    (beginning-of-line)
+    (search-forward "dbg!(")
+    (sp-splice-sexp)
+    (backward-delete-char 4)))
+
+(defun wh/rust-dbg-dwim ()
+  "Insert dbg!() if region is active, otherwise remove."
+  (interactive)
+  (if (region-active-p)
+      (wh/rust-wrap-dbg (region-beginning) (region-end))
+    (wh/rust-unwrap-dbg)))
+
 (use-package rust-mode
   :config
   (require 'f)
@@ -34,26 +60,7 @@ foo -> &foo[..]"
 
   (define-key rust-mode-map (kbd "C-c s") #'wh/rust-vec-as-slice)
 
-  (defun wh/rust-wrap-dbg (start end)
-    "Wrap the current selection in dbg!(..)."
-    (interactive "r")
-    (save-excursion
-      (goto-char end)
-      (insert ")")
-      (goto-char start)
-      (insert "dbg!(")))
-
-  (define-key rust-mode-map (kbd "C-c d") #'wh/rust-wrap-dbg))
-
-(defun wh/rust-unwrap-dbg ()
-  "Remove dbg!(foo) to just foo on the line at point."
-  (interactive)
-
-  (save-excursion
-    (beginning-of-line)
-    (search-forward "dbg!(")
-    (sp-splice-sexp)
-    (backward-delete-char 4)))
+  (define-key rust-mode-map (kbd "C-c d") #'wh/rust-dbg-dwim))
 
 (require 'lsp-customisations)
 
