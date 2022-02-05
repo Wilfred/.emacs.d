@@ -1254,6 +1254,7 @@ https://github.com/bbatsov/crux/issues/20
   (require 'python-customisations)
   (require 'rust-customisations)
   (require 'sh-customisations)
+  (require 'typescript-customisations)
   (require 'xml-customisations)
   (require 'html-customisations)
   (require 'lsp-customisations)

@@ -1034,6 +1034,7 @@ Visit the file after creation."
 (require 'python-customisations)
 (require 'rust-customisations)
 (require 'sh-customisations)
+(require 'typescript-customisations)
 (require 'xml-customisations)
 (require 'html-customisations)
 (require 'lsp-customisations)
