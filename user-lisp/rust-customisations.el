@@ -24,39 +24,39 @@
       (wh/rust-wrap-dbg (region-beginning) (region-end))
     (wh/rust-unwrap-dbg)))
 
+(defun wh/rust-company-settings ()
+  "Set up company settings for rust buffers."
+  (setq-local company-idle-delay 0.3))
+
+(defun wh/rust-toggle-visibility ()
+  "Toggle the public visibility of the function at point."
+  (interactive)
+  (save-excursion
+    ;; If we're already at the beginning of the function definition,
+    ;; `beginning-of-defun' moves to the previous function, so move elsewhere.
+    (end-of-line)
+
+    (beginning-of-defun)
+    (if (looking-at "pub ")
+        (delete-char 4)
+      (insert "pub "))))
+
+(defun wh/rust-vec-as-slice ()
+  "Convert the vector expression at point to a slice.
+foo -> &foo[..]"
+  (interactive)
+  (insert "&")
+  (forward-symbol 1)
+  (insert "[..]"))
+
 (use-package rust-mode
   :config
   (require 'f)
   (add-to-list 'exec-path (f-expand "~/.cargo/bin"))
 
-  (defun wh/rust-company-settings ()
-    "Set up company settings for rust buffers."
-    (setq-local company-idle-delay 0.3))
-
   (add-hook 'rust-mode-hook #'wh/rust-company-settings)
 
-  (defun wh/rust-toggle-visibility ()
-    "Toggle the public visibility of the function at point."
-    (interactive)
-    (save-excursion
-      ;; If we're already at the beginning of the function definition,
-      ;; `beginning-of-defun' moves to the previous function, so move elsewhere.
-      (end-of-line)
-
-      (beginning-of-defun)
-      (if (looking-at "pub ")
-          (delete-char 4)
-        (insert "pub "))))
-
   (define-key rust-mode-map (kbd "C-c v") #'wh/rust-toggle-visibility)
-
-  (defun wh/rust-vec-as-slice ()
-    "Convert the vector expression at point to a slice.
-foo -> &foo[..]"
-    (interactive)
-    (insert "&")
-    (forward-symbol 1)
-    (insert "[..]"))
 
   (define-key rust-mode-map (kbd "C-c s") #'wh/rust-vec-as-slice)
 
