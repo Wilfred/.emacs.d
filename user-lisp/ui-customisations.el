@@ -299,6 +299,8 @@ If it is split, repeat the current buffer in a vertical split."
 ;; keybinding for `compose-mail', which I don't use.
 (global-set-key (kbd "C-x m") #'wh/switch-magit-status-buffer)
 
+(add-hook 'prog-mode-hook #'git-gutter-mode)
+
 ;; Loosely based on `erc-remove-text-properties-region'.
 (defun wh/remove-text-properties-region ()
   "Remove all text properties from the current buffer."
