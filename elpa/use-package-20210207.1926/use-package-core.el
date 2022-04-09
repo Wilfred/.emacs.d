@@ -6,7 +6,7 @@
 ;; Maintainer: John Wiegley <johnw@newartisans.com>
 ;; Created: 17 Jun 2012
 ;; Modified: 29 Nov 2017
-;; Version: 2.4
+;; Version: 2.4.1
 ;; Package-Requires: ((emacs "24.3"))
 ;; Keywords: dotemacs startup speed config package
 ;; URL: https://github.com/jwiegley/use-package
@@ -43,6 +43,16 @@
 (require 'cl-lib)
 (require 'tabulated-list)
 
+(eval-and-compile
+  ;; Declare a synthetic theme for :custom variables.
+  ;; Necessary in order to avoid having those variables saved by custom.el.
+  (deftheme use-package))
+
+(enable-theme 'use-package)
+;; Remove the synthetic use-package theme from the enabled themes, so
+;; iterating over them to "disable all themes" won't disable it.
+(setq custom-enabled-themes (remq 'use-package custom-enabled-themes))
+
 (if (and (eq emacs-major-version 24) (eq emacs-minor-version 3))
     (defsubst hash-table-keys (hash-table)
       "Return a list of keys in HASH-TABLE."
@@ -56,7 +66,7 @@
   "A use-package declaration for simplifying your `.emacs'."
   :group 'startup)
 
-(defconst use-package-version "2.4"
+(defconst use-package-version "2.4.1"
   "This version of use-package.")
 
 (defcustom use-package-keywords
@@ -122,6 +132,13 @@ otherwise requested."
   "If non-nil, issue warning instead of error when unknown
 keyword is encountered. The unknown keyword and its associated
 arguments will be ignored in the `use-package' expansion."
+  :type 'boolean
+  :group 'use-package)
+
+(defcustom use-package-use-theme t
+  "If non-nil, use a custom theme to avoid saving :custom
+variables twice (once in the Custom file, once in the use-package
+call)."
   :type 'boolean
   :group 'use-package)
 
@@ -1029,11 +1046,11 @@ meaning:
   "use-package statistics"
   "Show current statistics gathered about use-package declarations."
   (setq tabulated-list-format
-        ;; The sum of column width is 80 caracters:
-        #[("Package" 25 t)
-          ("Status" 13 t)
-          ("Last Event" 23 t)
-          ("Time" 10 t)])
+        ;; The sum of column width is 80 characters:
+        [("Package" 25 t)
+         ("Status" 13 t)
+         ("Last Event" 23 t)
+         ("Time" 10 t)])
   (tabulated-list-init-header))
 
 (defun use-package-statistics-gather (keyword name after)
@@ -1387,15 +1404,34 @@ no keyword implies `:all'."
 (defun use-package-handler/:custom (name _keyword args rest state)
   "Generate use-package custom keyword code."
   (use-package-concat
-   (mapcar
-    #'(lambda (def)
-        (let ((variable (nth 0 def))
-              (value (nth 1 def))
-              (comment (nth 2 def)))
-          (unless (and comment (stringp comment))
-            (setq comment (format "Customized with use-package %s" name)))
-          `(customize-set-variable (quote ,variable) ,value ,comment)))
-    args)
+   (if (bound-and-true-p use-package-use-theme)
+       `((let ((custom--inhibit-theme-enable nil))
+           ;; Declare the theme here so use-package can be required inside
+           ;; eval-and-compile without warnings about unknown theme.
+           (unless (memq 'use-package custom-known-themes)
+             (deftheme use-package)
+             (enable-theme 'use-package)
+             (setq custom-enabled-themes (remq 'use-package custom-enabled-themes)))
+           (custom-theme-set-variables
+            'use-package
+            ,@(mapcar
+               #'(lambda (def)
+                   (let ((variable (nth 0 def))
+                         (value (nth 1 def))
+                         (comment (nth 2 def)))
+                     (unless (and comment (stringp comment))
+                       (setq comment (format "Customized with use-package %s" name)))
+                     `'(,variable ,value nil () ,comment)))
+               args))))
+     (mapcar
+      #'(lambda (def)
+          (let ((variable (nth 0 def))
+                (value (nth 1 def))
+                (comment (nth 2 def)))
+            (unless (and comment (stringp comment))
+              (setq comment (format "Customized with use-package %s" name)))
+            `(customize-set-variable (quote ,variable) ,value ,comment)))
+      args))
    (use-package-process-keywords name rest state)))
 
 ;;;; :custom-face
@@ -1468,7 +1504,7 @@ no keyword implies `:all'."
     (use-package-concat
      (when use-package-compute-statistics
        `((use-package-statistics-gather :config ',name nil)))
-     (if (or (null arg) (equal arg '(t)))
+     (if (and (or (null arg) (equal arg '(t))) (not use-package-inject-hooks))
          body
        (use-package-with-elapsed-timer
            (format "Configuring package %s" name-symbol)
@@ -1548,9 +1584,11 @@ this file.  Usage:
                  `:magic-fallback', or `:interpreter'.  This can be an integer,
                  to force loading after N seconds of idle time, if the package
                  has not already been loaded.
-:after           Defer loading of a package until after any of the named
-                 features are loaded.
-:demand          Prevent deferred loading in all cases.
+:after           Delay the use-package declaration until after the named modules
+                 have loaded. Once load, it will be as though the use-package
+                 declaration (without `:after') had been seen at that moment.
+:demand          Prevent the automatic deferred loading introduced by constructs
+                 such as `:bind' (see `:defer' for the complete list).
 
 :if EXPR         Initialize and load only if EXPR evaluates to a non-nil value.
 :disabled        The package is ignored completely if this keyword is present.
@@ -1559,7 +1597,9 @@ this file.  Usage:
 :load-path       Add to the `load-path' before attempting to load the package.
 :diminish        Support for diminish.el (if installed).
 :delight         Support for delight.el (if installed).
-:custom          Call `customize-set-variable' with each variable definition.
+:custom          Call `custom-set' or `set-default' with each variable
+                 definition without modifying the Emacs `custom-file'.
+                 (compare with `custom-set-variables').
 :custom-face     Call `customize-set-faces' with each face definition.
 :ensure          Loads the package using package.el if necessary.
 :pin             Pin the package to an archive."
