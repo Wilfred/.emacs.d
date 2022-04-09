@@ -1,10 +1,12 @@
-;;; bind-key-autoloads.el --- automatically extracted autoloads
+;;; bind-key-autoloads.el --- automatically extracted autoloads  -*- lexical-binding: t -*-
 ;;
 ;;; Code:
-(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
+
+(add-to-list 'load-path (directory-file-name
+                         (or (file-name-directory #$) (car load-path))))
+
 
-;;;### (autoloads nil "bind-key" "bind-key.el" (22697 45822 717170
-;;;;;;  372000))
+;;;### (autoloads nil "bind-key" "bind-key.el" (0 0 0 0))
 ;;; Generated autoloads from bind-key.el
 
 (autoload 'bind-key "bind-key" "\
@@ -14,6 +16,15 @@ KEY-NAME may be a vector, in which case it is passed straight to
 `define-key'. Or it may be a string to be interpreted as
 spelled-out keystrokes, e.g., \"C-c C-z\". See documentation of
 `edmacro-mode' for details.
+
+COMMAND must be an interactive function or lambda form.
+
+KEYMAP, if present, should be a keymap variable or symbol.
+For example:
+
+  (bind-key \"M-h\" #'some-interactive-function my-mode-map)
+
+  (bind-key \"M-h\" #'some-interactive-function 'my-mode-map)
 
 If PREDICATE is non-nil, it is a form evaluated to determine when
 a key should be bound. It must return non-nil in such cases.
@@ -58,9 +69,9 @@ function symbol (unquoted).
 \(fn &rest ARGS)" nil t)
 
 (autoload 'describe-personal-keybindings "bind-key" "\
-Display all the personal keybindings defined by `bind-key'.
+Display all the personal keybindings defined by `bind-key'." t nil)
 
-\(fn)" t nil)
+(register-definition-prefixes "bind-key" '("bind-key" "compare-keybindings" "get-binding-description" "override-global-m" "personal-keybindings"))
 
 ;;;***
 
@@ -68,5 +79,6 @@ Display all the personal keybindings defined by `bind-key'.
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
+;; coding: utf-8
 ;; End:
 ;;; bind-key-autoloads.el ends here
