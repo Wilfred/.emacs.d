@@ -17,41 +17,22 @@
 ;; For a full copy of the GNU General Public License
 ;; see <http://www.gnu.org/licenses/>.
 
-(ns lispy-clojure
+(ns lispy.clojure
   (:require [clojure.repl :as repl]
             [clojure.pprint]
             [clojure.java.io :as io]
             [clojure.string :as str])
-  (:use [cemerick.pomegranate :only (add-dependencies)])
-  (:import (java.io File LineNumberReader InputStreamReader
-                    PushbackReader FileInputStream)
-           (clojure.lang RT Reflector)))
+  (:import
+   (java.io File LineNumberReader InputStreamReader
+            PushbackReader FileInputStream)
+   (clojure.lang RT)))
 
-(defn use-package [name version]
-  (add-dependencies
-    :coordinates [[name version]]
-    :repositories (merge cemerick.pomegranate.aether/maven-central
-                         {"clojars" "https://clojars.org/repo"})))
-
-(defn expand-file-name [name dir]
-  (. (io/file dir name) getCanonicalPath))
-
-(use-package 'compliment "0.3.5")
-(require '[compliment.core :as compliment])
-
-(use-package 'me.raynes/fs "1.4.6")
-(require '[me.raynes.fs :as fs])
-
-(cemerick.pomegranate/add-classpath
-  (expand-file-name "../lib/tools.jar" (System/getProperty "java.home")))
-(use-package 'cider/orchard "0.3.0")
-(require '[orchard.java.parser :as parser])
-
-(defmacro xcond [& clauses]
+(defmacro xcond
   "Common Lisp style `cond'.
 
 It's more structured than `cond', thus exprs that use it are lot more
 malleable to refactoring."
+  [& clauses]
   (when clauses
     (let [clause (first clauses)]
       (if (= (count clause) 1)
@@ -63,23 +44,11 @@ malleable to refactoring."
            (xcond
              ~@(next clauses)))))))
 
-(defn fetch-packages []
-  (xcond ((fs/exists? "deps.edn")
-          (println "fixme"))
-         ((fs/exists? "project.clj")
-          (let [deps (->> (slurp "project.clj")
-                          (read-string)
-                          (drop 3)
-                          (partition 2)
-                          (map vec)
-                          (into {})
-                          :dependencies)]
-            (doseq [[name ver] deps]
-              (use-package name ver))))
-         (:else
-          (throw
-            (ex-info "Found no project.clj or deps.edn"
-                     {:cwd fs/*cwd*})))))
+(defn file-exists? [f]
+  (. (io/file f) exists))
+
+(defn expand-file-name [name dir]
+  (. (io/file dir name) getCanonicalPath))
 
 (defn expand-home
   [path]
@@ -250,7 +219,7 @@ malleable to refactoring."
    (let [[_do & forms] (dest bindings)
          [defs out] (partition-by map? forms)]
      `(let ~(vec (mapcat (fn [[_ n v]] [n v]) defs))
-        ~@(if (not= *ns* nspc)
+        ~@(when (not= *ns* nspc)
             `((in-ns '~(ns-name nspc))))
         ~@(map
             (fn [x]
@@ -305,7 +274,7 @@ malleable to refactoring."
   (. obj getDeclaredConstructors))
 
 (defn format-ctor [s]
-  (let [[_ name args] (re-find #"public (.*)\((.*)\)" s)]
+  (let [[_ name args] (re-find #"(?:public|protected) (.*)\((.*)\)" s)]
     (str name
          "."
          (if (= args "")
@@ -327,7 +296,7 @@ malleable to refactoring."
        (or
          (resolve sym)
          (first (keep #(ns-resolve % sym) (all-ns)))
-         (if-let [val (try (load-string (str sym)) (catch Exception e))]
+         (when-let [val (try (load-string (str sym)) (catch Exception _e))]
            (list 'variable (str val)))))]
 
     [(keyword? sym) 'keyword]
@@ -356,7 +325,7 @@ malleable to refactoring."
     (xcond
       ((= 'special rsym)
        (->> (with-out-str
-              (eval (list 'clojure.repl/doc sym)))
+              (eval (list #'repl/doc sym)))
             (re-find #"\(.*\)")
             read-string rest
             (map str)
@@ -417,7 +386,7 @@ malleable to refactoring."
        (and
          (reader= (first a) (first b))
          (reader= (rest a) (rest b)))))
-    (catch Exception e
+    (catch Exception _e
       (= a b))))
 
 (defn position [x coll equality]
@@ -436,14 +405,15 @@ malleable to refactoring."
     expr
     (let [idx (position expr context reader=)]
       (xcond
-        ((#{'defproject} (first expr))
-         `(fetch-packages))
         ((nil? idx)
          expr)
+        ;; [x |(+ 1 2) y (+ 3 4)] => {:x 3}
+        ;; TODO: would be better to have 1 level higher context, so that we just check
+        ;; (= (first context) 'let)
         ((and (vector? context)
-              (not (symbol? (context idx)))
-              ((some-fn symbol? vector? map?)
-               (context (dec idx))))
+              (= 0 (rem (count context) 2))
+              (= 0 (rem (inc idx) 2))
+              (every? (some-fn symbol? vector? map?) (take-nth 2 context)))
          (shadow-dest
            (take 2 (drop (- idx 1) context))))
         ((or (nil? context)
@@ -453,7 +423,7 @@ malleable to refactoring."
               (vector? expr)
               (= 2 (count expr)))
          (shadow-dest
-           [(first expr) (first (second expr))]))
+           [(first expr) (first (eval `(with-shadows ~(second expr))))]))
         ((and (#{'dotimes} (first context))
               (vector? expr)
               (= 2 (count expr)))
@@ -469,9 +439,8 @@ malleable to refactoring."
              (= 'defn (first expr))
              file line)
     (let [arglist-pos (first (keep-indexed
-                               (fn [i x] (if (or
-                                               (vector? x)
-                                               (list? x)) i))
+                               (fn [i x] (when (or (vector? x) (list? x))
+                                           i))
                                expr))
           expr-head (take arglist-pos expr)
           expr-tail (drop arglist-pos expr)
@@ -484,18 +453,17 @@ malleable to refactoring."
                 expr-map)
         ~@expr-tail))))
 
-(defn add-location-to-def [expr file line]
-  (let [name (nth expr 1)
-        [doc init] (if (and (string? (nth expr 2)) (> (count expr) 3))
-                     (rest expr)
-                     (cons "" (drop 2 expr)))]
-    (list 'def
-          (with-meta
-            name
-            {:l-file file
-             :l-line line})
-          doc
-          init)))
+(defn add-location-to-def
+  [[_def name & args] file line]
+  (apply list
+         _def
+         (with-meta
+           name
+           {:l-file file
+            :l-line line})
+         (if (> (count args) 1)
+           args
+           (cons "" args))))
 
 (defn add-location-to-deflike [expr file line]
   (when (and file line (list? expr))
@@ -503,6 +471,17 @@ malleable to refactoring."
             (add-location-to-def expr file line))
            ((= (first expr) 'defn)
             (add-location-to-defn expr file line)))))
+
+(defn read-string-all
+  "Read all objects from the string S."
+  [s]
+  (let [reader (java.io.PushbackReader.
+                 (java.io.StringReader. s))]
+    (loop [res []]
+      (if-let [x (try (read reader)
+                      (catch Exception _e))]
+        (recur (conj res x))
+        res))))
 
 (defn reval [e-str context-str & {:keys [file line]}]
   (let [expr (read-string e-str)
@@ -525,7 +504,7 @@ malleable to refactoring."
                  (clojure.core/str "error: " ~ 'e)))))))
 
 (defn file->elisp [f]
-  (if (fs/exists? f)
+  (if (file-exists? f)
     f
     (. (io/resource f) getPath)))
 
@@ -535,33 +514,7 @@ malleable to refactoring."
     (xcond ((:l-file m)
             (list (:l-file m) (:l-line m)))
            ((and (:file m) (not (re-matches #"^/tmp/" (:file m))))
-            (list (file->elisp (:file m)) (:line m)))
-           ((class? rs)
-            (let [sym (symbol (class-name rs))
-                  info (parser/source-info sym)]
-              (list
-                (file->elisp
-                  (:file info))
-                (:line info))))
-           ((nil? rs)
-            (let [name (str sym)
-                  [cls method] (str/split name #"/")
-                  file (-> (clojure.core/symbol cls)
-                           (resolve)
-                           (class-name)
-                           (parser/source-path)
-                           (file->elisp))
-                  line (-> (symbol cls)
-                           (resolve)
-                           (class-name)
-                           (symbol)
-                           (parser/source-info)
-                           (:members)
-                           (get (clojure.core/symbol method))
-                           (vals)
-                           (first)
-                           (:line))]
-              (list file line))))))
+            (list (file->elisp (:file m)) (:line m))))))
 
 (defn pp [expr]
   (with-out-str
@@ -579,13 +532,3 @@ malleable to refactoring."
            (fn [v]
              (let [m (meta v)]
                (str v "\n" (:arglists m) "\n" (:doc m))))))))
-
-(defn complete [prefix]
-  (compliment/completions
-    prefix
-    {:context :same :plain-candidates true}))
-
-(let [dd (fs/parent (:file (meta #'use-package)))
-      fname (java.io.File. dd "lispy-clojure-test.clj")]
-  (when (fs/exists? fname)
-    (load-file (str fname))))
