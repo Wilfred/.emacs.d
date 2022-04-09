@@ -25,11 +25,9 @@
 
 (require 'lsp-mode)
 (require 'json)
-(require 'f)
-(require 'rx)
 
-(defun dap-launch-remove-comments ()
-  "Remove all C-style comments in the current buffer.
+(defun dap-launch-sanitize-json ()
+  "Remove all C-style comments and trailing commas in the current buffer.
 Comments in strings are ignored. The buffer is modified in place.
 Replacement starts at point, and strings before it are ignored,
 so you may want to move point to `point-min' with `goto-char'
@@ -40,33 +38,57 @@ supported."
            (or (group
                 (or (: "//" (* nonl) eol)
                     (: "/*" (* (or (not (any ?*))
-                                   (: (+ ?*) (not (any ?/))))) (+ ?*) ?/)))
+                                   (: (+ ?*) (not (any ?/))))) (+ ?*) ?/)
+                    (: "," (group (* (any blank space ?\v ?\u2028 ?\u2029))
+                                  (any ?\} ?\])))))
                (: "\"" (* (or (not (any ?\\ ?\")) (: ?\\ nonl))) "\"")))
           nil t)
     ;; we matched a comment
     (when (match-beginning 1)
-      (replace-match ""))))
+      (replace-match (or (match-string 2) "")))))
 
+(declare-function dap-variables-find-vscode-config "dap-variables" (f root))
 (defun dap-launch-find-launch-json ()
-  "Return the location of the launch.json file in the current project."
-  (when-let ((project (lsp-workspace-root))
-             (launch-json (f-join project "launch.json"))
-             ;; launch.json files can also be found in a .vscode folder at the
-             ;; project root.
-             (launch-json-vscode (f-join project ".vscode" "launch.json")))
-    (cond ((file-exists-p launch-json-vscode) launch-json-vscode)
-          ((file-exists-p launch-json) launch-json)
-          (t nil))))
+  "Return the path to current project's launch.json file.
+Yields nil if it cannot be found or there is no project."
+  (when-let ((root (lsp-workspace-root)))
+    (require 'dap-variables)
+    (dap-variables-find-vscode-config "launch.json" root)))
 
 (defun dap-launch-get-launch-json ()
   "Parse the project's launch.json as json data and return the result."
   (when-let ((launch-json (dap-launch-find-launch-json))
              (json-object-type 'plist)
-             (json-array-type 'list))
+             ;; Use 'vector instead of 'list. With 'list for array type,
+             ;; json-encode-list interpreted a list with one plist element as
+             ;; an alist. Using 'list, it turned the following value of
+             ;; pathMappings:
+             ;;
+             ;;     "pathMappings": [
+             ;;         {
+             ;;             "localRoot": "${workspaceFolder}",
+             ;;             "remoteRoot": "."
+             ;;         }
+             ;;     ]
+             ;;
+             ;; into:
+             ;;
+             ;;     ((:localRoot "${workspaceFolder}" :remoteRoot "."))
+             ;;
+             ;; and then into:
+             ;;
+             ;;     "pathMappings": {
+             ;;         "localRoot": [
+             ;;             "${workspaceFolder}",
+             ;;             "remoteRoot",
+             ;;             "."
+             ;;         ]
+             ;;     }
+             (json-array-type 'vector))
     (with-temp-buffer
       ;; NOTE: insert-file-contents does not move point
       (insert-file-contents launch-json)
-      (dap-launch-remove-comments)
+      (dap-launch-sanitize-json)
       ;; dap-launch-remove-comments does move point
       (goto-char (point-min))
 

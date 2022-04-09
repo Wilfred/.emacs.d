@@ -19,7 +19,7 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;; URL: https://github.com/yyoncho/dap-mode
-;; Package-Requires: ((emacs "25.1") (dash "2.14.1") (lsp-mode "4.0"))
+;; Package-Requires: ((emacs "25.1") (dash "2.14.1") (lsp-mode "4.0") (f "0.20.0"))
 ;; Version: 0.2
 
 ;;; Commentary:
@@ -27,24 +27,35 @@
 ;;; Code:
 
 (require 'dap-mode)
+(require 'f)
+(require 'dom)
 
-(defcustom dap-netcore-install-dir user-emacs-directory
-  "Install directory for netcoredbg.
-The slash is expected at the end."
+(defcustom dap-netcore-install-dir (f-join user-emacs-directory ".cache" "lsp" "netcoredbg")
+  "Install directory for netcoredbg."
   :group 'dap-netcore
   :risky t
-  :type 'directory
-  )
+  :type 'directory)
 
-(defcustom dap-netcore-download-url
-  (pcase system-type
-    (`gnu/linux "https://github.com/Samsung/netcoredbg/releases/download/latest/netcoredbg-linux-master.tar.gz")
-    (`darwin "https://github.com/Samsung/netcoredbg/releases/download/latest/netcoredbg-osx-master.tar.gz")
-    (`windows-nt "https://github.com/Samsung/netcoredbg/releases/download/latest/netcoredbg-win64-master.zip"))
-  "Netcoredbg download url."
+(defcustom dap-netcore-download-url nil
+  "Netcoredbg download url.
+See asset links here https://github.com/Samsung/netcoredbg/releases/ and select the correct one for your OS.
+Will be set automatically in Emacs 27.1 or newer with libxml2 support."
   :group 'dap-netcore
   :risky t
   :type 'string)
+
+(defun dap-netcore-update-debugger ()
+  "Update netcoredbg."
+  (interactive)
+  (let ((backup (concat dap-netcore-install-dir ".old")))
+    (when (f-exists-p dap-netcore-install-dir)
+      (f-move dap-netcore-install-dir backup))
+    (condition-case err
+	(dap-netcore--debugger-install)
+      (error (f-move backup dap-netcore-install-dir)
+	     (signal (car err) (cdr err)))
+      (:success (when (f-exists-p backup)
+		  (f-delete backup t))))))
 
 (defun dap-netcore--debugger-install ()
   "Download the latest version of netcoredbg and extract it to `dap-netcore-install-dir'."
@@ -57,15 +68,54 @@ The slash is expected at the end."
                          (`windows-nt (format "powershell -noprofile -noninteractive -nologo -ex bypass Expand-Archive -path '%s' -dest '%s'" temp-file install-dir-full))
                          ((or `gnu/linux `darwin) (format "mkdir -p %s && tar xvzf %s -C %s" dap-netcore-install-dir temp-file dap-netcore-install-dir))
                          (_ (user-error (format "Unable to extract server - file %s cannot be extracted, please extract it manually" temp-file))))))
-    (url-copy-file dap-netcore-download-url temp-file t)
-    (shell-command unzip-script)))
+    (if (and (not dap-netcore-download-url)
+	     (fboundp 'libxml-available-p)
+	     (fboundp 'dom-search)
+	     (fboundp 'dom-attr))
+	(url-retrieve "https://github.com/Samsung/netcoredbg/releases"
+		      (lambda (_)
+			(setq dap-netcore-download-url
+			      (concat
+			       "https://github.com"
+			       (dom-attr
+				(dom-search
+				 (if (libxml-available-p)
+				     (libxml-parse-html-region (point-min) (point-max))
+				   (xml-parse-region (point-min) (point-max)))
+				 (lambda (node)
+				   (string-match-p (pcase system-type
+						     (`gnu/linux (if (string-match-p system-configuration ".*arm")
+								     ".*linux-arm64\\.tar\\.gz"
+								   ".*linux-amd64\\.tar\\.gz"))
+						     (`darwin ".*osx.*\\.tar\\.gz")
+						     (`windows-nt ".*win64.*\\.zip"))
+						   (or (dom-attr node 'href) ""))))
+				'href)))
+			(lsp-download-install
+			 (lambda (&rest _)
+			   (shell-command unzip-script))
+			 (lambda (error &rest _)
+			   (user-error "Error during netcoredbg downloading: %s" error))
+			 :url dap-netcore-download-url
+			 :store-path temp-file)))
+      (if dap-netcore-download-url
+	  (lsp-download-install
+	   (lambda (&rest _)
+	     (shell-command unzip-script))
+	   (lambda (error &rest _)
+	     (user-error "Error during netcoredbg downloading: %s" error))
+	   :url dap-netcore-download-url
+	   :store-path temp-file)
+	(user-error "`dap-netcore-download-url' is not set. You can customize it")))))
 
 (defun dap-netcore--debugger-cmd ()
   "The location of the netcoredbg executable."
   (let ((file-ext (pcase system-type
                     (`windows-nt ".exe")
                     (_ ""))))
-    (expand-file-name (concat "netcoredbg" file-ext) (concat dap-netcore-install-dir "netcoredbg"))))
+    (or
+     (executable-find "netcoredbg")
+     (expand-file-name (concat "netcoredbg" file-ext) (f-join dap-netcore-install-dir "netcoredbg")))))
 
 (defun dap-netcore--debugger-locate-or-install ()
   "Return the location of netcoredbg."
@@ -81,10 +131,22 @@ The slash is expected at the end."
   (dap--put-if-absent conf :dap-server-path (list (dap-netcore--debugger-locate-or-install) "--interpreter=vscode"))
   (pcase (plist-get conf :mode)
     ("launch"
-     (dap--put-if-absent conf :program (expand-file-name (read-file-name "Select an executable:"))))
+     (dap--put-if-absent
+      conf
+      :program
+      (let ((project-dir (lsp-workspace-root)))
+	(save-mark-and-excursion
+	  (find-file (concat (f-slash project-dir) "*.*proj") t)
+	  (let ((res (if (libxml-available-p)
+			 (libxml-parse-xml-region (point-min) (point-max))
+		       (xml-parse-region (point-min) (point-max)))))
+	    (kill-buffer)
+	    (f-join project-dir "bin" "Debug"
+		    (dom-text (dom-by-tag res 'TargetFramework))
+		    (dom-text (dom-by-tag res 'RuntimeIdentifier))
+		    (concat (f-base project-dir) ".dll")))))))
     ("attach"
      (dap--put-if-absent conf :processId (string-to-number (read-string "Enter PID: " "2345"))))))
-
 
 (dap-register-debug-provider
  "coreclr"
@@ -100,7 +162,8 @@ The slash is expected at the end."
                              (list :type "coreclr"
                                    :request "launch"
                                    :mode "launch"
-                                   :name "NetCoreDbg::Launch"))
+                                   :name "NetCoreDbg::Launch"
+				   :dap-compilation "dotnet build"))
 
 (provide 'dap-netcore)
 ;;; dap-netcore.el ends here

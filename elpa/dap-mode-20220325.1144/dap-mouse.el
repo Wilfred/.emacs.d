@@ -25,7 +25,9 @@
 ;;; Code:
 
 (require 'dap-mode)
+(require 'dap-ui)
 (require 'lsp-mode)
+(require 'lsp-treemacs)
 (require 'tooltip)
 
 (defface  dap-mouse-eval-thing-face
@@ -112,7 +114,8 @@ ACTIVATEP non-nil means activate mouse motion events."
       (kill-local-variable 'track-mouse))))
 
 (defun dap-tooltip-mouse-motion (event)
-  "Command handler for mouse movement events in `dap-mode-map'."
+  "Command handler for mouse movement events in `dap-mode-map'.
+EVENT is the last mouse movement event."
   (interactive "e")
   (tooltip-hide)
   (when (car (mouse-pixel-position))
@@ -129,9 +132,7 @@ If there is an active selection - return it."
       (goto-char point)
       (bounds-of-thing-at-point 'symbol))))
 
-(defvar-local dap-tooltip-bounds nil)
-(defvar-local dap-tooltip--request 0)
-
+(defvar-local dap--tooltip-overlay nil)
 (defun dap-tooltip-post-tooltip ()
   "Clean tooltip properties."
 
@@ -145,43 +146,33 @@ If there is an active selection - return it."
       (lambda ()
         (when (dap-mouse--hide-popup?)
           (posframe-hide dap-mouse-buffer)
-          (when dap-tooltip-bounds
-            (remove-text-properties (car dap-tooltip-bounds)
-                                    (cdr dap-tooltip-bounds)
-                                    '(mouse-face))
+          (when dap--tooltip-overlay
+            (delete-overlay dap--tooltip-overlay)
             ;; restore the selection
             (when (region-active-p)
-              (let ((bounds dap-tooltip-bounds))
+              (let ((start (overlay-start dap--tooltip-overlay))
+                    (end (overlay-end dap--tooltip-overlay)))
                 (run-with-idle-timer
                  0.0
                  nil
                  (lambda ()
                    (let ((point (point)))
-                     (push-mark (car bounds) t t)
-                     (goto-char (cdr bounds))
+                     (push-mark start t t)
+                     (goto-char end)
                      (unless (= point (point))
-                       (exchange-point-and-mark)))))))
-            (setq dap-tooltip-bounds nil))
-
+                       (exchange-point-and-mark))))))))
           (setq dap-mouse--hide-timer nil)
           (remove-hook 'post-command-hook #'dap-tooltip-post-tooltip)))))))
 
-(defun dap-tooltip-tips (event)
-  "Show tip for identifier or selection under the mouse.
-The mouse must either point at an identifier or inside a selected
-region for the tip window to be shown.  In the case of a C program
-controlled by GDB, show the associated #define directives when program is
-not executing.
-
-This function must return nil if it doesn't handle EVENT."
-  (setq dap-tooltip--request (1+ dap-tooltip--request))
-
+(defun dap-tooltip-at-point (&optional pos)
+  "Show information about the variable under point.
+The result is displayed in a `treemacs' `posframe'. POS,
+defaulting to `point', specifies where the cursor is and
+consequently where to show the `posframe'."
+  (interactive)
   (let ((debug-session (dap--cur-session))
-        (mouse-point (posn-point (event-end event)))
-        (request-id dap-tooltip--request))
-    (when (and (eventp event)
-               (dap--session-running debug-session)
-               dap-tooltip-mode
+        (mouse-point (or pos (point))))
+    (when (and (dap--session-running debug-session)
                mouse-point)
       (-when-let* ((active-frame-id (-some->> debug-session
                                       dap--debug-session-active-frame
@@ -189,39 +180,45 @@ This function must return nil if it doesn't handle EVENT."
                    (bounds (dap-tooltip-thing-bounds mouse-point))
                    ((start . end) bounds)
                    (expression (s-trim (buffer-substring start end))))
-        (setq dap-tooltip-bounds bounds)
         (dap--send-message
          (dap--make-request "evaluate"
                             (list :expression expression
                                   :frameId active-frame-id
                                   :context "hover"))
-         (-lambda ((&hash "message" "body" (var &as &hash? "result")))
-           (when (= request-id dap-tooltip--request)
-             (if result
-                 (progn
-                   (add-text-properties start end
-                                        '(mouse-face dap-mouse-eval-thing-face))
-                   (when (get-buffer dap-mouse-buffer)
-                     (kill-buffer dap-mouse-buffer))
-                   (apply #'posframe-show dap-mouse-buffer
-                          :position start
-                          :accept-focus t
-                          dap-mouse-posframe-properties)
-                   (with-current-buffer (get-buffer-create dap-mouse-buffer)
-                     (lsp-treemacs-render
-                      (-let [(&hash "result" "variablesReference" variables-reference) var]
-                        `((:key ,expression
-                                :label ,result
-                                :icon dap-field
-                                :children ,(dap-ui-render-variables
-                                            debug-session
-                                            variables-reference nil))))
-                      ""
-                      nil
-                      (buffer-name)))
-                   (add-hook 'post-command-hook 'dap-tooltip-post-tooltip))
-               (message message))))
-         debug-session))))
+         (dap--resp-handler
+          (-lambda ((&hash "body" (&hash? "result"
+                                          "variablesReference" variables-reference)))
+            (setq dap--tooltip-overlay
+                  (-doto (make-overlay start end)
+                    (overlay-put 'mouse-face 'dap-mouse-eval-thing-face)))
+            ;; Show a dead buffer so that the `posframe' size is consistent.
+            (when (get-buffer dap-mouse-buffer)
+              (kill-buffer dap-mouse-buffer))
+            (unless (and (zerop variables-reference) (string-empty-p result))
+              (apply #'posframe-show dap-mouse-buffer
+                     :position start
+                     :accept-focus t
+                     dap-mouse-posframe-properties)
+              (with-current-buffer (get-buffer-create dap-mouse-buffer)
+                (dap-ui-render-value debug-session expression
+                                     result variables-reference)))
+            (add-hook 'post-command-hook 'dap-tooltip-post-tooltip))
+          ;; TODO: hover failure will yield weird errors involving process
+          ;; filters, so I resorted to this hack; we should proably do proper
+          ;; error handling, with a whitelist of allowable errors.
+          #'ignore)
+         debug-session)))))
+
+(defun dap-tooltip-tips (event)
+  "Show tip for identifier or selection under the mouse.
+The mouse must either point at an identifier or inside a selected
+region for the tip window to be shown. In the case of a C program
+controlled by GDB, show the associated #define directives when
+program is not executing.
+
+This function must return nil if it doesn't handle EVENT."
+  (when (and (eventp event) dap-tooltip-mode)
+    (dap-tooltip-at-point (posn-point (event-end event))))
   "")
 
 (provide 'dap-mouse)

@@ -54,7 +54,12 @@ number - expand N levels."
                  (number :tag "Expand level"))
   :group 'dap-ui)
 
-(defcustom dap-ui-expressiosn-expand-depth nil
+(define-obsolete-variable-alias
+  'dap-ui-expressiosn-expand-depth 'dap-ui-expressions-expand-depth
+  "dap-mode 0.2.0"
+  "This variable is obsolete because it is misspelled.")
+
+(defcustom dap-ui-expressions-expand-depth nil
   "Expressions expand strategy.
 When nil - do not expand.
 t - expand recursively
@@ -146,8 +151,14 @@ number - expand N levels."
   "Face for enabled breakpoint icon in fringe."
   :group 'dap-ui)
 
+(defface dap-ui-controls-fringe
+  '((t :inherit fringe))
+  "Face used for the background of debugger icons in fringe."
+  :group 'dap-ui)
+
 (defcustom  dap-ui-default-fetch-count 30
-  "Default number of variables to load in inspect variables view for array variables."
+  "Default number of variables to load in inspect variables view for
+array variables."
   :group 'dap-ui
   :type 'number)
 
@@ -212,7 +223,7 @@ VISUALS and MSG will be used for the overlay."
 
 (defun dap-ui--clear-breakpoint-overlays ()
   "Remove all overlays that ensime-debug has created."
-  (mapc #'delete-overlay dap-ui--breakpoint-overlays)
+  (mapc #'delete-overlay (-filter #'identity dap-ui--breakpoint-overlays))
   (setq dap-ui--breakpoint-overlays '()))
 
 (defun dap-ui--breakpoint-visuals (breakpoint breakpoint-dap)
@@ -334,6 +345,7 @@ DEBUG-SESSION is the debug session triggering the event."
   :init-value nil
   :global t
   :keymap dap-ui-mode-map
+  :group 'dap-ui
   :require 'dap-ui
   (cond
    (dap-ui-mode
@@ -487,57 +499,58 @@ DEBUG-SESSION is the debug session triggering the event."
               'display `(image :type png
                                :file ,(f-join dap-ui--control-images-root-dir image)
                                :ascent center
-                               :background ,(face-attribute 'fringe :background nil t))
+                               :background ,(face-attribute 'dap-ui-controls-fringe :background nil 'default))
               'local-map (--doto (make-sparse-keymap)
                            (define-key it [mouse-1] command))
               'pointer 'hand
               'help-echo hover-text))
 
 (defun dap-ui--update-controls (&rest _)
-  (let* ((session (dap--cur-session))
-         (stopped? (and session (dap--debug-session-active-frame session)))
-         (running? (and session (dap--session-running session))))
-    (if running?
-        (let ((content (s-concat
-                        (dap-ui--create-command "continue.png" #'dap-continue "Continue")
-                        " "
-                        (dap-ui--create-command (if stopped?
-                                                    "step-over.png"
-                                                  "step-over-disabled.png")
-                                                (when stopped? #'dap-next)
-                                                (if stopped? "Step over"
-                                                  "Session not stopped?"))
-                        " "
-                        (dap-ui--create-command (if stopped? "step-out.png"
-                                                  "step-out-disabled.png")
-                                                (when stopped? #'dap-step-out)
-                                                (if stopped? "Step out"
-                                                  "Session not stopped? "))
-                        " "
-                        (dap-ui--create-command (if stopped? "step-into.png"
-                                                  "step-into-disabled.png")
-                                                (when stopped? #'dap-step-in)
-                                                (if stopped? "Step in"
-                                                  "Session not stopped?"))
-                        " "
-                        (dap-ui--create-command "disconnect.png" #'dap-disconnect "Disconnect")
-                        " "
-                        (dap-ui--create-command "restart.png" #'dap-debug-restart "Restart")))
-              posframe-mouse-banish
-              (pos-frame (-first
-                          (lambda (frame)
-                            (let ((buffer-info (frame-parameter frame 'posframe-buffer)))
-                              (or (equal dap-ui--control-buffer (car buffer-info))
-                                  (equal dap-ui--control-buffer (cdr buffer-info)))))
-                          (frame-list))))
-          (ignore posframe-mouse-banish)
-          (when (eq (selected-frame) pos-frame)
-            (select-frame (frame-parent pos-frame)))
-          (posframe-show dap-ui--control-buffer
-                         :string content
-                         :poshandler #'posframe-poshandler-frame-top-center
-                         :internal-border-width 8))
-      (posframe-hide dap-ui--control-buffer))))
+  (when (posframe-workable-p)
+    (let* ((session (dap--cur-session))
+           (stopped? (and session (dap--debug-session-active-frame session)))
+           (running? (and session (dap--session-running session))))
+      (if running?
+          (let ((content (s-concat
+                          (dap-ui--create-command "continue.png" #'dap-continue "Continue")
+                          " "
+                          (dap-ui--create-command (if stopped?
+                                                      "step-over.png"
+                                                    "step-over-disabled.png")
+                                                  (when stopped? #'dap-next)
+                                                  (if stopped? "Step over"
+                                                    "Session not stopped?"))
+                          " "
+                          (dap-ui--create-command (if stopped? "step-out.png"
+                                                    "step-out-disabled.png")
+                                                  (when stopped? #'dap-step-out)
+                                                  (if stopped? "Step out"
+                                                    "Session not stopped? "))
+                          " "
+                          (dap-ui--create-command (if stopped? "step-into.png"
+                                                    "step-into-disabled.png")
+                                                  (when stopped? #'dap-step-in)
+                                                  (if stopped? "Step in"
+                                                    "Session not stopped?"))
+                          " "
+                          (dap-ui--create-command "disconnect.png" #'dap-disconnect "Disconnect")
+                          " "
+                          (dap-ui--create-command "restart.png" #'dap-debug-restart "Restart")))
+                posframe-mouse-banish
+                (pos-frame (-first
+                            (lambda (frame)
+                              (let ((buffer-info (frame-parameter frame 'posframe-buffer)))
+                                (or (equal dap-ui--control-buffer (car buffer-info))
+                                    (equal dap-ui--control-buffer (cdr buffer-info)))))
+                            (frame-list))))
+            (ignore posframe-mouse-banish)
+            (when (eq (selected-frame) pos-frame)
+              (select-frame (frame-parent pos-frame)))
+            (posframe-show dap-ui--control-buffer
+                           :string content
+                           :poshandler #'posframe-poshandler-frame-top-center
+                           :internal-border-width 8))
+        (posframe-hide dap-ui--control-buffer)))))
 
 ;;;###autoload
 (define-minor-mode dap-ui-controls-mode
@@ -685,7 +698,7 @@ DEBUG-SESSION is the debug session triggering the event."
                             (funcall
                              callback
                              (-map
-                              (-lambda ((stack-frame &as &hash "name" "line" "source"))
+                              (-lambda ((stack-frame &as &hash "name" "line" "source" "instructionPointerReference"))
                                 (let* ((current-session (dap--cur-session))
                                        (icon (if (and
                                                   (equal session current-session)
@@ -718,6 +731,9 @@ DEBUG-SESSION is the debug session triggering the event."
                                                                                     (gethash "name"))))
                                                                  'dap-ui-sessions-thread-active-face
                                                                'dap-ui-sessions-thread-face))
+                                                      (if instructionPointerReference
+                                                          (propertize (format " [%s]" instructionPointerReference) 'face 'dap-ui-sessions-thread-face)
+                                                        "")
                                                       (propertize (format " (%s:%s)" (or (gethash "name" source)
                                                                                          (gethash "path" source))
                                                                           line)
@@ -764,7 +780,8 @@ DEBUG-SESSION is the debug session triggering the event."
 ;; locals
 
 (defcustom dap-ui-variable-length 30
-  "Default number of variables to load in inspect variables view for array variables."
+  "Default number of variables to load in inspect variables view for
+array variables."
   :group 'dap-ui
   :type 'number)
 
@@ -774,18 +791,25 @@ DEBUG-SESSION is the debug session triggering the event."
                       (list :variablesReference variables-reference
                             :name name
                             :value (read-string (format "Enter value for %s: " name ) value)))
-   ;; FIXME: create properly callback here
-   #'ignore
+   (dap--resp-handler)
    session))
 
 (defun dap-ui-render-variables (debug-session variables-reference _node)
+  "Render hierarchical variables for treemacs.
+Usable as the `treemacs' :children argument, when DEBUG-SESSION
+and VARIABLES-REFERENCE are applied partially.
+
+DEBUG-SESSION specifies the debug session which will be used to
+issue requests.
+
+VARIABLES-REFERENCE specifies the handle returned by the debug
+adapter for acquiring nested variables and must not be 0."
   (when (dap--session-running debug-session)
     (->>
      variables-reference
      (dap-request debug-session "variables" :variablesReference)
      (gethash "variables")
      (-map (-lambda ((&hash "value" "name"
-                            "indexedVariables" _indexed-variables
                             "variablesReference" variables-reference))
              `(:label ,(concat (propertize (format "%s" name)
                                            'face 'font-lock-variable-name-face)
@@ -793,17 +817,66 @@ DEBUG-SESSION is the debug session triggering the event."
                                (propertize (s-truncate dap-ui-variable-length
                                                        (s-replace "\n" "\\n" value))
                                            'help-echo value))
-                      :icon dap-variable
-                      :value ,value
-                      :session ,debug-session
-                      :variables-reference ,variables-reference
-                      :name ,name
-                      ,@(list :actions '(["Set value" dap-ui-set-variable-value]))
-                      :key ,name
-                      ,@(when (and variables-reference (not (zerop variables-reference)))
-                          (list :children (-partial #'dap-ui-render-variables
-                                                    debug-session
-                                                    variables-reference)))))))))
+               :icon dap-variable
+               :value ,value
+               :session ,debug-session
+               :variables-reference ,variables-reference
+               :name ,name
+               :actions '(["Set value" dap-ui-set-variable-value])
+               :key ,name
+               ,@(unless (zerop variables-reference)
+                   (list :children
+                         (-partial #'dap-ui-render-variables debug-session
+                                   variables-reference)))))))))
+
+(defun dap-ui-render-value
+    (debug-session expression value variables-reference)
+  "Render a hover result to the current buffer.
+VALUE is the evaluate result, DEBUG-SESSION the debug session as
+usual and EXPRESSION the expression that was originally
+evaluated. VARIABLES-REFERENCE is returned by the evaluate
+request."
+  (lsp-treemacs-render
+   `((:key ,expression
+      :label ,value
+      :icon dap-field
+      ,@(unless (zerop variables-reference)
+          (list :children
+                (-partial #'dap-ui-render-variables
+                          debug-session
+                          variables-reference)))))
+   "" nil (buffer-name)))
+
+(defun dap-ui-eval-in-buffer (expression)
+  "Like `dap-eval', but in a new treemacs buffer."
+  (interactive "sExpr: ")
+  (let ((debug-session (dap--cur-active-session-or-die)))
+    (if-let ((active-frame-id (-some->> debug-session
+                                dap--debug-session-active-frame
+                                (gethash "id"))))
+        (dap--send-message
+         (dap--make-request "evaluate"
+                            (list :expression expression
+                                  :frameId active-frame-id
+                                  :context "hover"))
+         (dap--resp-handler
+          (-lambda ((&hash "body" (&hash? "result" "variablesReference"
+                                          variables-reference)))
+            (with-current-buffer
+                (get-buffer-create (format "*evaluate %s*" expression))
+              (let ((inhibit-read-only t)) (erase-buffer))
+              (dap-ui-render-value debug-session expression result
+                                   variables-reference)
+              (display-buffer (current-buffer)))))
+         debug-session)
+      (error "`dap-eval-in-buffer': no stopped debug session"))))
+
+(defun dap-ui-eval-variable-in-buffer ()
+  "Evaluate the symbol at point in a new buffer."
+  (interactive)
+  (if-let ((sym (thing-at-point 'symbol)))
+      (dap-ui-eval-in-buffer sym)
+    (user-error "`dap-ui-eval-variable-in-buffer': no symbol at point")))
 
 (defvar dap-ui--locals-timer nil)
 
@@ -849,7 +922,7 @@ DEBUG-SESSION is the debug session triggering the event."
 (defun dap-ui-locals ()
   (interactive)
   (dap-ui--show-buffer (get-buffer-create dap-ui--locals-buffer))
-  (dap-ui-locals--refresh)
+  (dap-ui-locals--refresh-schedule)
   (with-current-buffer dap-ui--locals-buffer
     (add-hook 'dap-terminated-hook #'dap-ui-locals--refresh-schedule)
     (add-hook 'dap-session-changed-hook #'dap-ui-locals--refresh-schedule)
@@ -918,40 +991,40 @@ DEBUG-SESSION is the debug session triggering the event."
                             :frameId active-frame-id
                             :context "watch")]
                       `(:key ,expression
-                             :expression ,expression
-                             :label ,(concat (propertize (format "%s: " expression) 'face 'font-lock-variable-name-face)
-                                             (propertize (s-truncate dap-ui-variable-length
-                                                                     (s-replace "\n" "\\n" result))
-                                                         'help-echo result))
-                             :icon expression
-                             ,@(when (and variables-reference (not (zerop variables-reference)))
-                                 (list :children (-partial #'dap-ui-render-variables debug-session variables-reference)))
-                             :actions (["Remove" dap-ui-expressions-mouse-remove]
-                                       "--"
-                                       ["Add" dap-ui-expressions-add]
-                                       ["Refresh" dap-ui-expressions-refresh])))
+                        :expression ,expression
+                        :label ,(concat (propertize (format "%s: " expression) 'face 'font-lock-variable-name-face)
+                                        (propertize (s-truncate dap-ui-variable-length
+                                                                (s-replace "\n" "\\n" result))
+                                                    'help-echo result))
+                        :icon expression
+                        ,@(when (and variables-reference (not (zerop variables-reference)))
+                            (list :children (-partial #'dap-ui-render-variables debug-session variables-reference)))
+                        :actions (["Remove" dap-ui-expressions-mouse-remove]
+                                  "--"
+                                  ["Add" dap-ui-expressions-add]
+                                  ["Refresh" dap-ui-expressions-refresh])))
                   (error `(:key ,expression
-                                :label ,(concat (propertize (format "%s: " expression) 'face 'font-lock-variable-name-face)
-                                                (propertize (error-message-string err) 'face 'error))
-                                :icon failed-expression
-                                :actions (["Remove" dap-ui-expressions-mouse-remove]
-                                          "--"
-                                          ["Add" dap-ui-expressions-add]
-                                          ["Refresh" dap-ui-expressions-refresh])))))
+                           :label ,(concat (propertize (format "%s: " expression) 'face 'font-lock-variable-name-face)
+                                           (propertize (error-message-string err) 'face 'error))
+                           :icon failed-expression
+                           :actions (["Remove" dap-ui-expressions-mouse-remove]
+                                     "--"
+                                     ["Add" dap-ui-expressions-add]
+                                     ["Refresh" dap-ui-expressions-refresh])))))
             (lambda (expression)
               `(:key ,expression
-                     :expression ,expression
-                     :label ,(concat
-                              (propertize (format "%s: " expression) 'face 'font-lock-variable-name-face)
-                              (propertize "not available" 'face 'italic))
-                     :icon expression
-                     :actions (["Remove" dap-ui-expressions-mouse-remove]
-                               "--"
-                               ["Add" dap-ui-expressions-add]
-                               ["Refresh" dap-ui-expressions-refresh]))))
+                :expression ,expression
+                :label ,(concat
+                         (propertize (format "%s: " expression) 'face 'font-lock-variable-name-face)
+                         (propertize "not available" 'face 'italic))
+                :icon expression
+                :actions (["Remove" dap-ui-expressions-mouse-remove]
+                          "--"
+                          ["Add" dap-ui-expressions-add]
+                          ["Refresh" dap-ui-expressions-refresh]))))
           dap-ui-expressions))
        " Expressions "
-       dap-ui-expressiosn-expand-depth
+       dap-ui-expressions-expand-depth
        dap-ui--expressions-buffer
        '(["Add" dap-ui-expressions-add]
          ["Refresh" dap-ui-expressions-refresh])))))
@@ -1021,15 +1094,14 @@ DEBUG-SESSION is the debug session triggering the event."
   (dap-breakpoint-log-message file-name breakpoint))
 
 (defun dap-ui--breakpoints-data ()
-  (-let (((debug-session &as &dap-session 'launch-args 'initialize-result 'breakpoints all-session-breakpoints)
+  (-let (((debug-session &as &dap-session 'launch-args 'current-capabilities 'breakpoints all-session-breakpoints)
           (or (dap--cur-session)
               (make-dap--debug-session)))
          (lsp-file-truename-cache (ht)))
     (lsp-with-cached-filetrue-name
      (append
       (when (dap--session-running debug-session)
-        (-some->> initialize-result
-          (gethash "body")
+        (-some->> current-capabilities
           (gethash "exceptionBreakpointFilters")
           (-map (-lambda ((&hash "label" "filter" "default"))
                   (list :label (propertize
@@ -1142,21 +1214,27 @@ DEBUG-SESSION is the debug session triggering the event."
   (add-hook 'dap-breakpoints-changed-hook #'dap-ui-breakpoints--refresh)
   (add-hook 'kill-buffer-hook 'dap-ui-breakpoints--cleanup-hooks nil t))
 
+(defvar dap-ui--many-windows-displayed nil)
+
 (defun dap-ui--show-many-windows (_session)
   "Show auto configured feature windows."
-  (seq-doseq (feature-start-stop dap-auto-configure-features)
-    (when-let (start-stop (alist-get feature-start-stop dap-features->windows))
-      (funcall (car start-stop)))))
+  (unless dap-ui--many-windows-displayed
+    (seq-doseq (feature-start-stop dap-auto-configure-features)
+      (when-let (start-stop (alist-get feature-start-stop dap-features->windows))
+        (funcall (car start-stop))))
+    (setq dap-ui--many-windows-displayed t)))
 
 (defun dap-ui--hide-many-windows (_session)
   "Hide all debug windows when sessions are dead."
-  (seq-doseq (feature-start-stop dap-auto-configure-features)
-    (when-let* ((feature-start-stop (alist-get feature-start-stop dap-features->windows))
-                (buffer-name (symbol-value (cdr feature-start-stop))))
-      (when-let (window (get-buffer-window buffer-name))
-        (delete-window window))
-      (and (get-buffer buffer-name)
-           (kill-buffer buffer-name)))))
+  (when dap-ui--many-windows-displayed
+    (seq-doseq (feature-start-stop dap-auto-configure-features)
+      (when-let* ((feature-start-stop (alist-get feature-start-stop dap-features->windows))
+                  (buffer-name (symbol-value (cdr feature-start-stop))))
+        (when-let (window (get-buffer-window buffer-name))
+          (delete-window window))
+        (and (get-buffer buffer-name)
+             (kill-buffer buffer-name))))
+    (setq dap-ui--many-windows-displayed nil)))
 
 ;;;###autoload
 (defun dap-ui-show-many-windows ()
@@ -1260,26 +1338,29 @@ evaluate python in the context of the debugee, ...."
 (defun dap-ui-repl--calculate-candidates ()
   "Calculate completion candidates.
 TEXT is the current input."
-  (let ((text (comint-get-old-input-default))
-        (debug-session (dap--cur-active-session-or-die)))
-    (if-let (frame-id (-some->> debug-session
-                                dap--debug-session-active-frame
-                                (gethash "id")))
-        (cons :async
-              (lambda (callback)
-                (dap--send-message
-                 (dap--make-request "completions"
-                                    (list :frameId frame-id
-                                          :text text
-                                          :column (- (length text) (- (point-at-eol) (point)))))
-                 (dap--resp-handler
-                  (lambda (result)
-                    (-if-let (targets (-some->> result (gethash "body") (gethash "targets")))
-                        (funcall callback (-map (-lambda ((item &as &hash "label" "text" "type"))
-                                                  (propertize label :text text :type type :dap-completion-item item))
-                                                targets))
-                      (funcall callback ()))))
-                 debug-session))))))
+  (when (-some->> (dap--cur-session)
+          (dap--debug-session-current-capabilities)
+          (gethash "supportsCompletionsRequest"))
+    (let ((text (comint-get-old-input-default))
+          (debug-session (dap--cur-active-session-or-die)))
+      (if-let (frame-id (-some->> debug-session
+                          dap--debug-session-active-frame
+                          (gethash "id")))
+          (cons :async
+                (lambda (callback)
+                  (dap--send-message
+                   (dap--make-request "completions"
+                                      (list :frameId frame-id
+                                            :text text
+                                            :column (- (length text) (- (point-at-eol) (point)))))
+                   (dap--resp-handler
+                    (lambda (result)
+                      (-if-let (targets (-some->> result (gethash "body") (gethash "targets")))
+                          (funcall callback (-map (-lambda ((item &as &hash "label" "text" "type"))
+                                                    (propertize label :text text :type type :dap-completion-item item))
+                                                  targets))
+                        (funcall callback ()))))
+                   debug-session)))))))
 
 (defun dap-ui-repl--post-completion (candidate)
   "Post completion handling for CANDIDATE."

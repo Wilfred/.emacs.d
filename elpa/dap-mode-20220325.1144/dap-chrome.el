@@ -50,7 +50,7 @@
   (setq conf (-> conf
                  (plist-put :type "chrome")
                  (plist-put :dap-server-path dap-chrome-debug-program)
-                 (dap--put-if-absent :cwd default-directory)))
+                 (dap--put-if-absent :cwd (expand-file-name default-directory))))
   (dap--plist-delete
    (pcase (plist-get conf :mode)
      ("url" (-> conf
@@ -60,7 +60,8 @@
                 (dap--put-if-absent :webRoot (lsp-workspace-root))))
      ("file" (dap--put-if-absent conf :file
                                  (read-file-name "Select the file to open in the browser:"
-                                                 nil (buffer-file-name) t))))
+                                                 nil (buffer-file-name) t)))
+     (_ conf))
    :mode))
 
 (dap-register-debug-provider "chrome" #'dap-chrome--populate-start-file-args)
