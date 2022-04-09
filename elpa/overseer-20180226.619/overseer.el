@@ -255,8 +255,8 @@ just return nil."
 
 Key bindings:
 \\{overseer-mode-map}"
-  nil
-  " overseer"
+  :init-value nil
+  :lighter " overseer"
   :group 'overseer
   :global nil
   :keymap 'overseer-mode-map)
