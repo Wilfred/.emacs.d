@@ -1,4 +1,4 @@
-;;; aggressive-indent-autoloads.el --- automatically extracted autoloads
+;;; aggressive-indent-autoloads.el --- automatically extracted autoloads  -*- lexical-binding: t -*-
 ;;
 ;;; Code:
 
@@ -26,12 +26,27 @@ then keep indenting until nothing more happens.
 
 (autoload 'aggressive-indent-mode "aggressive-indent" "\
 Toggle Aggressive-Indent mode on or off.
-With a prefix argument ARG, enable Aggressive-Indent mode if ARG is
-positive, and disable it otherwise.  If called from Lisp, enable
-the mode if ARG is omitted or nil, and toggle it if ARG is `toggle'.
+
+This is a minor mode.  If called interactively, toggle the
+`Aggressive-Indent mode' mode.  If the prefix argument is
+positive, enable the mode, and if it is zero or negative, disable
+the mode.
+
+If called from Lisp, toggle the mode if ARG is `toggle'.  Enable
+the mode if ARG is nil, omitted, or is a positive number.
+Disable the mode if ARG is a negative number.
+
+To check whether the minor mode is enabled in the current buffer,
+evaluate `aggressive-indent-mode'.
+
+The mode's hook is called both when the mode is enabled and when
+it is disabled.
+
 \\{aggressive-indent-mode-map}
 
 \(fn &optional ARG)" t nil)
+
+(put 'global-aggressive-indent-mode 'globalized-minor-mode t)
 
 (defvar global-aggressive-indent-mode nil "\
 Non-nil if Global Aggressive-Indent mode is enabled.
@@ -45,19 +60,24 @@ or call the function `global-aggressive-indent-mode'.")
 
 (autoload 'global-aggressive-indent-mode "aggressive-indent" "\
 Toggle Aggressive-Indent mode in all buffers.
-With prefix ARG, enable Global Aggressive-Indent mode if ARG is positive;
-otherwise, disable it.  If called from Lisp, enable the mode if
-ARG is omitted or nil.
+With prefix ARG, enable Global Aggressive-Indent mode if ARG is
+positive; otherwise, disable it.
+
+If called from Lisp, toggle the mode if ARG is `toggle'.
+Enable the mode if ARG is nil, omitted, or is a positive number.
+Disable the mode if ARG is a negative number.
 
 Aggressive-Indent mode is enabled in all buffers where
 `aggressive-indent-mode' would do it.
-See `aggressive-indent-mode' for more information on Aggressive-Indent mode.
+
+See `aggressive-indent-mode' for more information on Aggressive-Indent
+mode.
 
 \(fn &optional ARG)" t nil)
 
 (defalias 'aggressive-indent-global-mode #'global-aggressive-indent-mode)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "aggressive-indent" '("aggressive-indent-")))
+(register-definition-prefixes "aggressive-indent" '("aggressive-indent-"))
 
 ;;;***
 
