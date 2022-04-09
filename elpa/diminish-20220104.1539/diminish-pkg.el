@@ -1,0 +1,2 @@
+;;; Generated package description from diminish.el  -*- no-byte-compile: t -*-
+(define-package "diminish" "20220104.1539" "Diminished modes are minor modes with no modeline display" '((emacs "24.3")) :commit "6b7e837b0cf0129e9d7d6abae48093cf599bb9e8" :authors '(("Will Mengarini" . "seldon@eskimo.com")) :maintainer '("Martin Yrjölä" . "martin.yrjola@gmail.com") :keywords '("extensions" "diminish" "minor" "codeprose") :url "https://github.com/myrjola/diminish.el")
