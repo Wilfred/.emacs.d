@@ -10,19 +10,19 @@
 (setq show-paren-when-point-inside-paren t)
 
 ;; Don't show the git branch on the line.
-(setq mode-line-format
-      '("%e"
-        mode-line-front-space
-        mode-line-mule-info
-        mode-line-client
-        mode-line-modified
-        mode-line-remote
-        mode-line-frame-identification
-        mode-line-buffer-identification
-        "   "
-        mode-line-position
-        mode-line-modes
-        mode-line-misc-info))
+(setq-default mode-line-format
+              '("%e"
+                mode-line-front-space
+                mode-line-mule-info
+                mode-line-client
+                mode-line-modified
+                mode-line-remote
+                mode-line-frame-identification
+                mode-line-buffer-identification
+                "   "
+                mode-line-position
+                mode-line-modes
+                mode-line-misc-info))
 
 ;; Show debug-on-error and debug-on-quit status in the modeline.
 (mode-line-debug-mode)
