@@ -64,3 +64,5 @@ anaconda-mode
 forge-database.sqlite
 
 .lsp-session*
+
+.dap-breakpoints
