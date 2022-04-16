@@ -627,6 +627,7 @@ Emacs' undo facility is excellent, but undo-tree is even better.
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (require 'undo-tree)
   (global-undo-tree-mode)
+  (setq undo-tree-auto-save-history nil)
 #+END_SRC
 
 Rather than just showing 'o' for edits, show a relative timestamp for

@@ -533,7 +533,7 @@ Visit the file after creation."
 
 (require 'undo-tree)
 (global-undo-tree-mode)
-
+(setq undo-tree-auto-save-history nil)
 
 
 ;; Rather than just showing 'o' for edits, show a relative timestamp for
