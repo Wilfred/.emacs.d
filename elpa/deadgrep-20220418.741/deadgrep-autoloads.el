@@ -1,4 +1,4 @@
-;;; deadgrep-autoloads.el --- automatically extracted autoloads
+;;; deadgrep-autoloads.el --- automatically extracted autoloads  -*- lexical-binding: t -*-
 ;;
 ;;; Code:
 
@@ -10,13 +10,19 @@
 ;;; Generated autoloads from deadgrep.el
 
 (autoload 'deadgrep "deadgrep" "\
-Start a ripgrep search for SEARCH-TERM.
+Start a ripgrep search for SEARCH-TERM in DIRECTORY.
+
+If not provided, DIR defaults to the directory as determined by
+`deadgrep-project-root-function'.
+
+See also `deadgrep-project-root-overrides'.
+
 If called with a prefix argument, create the results buffer but
 don't actually start the search.
 
-\(fn SEARCH-TERM)" t nil)
+\(fn SEARCH-TERM &optional DIRECTORY)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "deadgrep" '("deadgrep-")))
+(register-definition-prefixes "deadgrep" '("deadgrep-"))
 
 ;;;***
 

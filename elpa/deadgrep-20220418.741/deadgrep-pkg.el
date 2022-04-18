@@ -1,0 +1,2 @@
+;;; Generated package description from deadgrep.el  -*- no-byte-compile: t -*-
+(define-package "deadgrep" "20220418.741" "fast, friendly searching with ripgrep" '((emacs "25.1") (dash "2.12.0") (s "1.11.0") (spinner "1.7.3")) :commit "bd5d00be3637dcd9e0b14966b87e3d8151710db0" :authors '(("Wilfred Hughes" . "me@wilfred.me.uk")) :maintainer '("Wilfred Hughes" . "me@wilfred.me.uk") :keywords '("tools") :url "https://github.com/Wilfred/deadgrep")
