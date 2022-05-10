@@ -4,8 +4,8 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; URL: https://github.com/Wilfred/deadgrep
-;; Package-Version: 20220418.741
-;; Package-Commit: bd5d00be3637dcd9e0b14966b87e3d8151710db0
+;; Package-Version: 20220507.1755
+;; Package-Commit: ae333e4069e296e98bf9631088c8198f50891d55
 ;; Keywords: tools
 ;; Version: 0.12
 ;; Package-Requires: ((emacs "25.1") (dash "2.12.0") (s "1.11.0") (spinner "1.7.3"))
@@ -645,6 +645,15 @@ with a text face property `deadgrep-match-face'."
    (deadgrep--buffer-name deadgrep--search-term default-directory))
   (deadgrep-restart))
 
+(defun deadgrep-parent-directory ()
+  "Restart the search in the parent directory."
+  (interactive)
+  (setq default-directory
+        (file-name-directory (directory-file-name default-directory)))
+  (rename-buffer
+   (deadgrep--buffer-name deadgrep--search-term default-directory))
+  (deadgrep-restart))
+
 (defun deadgrep--button (text type &rest properties)
   ;; `make-text-button' mutates the string to add properties, so copy
   ;; TEXT first.
@@ -925,7 +934,9 @@ Returns a list ordered by the most recently accessed."
 
     (define-key map (kbd "S") #'deadgrep-search-term)
     (define-key map (kbd "D") #'deadgrep-directory)
+    (define-key map (kbd "^") #'deadgrep-parent-directory)
     (define-key map (kbd "g") #'deadgrep-restart)
+    (define-key map (kbd "I") #'deadgrep-incremental)
 
     ;; TODO: this should work when point is anywhere in the file, not
     ;; just on its heading.
@@ -1488,7 +1499,13 @@ Otherwise, return PATH as is."
   (let ((root default-directory)
         (project (project-current)))
     (when project
-      (setq root (project-root project)))
+      (cond ((fboundp 'project-root)
+             ;; This function was defined in Emacs 28.
+             (setq root (project-root project)))
+            (t
+             ;; Older Emacsen.
+             (-when-let (roots (project-roots project))
+               (setq root (car roots))))))
     (when root
       (deadgrep--lookup-override root))))
 
@@ -1629,3 +1646,7 @@ This is intended for use with `next-error-function', which see."
 
 (provide 'deadgrep)
 ;;; deadgrep.el ends here
+
+;; Local Variables:
+;; byte-compile-warnings: (not obsolete)
+;; End:
