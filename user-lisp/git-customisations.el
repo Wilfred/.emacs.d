@@ -37,6 +37,12 @@
   :config
   (setq git-commit-finish-query-functions '()))
 
+;; Copied from Tarsius' example in https://github.com/magit/magit/issues/3964
+(defun wh/git-commit-co-authored-by (name mail)
+  "Insert a header mentioning the person who co-authored the commit."
+  (interactive (git-commit-read-ident))
+  (git-commit-insert-header "Co-authored-by" name mail))
+
 ;; Highlight new/removed/changed lines relative to the last commit in
 ;; VCS.
 (global-diff-hl-mode)
