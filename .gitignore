@@ -66,3 +66,6 @@ forge-database.sqlite
 .lsp-session*
 
 .dap-breakpoints
+
+# Part of magit
+transient
