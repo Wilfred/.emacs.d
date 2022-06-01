@@ -35,6 +35,7 @@
         lispy-space
         markdown-electric-backquote
         markdown-exdent-or-delete
+        markdown-outdent-or-delete
         open-newline-and-indent
         org-delete-char
         org-self-insert-command
