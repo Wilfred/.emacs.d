@@ -9,6 +9,12 @@
   (other-window 1)
   (forward-line))
 
+(defun wh/smerge-keep-current-move-next ()
+  "Accept the hunk at point and move to the next merge conflict."
+  (interactive)
+  (smerge-keep-current)
+  (smerge-next))
+
 (use-package smerge-mode
   :config
   ;; TODO: it would be nice if this jumped to the next conflict
