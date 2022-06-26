@@ -4,7 +4,7 @@
 ;; For large files, projectile-find-file can be a little sluggish. Cache the result.
 (setq projectile-enable-caching t)
 
-(diminish-undo #'projectile-mode)
+(diminish #'projectile-mode)
 (setq projectile-mode-line
       '(:eval
         (if
