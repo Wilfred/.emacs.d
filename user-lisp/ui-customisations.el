@@ -300,6 +300,7 @@ If it is split, repeat the current buffer in a vertical split."
 (global-set-key (kbd "C-x m") #'wh/switch-magit-status-buffer)
 
 (add-hook 'prog-mode-hook #'git-gutter-mode)
+(diminish #'git-gutter-mode)
 
 ;; Loosely based on `erc-remove-text-properties-region'.
 (defun wh/remove-text-properties-region ()
