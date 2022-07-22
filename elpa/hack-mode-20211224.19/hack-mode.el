@@ -17,8 +17,8 @@
 
 ;; Author: John Allen <jallen@fb.com>, Wilfred Hughes <me@wilfred.me.uk>
 ;; Version: 1.3.0
-;; Package-Version: 20211005.25
-;; Package-Commit: 211b5a8f43b852e9e73de83013f51cb01855a530
+;; Package-Version: 20211224.19
+;; Package-Commit: a522f61c088ee2a13ab17f289a3131329e59badf
 ;; Package-Requires: ((emacs "25.1") (s "1.11.0"))
 ;; URL: https://github.com/hhvm/hack-mode
 
@@ -614,7 +614,7 @@ If PROPERTIZE-TAGS is non-nil, apply `hack-xhp-tag' to tag names."
      "concurrent"
      "enum"
      "newtype"
-     "record"
+     "readonly"
      "shape"
      "super"
      "tuple"
@@ -622,7 +622,6 @@ If PROPERTIZE-TAGS is non-nil, apply `hack-xhp-tag' to tag names."
      "where"
 
      ;; These contextual keywords are also used for literals, so highlight them as keywords.
-     "array"
      "darray"
      "dict"
      "keyset"
@@ -1119,9 +1118,10 @@ interpolating inside the XHP expression."
   "Search forward from point for an occurrence of a keyword."
   ;; Keywords in PHP are case insensitive. In Hack, it's a syntax
   ;; error if you use the wrong case, but they're still reserved (so
-  ;; you can't call a function CLASS).
-  (let ((case-fold-search t))
-    (hack--search-forward-no-xhp hack--keyword-regex limit)))
+  ;; you can't call a function CLASS). However, we have namespaces
+  ;; that use keywords with a different case (e.g HH\Lib\Keyset), so
+  ;; ignore occurrence with other cases.
+  (hack--search-forward-no-xhp hack--keyword-regex limit))
 
 (defun hack--search-forward-type (limit)
   "Search forward from point for an occurrence of a type name."
@@ -1147,7 +1147,6 @@ interpolating inside the XHP expression."
      (regexp-opt
       '("null"
         "true" "false"
-        "__compiler_halt_offset__"
         ;; From naming_special_names.ml.
         "__CLASS__"
         "__TRAIT__"
