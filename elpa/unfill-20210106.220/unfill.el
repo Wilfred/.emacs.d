@@ -1,12 +1,14 @@
-;;; unfill.el --- Unfill paragraphs or regions, and toggle between filled & unfilled
+;;; unfill.el --- Do the opposite of fill-paragraph or fill-region  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012-2017 Steve Purcell.
+;; Copyright (C) 2012-2020 Steve Purcell.
 
 ;; Author: Steve Purcell <steve@sanityinc.com>
-;; X-URL: https://github.com/purcell/unfill
-;; Package-Version: 20170723.146
+;; Homepage: https://github.com/purcell/unfill
+;; Package-Version: 20210106.220
 ;; Package-X-Original-Version: 0
-;; Keywords: utilities
+;; Package-Requires: ((emacs "24.1"))
+;; Package-Commit: cd354ea1a74338760ac6f5872d573e3ecb6b4bd2
+;; Keywords: convenience
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -65,7 +67,7 @@ This command does the inverse of `fill-region'."
     (call-interactively 'fill-paragraph)))
 
 ;;;###autoload
-(define-obsolete-function-alias 'toggle-fill-unfill 'unfill-toggle)
+(define-obsolete-function-alias 'toggle-fill-unfill 'unfill-toggle "0.2")
 
 (provide 'unfill)
 ;;; unfill.el ends here

@@ -1,4 +1,4 @@
-;;; unfill-autoloads.el --- automatically extracted autoloads
+;;; unfill-autoloads.el --- automatically extracted autoloads  -*- lexical-binding: t -*-
 ;;
 ;;; Code:
 
@@ -11,9 +11,7 @@
 
 (autoload 'unfill-paragraph "unfill" "\
 Replace newline chars in current paragraph by single spaces.
-This command does the inverse of `fill-paragraph'.
-
-\(fn)" t nil)
+This command does the inverse of `fill-paragraph'." t nil)
 
 (autoload 'unfill-region "unfill" "\
 Replace newline chars in region from START to END by single spaces.
@@ -22,11 +20,9 @@ This command does the inverse of `fill-region'.
 \(fn START END)" t nil)
 
 (autoload 'unfill-toggle "unfill" "\
-Toggle filling/unfilling of the current region, or current paragraph if no region active.
+Toggle filling/unfilling of the current region, or current paragraph if no region active." t nil)
 
-\(fn)" t nil)
-
-(define-obsolete-function-alias 'toggle-fill-unfill 'unfill-toggle)
+(define-obsolete-function-alias 'toggle-fill-unfill 'unfill-toggle "0.2")
 
 ;;;***
 
