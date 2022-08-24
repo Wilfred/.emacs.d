@@ -4,7 +4,29 @@
   ;; to repeatedly eval the same expression.
   (setq tuareg-skip-after-eval-phrase nil)
 
+  ;; Clarify if the current file has a .mli file. It was off by default.
+  ;; Implementation: https://github.com/ocaml/tuareg/commit/ccb9ee29edbf4fad1017b382b8e9d9d5fedec89c
+  ;; Option: https://github.com/ocaml/tuareg/commit/85472b109a2f8d340ccbb9cc66f25de080a71593
+  (setq tuareg-mode-line-other-file t)
+
+  ;; No mnemonic, this mode map is crowded when merlin is active.
+  (define-key tuareg-mode-map (kbd "C-c s") #'wh/type-annotation)
+
+  (require 'ocamlformat)
+  (define-key tuareg-mode-map (kbd "C-c f") #'ocamlformat)
+
   (add-hook 'tuareg-mode-hook #'merlin-mode))
+
+(defun wh/type-annotation ()
+  "Insert a type annotation skeleton for the symbol at point."
+  (interactive)
+  (unless (looking-at (rx symbol-start))
+    (forward-symbol -1))
+  (let ((sym-name (symbol-name (symbol-at-point))))
+    (insert "(")
+    (forward-symbol 1)
+    (insert " : )")
+    (backward-char)))
 
 (use-package merlin
   :config
