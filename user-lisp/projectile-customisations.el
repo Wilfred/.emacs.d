@@ -15,7 +15,9 @@
 
 ;; I like this command so much that it's nice to have it available
 ;; globally.
-(global-set-key (kbd "C-c p p") #'projectile-switch-project)
+;; Mnemonic: Jump to project
+(global-set-key (kbd "C-c j") #'projectile-switch-project)
+
 
 ;; Don't generate tags in test/manual/etags (in GNU Emacs or Remacs
 ;; source). This just contains copies of canonical files and

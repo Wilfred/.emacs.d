@@ -58,7 +58,6 @@
 (define-key diff-hl-command-map (kbd "]") nil)
 
 (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
-(global-set-key (kbd "C-c p") #'projectile-switch-project)
 
 ;; Magit has auto reverting of buffers. This is neat, but slow when
 ;; you have a lot of buffers open. Switching from a feature branch to
