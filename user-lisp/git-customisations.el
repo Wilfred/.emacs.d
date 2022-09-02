@@ -94,4 +94,9 @@
   (global-set-key (kbd "C-c n") #'git-gutter:next-hunk)
   (global-set-key (kbd "C-c p") #'git-gutter:previous-hunk))
 
+(defun wh/smerge-keep-current-move-next ()
+  (interactive)
+  (smerge-keep-current)
+  (smerge-next 1))
+
 (provide 'git-customisations)
