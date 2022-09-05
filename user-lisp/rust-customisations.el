@@ -49,6 +49,9 @@ foo -> &foo[..]"
   (forward-symbol 1)
   (insert "[..]"))
 
+;; rust-cargo isn't useful when you're using lsp-mode.
+(setq rust-load-optional-libraries nil)
+
 (use-package rust-mode
   :config
   (require 'f)
