@@ -1,4 +1,4 @@
-;;; hack-mode-autoloads.el --- automatically extracted autoloads
+;;; hack-mode-autoloads.el --- automatically extracted autoloads  -*- lexical-binding: t -*-
 ;;
 ;;; Code:
 
@@ -26,7 +26,7 @@ Major mode for editing Hack code.
 
 \(fn)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "hack-mode" '("hack-")))
+(register-definition-prefixes "hack-mode" '("hack-"))
 
 ;;;***
 

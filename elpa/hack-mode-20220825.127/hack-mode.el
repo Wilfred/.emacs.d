@@ -17,8 +17,8 @@
 
 ;; Author: John Allen <jallen@fb.com>, Wilfred Hughes <me@wilfred.me.uk>
 ;; Version: 1.3.0
-;; Package-Version: 20211224.19
-;; Package-Commit: a522f61c088ee2a13ab17f289a3131329e59badf
+;; Package-Version: 20220825.127
+;; Package-Commit: 26f06ffe82574f98e7da381e48202eceb8ef0793
 ;; Package-Requires: ((emacs "25.1") (s "1.11.0"))
 ;; URL: https://github.com/hhvm/hack-mode
 
@@ -1268,11 +1268,6 @@ interpolating inside the XHP expression."
     (modify-syntax-entry ?\\ "\\" table)
     (modify-syntax-entry ?' "\"" table)
 
-    ;; Comments of the form
-    ;; # This is a single-line comment.
-    ;; Tag these as comment sequence b.
-    (modify-syntax-entry ?# "< b" table)
-
     ;; / can start both // and /* style comments. When it's a second
     ;; character, it's a single line comment, so also tag as comment
     ;; sequence b.
@@ -1282,8 +1277,8 @@ interpolating inside the XHP expression."
     ;; character in the end */.
     (modify-syntax-entry ?* ". 23" table)
 
-    ;; Newlines end both # and // comments. Ensure we support both
-    ;; unix and dos style newlines.
+    ;; Newlines end // comments. Ensure we support both unix and dos
+    ;; style newlines.
     (modify-syntax-entry ?\n "> b" table)
     (modify-syntax-entry ?\^m "> b" table)
 

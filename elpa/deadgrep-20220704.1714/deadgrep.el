@@ -4,8 +4,8 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; URL: https://github.com/Wilfred/deadgrep
-;; Package-Version: 20220507.1755
-;; Package-Commit: ae333e4069e296e98bf9631088c8198f50891d55
+;; Package-Version: 20220704.1714
+;; Package-Commit: 0c57d113aa6840bec073b3432ed62b382f20acc6
 ;; Keywords: tools
 ;; Version: 0.12
 ;; Package-Requires: ((emacs "25.1") (dash "2.12.0") (s "1.11.0") (spinner "1.7.3"))
@@ -926,6 +926,22 @@ Returns a list ordered by the most recently accessed."
       (setq buffer-read-only t))
     buf))
 
+(defun deadgrep-cycle-search-type ()
+  (interactive)
+  (cond
+   ((eq deadgrep--search-type 'string) (setq deadgrep--search-type 'words))
+   ((eq deadgrep--search-type 'words) (setq deadgrep--search-type 'regexp))
+   ((eq deadgrep--search-type 'regexp) (setq deadgrep--search-type 'string)))
+  (deadgrep-restart))
+
+(defun deadgrep-cycle-search-case ()
+  (interactive)
+  (cond
+   ((eq deadgrep--search-case 'smart) (setq deadgrep--search-case 'sensitive))
+   ((eq deadgrep--search-case 'sensitive) (setq deadgrep--search-case 'ignore))
+   ((eq deadgrep--search-case 'ignore) (setq deadgrep--search-case 'smart)))
+  (deadgrep-restart))
+
 (defvar deadgrep-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "RET") #'deadgrep-visit-result)
@@ -933,6 +949,8 @@ Returns a list ordered by the most recently accessed."
     ;; TODO: we should still be able to click on buttons.
 
     (define-key map (kbd "S") #'deadgrep-search-term)
+    (define-key map (kbd "T") #'deadgrep-cycle-search-type)
+    (define-key map (kbd "C") #'deadgrep-cycle-search-case)
     (define-key map (kbd "D") #'deadgrep-directory)
     (define-key map (kbd "^") #'deadgrep-parent-directory)
     (define-key map (kbd "g") #'deadgrep-restart)
@@ -968,7 +986,7 @@ Returns a list ordered by the most recently accessed."
 
 (defun deadgrep--find-file (path)
   "Open PATH in a buffer, and return a cons cell
-\(BUF . OPENED). OPENED is nil if there was aleady a buffer for
+\(BUF . OPENED). OPENED is nil if there was already a buffer for
 this path."
   (let* ((initial-buffers (buffer-list))
          (opened nil)

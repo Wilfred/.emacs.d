@@ -1,4 +1,4 @@
-;;; deadgrep-autoloads.el --- automatically extracted autoloads
+;;; deadgrep-autoloads.el --- automatically extracted autoloads  -*- lexical-binding: t -*-
 ;;
 ;;; Code:
 
@@ -22,7 +22,7 @@ don't actually start the search.
 
 \(fn SEARCH-TERM &optional DIRECTORY)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "deadgrep" '("deadgrep-")))
+(register-definition-prefixes "deadgrep" '("deadgrep-"))
 
 ;;;***
 

@@ -1,13 +1,13 @@
 ;;; helpful.el --- A better *help* buffer            -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2017-2020  Wilfred Hughes
+;; Copyright (C) 2017-2022  Wilfred Hughes
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; URL: https://github.com/Wilfred/helpful
-;; Package-Version: 20210319.802
-;; Package-Commit: 7e4b1f0d5572a4e2b8ee7a9b084ef863d0315a73
+;; Package-Version: 20220830.456
+;; Package-Commit: 6633d82c6e3c921c486ec284cb6542f33278b605
 ;; Keywords: help, lisp
-;; Version: 0.19
+;; Version: 0.20
 ;; Package-Requires: ((emacs "25") (dash "2.18.0") (s "1.11.0") (f "0.20.0") (elisp-refs "1.2"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -151,6 +151,8 @@ can make Helpful very slow.")
       (setq helpful--callable-p callable-p)
       (setq helpful--start-buffer current-buffer)
       (setq helpful--associated-buffer current-buffer)
+      (setq list-buffers-directory
+        (if (symbolp symbol) (format "%s: %s" (helpful--kind-name symbol callable-p) symbol) "lambda"))
       (if (helpful--primitive-p symbol callable-p)
           (setq-local comment-start "//")
         (setq-local comment-start ";")))
@@ -750,6 +752,17 @@ whether the symbol represents a variable or a callable."
   "Describe the symbol that this BUTTON represents."
   (info (button-get button 'info-node)))
 
+(define-button-type 'helpful-shortdoc-button
+  'action #'helpful--shortdoc
+  'info-node nil
+  'follow-link t
+  'help-echo "View this Shortdoc group")
+
+(defun helpful--shortdoc (button)
+  "Describe the symbol that this BUTTON represents."
+  (shortdoc-display-group (button-get button 'shortdoc-group)
+                          (button-get button 'symbol)))
+
 (defun helpful--split-first-line (docstring)
   "If the first line is a standalone sentence, ensure we have a
 blank line afterwards."
@@ -1258,6 +1271,11 @@ If the source code cannot be found, return the sexp used."
       ;; TODO: offer to download C sources for current version.
       (throw 'source (indirect-function sym)))))
 
+(defun helpful--has-shortdoc-p (sym)
+  "Return non-nil if shortdoc.el is available and SYM is in a shortdoc group."
+  (and (featurep 'shortdoc)
+       (shortdoc-function-groups sym)))
+
 (defun helpful--in-manual-p (sym)
   "Return non-nil if SYM is in an Info manual."
   (let ((completions
@@ -1319,13 +1337,17 @@ If it fails, attempt to partially macroexpand FORM."
 (defun helpful--tree-any-p (pred tree)
   "Walk TREE, applying PRED to every subtree.
 Return t if PRED ever returns t."
-  (cond
-   ((null tree) nil)
-   ((funcall pred tree) t)
-   ((not (consp tree)) nil)
-   (t (or
-       (helpful--tree-any-p pred (car tree))
-       (helpful--tree-any-p pred (cdr tree))))))
+  (catch 'found
+    (let ((stack (list tree)))
+      (while stack
+        (let ((next (pop stack)))
+          (cond
+           ((funcall pred next)
+            (throw 'found t))
+           ((consp next)
+            (push (car next) stack)
+            (push (cdr next) stack))))))
+    nil))
 
 (defun helpful--find-by-macroexpanding (buf sym callable-p)
   "Search BUF for the definition of SYM by macroexpanding
@@ -1666,20 +1688,21 @@ POSITION-HEADS takes the form ((123 (defun foo)) (456 (defun bar)))."
 
 (defun helpful--primitive-p (sym callable-p)
   "Return t if SYM is defined in C."
-  (cond
-   ((and callable-p (helpful--advised-p sym))
-    (subrp (helpful--without-advice sym)))
-   (callable-p
-    (and (not (and (fboundp 'subr-native-elisp-p)
-                   (subr-native-elisp-p (indirect-function sym))))
-         (subrp (indirect-function sym))))
-   (t
-    (let ((filename (find-lisp-object-file-name sym 'defvar)))
-      (or (eq filename 'C-source)
-          (and (stringp filename)
-               (let ((ext (file-name-extension filename)))
-                 (or (equal ext "c")
-                     (equal ext "rs")))))))))
+  (let ((subrp (if (fboundp 'subr-primitive-p)
+                   #'subr-primitive-p
+                 #'subrp)))
+    (cond
+     ((and callable-p (helpful--advised-p sym))
+      (funcall subrp (helpful--without-advice sym)))
+     (callable-p
+      (funcall subrp (indirect-function sym)))
+     (t
+      (let ((filename (find-lisp-object-file-name sym 'defvar)))
+        (or (eq filename 'C-source)
+            (and (stringp filename)
+                 (let ((ext (file-name-extension filename)))
+                   (or (equal ext "c")
+                       (equal ext "rs"))))))))))
 
 (defun helpful--sym-value (sym buf)
   "Return the value of SYM in BUF."
@@ -1729,6 +1752,21 @@ POSITION-HEADS takes the form ((123 (defun foo)) (456 (defun bar)))."
            (return-value (--map (helpful--outer-sexp buf it) positions)))
       (kill-buffer buf)
       return-value)))
+
+(defun helpful--make-shortdoc-sentence (sym)
+  "Make a line for shortdoc groups of SYM."
+  (when (featurep 'shortdoc)
+    (-when-let (groups (--map (helpful--button
+                               (symbol-name it)
+                               'helpful-shortdoc-button
+                               'shortdoc-group it)
+                              (shortdoc-function-groups sym)))
+      (if (= 1 (length groups))
+          (format "Other relevant functions are documented in the %s group."
+                  (car groups))
+        (format "Other relevant functions are documented in the %s groups."
+                (concat (s-join ", " (butlast groups))
+                        " and " (car (last groups))))))))
 
 (defun helpful--make-manual-button (sym)
   "Make manual button for SYM."
@@ -1835,7 +1873,11 @@ OBJ may be a symbol or a compiled function object."
   "Return non-nil if function SYM is autoloaded."
   (-when-let (file-name (buffer-file-name buf))
     (setq file-name (s-chop-suffix ".gz" file-name))
-    (help-fns--autoloaded-p sym file-name)))
+    (condition-case nil
+        (help-fns--autoloaded-p sym file-name)
+      ; new in Emacs 29.0.50
+      ; see https://github.com/Wilfred/helpful/pull/283
+      (error (help-fns--autoloaded-p sym)))))
 
 (defun helpful--compiled-p (sym)
   "Return non-nil if function SYM is byte-compiled"
@@ -1900,7 +1942,7 @@ OBJ may be a symbol or a compiled function object."
             'info-node "(elisp)Autoload"))
           (compiled-button
            (helpful--button
-            "compiled"
+            "byte-compiled"
             'helpful-info-button
             'info-node "(elisp)Byte Compilation"))
           (native-compiled-button
@@ -2255,7 +2297,12 @@ state of the current symbol."
           (insert (helpful--format-docstring docstring)))
         (when version-info
           (insert "\n\n" (s-word-wrap 70 version-info)))
-        (when (helpful--in-manual-p helpful--sym)
+        (when (and (symbolp helpful--sym)
+                   helpful--callable-p
+                   (helpful--has-shortdoc-p helpful--sym))
+          (insert "\n\n")
+          (insert (helpful--make-shortdoc-sentence helpful--sym)))
+        (when (and (symbolp helpful--sym) (helpful--in-manual-p helpful--sym))
           (insert "\n\n")
           (insert (helpful--make-manual-button helpful--sym)))))
 
@@ -2298,7 +2345,11 @@ state of the current symbol."
      "\n\n"
      (helpful--make-references-button helpful--sym helpful--callable-p))
 
-    (when (and helpful--callable-p source (not primitive-p))
+    (when (and
+           helpful--callable-p
+           (symbolp helpful--sym)
+           source
+           (not primitive-p))
       (insert
        " "
        (helpful--make-callees-button helpful--sym source)))
@@ -2464,7 +2515,14 @@ For example, \"(some-func FOO &optional BAR)\"."
              ((symbolp sym)
               (help-function-arglist sym))
              ((byte-code-function-p sym)
-              (aref sym 0))
+              ;; argdesc can be a list of arguments or an integer
+              ;; encoding the min/max number of arguments. See
+              ;; Byte-Code Function Objects in the elisp manual.
+              (let ((argdesc (aref sym 0)))
+                (if (consp argdesc)
+                    argdesc
+                  ;; TODO: properly handle argdesc values.
+                  nil)))
              (t
               ;; Interpreted function (lambda ...)
               (cadr sym))))
@@ -2502,7 +2560,8 @@ For example, \"(some-func FOO &optional BAR)\"."
       source-sig)
      ;; If that's not set, use the usage specification in the
      ;; docstring, if present.
-     (docstring-sig)
+     (docstring-sig
+      (replace-regexp-in-string "\\\\=\\(['\\`‘’]\\)" "\\1" docstring-sig t))
      (t
       ;; Otherwise, just use the signature from the source code.
       source-sig))))
@@ -2561,6 +2620,13 @@ Returns the symbol."
                            predicate t nil nil
                            default-val)))
 
+(defun helpful--update-and-switch-buffer (symbol callable-p)
+  "Update and switch to help buffer for SYMBOL."
+  (let ((buf (helpful--buffer symbol callable-p)))
+    (with-current-buffer buf
+      (helpful-update))
+    (funcall helpful-switch-buffer-function buf)))
+
 ;;;###autoload
 (defun helpful-function (symbol)
   "Show help for function named SYMBOL.
@@ -2571,8 +2637,7 @@ See also `helpful-macro', `helpful-command' and `helpful-callable'."
           "Function: "
           (helpful--callable-at-point)
           #'functionp)))
-  (funcall helpful-switch-buffer-function (helpful--buffer symbol t))
-  (helpful-update))
+  (helpful--update-and-switch-buffer symbol t))
 
 ;;;###autoload
 (defun helpful-command (symbol)
@@ -2584,8 +2649,7 @@ See also `helpful-function'."
           "Command: "
           (helpful--callable-at-point)
           #'commandp)))
-  (funcall helpful-switch-buffer-function (helpful--buffer symbol t))
-  (helpful-update))
+  (helpful--update-and-switch-buffer symbol t))
 
 ;;;###autoload
 (defun helpful-key (key-sequence)
@@ -2598,8 +2662,7 @@ See also `helpful-function'."
       (user-error "No command is bound to %s"
                   (key-description key-sequence)))
      ((commandp sym)
-      (funcall helpful-switch-buffer-function (helpful--buffer sym t))
-      (helpful-update))
+      (helpful--update-and-switch-buffer sym t))
      (t
       (user-error "%s is bound to %s which is not a command"
                   (key-description key-sequence)
@@ -2613,8 +2676,7 @@ See also `helpful-function'."
           "Macro: "
           (helpful--callable-at-point)
           #'macrop)))
-  (funcall helpful-switch-buffer-function (helpful--buffer symbol t))
-  (helpful-update))
+  (helpful--update-and-switch-buffer symbol t))
 
 ;;;###autoload
 (defun helpful-callable (symbol)
@@ -2626,8 +2688,7 @@ See also `helpful-macro', `helpful-function' and `helpful-command'."
           "Callable: "
           (helpful--callable-at-point)
           #'fboundp)))
-  (funcall helpful-switch-buffer-function (helpful--buffer symbol t))
-  (helpful-update))
+  (helpful--update-and-switch-buffer symbol t))
 
 (defun helpful--variable-p (symbol)
   "Return non-nil if SYMBOL is a variable."
@@ -2716,8 +2777,7 @@ See also `helpful-callable' and `helpful-variable'."
           "Variable: "
           (helpful--variable-at-point)
           #'helpful--variable-p)))
-  (funcall helpful-switch-buffer-function (helpful--buffer symbol nil))
-  (helpful-update))
+  (helpful--update-and-switch-buffer symbol nil))
 
 (defun helpful--variable-at-point-exactly ()
   "Return the symbol at point, if it's a bound variable."
