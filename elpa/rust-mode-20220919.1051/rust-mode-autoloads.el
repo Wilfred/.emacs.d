@@ -1,4 +1,4 @@
-;;; rust-mode-autoloads.el --- automatically extracted autoloads
+;;; rust-mode-autoloads.el --- automatically extracted autoloads  -*- lexical-binding: t -*-
 ;;
 ;;; Code:
 
@@ -9,14 +9,14 @@
 ;;;### (autoloads nil "rust-cargo" "rust-cargo.el" (0 0 0 0))
 ;;; Generated autoloads from rust-cargo.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "rust-cargo" '("rust-")))
+(register-definition-prefixes "rust-cargo" '("rust-"))
 
 ;;;***
 
 ;;;### (autoloads nil "rust-compile" "rust-compile.el" (0 0 0 0))
 ;;; Generated autoloads from rust-compile.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "rust-compile" '("cargo-compilation-regexps" "rustc-")))
+(register-definition-prefixes "rust-compile" '("cargo-compilation-regexps" "rustc-"))
 
 ;;;***
 
@@ -32,21 +32,21 @@ Major mode for Rust code.
 
 (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-mode))
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "rust-mode" '("rust-")))
+(register-definition-prefixes "rust-mode" '("rust-"))
 
 ;;;***
 
 ;;;### (autoloads nil "rust-playpen" "rust-playpen.el" (0 0 0 0))
 ;;; Generated autoloads from rust-playpen.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "rust-playpen" '("rust-")))
+(register-definition-prefixes "rust-playpen" '("rust-"))
 
 ;;;***
 
 ;;;### (autoloads nil "rust-rustfmt" "rust-rustfmt.el" (0 0 0 0))
 ;;; Generated autoloads from rust-rustfmt.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "rust-rustfmt" '("rust-")))
+(register-definition-prefixes "rust-rustfmt" '("rust-"))
 
 ;;;***
 
@@ -56,7 +56,7 @@ Major mode for Rust code.
 (autoload 'rust-dbg-wrap-or-unwrap "rust-utils" "\
 Either remove or add the dbg! macro." t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "rust-utils" '("rust-")))
+(register-definition-prefixes "rust-utils" '("rust-"))
 
 ;;;***
 

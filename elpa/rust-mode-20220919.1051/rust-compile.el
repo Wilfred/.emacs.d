@@ -37,7 +37,7 @@ See `compilation-error-regexp-alist' for help on their format.")
 ;; Match test run failures and panics during compilation as
 ;; compilation warnings
 (defvar cargo-compilation-regexps
-  '("^\\s-+thread '[^']+' panicked at \\('[^']+', \\([^:]+\\):\\([0-9]+\\)\\)"
+  '("', \\(\\([^:]+\\):\\([0-9]+\\)\\)"
     2 3 nil nil 1)
   "Specifications for matching panics in cargo test invocations.
 See `compilation-error-regexp-alist' for help on their format.")
@@ -76,7 +76,7 @@ the compilation window until the top of the error is visible."
      (add-to-list 'compilation-error-regexp-alist-alist
                   (cons 'cargo cargo-compilation-regexps))
      (add-to-list 'compilation-error-regexp-alist 'cargo)
-     (add-hook 'next-error-hook 'rustc-scroll-down-after-next-error)))
+     (add-hook 'next-error-hook #'rustc-scroll-down-after-next-error)))
 
 ;;; _
 (provide 'rust-compile)

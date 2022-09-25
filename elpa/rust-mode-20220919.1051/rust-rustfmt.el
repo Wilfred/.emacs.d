@@ -47,7 +47,7 @@
       (erase-buffer)
       (insert-buffer-substring buf)
       (let* ((tmpf (make-temp-file "rustfmt"))
-             (ret (apply 'call-process-region
+             (ret (apply #'call-process-region
                          (point-min)
                          (point-max)
                          rust-rustfmt-bin
@@ -152,7 +152,7 @@ rustfmt complain in the echo area."
 (defconst rust--format-word "\
 \\b\\(else\\|enum\\|fn\\|for\\|if\\|let\\|loop\\|\
 match\\|struct\\|union\\|unsafe\\|while\\)\\b")
-(defconst rust--format-line "\\([\n]\\)")
+(defconst rust--format-line "\\(\n\\)")
 
 ;; Counts number of matches of regex beginning up to max-beginning,
 ;; leaving the point at the beginning of the last match.
@@ -239,7 +239,7 @@ match\\|struct\\|union\\|unsafe\\|while\\)\\b")
 Return the created process."
   (interactive)
   (unless (executable-find rust-rustfmt-bin)
-    (error "Could not locate executable \%s\"" rust-rustfmt-bin))
+    (error "Could not locate executable %S" rust-rustfmt-bin))
   (let* ((buffer
           (with-current-buffer
               (get-buffer-create "*rustfmt-diff*")
@@ -247,14 +247,14 @@ Return the created process."
               (erase-buffer))
             (current-buffer)))
          (proc
-          (apply 'start-process
+          (apply #'start-process
                  "rustfmt-diff"
                  buffer
                  rust-rustfmt-bin
                  "--check"
                  (cons (buffer-file-name)
                        rust-rustfmt-switches))))
-    (set-process-sentinel proc 'rust-format-diff-buffer-sentinel)
+    (set-process-sentinel proc #'rust-format-diff-buffer-sentinel)
     proc))
 
 (defun rust-format-diff-buffer-sentinel (process _e)
@@ -331,9 +331,10 @@ Return the created process."
   ;; If emacs version >= 26.2, we can use replace-buffer-contents to
   ;; preserve location and markers in buffer, otherwise we can try to
   ;; save locations as best we can, though we still lose markers.
-  (if (version<= "26.2" emacs-version)
-      (rust--format-buffer-using-replace-buffer-contents)
-    (rust--format-buffer-saving-position-manually)))
+  (save-excursion
+    (if (version<= "26.2" emacs-version)
+        (rust--format-buffer-using-replace-buffer-contents)
+      (rust--format-buffer-saving-position-manually))))
 
 (defun rust-enable-format-on-save ()
   "Enable formatting using rustfmt when saving buffer."
@@ -347,15 +348,15 @@ Return the created process."
 
 ;;; Hooks
 
-(defun rust-before-save-hook ()
+(defun rust-before-save-method ()
   (when rust-format-on-save
     (condition-case e
         (rust-format-buffer)
-      (error (format "rust-before-save-hook: %S %S"
+      (message (format "rust-before-save-hook: %S %S"
                      (car e)
                      (cdr e))))))
 
-(defun rust-after-save-hook ()
+(defun rust-after-save-method ()
   (when rust-format-on-save
     (if (not (executable-find rust-rustfmt-bin))
         (error "Could not locate executable \"%s\"" rust-rustfmt-bin)

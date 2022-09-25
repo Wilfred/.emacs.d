@@ -1,6 +1,6 @@
 ;;; rust-mode.el --- A major-mode for editing Rust source code -*-lexical-binding: t-*-
 
-;; Version: 1.0.0
+;; Version: 1.0.5
 ;; Author: Mozilla
 ;; Url: https://github.com/rust-lang/rust-mode
 ;; Keywords: languages
@@ -30,6 +30,22 @@ This variable might soon be remove again.")
 (defvar electric-pair-inhibit-predicate)
 (defvar electric-pair-skip-self)
 (defvar electric-indent-chars)
+
+(defcustom rust-before-save-hook 'rust-before-save-method
+  "Function for formatting before save."
+  :type 'function
+  :group 'rust-mode)
+
+(defcustom rust-after-save-hook 'rust-after-save-method
+  "Default method to handle rustfmt invocation after save."
+  :type 'function
+  :group 'rust-mode)
+
+(defvar rust-prettify-symbols-alist
+  '(("&&" . ?∧) ("||" . ?∨)
+    ("<=" . ?≤)  (">=" . ?≥) ("!=" . ?≠)
+    ("INFINITY" . ?∞) ("->" . ?→) ("=>" . ?⇒))
+  "Alist of symbol prettifications used for `prettify-symbols-alist'.")
 
 ;;; Customization
 
@@ -89,6 +105,11 @@ to the function arguments.  When nil, `->' will be indented one level."
 (defface rust-question-mark
   '((t :weight bold :inherit font-lock-builtin-face))
   "Face for the question mark operator."
+  :group 'rust-mode)
+
+(defface rust-ampersand-face
+  '((t :inherit default))
+  "Face for the ampersand reference mark."
   :group 'rust-mode)
 
 (defface rust-builtin-formatting-macro
@@ -194,12 +215,34 @@ Use idomenu (imenu with `ido-mode') for best mileage.")
     table)
   "Syntax definitions and helpers.")
 
+;;; Prettify
+
+(defun rust--prettify-symbols-compose-p (start end match)
+  "Return true iff the symbol MATCH should be composed.
+See `prettify-symbols-compose-predicate'."
+  (and (fboundp 'prettify-symbols-default-compose-p)
+       (prettify-symbols-default-compose-p start end match)
+       ;; Make sure || is not a closure with 0 arguments and && is not
+       ;; a double reference.
+       (pcase match
+         ("||" (not (save-excursion
+                      (goto-char start)
+                      (looking-back "\\(?:\\<move\\|[[({:=,;]\\) *"
+                                    (line-beginning-position)))))
+         ("&&" (char-equal (char-after end) ?\s))
+         (_ t))))
+
 ;;; Mode
 
 (defvar rust-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c C-d") 'rust-dbg-wrap-or-unwrap)
+    (define-key map (kbd "C-c C-d") #'rust-dbg-wrap-or-unwrap)
     (when rust-load-optional-libraries
+      (define-key map (kbd "C-c C-c C-u") 'rust-compile)
+      (define-key map (kbd "C-c C-c C-k") 'rust-check)
+      (define-key map (kbd "C-c C-c C-t") 'rust-test)
+      (define-key map (kbd "C-c C-c C-r") 'rust-run)
+      (define-key map (kbd "C-c C-c C-l") 'rust-run-clippy)
       (define-key map (kbd "C-c C-f") 'rust-format-buffer)
       (define-key map (kbd "C-c C-n") 'rust-goto-format-problem))
     map)
@@ -243,25 +286,28 @@ Use idomenu (imenu with `ido-mode') for best mileage.")
                       comment-start-skip
                       "\\|\\*/?[[:space:]]*\\|\\)$"))
   (setq-local paragraph-separate paragraph-start)
-  (setq-local normal-auto-fill-function 'rust-do-auto-fill)
-  (setq-local fill-paragraph-function 'rust-fill-paragraph)
-  (setq-local fill-forward-paragraph-function 'rust-fill-forward-paragraph)
-  (setq-local adaptive-fill-function 'rust-find-fill-prefix)
+  (setq-local normal-auto-fill-function #'rust-do-auto-fill)
+  (setq-local fill-paragraph-function #'rust-fill-paragraph)
+  (setq-local fill-forward-paragraph-function #'rust-fill-forward-paragraph)
+  (setq-local adaptive-fill-function #'rust-find-fill-prefix)
   (setq-local adaptive-fill-first-line-regexp "")
   (setq-local comment-multi-line t)
-  (setq-local comment-line-break-function 'rust-comment-indent-new-line)
+  (setq-local comment-line-break-function #'rust-comment-indent-new-line)
   (setq-local imenu-generic-expression rust-imenu-generic-expression)
   (setq-local imenu-syntax-alist '((?! . "w"))) ; For macro_rules!
-  (setq-local beginning-of-defun-function 'rust-beginning-of-defun)
-  (setq-local end-of-defun-function 'rust-end-of-defun)
+  (setq-local beginning-of-defun-function #'rust-beginning-of-defun)
+  (setq-local end-of-defun-function #'rust-end-of-defun)
   (setq-local parse-sexp-lookup-properties t)
   (setq-local electric-pair-inhibit-predicate
-              'rust-electric-pair-inhibit-predicate-wrap)
-  (setq-local electric-pair-skip-self 'rust-electric-pair-skip-self-wrap)
+              #'rust-electric-pair-inhibit-predicate-wrap)
+  (add-function :before-until (local 'electric-pair-skip-self)
+                #'rust-electric-pair-skip-self)
+  ;; Configure prettify
+  (setq prettify-symbols-alist rust-prettify-symbols-alist)
+  (setq prettify-symbols-compose-predicate #'rust--prettify-symbols-compose-p)
 
-  (add-hook 'before-save-hook 'rust-before-save-hook nil t)
-  (add-hook 'after-save-hook 'rust-after-save-hook nil t)
-  )
+  (add-hook 'before-save-hook rust-before-save-hook nil t)
+  (add-hook 'after-save-hook rust-after-save-hook nil t))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-mode))
@@ -274,7 +320,7 @@ Use idomenu (imenu with `ido-mode') for best mileage.")
           (rust-re-shy (concat (rust-re-shy rust-re-async-or-const) "[[:space:]]+")) "?"
           (rust-re-shy (concat (rust-re-shy rust-re-unsafe) "[[:space:]]+")) "?"
           (regexp-opt
-           '("enum" "struct" "union" "type" "mod" "use" "fn" "static" "impl"
+           '("enum" "struct" "union" "type" "mod" "fn" "static" "impl"
              "extern" "trait" "async"))
           "\\_>")
   "Start of a Rust item.")
@@ -315,6 +361,16 @@ Use idomenu (imenu with `ido-mode') for best mileage.")
     "isize" "usize"
     "bool"
     "str" "char"))
+
+(defconst rust-number-with-type
+  (eval-when-compile
+    (concat
+     "\\_<\\(?:0[box]?\\|[1-9]\\)[[:digit:]a-fA-F_.]*\\(?:[eE][+-]?[[:digit:]_]\\)?"
+     (regexp-opt '("u8" "i8" "u16" "i16" "u32" "i32" "u64" "i64"
+                   "u128" "i128" "usize" "isize" "f32" "f64")
+                 t)
+     "\\_>"))
+  "Regular expression matching a number with a type suffix.")
 
 (defvar rust-builtin-formatting-macros
   '("eprint"
@@ -423,6 +479,10 @@ Does not match type annotations of the form \"foo::<\"."
 
      ;; Question mark operator
      ("\\?" . 'rust-question-mark)
+     ("\\(&+\\)\\(?:'\\(?:\\<\\|_\\)\\|\\<\\|[[({:*_|]\\)"
+      1 'rust-ampersand-face)
+     ;; Numbers with type suffix
+     (,rust-number-with-type 1 font-lock-type-face)
      )
 
    ;; Ensure we highlight `Foo` in `struct Foo` as a type.
@@ -674,7 +734,7 @@ buffer."
         (while (and (or (rust-in-str-or-cmnt)
                         ;; Only whitespace (or nothing) from the beginning to
                         ;; the end of the line.
-                        (looking-back "^\s*" (point-at-bol)))
+                        (looking-back "^\s*" (line-beginning-position)))
                     (= (rust-paren-level) level))
           (forward-line -1)
           (end-of-line)))
@@ -1258,12 +1318,10 @@ This wraps the default defined by `electric-pair-inhibit-predicate'."
        (rust-is-lt-char-operator)))
    (funcall (default-value 'electric-pair-inhibit-predicate) char)))
 
-(defun rust-electric-pair-skip-self-wrap (char)
+(defun rust-electric-pair-skip-self (char)
   "Skip CHAR instead of inserting a second closing character.
-This wraps the default defined by `electric-pair-skip-self'."
-  (or
-   (= ?> char)
-   (funcall (default-value 'electric-pair-skip-self) char)))
+This is added to the default skips defined by `electric-pair-skip-self'."
+  (= ?> char))
 
 (defun rust-ordinary-lt-gt-p ()
   "Test whether the `<' or `>' at point is an ordinary operator of some kind.
@@ -1483,10 +1541,10 @@ This handles multi-line comments with a * prefix on each line."
       (lambda ()
         (let
             ((fill-paragraph-function
-              (if (not (eq fill-paragraph-function 'rust-fill-paragraph))
+              (if (not (eq fill-paragraph-function #'rust-fill-paragraph))
                   fill-paragraph-function))
              (fill-paragraph-handle-comment t))
-          (apply 'fill-paragraph args)
+          (apply #'fill-paragraph args)
           t))))))
 
 (defun rust-do-auto-fill (&rest args)
@@ -1494,7 +1552,7 @@ This handles multi-line comments with a * prefix on each line."
 This handles multi-line comments with a * prefix on each line."
   (rust-with-comment-fill-prefix
    (lambda ()
-     (apply 'do-auto-fill args)
+     (apply #'do-auto-fill args)
      t)))
 
 (defun rust-fill-forward-paragraph (arg)
