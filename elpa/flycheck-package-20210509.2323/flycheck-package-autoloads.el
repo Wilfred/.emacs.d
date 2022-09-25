@@ -1,4 +1,4 @@
-;;; flycheck-package-autoloads.el --- automatically extracted autoloads
+;;; flycheck-package-autoloads.el --- automatically extracted autoloads  -*- lexical-binding: t -*-
 ;;
 ;;; Code:
 
@@ -14,7 +14,7 @@
 Setup flycheck-package.
 Add `flycheck-emacs-lisp-package' to `flycheck-checkers'." t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "flycheck-package" '("flycheck-package--start")))
+(register-definition-prefixes "flycheck-package" '("flycheck-package--start"))
 
 ;;;***
 

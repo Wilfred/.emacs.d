@@ -5,8 +5,8 @@
 ;; Author: Steve Purcell <steve@sanityinc.com>
 ;;         Fanael Linithien <fanael4@gmail.com>
 ;; Keywords: lisp
-;; Package-Version: 20200304.2151
-;; Package-Commit: 64cf27d69051e02a32e3c517cbfea23f9d2d7557
+;; Package-Version: 20210509.2323
+;; Package-Commit: 30362dddca2a5f02d5e611e8fe802b528c610e10
 ;; Version: 0
 ;; URL: https://github.com/purcell/flycheck-package
 ;; Package-Requires: ((emacs "24.1") (flycheck "0.22") (package-lint "0.2"))
@@ -50,8 +50,7 @@
             (mapcar (lambda (x)
                       (apply #'flycheck-error-new-at `(,@x :checker ,checker)))
                     (condition-case err
-                        (when (package-lint-looks-like-a-package-p)
-                          (package-lint-buffer (current-buffer)))
+                        (package-lint-buffer (current-buffer))
                       (error
                        (funcall callback 'errored (error-message-string err))
                        (signal (car err) (cdr err))))))))
@@ -62,6 +61,7 @@
 (flycheck-define-generic-checker 'emacs-lisp-package
   "A checker for \"Package-Requires\" headers and other packaging issues."
   :start #'flycheck-package--start
+  :predicate #'package-lint-looks-like-a-package-p
   :modes '(emacs-lisp-mode))
 
 ;;;###autoload
