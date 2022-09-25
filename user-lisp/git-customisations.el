@@ -89,6 +89,7 @@
   (define-key with-editor-mode-map (kbd "<C-f12>") #'wh/commit-and-push))
 
 (use-package git-gutter
+  :diminish ""
   :config
   (global-set-key (kbd "C-c n") #'git-gutter:next-hunk)
   (global-set-key (kbd "C-c p") #'git-gutter:previous-hunk))
