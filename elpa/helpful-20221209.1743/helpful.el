@@ -4,8 +4,8 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; URL: https://github.com/Wilfred/helpful
-;; Package-Version: 20220830.456
-;; Package-Commit: 6633d82c6e3c921c486ec284cb6542f33278b605
+;; Package-Version: 20221209.1743
+;; Package-Commit: 94c25337b2de2f9da60914a7c0c6cca9584c0231
 ;; Keywords: help, lisp
 ;; Version: 0.20
 ;; Package-Requires: ((emacs "25") (dash "2.18.0") (s "1.11.0") (f "0.20.0") (elisp-refs "1.2"))
@@ -56,6 +56,7 @@
 (require 'edebug)
 (require 'trace)
 (require 'imenu)
+(require 'cc-langs)
 
 (defvar-local helpful--sym nil)
 (defvar-local helpful--callable-p nil)
@@ -798,6 +799,7 @@ bound) or else highlight."
        'callable-p nil))
      ((and (fboundp sym) (or
                           (s-starts-with-p " command" after-txt)
+                          (s-ends-with-p "command " before-txt)
                           (s-ends-with-p "function " before-txt)))
       (helpful--button
        sym-name
@@ -980,7 +982,8 @@ vector suitable for `key-description', and COMMAND is a smbol."
    ;; Text of the form \\[foo-command]
    (rx "\\[" (group (+ (not (in "]")))) "]")
    (lambda (it)
-     (let* ((symbol-name (match-string 1 it))
+     (let* ((button-face (if (>= emacs-major-version 28) 'help-key-binding 'button))
+            (symbol-name (match-string 1 it))
             (symbol (intern symbol-name))
             (key (where-is-internal symbol keymap t))
             (key-description
@@ -991,7 +994,8 @@ vector suitable for `key-description', and COMMAND is a smbol."
         key-description
         'helpful-describe-exactly-button
         'symbol symbol
-        'callable-p t)))
+        'callable-p t
+        'face button-face)))
    str
    t
    t))
@@ -1249,7 +1253,8 @@ If the source code cannot be found, return the sexp used."
                     (forward-char)
                     (narrow-to-region pos (point)))
                 ;; Narrow to the top-level definition.
-                (narrow-to-defun t))
+                (let ((parse-sexp-ignore-comments t))
+                  (narrow-to-defun t)))
 
               ;; If there was a preceding comment, POS will be
               ;; after that comment. Move the position to include that comment.
@@ -1378,6 +1383,42 @@ interesting forms in BUF."
                   (throw 'found (scan-sexps (point) -1)))))
           (end-of-file nil))))))
 
+(defun helpful--open-if-needed (path)
+  "Return a list (BUF OPENED) where BUF is a buffer visiting PATH.
+If a buffer already exists, return that. If not, open PATH with
+the `emacs-lisp-mode' syntax table active but skip any hooks."
+  (let ((initial-buffers (buffer-list))
+        (buf nil)
+        (opened nil)
+        ;; Skip running hooks that may prompt the user.
+        (find-file-hook nil)
+        ;; If we end up opening a buffer, don't bother with file
+        ;; variables. It prompts the user, and we discard the buffer
+        ;; afterwards anyway.
+        (enable-local-variables nil))
+    ;; Opening large .c files can be slow (e.g. when looking at
+    ;; `defalias'), especially if the user has configured mode hooks.
+    ;;
+    ;; Bind `auto-mode-alist' to nil, so we open the buffer in
+    ;; `fundamental-mode' if it isn't already open.
+    (let ((auto-mode-alist nil))
+      (setq buf (find-file-noselect path)))
+
+    (unless (-contains-p initial-buffers buf)
+      (setq opened t)
+
+      (let ((syntax-table emacs-lisp-mode-syntax-table))
+        (when (s-ends-with-p ".c" path)
+          (setq syntax-table (make-syntax-table))
+          (c-populate-syntax-table syntax-table))
+
+        ;; If it's a freshly opened buffer, we need to set the syntax
+        ;; table so we can search correctly.
+        (with-current-buffer buf
+          (set-syntax-table syntax-table))))
+
+    (list buf opened)))
+
 (defun helpful--definition (sym callable-p)
   "Return a list (BUF POS OPENED) where SYM is defined.
 
@@ -1387,52 +1428,38 @@ the buffer when done.
 
 POS is the position of the start of the definition within the
 buffer."
-  (let ((initial-buffers (buffer-list))
-        (primitive-p (helpful--primitive-p sym callable-p))
+  (let ((primitive-p (helpful--primitive-p sym callable-p))
         (library-name nil)
+        (src-path nil)
         (buf nil)
         (pos nil)
-        (opened nil)
-        ;; Skip running hooks that may prompt the user.
-        (find-file-hook nil)
-        (after-change-major-mode-hook nil)
-        ;; If we end up opening a buffer, don't bother with file
-        ;; variables. It prompts the user, and we discard the buffer
-        ;; afterwards anyway.
-        (enable-local-variables nil))
+        (opened nil))
     ;; We shouldn't be called on primitive functions if we don't have
     ;; a directory of Emacs C sourcecode.
     (cl-assert
      (or find-function-C-source-directory
          (not primitive-p)))
 
-    (when (and (symbolp sym) callable-p)
-      (setq library-name (cdr (find-function-library sym))))
+    (when (symbolp sym)
+      (if callable-p
+          (setq library-name (cdr (find-function-library sym)))
+        ;; Based on `find-variable-noselect'.
+        (setq library-name
+              (or
+               (symbol-file sym 'defvar)
+               (help-C-file-name sym 'var)))))
+
+    (when library-name
+      (setq src-path (helpful--library-path library-name)))
 
     (cond
      ((and (not (symbolp sym)) (functionp sym))
       (list nil nil nil))
      ((and callable-p library-name)
-      (-when-let (src-path (helpful--library-path library-name))
-        ;; Opening large .c files can be slow (e.g. when looking at
-        ;; `defalias'), especially if the user has configured mode hooks.
-        ;;
-        ;; Bind `auto-mode-alist' to nil, so we open the buffer in
-        ;; `fundamental-mode' if it isn't already open.
-        (let ((auto-mode-alist nil))
-          ;; Open `src-path' ourselves, so we can widen before searching.
-          (setq buf (find-file-noselect src-path)))
-
-        (unless (-contains-p initial-buffers buf)
-          (setq opened t))
-
-        ;; If it's a freshly opened buffer, we need to switch to the
-        ;; correct mode so we can search correctly. Enable the mode, but
-        ;; don't bother with mode hooks, because we just need the syntax
-        ;; table for searching.
-        (when opened
-          (with-current-buffer buf
-            (delay-mode-hooks (normal-mode t))))
+      (when src-path
+        (-let [(src-buf src-opened) (helpful--open-if-needed src-path)]
+          (setq buf src-buf)
+          (setq opened src-opened))
 
         ;; Based on `find-function-noselect'.
         (with-current-buffer buf
@@ -1459,19 +1486,24 @@ buffer."
                         edebug-info)]
           (setq buf (marker-buffer marker))
           (setq pos (marker-position marker)))))
-     ((not callable-p)
-      (condition-case _err
-          (-let [(sym-buf . sym-pos) (find-definition-noselect sym 'defvar)]
-            (setq buf sym-buf)
-            (unless (-contains-p initial-buffers buf)
-              (setq opened t))
-            (setq pos sym-pos))
-        (search-failed nil)
-        ;; If your current Emacs instance doesn't match the source
-        ;; code configured in find-function-C-source-directory, we can
-        ;; get an error about not finding source. Try
-        ;; `default-tab-width' against Emacs trunk.
-        (error nil))))
+     ((and (not callable-p) src-path)
+      (-let [(src-buf src-opened) (helpful--open-if-needed src-path)]
+        (setq buf src-buf)
+        (setq opened src-opened)
+
+        (with-current-buffer buf
+          ;; `find-function-search-for-symbol' moves point. Prevent
+          ;; that.
+          (save-excursion
+            (condition-case _err
+                (setq pos (cdr (find-variable-noselect sym 'defvar)))
+              (search-failed nil)
+              ;; If your current Emacs instance doesn't match the source
+              ;; code configured in find-function-C-source-directory, we can
+              ;; get an error about not finding source. Try
+              ;; `default-tab-width' against Emacs trunk.
+              (error nil)))))))
+
     (list buf pos opened)))
 
 (defun helpful--reference-positions (sym callable-p buf)
@@ -1604,7 +1636,9 @@ Includes keybindings for aliases, unlike
           (push
            (format "%s %s"
                    (propertize map 'face 'font-lock-variable-name-face)
-                   key)
+                   (if (>= emacs-major-version 28)
+                       (propertize key 'face 'help-key-binding)
+                     key))
            (if (eq map 'global-map) global-lines mode-lines)))))
     (setq global-lines (-sort #'string< global-lines))
     (setq mode-lines (-sort #'string< mode-lines))
@@ -1732,7 +1766,7 @@ POSITION-HEADS takes the form ((123 (defun foo)) (456 (defun bar)))."
       (with-temp-buffer
         (declare-function cl--generic-describe "cl-generic" (function))
         (cl--generic-describe func)
-        (setf (point) (point-min))
+        (goto-char (point-min))
         (when (re-search-forward "^Implementations:$" nil t)
           (setq content (buffer-substring (point) (point-max)))))
       (when content
@@ -2934,6 +2968,39 @@ See also `helpful-max-buffers'."
 ;; TODO: find a cleaner solution.
 (defvar bookmark-make-record-function)
 
+(defun helpful--add-support-for-org-links ()
+  "Improve support for org \"help\" links through helpful."
+  (helpful--support-storing-org-links)
+  (helpful--prefer-helpful-when-following-org-link))
+
+(defun helpful--support-storing-org-links ()
+  "Make `org-store-link' in a helpful buffer return a \"help\" link."
+  (when (and (fboundp 'org-link-set-parameters)
+             (not (-contains-p (org-link-types) "helpful")))
+    (org-link-set-parameters "helpful"
+                             :store #'helpful--org-link-store)))
+
+(defun helpful--org-link-store ()
+  "Store \"help\" type link when in a helpful buffer."
+  (when (derived-mode-p 'helpful-mode)
+    ;; Create a "help" link instead of a dedicated "helpful" link: the
+    ;; author of the Org document uses helful, but this is not
+    ;; necessarily the case of the reader of the document.
+    (org-link-store-props :type "help"
+                          :link (format "help:%s" helpful--sym)
+                          :description nil)))
+
+(defun helpful--prefer-helpful-when-following-org-link ()
+  "Prefer helpful when using `org-open-at-point' on a \"help\" link."
+  (when (fboundp 'org-link-set-parameters)
+    (let ((follow-function (org-link-get-parameter "help" :follow)))
+      (when (not (equal follow-function #'helpful--org-link-follow))
+        (org-link-set-parameters "help"
+                                 :follow #'helpful--org-link-follow)))))
+
+(defun helpful--org-link-follow (link _)
+  (helpful-symbol (intern link)))
+
 (define-derived-mode helpful-mode special-mode "Helpful"
   "Major mode for *Helpful* buffers."
   (add-hook 'xref-backend-functions #'elisp--xref-backend nil t)
@@ -2944,7 +3011,13 @@ See also `helpful-max-buffers'."
 
   ;; Enable users to bookmark helpful buffers.
   (set (make-local-variable 'bookmark-make-record-function)
-       #'helpful--bookmark-make-record))
+       #'helpful--bookmark-make-record)
+
+  ;; This function should normally only be called once after Org and
+  ;; helpful are loaded. To avoid using `eval-after-load' (which is
+  ;; only recommended in user init files), the function is called each
+  ;; time the major mode is used.
+  (helpful--add-support-for-org-links))
 
 (provide 'helpful)
 ;;; helpful.el ends here
