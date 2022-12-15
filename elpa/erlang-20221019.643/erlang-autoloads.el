@@ -1,9 +1,12 @@
-;;; erlang-autoloads.el --- automatically extracted autoloads
+;;; erlang-autoloads.el --- automatically extracted autoloads  -*- lexical-binding: t -*-
 ;;
 ;;; Code:
-(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
+
+(add-to-list 'load-path (directory-file-name
+                         (or (file-name-directory #$) (car load-path))))
+
 
-;;;### (autoloads nil "erlang" "erlang.el" (22697 45783 404331 805000))
+;;;### (autoloads nil "erlang" "erlang.el" (0 0 0 0))
 ;;; Generated autoloads from erlang.el
 
 (autoload 'erlang-mode "erlang" "\
@@ -87,15 +90,11 @@ Start a new Erlang shell.
 
 The variable `erlang-shell-function' decides which method to use,
 default is to start a new Erlang host.  It is possible that, in the
-future, a new shell on an already running host will be started.
-
-\(fn)" t nil)
+future, a new shell on an already running host will be started." t nil)
  (autoload 'run-erlang "erlang" "Start a new Erlang shell." t)
 
 (autoload 'erlang-compile "erlang" "\
-Compile Erlang module in current buffer.
-
-\(fn)" t nil)
+Compile Erlang module in current buffer." t nil)
 
 (autoload 'inferior-erlang "erlang" "\
 Run an inferior Erlang.
@@ -116,25 +115,69 @@ editing control characters:
 
 \(fn &optional COMMAND)" t nil)
 
+(register-definition-prefixes "erlang" '("erlang-" "inferior-erlang-" "run-erlang"))
+
 ;;;***
 
-;;;### (autoloads nil "erlang-edoc" "erlang-edoc.el" (22697 45783
-;;;;;;  587662 831000))
+;;;### (autoloads nil "erlang-edoc" "erlang-edoc.el" (0 0 0 0))
 ;;; Generated autoloads from erlang-edoc.el
 
 (autoload 'erlang-edoc-mode "erlang-edoc" "\
-Toggle Erlang-Edoc mode on or off.
-With a prefix argument ARG, enable Erlang-Edoc mode if ARG is
-positive, and disable it otherwise.  If called from Lisp, enable
-the mode if ARG is omitted or nil, and toggle it if ARG is `toggle'.
+Toggle Erlang-EDoc mode on or off.
+
+This is a minor mode.  If called interactively, toggle the
+`Erlang-EDoc mode' mode.  If the prefix argument is positive,
+enable the mode, and if it is zero or negative, disable the mode.
+
+If called from Lisp, toggle the mode if ARG is `toggle'.  Enable
+the mode if ARG is nil, omitted, or is a positive number.
+Disable the mode if ARG is a negative number.
+
+To check whether the minor mode is enabled in the current buffer,
+evaluate `erlang-edoc-mode'.
+
+The mode's hook is called both when the mode is enabled and when
+it is disabled.
+
 \\{erlang-edoc-mode-map}
 
 \(fn &optional ARG)" t nil)
 
+(register-definition-prefixes "erlang-edoc" '("erlang-edoc-"))
+
 ;;;***
 
-;;;### (autoloads nil "erlang-start" "erlang-start.el" (22697 45783
-;;;;;;  277666 733000))
+;;;### (autoloads nil "erlang-eunit" "erlang-eunit.el" (0 0 0 0))
+;;; Generated autoloads from erlang-eunit.el
+
+(register-definition-prefixes "erlang-eunit" '("erlang-e" "filename-join"))
+
+;;;***
+
+;;;### (autoloads nil "erlang-flymake" "erlang-flymake.el" (0 0 0
+;;;;;;  0))
+;;; Generated autoloads from erlang-flymake.el
+
+(register-definition-prefixes "erlang-flymake" '("erlang-flymake-"))
+
+;;;***
+
+;;;### (autoloads nil "erlang-skels" "erlang-skels.el" (0 0 0 0))
+;;; Generated autoloads from erlang-skels.el
+
+(register-definition-prefixes "erlang-skels" '("erlang-"))
+
+;;;***
+
+;;;### (autoloads nil "erlang-skels-old" "erlang-skels-old.el" (0
+;;;;;;  0 0 0))
+;;; Generated autoloads from erlang-skels-old.el
+
+(register-definition-prefixes "erlang-skels-old" '("erlang-"))
+
+;;;***
+
+;;;### (autoloads nil "erlang-start" "erlang-start.el" (0 0 0 0))
 ;;; Generated autoloads from erlang-start.el
 
 (let ((a '("\\.erl\\'" . erlang-mode)) (b '("\\.hrl\\'" . erlang-mode))) (or (assoc (car a) auto-mode-alist) (setq auto-mode-alist (cons a auto-mode-alist))) (or (assoc (car b) auto-mode-alist) (setq auto-mode-alist (cons b auto-mode-alist))))
@@ -145,7 +188,14 @@ the mode if ARG is omitted or nil, and toggle it if ARG is `toggle'.
 
 ;;;***
 
-;;;### (autoloads nil "erldoc" "erldoc.el" (22697 45783 630995 619000))
+;;;### (autoloads nil "erlang-test" "erlang-test.el" (0 0 0 0))
+;;; Generated autoloads from erlang-test.el
+
+(register-definition-prefixes "erlang-test" '("erlang-"))
+
+;;;***
+
+;;;### (autoloads nil "erldoc" "erldoc.el" (0 0 0 0))
 ;;; Generated autoloads from erldoc.el
 
 (autoload 'erldoc-browse "erldoc" "\
@@ -159,20 +209,18 @@ the mode if ARG is omitted or nil, and toggle it if ARG is `toggle'.
 \(fn PATTERN)" t nil)
 
 (autoload 'erldoc-eldoc-function "erldoc" "\
-A function suitable for `eldoc-documentation-function'.
-
-\(fn)" nil nil)
+A function suitable for `eldoc-documentation-function'." nil nil)
 
 (autoload 'erldoc-browse-topic "erldoc" "\
 
 
 \(fn TOPIC)" t nil)
 
+(register-definition-prefixes "erldoc" '("erldoc-"))
+
 ;;;***
 
-;;;### (autoloads nil nil ("erlang-eunit.el" "erlang-flymake.el"
-;;;;;;  "erlang-pkg.el" "erlang-skels-old.el" "erlang-skels.el" "erlang-test.el")
-;;;;;;  (22697 45783 537663 460000))
+;;;### (autoloads nil nil ("erlang-pkg.el") (0 0 0 0))
 
 ;;;***
 
@@ -180,5 +228,6 @@ A function suitable for `eldoc-documentation-function'.
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
+;; coding: utf-8
 ;; End:
 ;;; erlang-autoloads.el ends here

@@ -8,7 +8,7 @@
 
 ;; %CopyrightBegin%
 ;;
-;; Copyright Ericsson AB 2016. All Rights Reserved.
+;; Copyright Ericsson AB 2016-2021. All Rights Reserved.
 ;;
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@
 
 ;; This library require GNU Emacs 25 or later.
 ;;
-;; There are two ways to run emacs unit tests.
+;; There are three ways to run the erlang emacs unit tests.
 ;;
 ;; 1. Within a running emacs process.  Load this file.  Then to run
 ;; all defined test cases:
@@ -49,11 +49,20 @@
 ;;
 ;; The -L option adds a directory to the load-path.  It should be the
 ;; directory containing erlang.el and erlang-test.el.
+;;
+;; 3. Run the emacs_SUITE.  The testcases tests_interpreted/1 and
+;; tests_compiled/1 in this suite are using the second method.  One
+;; way to run this suite is with the ct_run tool, for example like the
+;; following when standing at the OTP repo top directory:
+;;
+;; ct_run -suite lib/tools/test/emacs_SUITE
+;;
+;; Note that this creates a lot of html log files in the current
+;; directory.
 
 ;;; Code:
 
 (require 'ert)
-(require 'cl-lib)
 (require 'erlang)
 
 (defvar erlang-test-code
@@ -63,7 +72,7 @@
     ("SYMBOL" . "-define(SYMBOL, value).")
     ("MACRO" . "-define(MACRO(X), X + X).")
     ("struct" . "-record(struct, {until,maps,are,everywhere}).")
-    ("function". "function() -> #struct{}."))
+    ("function" . "function() -> #struct{}."))
   "Alist of erlang test code.
 Each entry have the format (TAGNAME . ERLANG_CODE).  If TAGNAME
 is nil there is no definitions in the ERLANG_CODE.  The
@@ -143,8 +152,9 @@ concatenated to form an erlang file to test on.")
            do (when tagname
                 (switch-to-buffer erlang-buffer)
                 (erlang-test-xref-jump tagname erlang-file line)
-                (erlang-test-xref-jump (concat "erlang_test:" tagname)
-                                       erlang-file line)))
+                (when (string-equal tagname "function")
+                  (erlang-test-xref-jump (concat "erlang_test:" tagname)
+                                         erlang-file line))))
   (erlang-test-xref-jump "erlang_test:" erlang-file 1))
 
 (defun erlang-test-xref-jump (id expected-file expected-line)
