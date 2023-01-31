@@ -58,6 +58,7 @@ foo -> &foo[..]"
   (add-to-list 'exec-path (f-expand "~/.cargo/bin"))
 
   (add-hook 'rust-mode-hook #'wh/rust-company-settings)
+  (require 'rust-rustfmt)
 
   (define-key rust-mode-map (kbd "C-c v") #'wh/rust-toggle-visibility)
 
