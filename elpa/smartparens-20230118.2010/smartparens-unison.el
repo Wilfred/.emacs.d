@@ -1,11 +1,11 @@
-;;; smartparens-rst.el --- Additional configuration for rst based modes.  -*- lexical-binding: t; -*-
+;;; smartparens-unison.el --- Additional configuration for Unison -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2019 Matus Goljer
+;; Copyright (C) 2022 Joseph Morag
 
-;; Author: Matus Goljer <matus.goljer@gmail.com>
-;; Maintainer: Matus Goljer <matus.goljer@gmail.com>
-;; Created: 28th January 2019
-;; Keywords: abbrev convenience editing
+;; Author: Joseph Morag <jm@josephmorag.com>
+;; Maintainer: Joseph Morag <jm@josephmorag.com>
+;; Created: 04 December 2022
+;; Keywords: smartparens, unison
 ;; URL: https://github.com/Fuco1/smartparens
 
 ;; This file is not part of GNU Emacs.
@@ -29,10 +29,10 @@
 
 ;;; Commentary:
 
-;; This file provides some additional configuration for rst based
-;; modes.  To use it, simply add:
+;; This file provides some additional configuration for Unison.
+;; To use it, simply add:
 ;;
-;; (require 'smartparens-rst)
+;; (require 'smartparens-unison)
 ;;
 ;; into your configuration.  You can use this in conjunction with the
 ;; default config or your own configuration.
@@ -46,17 +46,12 @@
 ;;; Code:
 
 (require 'smartparens)
-(require 'smartparens-text)
-(require 'smartparens-markdown)
 
-(sp-with-modes 'rst-mode
-  (sp-local-pair "*" "*"
-                 :unless '(sp--gfm-point-after-word-p sp-point-at-bol-p)
-                 :post-handlers '(("[d1]" "SPC"))
-                 :skip-match 'sp--gfm-skip-asterisk)
-  (sp-local-pair "**" "**")
-  (sp-local-pair "_" "_" :unless '(sp-point-after-word-p))
-  (sp-local-pair "``" "``"))
+(sp-with-modes '(unisonlang-mode)
+  ;; Disable ' because it is used as a shortcut to wrap a value in
+  ;; lambda () -> value
+  ;; to make it lazy
+  (sp-local-pair "'" nil :actions nil))
 
-(provide 'smartparens-rst)
-;;; smartparens-rst.el ends here
+(provide 'smartparens-unison)
+;;; smartparens-unison.el ends here

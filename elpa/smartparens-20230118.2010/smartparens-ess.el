@@ -44,15 +44,21 @@
 (declare-function ess-roxy-indent-on-newline "ess-roxy")
 
 
-;; avoid traveling commas when slurping
-;; (|a, b), c ---> (|a, b, c)
-(dolist (mode '(ess-mode inferior-ess-mode))
-  (add-to-list 'sp-sexp-suffix (list mode 'regexp "")))
+(dolist (mode '(ess-mode ess-r-mode inferior-ess-mode inferior-ess-r-mode))
+  ;; avoid traveling commas when slurping
+  ;; (|a, b), c ---> (|a, b, c)
+  (add-to-list 'sp-sexp-suffix (list mode 'regexp ""))
+  ;; `sp-sexp-prefix' for ESS
+  (add-to-list 'sp-sexp-prefix
+               (list mode 'regexp
+                     (rx (zero-or-more (or word (syntax symbol)))))))
 
-;; `sp-sexp-prefix' for ESS
-(add-to-list 'sp-sexp-prefix
-             (list 'ess-mode 'regexp
-                   (rx (zero-or-more (or word (syntax symbol))))))
+(defadvice sp-backward-kill-symbol (around sp-ess-backward-kill-symbol activate)
+  "#821 For the purpose of killing words and symbols, we remove
+the prefix resolution because it is not necessary.  We want to
+treat function prefix as word or symbol to be deleted."
+  (let ((sp-sexp-prefix nil))
+    ad-do-it))
 
 ;; slurping follows Google's R style guide
 ;; see https://google.github.io/styleguide/Rguide.xml
@@ -149,7 +155,7 @@ ARGS."
 (defun sp-ess-roxy-str-p (_id action _context)
   "Test if looking back at `ess-roxy-re'.
 ID, ACTION, CONTEXT."
-  (when (and (boundp 'ess-roxy-re) (eq action 'insert))
+  (when (and (bound-and-true-p ess-roxy-re) (eq action 'insert))
     (sp--looking-back-p ess-roxy-re)))
 
 (sp-with-modes 'ess-mode
@@ -223,6 +229,9 @@ ID, ACTION, CONTEXT."
                  :post-handlers '((sp-ess-open-sexp-indent "M-j"))
                  :suffix "{[^}]*}"))
 
+(sp-with-modes '(ess-r-mode inferior-ess-r-mode)
+  (sp-local-pair "\\(" nil
+                 :unless '(:add sp-in-code-p)))
 
 (provide 'smartparens-ess)
 ;;; smartparens-ess ends here

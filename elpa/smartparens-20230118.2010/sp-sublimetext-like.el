@@ -1,9 +1,9 @@
-;;; smartparens-clojure.el --- Additional configuration for Clojure mode.  -*- lexical-binding: t; -*-
+;;; sp-sublimetext-like.el --- Behavior for inserting parentheses similar to SublimeText editor.  -*- lexical-binding: t; -*-
 ;;
-;; Author: Vitalie Spinu <spinuvit@gmail.com>
+;; Author: Konstantin Kharlamov <Hi-Angel@yandex.ru>
 ;; Maintainer: Matus Goljer <matus.goljer@gmail.com>
-;; Created: 14 July 2016
-;; Keywords: abbrev convenience editing
+;; Created: 16 December 2020
+;; Keywords: convenience editing
 ;; URL: https://github.com/Fuco1/smartparens
 ;;
 ;; This file is not part of GNU Emacs.
@@ -27,10 +27,10 @@
 ;;
 ;;; Commentary:
 ;;
-;; This file provides some additional configuration for Clojure mode.  To use
-;; it, simply add:
+;; This file configuation to make smartparens insertion behavae similarly to
+;; SublimeText editor.  To use it, simply add:
 ;;
-;; (require 'smartparens-clojure)
+;;     (require 'sp-sublimetext-like)
 ;;
 ;; into your configuration.  You can use this in conjunction with the
 ;; default config or your own configuration.
@@ -39,18 +39,19 @@
 
 (require 'smartparens)
 
-(defvar sp-clojure-prefix "\\(?:[@`'#~,_?^]+\\)"
-  "Prefix used in `sp-sepx-prefix' for clojure modes.")
+(defun sp-point-not-before-word (_ action __)
+  "In insert and autoskip actions returns t when next symbol is
+not a word constituent."
+  (if (memq action '(insert autoskip))
+      (looking-at "\\(\\Sw\\|$\\)")
+    t))
 
-(dolist (mode '(clojure-mode clojurescript-mode clojurec-mode cider-repl-mode))
-  (add-to-list 'sp-sexp-prefix `(,mode regexp ,sp-clojure-prefix)))
+(let ((when '(sp-point-not-before-word))
+      (actions  '(insert wrap autoskip navigate)))
+  (sp-pair "{" "}" :when when :actions actions)
+  (sp-pair "[" "]" :when when :actions actions)
+  (sp-pair "(" ")" :when when :actions actions))
 
-;; Match "`" with "`" in strings and comments
-(sp-with-modes sp-clojure-modes
-  (sp-local-pair "`" "`"
-                 :when '(sp-in-string-p
-                         sp-in-comment-p)
-                 :unless '(sp-lisp-invalid-hyperlink-p)))
+(provide 'sp-sublimetext-like)
 
-(provide 'smartparens-clojure)
-;;; smartparens-clojure.el ends here
+;;; sp-sublimetext-like.el ends here

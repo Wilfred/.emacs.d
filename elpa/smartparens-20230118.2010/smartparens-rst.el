@@ -1,14 +1,11 @@
-;;; smartparens-ml.el --- Additional configuration for ML languages  -*- lexical-binding: t; -*-
+;;; smartparens-rst.el --- Additional configuration for rst based modes.  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2016-2017 Ta Quang Trung
-;; Copyright (C) 2017 Matus Goljer
+;; Copyright (C) 2019 Matus Goljer
 
-;; Author: Ta Quang Trung <taquangtrungvn@gmail.com>
-;;         Matus Goljer <matus.goljer@gmail.com>
-;;         Louis Roché <louis@louisroche.net>
+;; Author: Matus Goljer <matus.goljer@gmail.com>
 ;; Maintainer: Matus Goljer <matus.goljer@gmail.com>
-;; Created: 14 July 2016
-;; Keywords: smartparens, ML, ocaml, reason
+;; Created: 28th January 2019
+;; Keywords: abbrev convenience editing
 ;; URL: https://github.com/Fuco1/smartparens
 
 ;; This file is not part of GNU Emacs.
@@ -32,10 +29,10 @@
 
 ;;; Commentary:
 
-;; This file provides some additional configuration for ML languages.
-;; To use it, simply add:
+;; This file provides some additional configuration for rst based
+;; modes.  To use it, simply add:
 ;;
-;; (require 'smartparens-ml)
+;; (require 'smartparens-rst)
 ;;
 ;; into your configuration.  You can use this in conjunction with the
 ;; default config or your own configuration.
@@ -49,25 +46,21 @@
 ;;; Code:
 
 (require 'smartparens)
+(require 'smartparens-text)
+(require 'smartparens-markdown)
 
-;;; Local pairs for ML-family languages
+(defun sp-rst-point-after-backtick (_id action _context)
+  (when (eq action 'insert)
+    (sp--looking-back-p "`_")))
 
-(sp-with-modes '(fsharp-mode)
-  (sp-local-pair "(*" "*)" ))
+(sp-with-modes 'rst-mode
+  (sp-local-pair "*" "*"
+                 :unless '(sp--gfm-point-after-word-p sp-point-at-bol-p)
+                 :post-handlers '(("[d1]" "SPC"))
+                 :skip-match 'sp--gfm-skip-asterisk)
+  (sp-local-pair "**" "**")
+  (sp-local-pair "_" "_" :unless '(sp-point-after-word-p sp-rst-point-after-backtick))
+  (sp-local-pair "``" "``"))
 
-(sp-with-modes '(tuareg-mode)
-  ;; Disable ` because it is used in polymorphic variants
-  (sp-local-pair "`" nil :actions nil)
-  ;; Disable ' because it is used in value names and types
-  (sp-local-pair "'" nil :actions nil)
-  (sp-local-pair "(*" "*)" ))
-
-(sp-with-modes '(reason-mode)
-  ;; Disable ` because it is used in polymorphic variants
-  (sp-local-pair "`" nil :actions nil)
-  ;; Disable ' because it is used in value names and types
-  (sp-local-pair "'" nil :actions nil)
-  (sp-local-pair "/*" "*/" ))
-
-(provide 'smartparens-ml)
-;;; smartparens-ml.el ends here
+(provide 'smartparens-rst)
+;;; smartparens-rst.el ends here

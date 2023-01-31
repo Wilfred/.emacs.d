@@ -1,4 +1,4 @@
-;;; smartparens-autoloads.el --- automatically extracted autoloads
+;;; smartparens-autoloads.el --- automatically extracted autoloads  -*- lexical-binding: t -*-
 ;;
 ;;; Code:
 
@@ -31,17 +31,27 @@ better orientation.
 Keymap used for `smartparens-mode'.")
 
 (autoload 'sp-use-paredit-bindings "smartparens" "\
-Initiate `smartparens-mode-map' with `sp-paredit-bindings'.
-
-\(fn)" t nil)
+Initiate `smartparens-mode-map' with `sp-paredit-bindings'." t nil)
 
 (autoload 'sp-use-smartparens-bindings "smartparens" "\
-Initiate `smartparens-mode-map' with `sp-smartparens-bindings'.
-
-\(fn)" t nil)
+Initiate `smartparens-mode-map' with `sp-smartparens-bindings'." t nil)
 
 (autoload 'smartparens-mode "smartparens" "\
 Toggle smartparens mode.
+
+This is a minor mode.  If called interactively, toggle the
+`Smartparens mode' mode.  If the prefix argument is positive,
+enable the mode, and if it is zero or negative, disable the mode.
+
+If called from Lisp, toggle the mode if ARG is `toggle'.  Enable
+the mode if ARG is nil, omitted, or is a positive number.
+Disable the mode if ARG is a negative number.
+
+To check whether the minor mode is enabled in the current buffer,
+evaluate `smartparens-mode'.
+
+The mode's hook is called both when the mode is enabled and when
+it is disabled.
 
 You can enable pre-set bindings by customizing
 `sp-base-key-bindings' variable.  The current content of
@@ -53,6 +63,21 @@ You can enable pre-set bindings by customizing
 
 (autoload 'smartparens-strict-mode "smartparens" "\
 Toggle the strict smartparens mode.
+
+This is a minor mode.  If called interactively, toggle the
+`Smartparens-Strict mode' mode.  If the prefix argument is
+positive, enable the mode, and if it is zero or negative, disable
+the mode.
+
+If called from Lisp, toggle the mode if ARG is `toggle'.  Enable
+the mode if ARG is nil, omitted, or is a positive number.
+Disable the mode if ARG is a negative number.
+
+To check whether the minor mode is enabled in the current buffer,
+evaluate `smartparens-strict-mode'.
+
+The mode's hook is called both when the mode is enabled and when
+it is disabled.
 
 When strict mode is active, `delete-char', `kill-word' and their
 backward variants will skip over the pair delimiters in order to
@@ -67,6 +92,8 @@ after the smartparens indicator in the mode list.
 
 \(fn &optional ARG)" t nil)
 
+(put 'smartparens-global-strict-mode 'globalized-minor-mode t)
+
 (defvar smartparens-global-strict-mode nil "\
 Non-nil if Smartparens-Global-Strict mode is enabled.
 See the `smartparens-global-strict-mode' command
@@ -79,25 +106,28 @@ or call the function `smartparens-global-strict-mode'.")
 
 (autoload 'smartparens-global-strict-mode "smartparens" "\
 Toggle Smartparens-Strict mode in all buffers.
-With prefix ARG, enable Smartparens-Global-Strict mode if ARG is positive;
-otherwise, disable it.  If called from Lisp, enable the mode if
-ARG is omitted or nil.
+With prefix ARG, enable Smartparens-Global-Strict mode if ARG is
+positive; otherwise, disable it.
+
+If called from Lisp, toggle the mode if ARG is `toggle'.
+Enable the mode if ARG is nil, omitted, or is a positive number.
+Disable the mode if ARG is a negative number.
 
 Smartparens-Strict mode is enabled in all buffers where
 `turn-on-smartparens-strict-mode' would do it.
-See `smartparens-strict-mode' for more information on Smartparens-Strict mode.
+
+See `smartparens-strict-mode' for more information on
+Smartparens-Strict mode.
 
 \(fn &optional ARG)" t nil)
 
 (autoload 'turn-on-smartparens-strict-mode "smartparens" "\
-Turn on `smartparens-strict-mode'.
-
-\(fn)" t nil)
+Turn on `smartparens-strict-mode'." t nil)
 
 (autoload 'turn-off-smartparens-strict-mode "smartparens" "\
-Turn off `smartparens-strict-mode'.
+Turn off `smartparens-strict-mode'." t nil)
 
-\(fn)" t nil)
+(put 'smartparens-global-mode 'globalized-minor-mode t)
 
 (defvar smartparens-global-mode nil "\
 Non-nil if Smartparens-Global mode is enabled.
@@ -112,11 +142,15 @@ or call the function `smartparens-global-mode'.")
 (autoload 'smartparens-global-mode "smartparens" "\
 Toggle Smartparens mode in all buffers.
 With prefix ARG, enable Smartparens-Global mode if ARG is positive;
-otherwise, disable it.  If called from Lisp, enable the mode if
-ARG is omitted or nil.
+otherwise, disable it.
+
+If called from Lisp, toggle the mode if ARG is `toggle'.
+Enable the mode if ARG is nil, omitted, or is a positive number.
+Disable the mode if ARG is a negative number.
 
 Smartparens mode is enabled in all buffers where
 `turn-on-smartparens-mode' would do it.
+
 See `smartparens-mode' for more information on Smartparens mode.
 
 \(fn &optional ARG)" t nil)
@@ -133,14 +167,10 @@ buffers.
 Additionally, buffers on `sp-ignore-modes-list' are ignored.
 
 You can still turn on smartparens in these mode manually (or
-in mode's startup-hook etc.) by calling `smartparens-mode'.
-
-\(fn)" t nil)
+in mode's startup-hook etc.) by calling `smartparens-mode'." t nil)
 
 (autoload 'turn-off-smartparens-mode "smartparens" "\
-Turn off `smartparens-mode'.
-
-\(fn)" t nil)
+Turn off `smartparens-mode'." t nil)
 
 (autoload 'show-smartparens-mode "smartparens" "\
 Toggle visualization of matching pairs.  When enabled, any
@@ -149,7 +179,24 @@ of Emacs idle time if the point is immediately in front or after
 a pair.  This mode works similarly to `show-paren-mode', but
 support custom pairs.
 
+This is a minor mode.  If called interactively, toggle the
+`Show-Smartparens mode' mode.  If the prefix argument is
+positive, enable the mode, and if it is zero or negative, disable
+the mode.
+
+If called from Lisp, toggle the mode if ARG is `toggle'.  Enable
+the mode if ARG is nil, omitted, or is a positive number.
+Disable the mode if ARG is a negative number.
+
+To check whether the minor mode is enabled in the current buffer,
+evaluate `show-smartparens-mode'.
+
+The mode's hook is called both when the mode is enabled and when
+it is disabled.
+
 \(fn &optional ARG)" t nil)
+
+(put 'show-smartparens-global-mode 'globalized-minor-mode t)
 
 (defvar show-smartparens-global-mode nil "\
 Non-nil if Show-Smartparens-Global mode is enabled.
@@ -163,27 +210,28 @@ or call the function `show-smartparens-global-mode'.")
 
 (autoload 'show-smartparens-global-mode "smartparens" "\
 Toggle Show-Smartparens mode in all buffers.
-With prefix ARG, enable Show-Smartparens-Global mode if ARG is positive;
-otherwise, disable it.  If called from Lisp, enable the mode if
-ARG is omitted or nil.
+With prefix ARG, enable Show-Smartparens-Global mode if ARG is
+positive; otherwise, disable it.
+
+If called from Lisp, toggle the mode if ARG is `toggle'.
+Enable the mode if ARG is nil, omitted, or is a positive number.
+Disable the mode if ARG is a negative number.
 
 Show-Smartparens mode is enabled in all buffers where
 `turn-on-show-smartparens-mode' would do it.
-See `show-smartparens-mode' for more information on Show-Smartparens mode.
+
+See `show-smartparens-mode' for more information on Show-Smartparens
+mode.
 
 \(fn &optional ARG)" t nil)
 
 (autoload 'turn-on-show-smartparens-mode "smartparens" "\
-Turn on `show-smartparens-mode'.
-
-\(fn)" t nil)
+Turn on `show-smartparens-mode'." t nil)
 
 (autoload 'turn-off-show-smartparens-mode "smartparens" "\
-Turn off `show-smartparens-mode'.
+Turn off `show-smartparens-mode'." t nil)
 
-\(fn)" t nil)
-
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens" '("smartparens-" "sp-")))
+(register-definition-prefixes "smartparens" '("smartparens-" "sp-"))
 
 ;;;***
 
@@ -191,7 +239,7 @@ Turn off `show-smartparens-mode'.
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from smartparens-clojure.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-clojure" '("sp-clojure-prefix")))
+(register-definition-prefixes "smartparens-clojure" '("sp-clojure-prefix"))
 
 ;;;***
 
@@ -199,7 +247,7 @@ Turn off `show-smartparens-mode'.
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from smartparens-config.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-config" '("sp-lisp-invalid-hyperlink-p")))
+(register-definition-prefixes "smartparens-config" '("sp-lisp-invalid-hyperlink-p"))
 
 ;;;***
 
@@ -207,7 +255,7 @@ Turn off `show-smartparens-mode'.
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from smartparens-crystal.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-crystal" '("sp-crystal-")))
+(register-definition-prefixes "smartparens-crystal" '("sp-crystal-"))
 
 ;;;***
 
@@ -215,7 +263,7 @@ Turn off `show-smartparens-mode'.
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from smartparens-elixir.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-elixir" '("sp-elixir-")))
+(register-definition-prefixes "smartparens-elixir" '("sp-elixir-"))
 
 ;;;***
 
@@ -223,7 +271,7 @@ Turn off `show-smartparens-mode'.
 ;;;;;;  0 0))
 ;;; Generated autoloads from smartparens-ess.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-ess" '("sp-ess-")))
+(register-definition-prefixes "smartparens-ess" '("sp-ess-"))
 
 ;;;***
 
@@ -231,7 +279,7 @@ Turn off `show-smartparens-mode'.
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from smartparens-haskell.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-haskell" '("sp-")))
+(register-definition-prefixes "smartparens-haskell" '("sp-"))
 
 ;;;***
 
@@ -239,7 +287,7 @@ Turn off `show-smartparens-mode'.
 ;;;;;;  0 0 0))
 ;;; Generated autoloads from smartparens-html.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-html" '("sp-html-")))
+(register-definition-prefixes "smartparens-html" '("sp-html-"))
 
 ;;;***
 
@@ -247,7 +295,7 @@ Turn off `show-smartparens-mode'.
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from smartparens-latex.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-latex" '("sp-latex-")))
+(register-definition-prefixes "smartparens-latex" '("sp-latex-"))
 
 ;;;***
 
@@ -255,7 +303,7 @@ Turn off `show-smartparens-mode'.
 ;;;;;;  0 0))
 ;;; Generated autoloads from smartparens-lua.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-lua" '("sp-lua-post-keyword-insert")))
+(register-definition-prefixes "smartparens-lua" '("sp-lua-post-keyword-insert"))
 
 ;;;***
 
@@ -263,7 +311,7 @@ Turn off `show-smartparens-mode'.
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from smartparens-markdown.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-markdown" '("sp-")))
+(register-definition-prefixes "smartparens-markdown" '("sp-"))
 
 ;;;***
 
@@ -271,7 +319,7 @@ Turn off `show-smartparens-mode'.
 ;;;;;;  0 0))
 ;;; Generated autoloads from smartparens-org.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-org" '("sp-")))
+(register-definition-prefixes "smartparens-org" '("sp-"))
 
 ;;;***
 
@@ -279,7 +327,15 @@ Turn off `show-smartparens-mode'.
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from smartparens-python.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-python" '("sp-python-fix-tripple-quotes")))
+(register-definition-prefixes "smartparens-python" '("sp-python-"))
+
+;;;***
+
+;;;### (autoloads nil "smartparens-rst" "smartparens-rst.el" (0 0
+;;;;;;  0 0))
+;;; Generated autoloads from smartparens-rst.el
+
+(register-definition-prefixes "smartparens-rst" '("sp-rst-point-after-backtick"))
 
 ;;;***
 
@@ -287,7 +343,7 @@ Turn off `show-smartparens-mode'.
 ;;;;;;  0 0 0))
 ;;; Generated autoloads from smartparens-ruby.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-ruby" '("sp-")))
+(register-definition-prefixes "smartparens-ruby" '("sp-"))
 
 ;;;***
 
@@ -295,7 +351,7 @@ Turn off `show-smartparens-mode'.
 ;;;;;;  0 0 0))
 ;;; Generated autoloads from smartparens-rust.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-rust" '("sp-")))
+(register-definition-prefixes "smartparens-rust" '("sp-"))
 
 ;;;***
 
@@ -303,7 +359,15 @@ Turn off `show-smartparens-mode'.
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from smartparens-scala.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-scala" '("sp-scala-wrap-with-indented-newlines")))
+(register-definition-prefixes "smartparens-scala" '("sp-scala-wrap-with-indented-newlines"))
+
+;;;***
+
+;;;### (autoloads nil "smartparens-swift" "smartparens-swift.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from smartparens-swift.el
+
+(register-definition-prefixes "smartparens-swift" '("sp-swift-"))
 
 ;;;***
 
@@ -311,13 +375,22 @@ Turn off `show-smartparens-mode'.
 ;;;;;;  0 0 0))
 ;;; Generated autoloads from smartparens-text.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "smartparens-text" '("sp-text-mode-")))
+(register-definition-prefixes "smartparens-text" '("sp-text-mode-"))
 
 ;;;***
 
-;;;### (autoloads nil nil ("smartparens-c.el" "smartparens-javascript.el"
-;;;;;;  "smartparens-ml.el" "smartparens-pkg.el" "smartparens-racket.el"
-;;;;;;  "smartparens-rst.el") (0 0 0 0))
+;;;### (autoloads nil "sp-sublimetext-like" "sp-sublimetext-like.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from sp-sublimetext-like.el
+
+(register-definition-prefixes "sp-sublimetext-like" '("sp-point-not-before-word"))
+
+;;;***
+
+;;;### (autoloads nil nil ("smartparens-c.el" "smartparens-erlang.el"
+;;;;;;  "smartparens-go.el" "smartparens-javascript.el" "smartparens-ml.el"
+;;;;;;  "smartparens-pkg.el" "smartparens-racket.el" "smartparens-unison.el")
+;;;;;;  (0 0 0 0))
 
 ;;;***
 

@@ -45,8 +45,13 @@
 
 (sp-with-modes sp-c-modes
   (sp-local-pair "{" nil :post-handlers '(("||\n[i]" "RET")))
-  (sp-local-pair "/*" "*/" :post-handlers '((" | " "SPC")
+  (sp-local-pair "/*" "*/" :post-handlers '(("| " "SPC")
                                             ("* ||\n[i]" "RET"))))
+
+;; inline formulas for doxygen
+(sp-with-modes sp-c-modes
+  (sp-local-pair "\\f[" "\\f]" :when '(sp-in-comment-p))
+  (sp-local-pair "\\f$" "\\f$" :when '(sp-in-comment-p)))
 
 (provide 'smartparens-c)
 ;;; smartparens-c.el ends here
