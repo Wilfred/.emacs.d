@@ -16,7 +16,7 @@ SLY
 ***
 
 SLY is a Common Lisp IDE for Emacs.  This is the manual for version
-1.0.42.  (Last updated October 24, 2021)
+1.0.42.  (Last updated February 28, 2023)
 
    Written for SLIME Luke Gorrie and others, rewritten by João Távora
 for SLY.
@@ -3444,92 +3444,92 @@ Variable and Concept Index
 
 Tag Table:
 Node: Top294
-Node: Introduction2280
-Node: Getting started4599
-Node: Platforms4910
-Node: Downloading6010
-Node: Basic setup7010
-Node: Running7943
-Node: Basic customization8807
-Node: Multiple Lisps10523
-Node: A SLY tour for SLIME users13018
-Node: Working with source files23904
-Node: Evaluation24632
-Node: Compilation26459
-Node: Autodoc29312
-Node: Semantic indentation30254
-Ref: Semantic indentation-Footnote-132361
-Node: Reader conditionals32456
-Node: Macro-expansion32832
-Node: Common functionality34464
-Node: Finding definitions35235
-Node: Cross-referencing37065
-Ref: Cross-referencing-Footnote-139457
-Node: Completion39685
-Node: Interactive objects42677
-Node: Documentation44593
-Node: Multiple connections46627
-Node: Disassembly49578
-Node: Recovery50110
-Node: Temporary buffers50733
-Node: Multi-threading52149
-Node: The REPL and other special buffers53717
-Node: REPL53990
-Node: REPL commands55842
-Node: REPL output57857
-Node: REPL backreferences62462
-Ref: REPL backreferences-Footnote-165614
-Node: Inspector65667
-Node: Debugger67613
-Node: Examining frames68270
-Node: Restarts69354
-Ref: sly-db-quit69560
-Node: Frame Navigation69979
-Node: Miscellaneous70663
-Node: Trace Dialog71572
-Node: Stickers75356
-Node: Customization79470
-Node: Emacs-side79673
-Node: Keybindings79865
-Ref: describe-key80667
-Ref: describe-bindings80794
-Ref: describe-mode80925
-Ref: view-lossage81097
-Ref: Emacs Init File81233
-Node: Keymaps81865
-Node: Defcustom variables84502
-Ref: sly-complete-symbol-function85191
-Ref: sly-net-coding-system85739
-Node: Hooks88098
-Ref: sly-connected-hook88446
-Node: Lisp-side customization88889
-Node: Communication style89287
-Node: Other configurables91814
-Ref: *SLY-DB-QUIT-RESTART*92521
-Node: Tips and Tricks98055
-Node: Connecting to a remote Lisp98329
-Node: Setting up the Lisp image99036
-Ref: Setting up the Lisp image-Footnote-1100823
-Ref: Setting up the Lisp image-Footnote-2100934
-Ref: Setting up the Lisp image-Footnote-3101108
-Node: Setting up Emacs101261
-Ref: Setting up Emacs-Footnote-1102215
-Node: Setting up pathname translations102385
-Node: Loading Slynk faster103962
-Ref: init-example105439
-Node: Auto-SLY105661
-Node: REPLs and game loops106142
-Node: Controlling SLY from outside Emacs108109
-Node: Extensions109354
-Node: Loading and unloading111401
-Node: More contribs112477
-Node: TRAMP Support112648
-Node: Scratch Buffer112891
-Ref: sly-scratch113017
-Node: Credits113650
-Node: Key Index116919
-Node: Command Index125538
-Node: Variable Index135561
+Node: Introduction2281
+Node: Getting started4600
+Node: Platforms4911
+Node: Downloading6011
+Node: Basic setup7011
+Node: Running7944
+Node: Basic customization8808
+Node: Multiple Lisps10524
+Node: A SLY tour for SLIME users13019
+Node: Working with source files23905
+Node: Evaluation24633
+Node: Compilation26460
+Node: Autodoc29313
+Node: Semantic indentation30255
+Ref: Semantic indentation-Footnote-132362
+Node: Reader conditionals32457
+Node: Macro-expansion32833
+Node: Common functionality34465
+Node: Finding definitions35236
+Node: Cross-referencing37066
+Ref: Cross-referencing-Footnote-139458
+Node: Completion39686
+Node: Interactive objects42678
+Node: Documentation44594
+Node: Multiple connections46628
+Node: Disassembly49579
+Node: Recovery50111
+Node: Temporary buffers50734
+Node: Multi-threading52150
+Node: The REPL and other special buffers53718
+Node: REPL53991
+Node: REPL commands55843
+Node: REPL output57858
+Node: REPL backreferences62463
+Ref: REPL backreferences-Footnote-165615
+Node: Inspector65668
+Node: Debugger67614
+Node: Examining frames68271
+Node: Restarts69355
+Ref: sly-db-quit69561
+Node: Frame Navigation69980
+Node: Miscellaneous70664
+Node: Trace Dialog71573
+Node: Stickers75357
+Node: Customization79471
+Node: Emacs-side79674
+Node: Keybindings79866
+Ref: describe-key80668
+Ref: describe-bindings80795
+Ref: describe-mode80926
+Ref: view-lossage81098
+Ref: Emacs Init File81234
+Node: Keymaps81866
+Node: Defcustom variables84503
+Ref: sly-complete-symbol-function85192
+Ref: sly-net-coding-system85740
+Node: Hooks88099
+Ref: sly-connected-hook88447
+Node: Lisp-side customization88890
+Node: Communication style89288
+Node: Other configurables91815
+Ref: *SLY-DB-QUIT-RESTART*92522
+Node: Tips and Tricks98056
+Node: Connecting to a remote Lisp98330
+Node: Setting up the Lisp image99037
+Ref: Setting up the Lisp image-Footnote-1100824
+Ref: Setting up the Lisp image-Footnote-2100935
+Ref: Setting up the Lisp image-Footnote-3101109
+Node: Setting up Emacs101262
+Ref: Setting up Emacs-Footnote-1102216
+Node: Setting up pathname translations102386
+Node: Loading Slynk faster103963
+Ref: init-example105440
+Node: Auto-SLY105662
+Node: REPLs and game loops106143
+Node: Controlling SLY from outside Emacs108110
+Node: Extensions109355
+Node: Loading and unloading111402
+Node: More contribs112478
+Node: TRAMP Support112649
+Node: Scratch Buffer112892
+Ref: sly-scratch113018
+Node: Credits113651
+Node: Key Index116920
+Node: Command Index125539
+Node: Variable Index135562
 
 End Tag Table
 

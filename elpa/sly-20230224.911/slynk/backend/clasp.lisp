@@ -19,7 +19,7 @@
 ;;    (set slynk:*log-events* t))
 
 (defmacro sly-dbg (fmt &rest args)
-  `(funcall (read-from-string "slynk::log-event")
+  `(funcall (slynk-backend:find-symbol2 "slynk::log-event")
             "sly-dbg ~a ~a~%" mp:*current-process* (apply #'format nil ,fmt ,args)))
 
 ;; Hard dependencies.
@@ -33,7 +33,9 @@
     (pushnew :profile *features*))
   (when (probe-file "sys:serve-event")
     (require :serve-event)
-    (pushnew :serve-event *features*)))
+    (pushnew :serve-event *features*))
+  (when (find-symbol "TEMPORARY-DIRECTORY" "EXT")
+    (pushnew :temporary-directory *features*)))
 
 (declaim (optimize (debug 3)))
 
@@ -64,7 +66,11 @@
 			       :type :stream
 			       :protocol :tcp)))
     (setf (sb-bsd-sockets:sockopt-reuse-address socket) t)
-    (sb-bsd-sockets:socket-bind socket (resolve-hostname host) port)
+    (handler-bind
+        ((SB-BSD-SOCKETS:ADDRESS-IN-USE-ERROR (lambda (err)
+                                                (declare (ignore err))
+                                               (invoke-restart 'use-value))))
+      (sb-bsd-sockets:socket-bind socket (resolve-hostname host) port))
     (sb-bsd-sockets:socket-listen socket (or backlog 5))
     socket))
 
@@ -167,7 +173,7 @@
   (namestring (ext:getcwd)))
 
 (defimplementation quit-lisp ()
-  (core:quit))
+  (sys:quit))
 
 
 
@@ -225,17 +231,21 @@
     (reader-error                   :read-error)
     (error                          :error)))
 
+(defun %condition-location (origin)
+  ;; NOTE: If we're compiling in a buffer, the origin
+  ;; will already be set up with the offset correctly
+  ;; due to the :source-debug parameters from
+  ;; swank-compile-string (below).
+  (make-file-location
+   (sys:file-scope-pathname
+    (sys:file-scope origin))
+   (sys:source-pos-info-filepos origin)))
+
 (defun condition-location (origin)
-  (if (null origin)
-      (make-error-location "No error location available")
-      ;; NOTE: If we're compiling in a buffer, the origin
-      ;; will already be set up with the offset correctly
-      ;; due to the :source-debug parameters from
-      ;; slynk-compile-string (below).
-      (make-file-location
-       (core:file-scope-pathname
-        (core:file-scope origin))
-       (core:source-pos-info-filepos origin))))
+  (typecase origin
+    (null (make-error-location "No error location available"))
+    (cons (%condition-location (car origin)))
+    (t (%condition-location origin))))
 
 (defun signal-compiler-condition (condition origin)
   (signal 'compiler-condition
@@ -257,13 +267,20 @@
       (((or error warning) #'handle-compiler-condition))
     (funcall function)))
 
+(defun mkstemp (name)
+  (ext:mkstemp #+temporary-directory
+               (namestring (make-pathname :name name
+                                          :defaults (ext:temporary-directory)))
+               #-temporary-directory
+               (concatenate 'string "tmp:" name)))
+
 (defimplementation slynk-compile-file (input-file output-file
                                        load-p external-format
                                        &key policy)
   (declare (ignore policy))
   (format t "Compiling file input-file = ~a   output-file = ~a~%" input-file output-file)
   ;; Ignore the output-file and generate our own
-  (let ((tmp-output-file (compile-file-pathname (si:mkstemp "TMP:clasp-slynk-compile-file-"))))
+  (let ((tmp-output-file (compile-file-pathname (mkstemp "clasp-slynk-compile-file-"))))
     (format t "Using tmp-output-file: ~a~%" tmp-output-file)
     (multiple-value-bind (fasl warnings-p failure-p)
         (with-compilation-hooks ()
@@ -290,7 +307,7 @@
   (with-compilation-hooks ()
     (let ((*buffer-name* buffer)        ; for compilation hooks
           (*buffer-start-position* position))
-      (let ((tmp-file (si:mkstemp "TMP:clasp-slynk-tmpfile-"))
+      (let ((tmp-file (mkstemp "clasp-slynk-tmpfile-"))
             (fasl-file)
             (warnings-p)
             (failure-p))
@@ -318,7 +335,7 @@
 
 (defimplementation arglist (name)
   (multiple-value-bind (arglist foundp)
-      (core:function-lambda-list name)     ;; Uses bc-split
+      (sys:function-lambda-list name)     ;; Uses bc-split
     (if foundp arglist :not-available)))
 
 (defimplementation function-name (f)
@@ -347,7 +364,7 @@
                 nil)
                ((macro-function (car form) environment)
                 (push form macro-forms))
-               ((not (eq form (core:compiler-macroexpand-1 form environment)))
+               ((not (eq form (sys:compiler-macroexpand-1 form environment)))
                 (push form compiler-macro-forms))))
        form)
      form environment)
@@ -453,7 +470,7 @@
 (defimplementation frame-source-location (frame-number)
   (let ((csl (clasp-debug:frame-source-position (frame-from-number frame-number))))
     (if (clasp-debug:code-source-line-pathname csl)
-        (make-location (list :file (namestring (clasp-debug:code-source-line-pathname csl)))
+        (make-location (list :file (namestring (translate-logical-pathname (clasp-debug:code-source-line-pathname csl))))
                        (list :line (clasp-debug:code-source-line-line-number csl))
                        '(:align t))
         `(:error ,(format nil "No source for frame: ~a" frame-number)))))
@@ -514,7 +531,7 @@
                  `(:align t)))
 
 (defun translate-location (location)
-  (make-location (list :file (namestring (ext:source-location-pathname location)))
+  (make-location (list :file (namestring (translate-logical-pathname (ext:source-location-pathname location))))
                  (list :position (ext:source-location-offset location))
                  '(:align t)))
 
@@ -699,15 +716,15 @@
            (sly-dbg "receive-if condition-variable-timedwait")
            (mp:condition-variable-wait (mailbox.cvar mbox) mutex) ; timedwait 0.2
            (sly-dbg "came out of condition-variable-timedwait")
-           (core:check-pending-interrupts)))))
+           (sys:check-pending-interrupts)))))
 
   ) ; #+threads (progn ...
 
 
-(defmethod emacs-inspect ((object core:cxx-object))
-  (let ((encoded (core:encode object)))
+(defmethod emacs-inspect ((object sys:cxx-object))
+  (let ((encoded (sys:encode object)))
     (loop for (key . value) in encoded
        append (list (string key) ": " (list :value value) (list :newline)))))
 
-(defmethod emacs-inspect ((object core:va-list))
-  (emacs-inspect (core:list-from-va-list object)))
+(defmethod emacs-inspect ((object sys:vaslist))
+  (emacs-inspect (sys:list-from-vaslist object)))

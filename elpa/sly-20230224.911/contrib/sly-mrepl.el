@@ -969,6 +969,7 @@ arglist for the most recently enclosed macro or function."
 (put 'sly-mrepl-next-input-or-button 'sly-button-navigation-command t)
 (put 'sly-mrepl-previous-input-or-button 'sly-button-navigation-command t)
 
+;;;###autoload
 (defun sly-mrepl (&optional display-action)
   "Find or create the first useful REPL for the default connection.
 If supplied, DISPLAY-ACTION is called on the
@@ -1342,11 +1343,11 @@ When setting this variable outside of the Customize interface,
 
 (defun sly-mrepl-shortcut ()
   (interactive)
-  (let* ((string (sly-completing-read "Command: "
-                                      (mapcar #'car sly-mrepl-shortcut-alist)
-                                      nil 'require-match nil
-                                      'sly-mrepl-shortcut-history
-                                      (car sly-mrepl-shortcut-history)))
+  (let* ((string (completing-read "Command: "
+                                  (mapcar #'car sly-mrepl-shortcut-alist)
+                                  nil 'require-match nil
+                                  'sly-mrepl-shortcut-history
+                                  (car sly-mrepl-shortcut-history)))
          (command (and string
                        (cdr (assoc string sly-mrepl-shortcut-alist)))))
     (call-interactively command)))

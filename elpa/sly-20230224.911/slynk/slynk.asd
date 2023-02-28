@@ -19,8 +19,22 @@
 
 (defsystem :slynk
   :serial t
+  ;; See commit message and GitHub#502, GitHub#501 for the reason
+  ;; for this dedicated sbcl muffling.
+  #+sbcl
+  :around-compile
+  #+sbcl
+  (lambda (thunk)
+    (handler-bind (((and warning (not style-warning))
+                     (lambda (c)
+                       (format *error-output* "~&~@<~S: ~3i~:_~A~:>~%"
+                               (class-name (class-of c)) c)
+                       (muffle-warning c))))
+      (let ((sb-ext:*on-package-variance* '(:warn t)))
+        (funcall thunk))))
   :components
-  ((:file "slynk-backend")
+  ((:file "slynk-match")
+   (:file "slynk-backend")
    ;; If/when we require ASDF3, we shall use :if-feature instead
    #+(or cmu sbcl scl)
    (:file "slynk-source-path-parser")
@@ -58,7 +72,6 @@
                  (:file "mkcl")))
    #-armedbear
    (:file "slynk-gray")
-   (:file "slynk-match")
    (:file "slynk-rpc")
    (:file "slynk")
    (:file "slynk-completion")
@@ -66,13 +79,7 @@
 
 (defmethod perform :after ((o load-op) (c (eql (find-system :slynk))))
   (format *debug-io* "~&SLYNK's ASDF loader finished.")
-  (funcall (read-from-string "slynk::init")))
-
-#+sbcl
-(defmethod operate :around ((o load-op) (c (eql (find-system :slynk))) &key &allow-other-keys)
-  (let ((asdf:*compile-file-failure-behaviour* :warn)
-        (sb-ext:*on-package-variance* '(:warn t)))
-    (call-next-method)))
+  (funcall (with-standard-io-syntax (read-from-string "slynk::init"))))
 
 
 ;;; Contrib systems (should probably go into their own file one day)

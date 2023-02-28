@@ -10,7 +10,7 @@
 ;;;
 
 (defpackage slynk/abcl
-  (:use cl slynk/backend)
+  (:use cl slynk-backend)
   (:import-from :java
                 #:jcall #:jstatic
                 #:jmethod
@@ -19,14 +19,14 @@
                 #:jnew-array #:jarray-length #:jarray-ref #:jnew-array-from-array
                 #:jclass #:jnew #:java-object 
                 ;; be conservative and add any import java functions only for later lisps
-                #+#.(slynk/backend:with-symbol 'jfield-name 'java) #:jfield-name
-                #+#.(slynk/backend:with-symbol 'jinstance-of-p 'java) #:jinstance-of-p
-                #+#.(slynk/backend:with-symbol 'jclass-superclass 'java) #:jclass-superclass
-                #+#.(slynk/backend:with-symbol 'jclass-interfaces 'java) #:jclass-interfaces
-                #+#.(slynk/backend:with-symbol 'java-exception 'java) #:java-exception
-                #+#.(slynk/backend:with-symbol 'jobject-class 'java) #:jobject-class
-                #+#.(slynk/backend:with-symbol 'jclass-name 'java) #:jclass-name
-                #+#.(slynk/backend:with-symbol 'java-object-p 'java) #:java-object-p))
+                #+#.(slynk-backend:with-symbol 'jfield-name 'java) #:jfield-name
+                #+#.(slynk-backend:with-symbol 'jinstance-of-p 'java) #:jinstance-of-p
+                #+#.(slynk-backend:with-symbol 'jclass-superclass 'java) #:jclass-superclass
+                #+#.(slynk-backend:with-symbol 'jclass-interfaces 'java) #:jclass-interfaces
+                #+#.(slynk-backend:with-symbol 'java-exception 'java) #:java-exception
+                #+#.(slynk-backend:with-symbol 'jobject-class 'java) #:jobject-class
+                #+#.(slynk-backend:with-symbol 'jclass-name 'java) #:jclass-name
+                #+#.(slynk-backend:with-symbol 'java-object-p 'java) #:java-object-p))
 
 (in-package slynk/abcl)
 
@@ -61,13 +61,35 @@
     (ext:make-slime-input-stream read-string
                                  (make-synonym-stream '*standard-output*))))
 
+;; A hack to call functions from packages that don't exist when this code is loaded.
+;; An FLET is used to make sure all the uses of it are contained in wrapper functions
+;; so this hack can be easily swapped out later.
+(flet ((evil-hack (function &rest args) (apply (read-from-string function) args)))
+  (defun %%lcons (car cdr)
+    (evil-hack "slynk::%lcons" car (lambda () cdr)))
+  
+  (defun %%lookup-class-name (&rest args)
+    (evil-hack "jss::lookup-class-name" args))
+  
+  (defun %%ed-in-emacs (what)
+    (evil-hack "slynk:ed-in-emacs" what))
+
+  (defun %%method-for-inspect-value (method)
+    ;; Note that this one is in slynk-fancy-inspector
+    (evil-hack "slynk::method-for-inspect-value" method))
+
+  (defun %%abbrev-doc (doc)
+    (evil-hack "slynk::abbrev-doc" doc)))
+
+
 ;;; Have CL:INSPECT use SLY
 ;;;
 ;;; Since Slynk may also be run in a server not running under Emacs
 ;;; and potentially with other REPLs, we export a functional toggle
 ;;; for the user to call after loading these definitions.
 (defun enable-cl-inspect-in-emacs ()
-  (slynk::wrap 'cl:inspect :use-sly :replace 'slynk::inspect-in-emacs))
+  (slynk-backend:wrap 'cl:inspect :use-sly
+                      :replace (slynk-backend:find-symbol2 "slynk:inspect-in-emacs")))
 
 ;; ??? repair bare print object so inspector titles show java class
 (defun %print-unreadable-object-java-too (object stream type identity body)
@@ -97,7 +119,7 @@
 
 ;;; TODO: move such invocations out of toplevel?  
 (eval-when (:load-toplevel)
-  (unless (get 'sys::%print-unreadable-object 'sly-backend::sly-wrap)
+  (unless (get 'sys::%print-unreadable-object 'slynk-backend::sly-wrap)
     (wrap 'sys::%print-unreadable-object :more-informative :replace '%print-unreadable-object-java-too)))
 
 (defimplementation call-with-compilation-hooks (function)
@@ -111,6 +133,7 @@
 (defclass standard-slot-definition ()())
 
 (defun slot-definition-documentation (slot)
+  #-abcl-introspect
   (declare (ignore slot))
   #+abcl-introspect
   (documentation slot 't))
@@ -160,7 +183,7 @@
    standard-slot-definition ;;dummy
    cl:method
    cl:standard-class
-   #+#.(slynk/backend:with-symbol
+   #+#.(slynk-backend:with-symbol
            'compute-applicable-methods-using-classes 'mop)
    mop:compute-applicable-methods-using-classes
    ;; standard-class readers
@@ -206,7 +229,7 @@
    slot-boundp-using-class
    slot-value-using-class
    set-slot-value-using-class
-   #+#.(slynk/backend:with-symbol
+   #+#.(slynk-backend:with-symbol
            'slot-makunbound-using-class 'mop)
    mop:slot-makunbound-using-class))
 
@@ -457,8 +480,9 @@
                             :key (lambda (frame)
                                    (first (sys:frame-to-list frame)))))
             (car sys::*saved-backtrace*)))
-         #+#.(slynk/backend:with-symbol *debug-condition* 'ext)
-         (ext::*debug-condition* slynk::*slynk-debugger-condition*))
+         #+#.(slynk-backend:with-symbol *debug-condition* 'ext)
+         (ext::*debug-condition*
+          (slynk-backend:find-symbol2 "slynk::*slynk-debugger-condition*")))
     (funcall debugger-loop-fn)))
 
 (defun backtrace (start end)
@@ -476,16 +500,16 @@
     (backtrace start end)))
 
 ;; Don't count on JSS being loaded, but if it is then there's some more stuff we can do
-+#+#.(slynk/backend:with-symbol 'invoke-restargs 'jss)
++#+#.(slynk-backend:with-symbol 'invoke-restargs 'jss)
 (defun jss-p ()
   (and (member "JSS" *modules* :test 'string=) (intern "INVOKE-RESTARGS" "JSS")))
 
-+#+#.(slynk/backend:with-symbol 'invoke-restargs 'jss)
++#+#.(slynk-backend:with-symbol 'invoke-restargs 'jss)
 (defun matches-jss-call (form)
   (flet ((gensymp (s) (and (symbolp s) (null (symbol-package s))))
          (invokep (s)  (and (symbolp s) (eq s (jss-p)))))
     (let ((method
-            (slynk/match::select-match 
+            (slynk-match::select-match 
              form
              (((LAMBDA ((#'gensymp a) &REST (#'gensymp b)) 
                  ((#'invokep fun) (#'stringp c) (#'gensymp d) (#'gensymp e) . args)) . args) '=> c)
@@ -1043,21 +1067,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Inspecting
 
-;;; BEGIN FIXME move into generalized Slynk infrastructure, or add to contrib mechanism
-;; this is only for hyperspec request in an inspector window
-;; TODO have sly-hyperspec-lookup respect this variable too
-(defvar *sly-inspector-hyperspec-in-browser* t
-  "If t then invoking hyperspec within the inspector browses the hyperspec in an emacs buffer, otherwise respecting the value of browse-url-browser-function")
-
-(defun hyperspec-do (name)
-  (let ((form `(let ((browse-url-browser-function 
-                       ,(if *sly-inspector-hyperspec-in-browser* 
-                            '(lambda(a v) (eww a))
-                            'browse-url-browser-function)))
-                        (sly-hyperdoc-lookup ,name))))
-    (slynk::eval-in-emacs form t)))
-;;; END FIXME move into generalized Slynk infrastructure, or add to contrib mechanism
-
 ;;; Although by convention toString() is supposed to be a
 ;;; non-computationally expensive operation this isn't always the
 ;;; case, so make its computation a user interaction.
@@ -1082,45 +1091,36 @@
                     '(:newline)
                     (with-output-to-string (desc) (describe o desc))))))))
 
+
+(defun %%prepend-list-to-llist (list llist)
+  "Takes a list (LIST) and a lazy list (LLIST) and transforms the list items into lazy list items,
+which are prepended onto the existing lazy list and returned.
+
+LIST is destructively modified."
+  (flet ((lcons (car cdr) (%%lcons car (lambda () cdr))))
+    (reduce #'lcons list :initial-value llist :from-end t)))
+
 (defmethod emacs-inspect ((string string))
-  (slynk::lcons* 
-   '(:label "Value: ")  `(:value ,string ,(concatenate 'string "\"" string "\""))  '(:newline)
-   #+abcl-introspect ;; ??? This doesn't appear depend on ABCL-INTROSPECT.  Why disable?
-   `(:action "[Edit in emacs buffer]" ,(lambda() (slynk::ed-in-emacs `(:string ,string))))
-   '(:newline)
-   (if (ignore-errors (jclass string))
-       `(:line "Names java class" ,(jclass string))
-       "")
-   #+abcl-introspect
-   (if (and (jss-p) 
-            (stringp (funcall (intern "LOOKUP-CLASS-NAME" :jss) string :return-ambiguous t :muffle-warning t)))
-       `(:multiple
-         (:label "Abbreviates java class: ")
-         ,(let ((it (funcall (intern "LOOKUP-CLASS-NAME" :jss) string :return-ambiguous t :muffle-warning t)))
-           `(:value ,(jclass it)))
-         (:newline))
-       "")
-   (if (ignore-errors (find-package (string-upcase string)))
-       `(:line "Names package" ,(find-package (string-upcase string)))
-       "")
-   (let ((symbols (loop for p in (list-all-packages)
-                        for found = (find-symbol (string-upcase string))
-                        when (and found (eq (symbol-package found) p)
-                                  (or (fboundp found)
-                                      (boundp found)
-                                      (symbol-plist found)
-                                      (ignore-errors (find-class found))))
-                          collect found)))
-     (if symbols
-         `(:multiple (:label "Names symbols: ") 
-                     ,@(loop for s in symbols
-                             collect
-                             (Let ((*package* (find-package :keyword))) 
-                               `(:value ,s ,(prin1-to-string s))) collect " ") (:newline))
-         ""))
+  (%%prepend-list-to-llist
+   (list 
+    '(:label "Value: ")  `(:value ,string ,(concatenate 'string "\"" string "\""))  '(:newline)
+    (if (ignore-errors (jclass string))
+        `(:line "Names java class" ,(jclass string))
+        "")
+    #+abcl-introspect
+    (if (and (jss-p) 
+             (stringp (%%lookup-class-name string :return-ambiguous t :muffle-warning t)))
+        `(:line
+           "Abbreviates java class"
+           ,(let ((it (%%lookup-class-name string :return-ambiguous t :muffle-warning t)))
+              (jclass it)))
+        "")
+    (if (ignore-errors (find-package (string-upcase string)))
+        `(:line "Names package" ,(find-package (string-upcase string)))
+        ""))
    (call-next-method)))
 
-#+#.(slynk/backend:with-symbol 'java-exception 'java)
+#+#.(slynk-backend:with-symbol 'java-exception 'java)
 (defmethod emacs-inspect ((o java:java-exception))
   (append (call-next-method)
           (list '(:newline) '(:label "Stack trace")
@@ -1149,53 +1149,46 @@
   `(,@(when (function-name f)
         `((:label "Name: ")
           ,(princ-to-string (sys::any-function-name f)) (:newline)))
-      ,@(multiple-value-bind (args present) (sys::arglist f)
-          (when present
-            `((:label "Argument list: ")
-              ,(princ-to-string args)
-              (:newline))))
-      #+abcl-introspect
-      ,@(when (documentation f t)
-          `("Documentation:" (:newline)
-                             ,(documentation f t) (:newline)))
-      ,@(when (function-lambda-expression f)
-          `((:label "Lambda expression:")
-            (:newline) ,(princ-to-string
-                         (function-lambda-expression f)) (:newline)))
-      (:label "Function java class: ") (:value ,(jcall "getClass" f)) (:newline)
-      #+abcl-introspect
-      ,@(when (jcall "isInstance"  (java::jclass "org.armedbear.lisp.CompiledClosure") f)
-          `((:label "Closed over: ")
-            ,@(loop
-                 for el in (sys::compiled-closure-context f)
-                 collect `(:value ,el)
-                 collect " ")
-            (:newline)))
-      #+abcl-introspect
-      ,@(when (sys::get-loaded-from f)
-          (list `(:label "Defined in: ")
-                `(:value ,(sys::get-loaded-from f) ,(namestring (sys::get-loaded-from f)))
-                '(:newline)))
-      ;; I think this should work in older lisps too -- alanr
-      ,@(let ((fields (jcall "getDeclaredFields" (jcall "getClass" f))))
-          (when (plusp (length fields))
-            (list* '(:label "Internal fields: ") '(:newline)
-                   (loop for field across fields
-                      do (jcall "setAccessible" field t) ;;; not a great idea esp. wrt. Java9
-                      append
-                        (let ((value (jcall "get" field f)))
-                          (list "  "
-                                `(:label ,(jcall "getName" field))
-                                ": "
-                                `(:value ,value ,(princ-to-string value))
-                                '(:newline)))))))
-      #+abcl-introspect
-      ,@(when (and (function-name f) (symbolp (function-name f))
-                   (eq (symbol-package (function-name f)) (find-package :cl)))
-          (list '(:newline) (list :action "Lookup in hyperspec"
-                                  (lambda () (hyperspec-do (symbol-name (function-name f))))
-                                  :refreshp nil)
-                '(:newline)))))
+    ,@(multiple-value-bind (args present) (sys::arglist f)
+        (when present
+          `((:label "Argument list: ")
+            ,(princ-to-string args)
+            (:newline))))
+    #+abcl-introspect
+    ,@(when (documentation f t)
+        `("Documentation:" (:newline)
+                           ,(documentation f t) (:newline)))
+    ,@(when (function-lambda-expression f)
+        `((:label "Lambda expression:")
+          (:newline) ,(princ-to-string
+                       (function-lambda-expression f)) (:newline)))
+    (:label "Function java class: ") (:value ,(jcall "getClass" f)) (:newline)
+    #+abcl-introspect
+    ,@(when (jcall "isInstance"  (java::jclass "org.armedbear.lisp.CompiledClosure") f)
+        `((:label "Closed over: ")
+          ,@(loop
+              for el in (sys::compiled-closure-context f)
+              collect `(:value ,el)
+              collect " ")
+          (:newline)))
+    #+abcl-introspect
+    ,@(when (sys::get-loaded-from f)
+        (list `(:label "Defined in: ")
+              `(:value ,(sys::get-loaded-from f) ,(namestring (sys::get-loaded-from f)))
+              '(:newline)))
+    ;; I think this should work in older lisps too -- alanr
+    ,@(let ((fields (jcall "getDeclaredFields" (jcall "getClass" f))))
+        (when (plusp (length fields))
+          (list* '(:label "Internal fields: ") '(:newline)
+                 (loop for field across fields
+                       do (jcall "setAccessible" field t) ;;; not a great idea esp. wrt. Java9
+                       append
+                       (let ((value (jcall "get" field f)))
+                         (list "  "
+                               `(:label ,(jcall "getName" field))
+                               ": "
+                               `(:value ,value ,(princ-to-string value))
+                               '(:newline)))))))))
 
 (defmethod emacs-inspect ((o java:java-object))
   (if (jinstance-of-p o (jclass "java.lang.Class"))
@@ -1336,7 +1329,7 @@
       ,@(when path (list `(:label ,"Loaded from: ")
                          `(:value ,path)
                          " "
-                         `(:action "[open in emacs buffer]" ,(lambda() (slynk::ed-in-emacs `( ,path)))) '(:newline)))
+                         `(:action "[open in emacs buffer]" ,(lambda() (%%ed-in-emacs `( ,path)))) '(:newline)))
       ,@(if has-superclasses 
             (list* '(:label "Superclasses: ") (butlast (loop for super = (jclass-superclass class) then (jclass-superclass super)
                             while super collect (list :value super (jcall "getName" super)) collect ", "))))
@@ -1368,32 +1361,34 @@
         `("No slots available for inspection."))))
 
 (defmethod emacs-inspect ((object sys::structure-class))
-  (let* ((name (jss::get-java-field object "name" t))
+  (let* ((name (class-name object))
          (def (get name  'system::structure-definition)))
-  `((:label "Class: ") (:value ,object) (:newline)
-    (:label "Raw defstruct definition: ") (:value ,def  ,(let ((*print-array* nil)) (prin1-to-string def))) (:newline)
-   ,@(parts-for-structure-def  name)
-    ;; copy-paste from slynk fancy inspector
-    ,@(when (slynk-mop:specializer-direct-methods object)
-        `((:label "It is used as a direct specializer in the following methods:")
-          (:newline)
-          ,@(loop
-              for method in (specializer-direct-methods object)
-              for method-spec = (slynk::method-for-inspect-value method)
-              collect "  "
-              collect `(:value ,method ,(string-downcase (string (car method-spec))))
-              collect `(:value ,method ,(format nil " (~{~a~^ ~})" (cdr method-spec)))
-              append (let ((method method))
-                       `(" " (:action "[remove]"
-                                      ,(lambda () (remove-method (slynk-mop::method-generic-function method) method)))))
-              collect '(:newline)
-              if (documentation method t)
-                collect "    Documentation: " and
-              collect (slynk::abbrev-doc  (documentation method t)) and
-              collect '(:newline)))))))
+    `((:label "Class: ") (:value ,object) (:newline)
+      (:label "Raw defstruct definition: ") (:value ,def  ,(let ((*print-array* nil)) (prin1-to-string def))) (:newline)
+      ,@(parts-for-structure-def  name)
+      ;; copy-paste from slynk fancy inspector
+      ,@(when (slynk-mop:specializer-direct-methods object)
+          `((:label "It is used as a direct specializer in the following methods:")
+            (:newline)
+            ,@(loop
+                for method in (specializer-direct-methods object)
+                for method-spec = (%%method-for-inspect-value method)
+                collect "  "
+                collect `(:value ,method ,(string-downcase (string (car method-spec))))
+                collect `(:value ,method ,(format nil " (~{~a~^ ~})" (cdr method-spec)))
+                append (let ((method method))
+                         `(" " (:action "[remove]"
+                                        ,(lambda () (remove-method (slynk-mop::method-generic-function method) method)))))
+                collect '(:newline)
+                if (documentation method t)
+                  collect "    Documentation: " and
+                  collect (%%abbrev-doc  (documentation method t)) and
+                  collect '(:newline)))))))
 
 (defun parts-for-structure-def-slot (def)
-  `((:label ,(string-downcase (sys::dsd-name def))) " reader: " (:value ,(sys::dsd-reader def) ,(string-downcase (string (sys::dsdreader def))))
+  `((:label ,(string-downcase (sys::dsd-name def))) 
+    " reader: " (:value ,(sys::dsd-reader def) 
+                        ,(string-downcase (string (sys::dsd-reader def))))
     ", index: " (:value ,(sys::dsd-index def))
     ,@(if (sys::dsd-initform def)
           `(", initform: " (:value ,(sys::dsd-initform def))))
@@ -1515,7 +1510,7 @@
     (funcall fn)))
 
 ;;;
-#+#.(slynk/backend:with-symbol 'package-local-nicknames 'ext)
+#+#.(slynk-backend:with-symbol 'package-local-nicknames 'ext)
 (defimplementation package-local-nicknames (package)
   (ext:package-local-nicknames package))
 
