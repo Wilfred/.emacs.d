@@ -4,8 +4,8 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; URL: https://github.com/Wilfred/deadgrep
-;; Package-Version: 20221101.2055
-;; Package-Commit: f687ca31f8d3bd8ebf05165b080b50ba724ce9bf
+;; Package-Version: 20230301.636
+;; Package-Commit: ce8a6fa1952213aa4b79a7f1fc972541ccb0ae75
 ;; Keywords: tools
 ;; Version: 0.13
 ;; Package-Requires: ((emacs "25.1") (dash "2.12.0") (s "1.11.0") (spinner "1.7.3"))
@@ -54,8 +54,11 @@ path to the binary."
 
 (defcustom deadgrep-max-buffers
   4
-  "Deadgrep will kill the least recently used results buffer
-if there are more than this many.
+  "The maximum number of deadgrep results buffers.
+
+If the number of results buffers exceeds this value, deadgrep
+will kill results buffers. The least recently used buffers are
+killed first.
 
 To disable cleanup entirely, set this variable to nil."
   :type '(choice
@@ -643,7 +646,8 @@ with a text face property `deadgrep-match-face'."
         (expand-file-name
          (read-directory-name "Search files in: ")))
   (rename-buffer
-   (deadgrep--buffer-name deadgrep--search-term default-directory))
+   (deadgrep--buffer-name deadgrep--search-term default-directory)
+   t)
   (deadgrep-restart))
 
 (defun deadgrep-parent-directory ()
@@ -652,7 +656,8 @@ with a text face property `deadgrep-match-face'."
   (setq default-directory
         (file-name-directory (directory-file-name default-directory)))
   (rename-buffer
-   (deadgrep--buffer-name deadgrep--search-term default-directory))
+   (deadgrep--buffer-name deadgrep--search-term default-directory)
+   t)
   (deadgrep-restart))
 
 (defun deadgrep--button (text type &rest properties)
@@ -670,6 +675,7 @@ to obtain ripgrep results."
     (push "--no-heading" args)
     (push "--no-column" args)
     (push "--with-filename" args)
+    (push "--no-config" args)
 
     (cond
      ((eq search-type 'string)
@@ -878,7 +884,6 @@ Returns a copy of REGEXP with properties set."
   regexp)
 
 (defun deadgrep--buffer-name (search-term directory)
-  ;; TODO: Handle buffers already existing with this name.
   (format "*deadgrep %s %s*"
           (s-truncate 30 search-term)
           (abbreviate-file-name directory)))
@@ -1168,6 +1173,7 @@ If POS is nil, use the beginning position of the current line."
       ;; consistent with `compilation-next-error-function' and also
       ;; useful with `deadgrep-visit-result-other-window'.
       (setq overlay-arrow-position (copy-marker pos))
+      (setq next-error-last-buffer (current-buffer))
 
       (funcall open-fn file-name)
       (goto-char (point-min))
