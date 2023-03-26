@@ -1,0 +1,2 @@
+;;; Generated package description from flycheck-eglot.el  -*- no-byte-compile: t -*-
+(define-package "flycheck-eglot" "20230202.1844" "Flycheck support for eglot" '((emacs "28.1") (eglot "1.9") (flycheck "32")) :commit "31905ad676d67fb2967a3b6d907312380696615f" :authors '(("Sergey Firsov" . "intramurz@gmail.com")) :maintainer '("Sergey Firsov" . "intramurz@gmail.com") :keywords '("convenience" "language" "tools") :url "https://github.com/intramurz/flycheck-eglot")
