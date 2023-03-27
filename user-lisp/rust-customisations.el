@@ -60,6 +60,9 @@ foo -> &foo[..]"
   (add-hook 'rust-mode-hook #'wh/rust-company-settings)
   (require 'rust-rustfmt)
 
+  ;; Necessary for go-to-def to work in compilation mode buffers.
+  (require 'rust-compile)
+
   (define-key rust-mode-map (kbd "C-c v") #'wh/rust-toggle-visibility)
 
   (define-key rust-mode-map (kbd "C-c s") #'wh/rust-vec-as-slice)
