@@ -63,6 +63,9 @@ foo -> &foo[..]"
   ;; Necessary for go-to-def to work in compilation mode buffers.
   (require 'rust-compile)
 
+  ;; Offers rust-check and rust-test helpers.
+  (require 'rust-cargo)
+
   (define-key rust-mode-map (kbd "C-c v") #'wh/rust-toggle-visibility)
 
   (define-key rust-mode-map (kbd "C-c s") #'wh/rust-vec-as-slice)
