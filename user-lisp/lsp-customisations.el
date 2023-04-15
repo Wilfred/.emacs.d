@@ -51,7 +51,7 @@
 ;; 
 ;; (load "package") ; workaround on Emacs 28
 
-(use-package 'eglot
+(use-package eglot
   :config
   (add-hook 'eglot--managed-mode-hook (lambda () (flymake-mode -1)))
   (global-flycheck-eglot-mode)
