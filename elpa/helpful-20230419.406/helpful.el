@@ -4,8 +4,8 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; URL: https://github.com/Wilfred/helpful
-;; Package-Version: 20221209.1743
-;; Package-Commit: 94c25337b2de2f9da60914a7c0c6cca9584c0231
+;; Package-Version: 20230419.406
+;; Package-Commit: 8893e4ba49e4447b41ee08d93e58c23e07bc7514
 ;; Keywords: help, lisp
 ;; Version: 0.20
 ;; Package-Requires: ((emacs "25") (dash "2.18.0") (s "1.11.0") (f "0.20.0") (elisp-refs "1.2"))
@@ -57,6 +57,10 @@
 (require 'trace)
 (require 'imenu)
 (require 'cc-langs)
+
+(declare-function org-link-types "ol" ())
+(declare-function org-link-store-props "ol" (&rest plist))
+(declare-function org-link-get-parameter "ol" (type key))
 
 (defvar-local helpful--sym nil)
 (defvar-local helpful--callable-p nil)
@@ -1582,7 +1586,7 @@ same bindings as `global-map'."
          (when (and key-sequences (not (eq keymap-sym 'widget-global-map)))
            (push (cons (symbol-name keymap-sym) key-sequences)
                  matching-keymaps))))
-     (-zip keymap-syms keymap-sym-vals))
+     (-zip-pair keymap-syms keymap-sym-vals))
 
     ;; Look for this command in keymaps used by minor modes that
     ;; aren't bound to variables.
@@ -2950,6 +2954,10 @@ See also `helpful-max-buffers'."
 (defvar helpful-mode-map
   (let* ((map (make-sparse-keymap)))
     (define-key map (kbd "g") #'helpful-update)
+    (define-key map [remap revert-buffer] #'helpful-update)
+    (when (fboundp 'revert-buffer-quick)
+      (define-key map [remap revert-buffer-quick] #'helpful-update))
+
     (define-key map (kbd "RET") #'helpful-visit-reference)
 
     (define-key map (kbd "TAB") #'forward-button)
