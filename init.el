@@ -966,11 +966,6 @@ Visit the file after creation."
   (add-hook 'rcirc-mode-hook #'rcirc-omit-mode)
   (require 'rcirc-color))
 
-(use-package twittering-mode
-  :init
-  ;; Don't show the twitter client or location, it's just distracting.
-  (setq twittering-status-format "%i %s,  %@:\n%FILL[  ]{%T %r%R}\n "))
-
 (use-package google-this
   :config
   (global-set-key (kbd "C-c g") #'google-this))

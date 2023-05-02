@@ -1157,15 +1157,6 @@ Set indentation, dabbrev completion and flycheck in CS.
     (require 'rcirc-color))
 #+END_SRC
 
-*** Twitter
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package twittering-mode
-    :init
-    ;; Don't show the twitter client or location, it's just distracting.
-    (setq twittering-status-format "%i %s,  %@:\n%FILL[  ]{%T %r%R}\n "))
-#+END_SRC
-
 *** Google
 
 Googling the word at point or current region is very handy.
