@@ -1,3 +1,8 @@
+(defun wh/rust-clippy ()
+  "Clippy command eqvivalent of `rust-check'."
+  (interactive)
+  (rust--compile "%s clippy %s" rust-cargo-bin rust-cargo-default-arguments))
+
 (defun wh/rust-wrap-dbg (start end)
   "Wrap the current selection in dbg!(..)."
   (interactive "r")
@@ -63,6 +68,9 @@ foo -> &foo[..]"
   ;; Offers rust-check and rust-test helpers.
   (require 'rust-cargo)
 
+  ;; We want cargo check to apply to tests too.
+  (setq rust-cargo-default-arguments "--all-targets")
+
   (define-key rust-mode-map (kbd "C-c v") #'wh/rust-toggle-visibility)
 
   (define-key rust-mode-map (kbd "C-c s") #'wh/rust-vec-as-slice)
@@ -72,5 +80,7 @@ foo -> &foo[..]"
   (define-key rust-mode-map (kbd "C-c c") #'rust-check))
 
 (require 'lsp-customisations)
+
+(setq eglot-workspace-configuration '(("rust" "clippy_preference" "on")))
 
 (provide 'rust-customisations)
