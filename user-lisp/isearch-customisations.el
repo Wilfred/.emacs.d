@@ -1,10 +1,9 @@
 (require 'highlight-symbol)
 
+(add-hook 'prog-mode-hook #'symbol-overlay-mode)
+
 ;; Activate occur easily inside isearch
 (define-key isearch-mode-map (kbd "C-o") 'isearch-occur)
-
-;; use highlight-symbol-mode in all programming modes
-(add-hook 'prog-mode-hook '(lambda () (highlight-symbol-mode 1)))
 
 ;; but don't highlight anything if there's only one occurrence of this
 ;; symbol.
