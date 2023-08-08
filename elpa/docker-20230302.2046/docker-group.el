@@ -1,4 +1,4 @@
-;;; docker-faces.el --- Emacs interface to docker-container  -*- lexical-binding: t -*-
+;;; docker-group.el --- Docker group  -*- lexical-binding: t -*-
 
 ;; Author: Philippe Vaucher <philippe.vaucher@gmail.com>
 
@@ -23,31 +23,10 @@
 
 ;;; Code:
 
-(require 's)
-(require 'dash)
+(defgroup docker nil
+  "Docker customization group."
+  :group 'convenience)
 
-(require 'docker-core)
+(provide 'docker-group)
 
-(defgroup docker-faces nil
-  "Docker faces."
-  :group 'docker
-  :group 'faces)
-
-(defface docker-face-status-up
-  '((t :inherit success))
-  "Face used when the status is up."
-  :group 'docker-faces)
-
-(defface docker-face-status-down
-  '((t :inherit error))
-  "Face used when the status is down"
-  :group 'docker-faces)
-
-(defface docker-face-status-other
-  '((t :inherit warning))
-  "Face used when the status is not up/down."
-  :group 'docker-faces)
-
-(provide 'docker-faces)
-
-;;; docker-faces.el ends here
+;;; docker-group.el ends here

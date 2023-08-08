@@ -1,4 +1,4 @@
-;;; docker-compose.el --- Emacs interface to docker-compose  -*- lexical-binding: t -*-
+;;; docker-compose.el --- Interface to docker-compose  -*- lexical-binding: t -*-
 
 ;; Author: Philippe Vaucher <philippe.vaucher@gmail.com>
 
@@ -24,113 +24,97 @@
 ;;; Code:
 
 (require 's)
+(require 'aio)
 (require 'dash)
-(require 'tablist)
 (require 'transient)
 
-(require 'docker-core)
+(require 'docker-group)
 (require 'docker-utils)
+(require 'docker-process)
 
 (defgroup docker-compose nil
   "Docker compose customization group."
   :group 'docker)
 
 (defcustom docker-compose-command "docker-compose"
-  "The docker-compose binary"
+  "The `docker-compose' binary."
   :group 'docker-compose
   :type 'string)
 
-(defcustom docker-compose-run-buffer-name-function 'docker-compose-make-buffer-name
-  "Names a docker-compose run buffer based on `action' and `args'"
-  :group 'docker-compose
-  :type 'function)
-
-(defun docker-compose-run-docker-compose (action &rest args)
-  "Execute \"`docker-compose-command' ACTION ARGS\"."
-  (let ((command (format "%s %s %s %s"
-                         docker-compose-command
-                         (s-join " " (docker-compose-arguments))
-                         action
-                         (s-join " " (-flatten (-non-nil args))))))
-    (message command)
-    (docker-shell-command-to-string command)))
-
 (defun docker-compose-run-docker-compose-async (action &rest args)
-  "Execute \"`docker-compose-command' ACTION ARGS\"."
-  (let ((command (format "%s %s %s %s"
-                         docker-compose-command
-                         (s-join " " (docker-compose-arguments))
-                         action
-                         (s-join " " (-flatten (-non-nil args))))))
-    (message command)
-    (async-shell-command command (funcall docker-compose-run-buffer-name-function action (-flatten args)))))
+  "Execute \"`docker-compose-command' ACTION ARGS\" and return a promise with the results."
+  (apply #'docker-run-async docker-compose-command (docker-compose-arguments) action args))
 
-(defun docker-compose-parse (line)
-  "Convert a LINE from \"docker-compose ps\" to a `tabulated-list-entries' entry."
-  (let ((data (s-split " \\{3,\\}" line)))
-    (list (car data) (apply #'vector data))))
+(defun docker-compose-run-docker-compose-async-with-buffer (action &rest args)
+  "Execute \"`docker-compose-command' ACTION ARGS\" and display output in a new buffer."
+  (apply #'docker-run-async-with-buffer docker-compose-command (docker-compose-arguments) action args))
 
-(defun docker-compose-entries ()
-  "Return the docker compose data for `tabulated-list-entries'."
-  (let* ((data (docker-compose-run-docker-compose "ps"))
-         (lines (-slice (s-split "\n" data t) 2)))
-    (-map #'docker-compose-parse lines)))
-
-(defun docker-compose-refresh ()
-  "Refresh the docker-compose entries."
-  (setq tabulated-list-entries (docker-compose-entries)))
-
-(defun docker-compose-services ()
+(aio-defun docker-compose-services ()
   "Return the list of services."
-  (s-split "\n" (docker-compose-run-docker-compose "config" "--services" "2>/dev/null") t))
+  (s-split "\n" (aio-await (docker-compose-run-docker-compose-async "config" "--services" "2>/dev/null")) t))
 
-(defun docker-compose-read-services-names ()
+(aio-defun docker-compose-read-services-names ()
   "Read the services names."
-  (completing-read-multiple "Services: " (docker-compose-services)))
+  (completing-read-multiple "Services: " (aio-await (docker-compose-services))))
 
-(defun docker-compose-read-service-name ()
+(aio-defun docker-compose-read-service-name ()
   "Read one service name."
-  (completing-read "Service: " (docker-compose-services)))
+  (completing-read "Service: " (aio-await (docker-compose-services))))
+
+(defun docker-compose-read-project (prompt &rest _args)
+  "Read the `docker-compose' project forwarding PROMPT."
+  (completing-read
+   prompt
+   ;; in docker compose v2, we can obtain the list of
+   ;; projects with 'ls' argument
+   (if (string-match-p "*?docker compose*?" docker-compose-command)
+       (split-string
+	(shell-command-to-string
+	 (concat docker-compose-command " ls" " --all" " -q"))
+	"\n"
+	t))))
 
 (defun docker-compose-read-log-level (prompt &rest _args)
-  "Read the docker-compose log level."
+  "Read the `docker-compose' log level forwarding PROMPT."
   (completing-read prompt '(DEBUG INFO WARNING ERROR CRITICAL)))
 
 (defun docker-compose-read-directory (prompt &optional initial-input _history)
-  "Wrapper around `read-directory-name'."
+  "Wrapper around `read-directory-name' forwarding PROMPT and INITIAL-INPUT."
   (read-directory-name prompt nil nil t initial-input))
 
+(defun docker-compose-read-environment-file (prompt &optional initial-input _history)
+  "Wrapper around `read-file-name' forwarding PROMPT and INITIAL-INPUT."
+  (read-file-name prompt nil nil t initial-input))
+
 (defun docker-compose-read-compose-file (prompt &optional initial-input _history)
-  "Wrapper around `read-file-name'."
+  "Wrapper around `read-file-name' forwarding PROMPT and INITIAL-INPUT."
   (read-file-name prompt nil nil t initial-input (apply-partially 'string-match ".*\\.yml\\|.*\\.yaml")))
 
-(defun docker-compose-make-buffer-name (action args)
-  "Make a buffer name based on ACTION and ARGS."
-  (format "*docker-compose %s %s*" action (s-join " " (-non-nil args))))
-
-(defun docker-compose-run-action-for-one-service (action args services)
+(aio-defun docker-compose-run-action-for-one-service (action args services)
   "Run \"docker-compose ACTION ARGS SERVICES\"."
   (interactive (list
                 (-last-item (s-split "-" (symbol-name transient-current-command)))
                 (transient-args transient-current-command)
-                (docker-compose-read-services-names)))
-  (docker-compose-run-docker-compose-async action args services))
+                nil))
+  (setq services (aio-await (docker-compose-read-services-names)))
+  (docker-compose-run-docker-compose-async-with-buffer action args services))
 
 (defun docker-compose-run-action-for-all-services (action args)
   "Run \"docker-compose ACTION ARGS\"."
   (interactive (list
                 (-last-item (s-split "-" (symbol-name transient-current-command)))
                 (transient-args transient-current-command)))
-  (docker-compose-run-docker-compose-async action args))
+  (docker-compose-run-docker-compose-async-with-buffer action args))
 
-(defun docker-compose-run-action-with-command (action args service command)
+(aio-defun docker-compose-run-action-with-command (action args service command)
   "Run \"docker-compose ACTION ARGS SERVICE COMMAND\"."
   (interactive (list
                 (-last-item (s-split "-" (symbol-name transient-current-command)))
                 (transient-args transient-current-command)
-                (docker-compose-read-service-name)
+                nil
                 (read-string "Command: ")))
-  (docker-compose-run-docker-compose-async action args service command))
+  (setq service (aio-await (docker-compose-read-service-name)))
+  (docker-compose-run-docker-compose-async-with-buffer action args service command))
 
 (transient-define-prefix docker-compose-build ()
   "Transient for \"docker-compose build\"."
@@ -290,15 +274,14 @@
    ("d" "Detach" "-d")
    ("f" "Force recreate" "--force-recreate")
    ("n" "No deps" "--no-deps")
+   ("q" "Quiet pull" "--quiet-pull")
    ("r" "Remove orphans" "--remove-orphans")
    ("t" "Timeout" "--timeout " transient-read-number-N0)]
   ["Actions"
    ("U" "Up" docker-compose-run-action-for-one-service)
    ("A" "All services" docker-compose-run-action-for-all-services)])
 
-(defun docker-compose-arguments ()
-  "Return the latest used arguments in the `docker-compose' transient."
-  (car (alist-get 'docker-compose transient-history)))
+(docker-utils-define-transient-arguments docker-compose)
 
 ;;;###autoload (autoload 'docker-compose "docker-compose" nil t)
 (transient-define-prefix docker-compose ()
@@ -308,10 +291,12 @@
    ("a" "No ANSI" "--no-ansi")
    ("c" "Compatibility" "--compatibility")
    ("d" "Project directory" "--project-directory " docker-compose-read-directory)
+   ("e" "Environment file" "--env-file " docker-compose-read-environment-file)
    ("f" "Compose file" "--file " docker-compose-read-compose-file)
    ("h" "Host" "--host " read-string)
    ("l" "Log level" "--log-level " docker-compose-read-log-level)
-   ("p" "Project name" "--project-name " read-string)
+   ("p" "Project name" "--project-name " docker-compose-read-project)
+   ("r" "Profile" "--profile " read-string)
    ("v" "Verbose" "--verbose")]
   [["Images"
     ("B" "Build"      docker-compose-build)
