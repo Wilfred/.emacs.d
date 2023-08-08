@@ -4,8 +4,6 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; URL: https://github.com/Wilfred/deadgrep
-;; Package-Version: 20230412.1859
-;; Package-Commit: f65a20d5c3d42aa649314f13976bc18020a9fc2a
 ;; Keywords: tools
 ;; Version: 0.13
 ;; Package-Requires: ((emacs "25.1") (dash "2.12.0") (s "1.11.0") (spinner "1.7.3"))
@@ -1542,8 +1540,10 @@ Otherwise, return PATH as is."
   (let ((root default-directory)
         (project (project-current)))
     (when project
-      (cond ((fboundp 'project-root)
-             ;; This function was defined in Emacs 28.
+      (cond ((and (fboundp 'project-root)
+                  (>= emacs-major-version 28))
+             ;; `project-root' was added in Emacs 28, but projectile
+             ;; defines it unconditionally.
              (setq root (project-root project)))
             (t
              ;; Older Emacsen.

@@ -2,8 +2,6 @@
 
 ;; Copyright (C) 2020  Wilfred Hughes
 ;; Version: 1.2
-;; Package-Version: 20210126.750
-;; Package-Commit: dfca043ec0cbead67bd9c526cb009daf771d0fa2
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Keywords: lisp
@@ -909,7 +907,9 @@ If SYM isn't present, use the most relevant symbol."
 
     ;; Push the current position, so we can go back.
     (xref-push-marker-stack)
-
+    (when (not (region-active-p))
+      (push-mark))
+	
     (-let [(buf pos)
            (cond
             ((eq namespace 'bound)
@@ -948,7 +948,8 @@ If SYM isn't present, use the most relevant symbol."
   "Minor mode for finding definitions with `elisp-def'.
 
 \\{elisp-def-mode-map}"
-  nil " ElispDef" elisp-def-mode-map)
+  :lighter " ElispDef"
+  :keymap elisp-def-mode-map)
 
 (provide 'elisp-def)
 ;;; elisp-def.el ends here

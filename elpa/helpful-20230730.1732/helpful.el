@@ -4,10 +4,8 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; URL: https://github.com/Wilfred/helpful
-;; Package-Version: 20230419.406
-;; Package-Commit: 8893e4ba49e4447b41ee08d93e58c23e07bc7514
 ;; Keywords: help, lisp
-;; Version: 0.20
+;; Version: 0.22
 ;; Package-Requires: ((emacs "25") (dash "2.18.0") (s "1.11.0") (f "0.20.0") (elisp-refs "1.2"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -169,7 +167,7 @@ can make Helpful very slow.")
 
 (defun helpful--heading (text)
   "Propertize TEXT as a heading."
-  (format "%s\n" (propertize text 'face 'helpful-heading)))
+  (propertize (concat text "\n") 'face 'helpful-heading))
 
 (defun helpful--format-closure (sym form)
   "Given a closure, return an equivalent defun form."

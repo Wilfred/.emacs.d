@@ -1,2 +1,0 @@
-;;; Generated package description from /home/wilfred/.emacs.d/elpa/elisp-def-20210126.750/elisp-def.el  -*- no-byte-compile: t -*-
-(define-package "elisp-def" "20210126.750" "macro-aware go-to-definition for elisp" '((dash "2.12.0") (f "0.19.0") (s "1.11.0") (emacs "24.3")) :commit "dfca043ec0cbead67bd9c526cb009daf771d0fa2" :authors '(("Wilfred Hughes" . "me@wilfred.me.uk")) :maintainer '("Wilfred Hughes" . "me@wilfred.me.uk") :keywords '("lisp"))
