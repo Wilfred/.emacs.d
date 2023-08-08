@@ -5,31 +5,28 @@
 
 ;; Copyright (C) 2011, 2012, 2013 Julien Barnier <julien@nozav.org>
 
-;; Author: Julien Barnier
+;; Author: Julien Barnier <julien@nozav.org>
 ;; Adapted-By: Yesudeep Mangalapilly
 ;; Keywords: tango palette color theme emacs
-;; Package-Version: 20170924.1509
 ;; URL: https://github.com/juba/color-theme-tangotango
-;; Version: 0.0.6
+;; Version: 0.0.7
 
 ;; This file is NOT part of GNU Emacs.
 
 ;;; License:
 
-;; This is free software; you can redistribute it and/or modify it under
-;; the terms of the GNU General Public License as published by the Free
-;; Software Foundation; either version 2, or (at your option) any later
-;; version.
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
 ;;
-;; This is distributed in the hope that it will be useful, but WITHOUT
-;; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-;; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-;; for more details.
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
 ;;
 ;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to the
-;; Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
-;; MA 02111-1307, USA.
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Code:
 
@@ -229,6 +226,14 @@
  `(rpm-spec-section-face ((t (:foreground "#8ae234" :underline t :weight bold))))
  `(rpm-spec-tag-face ((t (:foreground "dodger blue" :weight bold))))
  `(rpm-spec-var-face ((t (:foreground "tomato"))))
+ `(term-color-black ((t (:foreground "black" :background "black"))))
+ `(term-color-blue ((t (:foreground "dodger blue" :background "dodger blue"))))
+ `(term-color-cyan ((t (:foreground "light cyan" :background "light cyan"))))
+ `(term-color-green ((t (:foreground "#6ac214" :background "#6ac214"))))
+ `(term-color-magenta ((t (:foreground "magenta3" :background "magenta3"))))
+ `(term-color-red ((t (:foreground "#a40000" :background "#a40000"))))
+ `(term-color-white ((t (:foreground "#eeeeec" :background "#eeeeec"))))
+ `(term-color-yellow ((t (:foreground "#edd400" :background "#edd400"))))
  ;; regexp metachars
  `(font-lock-negation-char-face ((t (:foreground "#6ac214"))))
  `(font-lock-regexp-grouping-construct ((t (:foreground "#edd400"))))
