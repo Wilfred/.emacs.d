@@ -15,6 +15,12 @@
   (smerge-keep-current)
   (smerge-next))
 
+(defun wh/revert-and-smerge ()
+  "Accept the hunk at point and move to the next merge conflict."
+  (interactive)
+  (revert-buffer)
+  (smerge-mode))
+
 (use-package smerge-mode
   :config
   ;; TODO: it would be nice if this jumped to the next conflict
