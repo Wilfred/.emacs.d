@@ -34,9 +34,6 @@
   (emacs-lisp-mode))
 (with-current-buffer (get-buffer-create "*scratch-python*")
   (python-mode))
-(with-current-buffer (get-buffer-create "*scratch-hack*")
-  ;; hack-mode may not be installed.
-  (ignore-errors (hack-mode)))
 (with-current-buffer (get-buffer-create "*scratch-ocaml*")
   (tuareg-mode))
 (with-current-buffer (get-buffer-create "*scratch-rust*")
