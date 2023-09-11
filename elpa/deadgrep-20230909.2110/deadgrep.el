@@ -667,16 +667,34 @@ with a text face property `deadgrep-match-face'."
   (setq text (substring-no-properties text))
   (apply #'make-text-button text nil :type type properties))
 
+(defcustom deadgrep-extra-arguments
+  '("--no-config")
+  "List defining extra arguments passed to deadgrep.
+Many arguments are important to how deadgrep parses the output
+and some are added programmatically, like those for search type,
+case sensitivity, and context.
+
+However, some arguments do not fall into either of those cases,
+and they can be added here.  Things like `--search-zip' to search
+compressed files, or `--follow' to follow symlinks.
+
+Sometimes settings in your config file can cause problems, which
+is why `--no-config' is included here by default."
+  :type '(list string)
+  :group 'deadgrep)
+
 (defun deadgrep--arguments (search-term search-type case context)
   "Return a list of command line arguments that we can execute in a shell
 to obtain ripgrep results."
-  (let (args)
+  ;; We put the extra arguments first so that later arguments will
+  ;; override them, preventing a user from accidentally breaking
+  ;; ripgrep by specifying --heading, for example.
+  (let ((args (copy-sequence deadgrep-extra-arguments)))
     (push "--color=ansi" args)
     (push "--line-number" args)
     (push "--no-heading" args)
     (push "--no-column" args)
     (push "--with-filename" args)
-    (push "--no-config" args)
 
     (cond
      ((eq search-type 'string)
@@ -986,6 +1004,9 @@ Returns a list ordered by the most recently accessed."
     ;; Keybinding chosen to match `kill-compilation'.
     (define-key map (kbd "C-c C-k") #'deadgrep-kill-process)
 
+    ;; Keybinding chosen to match other tools, including `read-only-mode'.
+    (define-key map (kbd "C-x C-q") #'deadgrep-edit-mode)
+
     (define-key map (kbd "n") #'deadgrep-forward-match)
     (define-key map (kbd "p") #'deadgrep-backward-match)
     (define-key map (kbd "M-n") #'deadgrep-forward-filename)
@@ -997,6 +1018,7 @@ Returns a list ordered by the most recently accessed."
 (defvar deadgrep-edit-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "RET") #'deadgrep-visit-result)
+    (define-key map (kbd "C-c C-c") #'deadgrep-mode) ;; exit edit mode
     map)
   "Keymap for `deadgrep-edit-mode'.")
 

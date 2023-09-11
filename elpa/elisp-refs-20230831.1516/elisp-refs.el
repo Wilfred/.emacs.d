@@ -4,8 +4,6 @@
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Version: 1.6
-;; Package-Version: 20230419.405
-;; Package-Commit: bf3cca8f74065b1b31036f461e3a093b162311bd
 ;; Keywords: lisp
 ;; Package-Requires: ((dash "2.12.0") (s "1.11.0"))
 
@@ -815,7 +813,6 @@ search."
     (define-key map (kbd "<backtab>") #'elisp-refs-prev-match)
     (define-key map (kbd "n") #'elisp-refs-next-match)
     (define-key map (kbd "p") #'elisp-refs-prev-match)
-    (define-key map (kbd "q") #'kill-this-buffer)
     (define-key map (kbd "RET") #'elisp-refs-visit-match)
     map)
   "Keymap for `elisp-refs-mode'.")

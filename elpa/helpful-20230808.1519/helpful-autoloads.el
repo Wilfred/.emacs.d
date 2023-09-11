@@ -38,7 +38,7 @@ See also `helpful-macro', `helpful-function' and `helpful-command'.
 
 (fn SYMBOL)" t)
 (autoload 'helpful-symbol "helpful" "\
-Show help for SYMBOL, a variable, function or macro.
+Show help for SYMBOL, a variable, function, macro, or face.
 
 See also `helpful-callable' and `helpful-variable'.
 

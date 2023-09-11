@@ -1,9 +1,7 @@
-(define-package "elisp-def" "20220803.1647" "macro-aware go-to-definition for elisp"
+(define-package "elisp-refs" "20230831.1516" "find callers of elisp functions or macros"
   '((dash "2.12.0")
-    (f "0.19.0")
-    (s "1.11.0")
-    (emacs "24.3"))
-  :commit "1d2e88a232ec16bce036b49577c4d4d96035f9f7" :authors
+    (s "1.11.0"))
+  :commit "9b6839c37977b5760784f644fc74bff1cbcebaa3" :authors
   '(("Wilfred Hughes" . "me@wilfred.me.uk"))
   :maintainers
   '(("Wilfred Hughes" . "me@wilfred.me.uk"))
