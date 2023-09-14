@@ -369,16 +369,6 @@ If a prefix argument is given, don't change the kill-ring."
 
 (global-set-key (kbd "C-x C-g") 'projectile-find-file)
 
-;; Dired
-
-;; Dired isn't very colourful by default, but ~dired+~ has helpful
-;; highlighting.
-
-
-(use-package dired+
-  :init
-  (setq diredp-hide-details-initially-flag nil))
-
 ;; Deleting and Backups
 
 ;; When we delete a file, it should go to the recycle bin rather than

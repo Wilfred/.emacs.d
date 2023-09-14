@@ -465,17 +465,6 @@ a lot and it's right next to =C-x C-f=.
   (global-set-key (kbd "C-x C-g") 'projectile-find-file)
 #+END_SRC
 
-*** Dired
-
-Dired isn't very colourful by default, but ~dired+~ has helpful
-highlighting.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (use-package dired+
-    :init
-    (setq diredp-hide-details-initially-flag nil))
-#+END_SRC
-
 *** Deleting and Backups
 
 When we delete a file, it should go to the recycle bin rather than
