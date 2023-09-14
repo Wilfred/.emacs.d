@@ -60,7 +60,7 @@ foo -> &foo[..]"
   (add-to-list 'exec-path (f-expand "~/.cargo/bin"))
 
   (add-hook 'rust-mode-hook #'wh/rust-company-settings)
-  (add-hook 'rust-mode-hook #'eglot)
+  (add-hook 'rust-mode-hook #'eglot-ensure)
   (require 'rust-rustfmt)
 
   ;; Necessary for go-to-def to work in compilation mode buffers.
