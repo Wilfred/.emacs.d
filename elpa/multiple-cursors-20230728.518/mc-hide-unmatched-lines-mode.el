@@ -1,4 +1,4 @@
-;;; mc-hide-unmatched-lines.el
+;;; mc-hide-unmatched-lines-mode.el
 
 ;; Copyright (C) 2014 Aleksey Fedotov
 
@@ -54,8 +54,9 @@ also hum/lines-to-expand below and above) To make use of this
 mode press \"C-'\" while multiple-cursor-mode is active. You can
 still edit lines while you are in mc-hide-unmatched-lines
 mode. To leave this mode press <return> or \"C-g\""
-  nil " hu"
-  hum/hide-unmatched-lines-mode-map
+  :init-value nil
+  :lighter " hu"
+  :keymap hum/hide-unmatched-lines-mode-map
   (if mc-hide-unmatched-lines-mode
       ;;just in case if mc mode will be disabled while hide-unmatched-lines is active
       (progn
@@ -73,7 +74,7 @@ mode. To leave this mode press <return> or \"C-g\""
   :group 'multiple-cursors)
 
 (defcustom hum/placeholder "..."
-  "Placeholder which will be placed insted of hiden text"
+  "Placeholder which will be placed instead of hidden text"
   :type '(string)
   :group 'multiple-cursors)
 
@@ -103,5 +104,6 @@ mode. To leave this mode press <return> or \"C-g\""
 (defun hum/unhide-unmatched-lines ()
   (remove-overlays nil nil hum/invisible-overlay-name t))
 
-(provide 'mc-hide-unmatched-lines-mode)
 (define-key mc/keymap (kbd "C-'") 'mc-hide-unmatched-lines-mode)
+
+(provide 'mc-hide-unmatched-lines-mode)
