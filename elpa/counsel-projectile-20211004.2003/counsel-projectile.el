@@ -1,13 +1,12 @@
 ;;; counsel-projectile.el --- Ivy integration for Projectile -*- lexical-binding: t -*-
 
-;; Copyright (C) 2016-2019 Eric Danan
+;; Copyright (C) 2016-2021 Eric Danan
 
 ;; Author: Eric Danan
 ;; URL: https://github.com/ericdanan/counsel-projectile
-;; Package-Version: 20190724.1903
 ;; Keywords: project, convenience
-;; Version: 0.3.0
-;; Package-Requires: ((counsel "0.12.0") (projectile "2.0.0"))
+;; Version: 0.3.2
+;; Package-Requires: ((counsel "0.13.4") (projectile "2.5.0"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -244,17 +243,6 @@ If anything goes wrong, throw an error and do not modify ACTION-VAR."
                      (cdr action-list))))))
     (set action-var action-list)))
 
-;; Copy the function `string-trim-right' from emacs 26 here so as to
-;; support emacs 25 (the function exists in emacs 25 but doesn't
-;; accept the REGEXP optional argument).
-(defsubst counsel-projectile--string-trim-right (string &optional regexp)
-  "Trim STRING of trailing string matching REGEXP.
-
-REGEXP defaults to  \"[ \\t\\n\\r]+\"."
-  (if (string-match (concat "\\(?:" (or regexp "[ \t\n\r]+") "\\)\\'") string)
-      (replace-match "" t t string)
-    string))
-
 ;;* counsel-projectile-find-file
 
 (defcustom counsel-projectile-sort-files nil
@@ -295,6 +283,13 @@ It is also possible to use a custom matcher.  It must be a function taking two a
           (function :tag "Custom function"))
   :group 'counsel-projectile)
 
+(defcustom counsel-projectile-find-file-more-chars 0
+  "Number of characters to input before matching project files are shown.
+
+Setting it to a strictly positive value can improve performance in large projects."
+  :type 'integer
+  :group 'counsel-projectile)
+
 (counsel-projectile--defcustom-action
  'counsel-projectile-find-file
  '(1
@@ -313,6 +308,12 @@ It is also possible to use a custom matcher.  It must be a function taking two a
    ("p" counsel-projectile-find-file-action-switch-project
     "switch project"))
  'counsel-projectile)
+
+(defun counsel-projectile--find-file-matcher (regexp candidates)
+  (let ((ivy-more-chars-alist
+         `((t . ,counsel-projectile-find-file-more-chars))))
+    (or (ivy-more-chars)
+        (funcall counsel-projectile-find-file-matcher regexp candidates))))
 
 (defun counsel-projectile-find-file-matcher-basename (regexp candidates)
   "Return the list of CANDIDATES whose basename matches REGEXP,
@@ -405,15 +406,14 @@ non-nil, use completion based on context."
            (files (and dwim (projectile-select-files project-files))))
       (ivy-read (projectile-prepend-project-name "Find file: ")
                 (or files project-files)
-                :matcher counsel-projectile-find-file-matcher
+                :matcher #'counsel-projectile--find-file-matcher
                 :require-match t
                 :sort counsel-projectile-sort-files
                 :action counsel-projectile-find-file-action
                 :caller 'counsel-projectile-find-file))))
 
-(ivy-set-display-transformer
- 'counsel-projectile-find-file
- 'counsel-projectile-find-file-transformer)
+(ivy-configure 'counsel-projectile-find-file
+ :display-transformer-fn #'counsel-projectile-find-file-transformer)
 
 ;;;###autoload
 (defun counsel-projectile-find-file-dwim (&optional arg)
@@ -503,9 +503,8 @@ With a prefix ARG, invalidate the cache first."
               :action counsel-projectile-find-dir-action
               :caller 'counsel-projectile-find-dir)))
 
-(ivy-set-display-transformer
- 'counsel-projectile-find-dir
- 'counsel-projectile-find-dir-transformer)
+(ivy-configure 'counsel-projectile-find-dir
+ :display-transformer-fn #'counsel-projectile-find-dir-transformer)
 
 ;;* counsel-projectile-switch-to-buffer
 
@@ -523,6 +522,17 @@ The sorting function can be modified by adding an entry for
   "Non-nil if current buffer should be removed from the
 candidates list of `counsel-projectile-switch-to-buffer' and
 `counsel-projectile'."
+  :type 'boolean
+  :group 'counsel-projectile)
+
+(defcustom counsel-projectile-preview-buffers nil
+  "When non-nil, `counsel-projectile-switch-to-buffer' and `counsel-projectile'
+display a preview of the selected buffer in the current window.
+
+This makes these commands behave similarly to `counsel-switch-buffer'.  If
+`counsel-switch-buffer-preview-virtual-buffers' is also non-nil,
+`counsel-projectile' also displays a preview of the selected
+non-visited file."
   :type 'boolean
   :group 'counsel-projectile)
 
@@ -584,12 +594,52 @@ names as in `ivy--buffer-list', and remove current buffer if
   "Transform candidate STR when switching project buffers.
 
 This simply applies the same transformer as in `ivy-switch-buffer', which is `ivy-switch-buffer-transformer' by default but could have been modified e.g. by the ivy-rich package."
-  (funcall (plist-get ivy--display-transformers-list 'ivy-switch-buffer)
+  (funcall (ivy-alist-setting ivy--display-transformers-alist 'ivy-switch-buffer)
            str))
 
+(defun counsel-projectile--switch-to-buffer-update-fn ()
+  "Update function for `counsel-projectile--switch-to-buffer'."
+  ;; Adapted from counsel--switch-buffer-update-fn.
+  (unless counsel--switch-buffer-previous-buffers
+    (setq counsel--switch-buffer-previous-buffers (buffer-list)))
+  (when counsel-projectile-preview-buffers
+    (when (member (ivy-state-current ivy-last) ivy-marked-candidates)
+      (setf (ivy-state-current ivy-last)
+            (substring (ivy-state-current ivy-last) (length ivy-mark-prefix))))
+    ;; Unlike in `counsel-switch-buffer' we could have an empty string
+    ;; as candidate if no project buffer is open.
+    (cond
+     ((and (not (string= (ivy-state-current ivy-last) ""))
+           (get-buffer (ivy-state-current ivy-last)))
+      (let ((ivy-marked-candidates nil))
+        (ivy-call)))
+     ;; Following case if for use in `counsel-projectile'.
+     ((and (not (string= (ivy-state-current ivy-last) ""))
+           counsel-switch-buffer-preview-virtual-buffers
+           (file-exists-p (projectile-expand-root (ivy-state-current ivy-last))))
+      (let ((buf (ignore-errors
+                   ;; may not open due to `large-file-warning-threshold' etc.
+                   (find-file-noselect (projectile-expand-root (ivy-state-current ivy-last))))))
+        (if buf
+            (progn
+              (push buf counsel--switch-buffer-temporary-buffers)
+              (ivy-call))
+          ;; clean up the minibuffer so that there's no delay before
+          ;; the Ivy candidates are displayed once again
+          (message ""))))
+     (t
+      (with-ivy-window
+        (switch-to-buffer (or (plist-get (ivy-state-extra-props ivy-last) :from-buffer)
+                              (ivy-state-buffer ivy-last))))))))
+
 ;;;###autoload
-(defun counsel-projectile-switch-to-buffer ()
-  "Jump to a buffer in the current project."
+(defun counsel-projectile-switch-to-buffer (&optional from-buffer)
+  "Jump to a buffer in the current project.
+
+If `counsel-projectile-preview-buffers' is non-nil, display a
+preview of the selected ivy completion candidate buffer as in
+`counsel-switch-buffer', falling back to the current buffer or
+optionally FROM-BUFFER."
   (interactive)
   (if (and (eq projectile-require-project-root 'prompt)
            (not (projectile-project-p)))
@@ -604,11 +654,13 @@ This simply applies the same transformer as in `ivy-switch-buffer', which is `iv
               :sort counsel-projectile-sort-buffers
               :action counsel-projectile-switch-to-buffer-action
               :keymap counsel-projectile-switch-to-buffer-map
+              :extra-props (list :from-buffer from-buffer)
               :caller 'counsel-projectile-switch-to-buffer)))
 
-(ivy-set-display-transformer
- 'counsel-projectile-switch-to-buffer
- 'counsel-projectile-switch-to-buffer-transformer)
+(ivy-configure 'counsel-projectile-switch-to-buffer
+  :display-transformer-fn #'counsel-projectile-switch-to-buffer-transformer
+  :update-fn #'counsel-projectile--switch-to-buffer-update-fn
+  :unwind-fn #'counsel--switch-buffer-unwind)
 
 ;;* counsel-projectile-grep
 
@@ -649,20 +701,9 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
                        (string   :tag "    name")))
   :group 'counsel-projectile)
 
-(defvar counsel-projectile-grep-base-command "grep -rnEI %s -- %%s %s"
+(defvar counsel-projectile-grep-base-command "grep -rnEI %s"
   "Format string to use in `cousel-projectile-grep' to
 construct the command.")
-
-(defvar counsel-projectile-grep-command nil)
-
-(defun counsel-projectile-grep-function (string)
-  "Grep for STRING in the current project."
-  (or (ivy-more-chars)
-      (let ((default-directory (ivy-state-directory ivy-last))
-            (regex (counsel--grep-regex string)))
-        (counsel--async-command (format counsel-projectile-grep-command
-                                        (shell-quote-argument regex)))
-        nil)))
 
 (defun counsel-projectile-grep-action-switch-project (&optional _)
   "Switch project action for `counsel-projectile-grep'."
@@ -671,18 +712,6 @@ construct the command.")
 (defun counsel-projectile-git-grep-action-switch-project (&optional _)
   "Switch project action for `counsel-projectile-git-grep'."
   (counsel-projectile-switch-project 'counsel-projectile-switch-project-action-git-grep))
-
-(defun counsel-projectile-grep-transformer (str)
-  "Higlight file and line number in STR, first removing the
-\"./\" prefix from the filename."
-  ;; This makes the display consistent with `counsel-git-grep' and
-  ;; `counsel-ag'-like commands.
-  (counsel-git-grep-transformer (string-remove-prefix "./" str)))
-
-(defun counsel-projectile-grep-occur ()
-  "Generate a custom occur buffer for `counsel-projectile-grep'."
-  (counsel-grep-like-occur
-   counsel-projectile-grep-command))
 
 ;;;###autoload
 (defun counsel-projectile-grep (&optional options-or-cmd)
@@ -694,7 +723,7 @@ use git grep. Otherwise use grep recursively.
 OPTIONS-OR-CMD, if non-nil, is a string containing either
 additional options to be passed to grep, or an alternative git
 grep command. It is read from the minibuffer if the function is
-called with a prefix argument."
+called with a `\\[universal-argument]' prefix argument."
   (interactive)
   (if (and (eq projectile-require-project-root 'prompt)
            (not (projectile-project-p)))
@@ -702,45 +731,47 @@ called with a prefix argument."
     (if (and (eq (projectile-project-vcs) 'git)
              projectile-use-git-grep)
         (counsel-projectile-git-grep options-or-cmd)
-      (let* ((path
-              (mapconcat 'shell-quote-argument
-                         (projectile-normalise-paths
-                          (car (projectile-parse-dirconfig-file)))
-                         " "))
-             (ignored-files
+      (let* ((ignored-files
               (mapconcat (lambda (i)
                            (concat "--exclude=" (shell-quote-argument i)))
-                         (append
+			 (append
                           (projectile--globally-ignored-file-suffixes-glob)
                           (projectile-ignored-files-rel))
-                         " "))
+			 " "))
              (ignored-dirs
               (mapconcat (lambda (i)
                            (concat "--exclude-dir=" (shell-quote-argument i)))
-                         (projectile-ignored-directories-rel)
-                         " "))
+			 (projectile-ignored-directories-rel)
+			 " "))
              (ignored (concat ignored-files " " ignored-dirs))
-             (default-directory (projectile-project-root)))
-        (counsel-require-program
-         (car (split-string counsel-projectile-grep-base-command)))
-        (setq counsel-projectile-grep-command
-              (format counsel-projectile-grep-base-command ignored path))
-        (ivy-read (projectile-prepend-project-name "grep: ")
-                  #'counsel-projectile-grep-function
-                  :initial-input (eval counsel-projectile-grep-initial-input)
-                  :dynamic-collection t
-                  :keymap counsel-ag-map
-                  :history 'counsel-git-grep-history
-                  :action counsel-projectile-grep-action
-                  :unwind (lambda ()
-                            (counsel-delete-process)
-                            (swiper--cleanup))
-                  :caller 'counsel-projectile-grep)))))
+             (counsel-ag-base-command
+              (let ((counsel-ag-command counsel-projectile-grep-base-command))
+		(counsel--format-ag-command ignored "%s"))))
+	;; `counsel-ag' requires a single `\\[universal-argument]'
+	;; prefix argument to prompt for initial directory and a double
+	;; `\\[universal-argument]' prefix argument to prompt for extra
+	;; options. But since the initial directory is always the
+	;; project root here, prompt for ortpions with a single
+	;; `\\[universal-argument]' prefix argument prefix argument as
+	;; well.
+	(when (= (prefix-numeric-value current-prefix-arg) 4)
+          (setq current-prefix-arg '(16)))
+	(counsel-ag (eval counsel-projectile-grep-initial-input)
+                    (projectile-project-root)
+                    options-or-cmd
+                    (projectile-prepend-project-name
+                     (concat (car (if (listp counsel-ag-base-command)
+                                      counsel-ag-base-command
+                                    (split-string counsel-ag-base-command)))
+                             ": "))
+                    :caller 'counsel-projectile-grep)))))
 
-(cl-pushnew 'counsel-projectile-grep ivy-highlight-grep-commands)
-(counsel-set-async-exit-code 'counsel-projectile-grep 1 "No matches found")
-(ivy-set-occur 'counsel-projectile-grep 'counsel-projectile-grep-occur)
-(ivy-set-display-transformer 'counsel-projectile-grep  'counsel-projectile-grep-transformer)
+(ivy-configure 'counsel-projectile-grep
+  :occur #'counsel-ag-occur
+  :unwind-fn #'counsel--grep-unwind
+  :display-transformer-fn #'counsel-git-grep-transformer
+  :grep-p t
+  :exit-codes '(1 "No matches found"))
 
 ;;;###autoload
 (defun counsel-projectile-git-grep (&optional cmd)
@@ -748,25 +779,18 @@ called with a prefix argument."
 
 CMD, if non-nil, is a string containing an alternative git grep
 command. It is read from the minibuffer if the function is called
-with a prefix argument."
+with a `\\[universal-argument]' prefix argument."
   (interactive)
   (if (and (eq projectile-require-project-root 'prompt)
            (not (projectile-project-p)))
       (counsel-projectile-git-grep-action-switch-project)
-    (let* ((ivy--actions-list (copy-sequence ivy--actions-list))
-           (path
-            (mapconcat 'shell-quote-argument
-                       (projectile-normalise-paths
-                        (car (projectile-parse-dirconfig-file)))
-                       " "))
-           (counsel-git-grep-cmd-default
-            (concat (counsel-projectile--string-trim-right counsel-git-grep-cmd-default " \\.")
-                    " " path)))
+    (let ((ivy--actions-list (copy-sequence ivy--actions-list)))
       (ivy-add-actions
        'counsel-git-grep
        counsel-projectile-git-grep-extra-actions)
-      (counsel-git-grep (or current-prefix-arg cmd)
-                        (eval counsel-projectile-grep-initial-input)))))
+      (counsel-git-grep (eval counsel-projectile-grep-initial-input)
+                        (projectile-project-root)
+                        (or current-prefix-arg cmd)))))
 
 ;;* counsel-projectile-ag
 
@@ -808,16 +832,12 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
 
 OPTIONS, if non-nil, is a string containing additional options to
 be passed to ag. It is read from the minibuffer if the function
-is called with a prefix argument."
+is called with a `\\[universal-argument]' prefix argument."
   (interactive)
   (if (and (eq projectile-require-project-root 'prompt)
            (not (projectile-project-p)))
       (counsel-projectile-ag-action-switch-project)
     (let* ((ivy--actions-list (copy-sequence ivy--actions-list))
-           (path (mapconcat 'shell-quote-argument
-                            (projectile-normalise-paths
-                             (car (projectile-parse-dirconfig-file)))
-                            " "))
            (ignored
             (mapconcat (lambda (i)
                          (concat "--ignore " (shell-quote-argument i)))
@@ -827,16 +847,28 @@ is called with a prefix argument."
                         (projectile-ignored-directories-rel))
                        " "))
            (counsel-ag-base-command
-            (format (counsel-projectile--string-trim-right counsel-ag-base-command " \\.")
-                    (concat ignored " %s " path))))
+            (let ((counsel-ag-command counsel-ag-base-command))
+              (counsel--format-ag-command ignored "%s"))))
       (ivy-add-actions
        'counsel-ag
        counsel-projectile-ag-extra-actions)
+      ;; `counsel-ag' requires a single `\\[universal-argument]'
+      ;; prefix argument to prompt for initial directory and a double
+      ;; `\\[universal-argument]' prefix argument to prompt for extra
+      ;; options. But since the initial directory is always the
+      ;; project root here, prompt for ortpions with a single
+      ;; `\\[universal-argument]' prefix argument prefix argument as
+      ;; well.
+      (when (= (prefix-numeric-value current-prefix-arg) 4)
+        (setq current-prefix-arg '(16)))
       (counsel-ag (eval counsel-projectile-ag-initial-input)
                   (projectile-project-root)
                   options
                   (projectile-prepend-project-name
-                   (concat (car (split-string counsel-ag-base-command)) ": "))))))
+                   (concat (car (if (listp counsel-ag-base-command)
+                                    counsel-ag-base-command
+                                  (split-string counsel-ag-base-command)))
+                           ": "))))))
 
 ;;* counsel-projectile-rg
 
@@ -878,18 +910,12 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
 
 OPTIONS, if non-nil, is a string containing additional options to
 be passed to rg. It is read from the minibuffer if the function
-is called with a prefix argument."
+is called with a `\\[universal-argument]' prefix argument."
   (interactive)
   (if (and (eq projectile-require-project-root 'prompt)
            (not (projectile-project-p)))
       (counsel-projectile-rg-action-switch-project)
     (let* ((ivy--actions-list (copy-sequence ivy--actions-list))
-           (path
-            (mapconcat 'shell-quote-argument
-                       (or (projectile-normalise-paths
-                            (car (projectile-parse-dirconfig-file)))
-                           '("."))
-                       " "))
            (ignored
             (mapconcat (lambda (i)
                          (concat "--glob !" (shell-quote-argument i)))
@@ -897,18 +923,30 @@ is called with a prefix argument."
                         (projectile--globally-ignored-file-suffixes-glob)
                         (projectile-ignored-files-rel)
                         (projectile-ignored-directories-rel))
-                       " "))
+                       " "))        
            (counsel-rg-base-command
-            (format (counsel-projectile--string-trim-right counsel-rg-base-command " \\.")
-                    (concat ignored " %s " path))))
+            (let ((counsel-ag-command counsel-rg-base-command))
+              (counsel--format-ag-command ignored "%s"))))
       (ivy-add-actions
-       'counsel-ag
+       'counsel-rg
        counsel-projectile-rg-extra-actions)
+      ;; `counsel-rg' requires a single `\\[universal-argument]'
+      ;; prefix argument to prompt for initial directory and a double
+      ;; `\\[universal-argument]' prefix argument to prompt for extra
+      ;; options. But since the initial directory is always the
+      ;; project root here, prompt for ortpions with a single
+      ;; `\\[universal-argument]' prefix argument prefix argument as
+      ;; well.
+      (when (= (prefix-numeric-value current-prefix-arg) 4)
+        (setq current-prefix-arg '(16)))
       (counsel-rg (eval counsel-projectile-rg-initial-input)
                   (projectile-project-root)
                   options
                   (projectile-prepend-project-name
-                   (concat (car (split-string counsel-rg-base-command)) ": "))))))
+                   (concat (car (if (listp counsel-rg-base-command)
+                                    counsel-rg-base-command
+                                  (split-string counsel-rg-base-command)))
+                           ": "))))))
 
 ;;* counsel-projectile-org-capture
 
@@ -1060,6 +1098,11 @@ The format is the same as in `org-capture-templates-contexts'."
                        (string   :tag "    name")))
   :group 'counsel-projectile)
 
+(defcustom counsel-projectile-org-capture-templates-first-p t
+  "Non-nil if `counsel-projectile-org-capture' should display templates from `counsel-projectile-org-capture-templates' before those from `org-capture-templates'."
+  :type 'boolean
+  :group 'counsel-projectile)
+
 (defvar counsel-projectile--org-capture-templates-backup nil
   "Stores a backup of `org-capture-templates'.")
 
@@ -1095,6 +1138,8 @@ capture."
                   org-capture-templates-contexts))
          (org-capture-templates
           (append
+           (unless counsel-projectile-org-capture-templates-first-p
+             org-capture-templates)
            (when root
              (cl-loop
               with replace-fun = `(lambda (string)
@@ -1119,7 +1164,8 @@ capture."
                                 collect x)
                        else
                        collect item)))
-           org-capture-templates)))
+           (when counsel-projectile-org-capture-templates-first-p
+             org-capture-templates))))
     (ivy-add-actions
      'counsel-org-capture
      counsel-projectile-org-capture-extra-actions)
@@ -1149,7 +1195,7 @@ Optional arguments ARG, KEYS, and RESTRICTION are as in
   (let* ((root (projectile-project-root))
          (org-agenda-files
           (cl-remove-if-not (lambda (file)
-                              (string-prefix-p root file))
+                              (string-prefix-p root (expand-file-name file)))
                             (org-agenda-files t 'ifmode))))
     (org-agenda arg keys restriction))))
 
@@ -1214,6 +1260,8 @@ candidates list of `counsel-projectile-switch-project'."
     "invoke eshell from project root")
    ("xt" counsel-projectile-switch-project-action-run-term
     "invoke term from project root")
+   ("xv" counsel-projectile-switch-project-action-run-vterm
+    "invoke vterm from project root")
    ("Oc" counsel-projectile-switch-project-action-org-capture
     "capture into project")
    ("Oa" counsel-projectile-switch-project-action-org-agenda
@@ -1249,9 +1297,10 @@ action."
 
 (defun counsel-projectile-switch-project-action (project)
   "Jump to a file or buffer in PROJECT."
-  (let ((projectile-switch-project-action
-         (lambda ()
-           (counsel-projectile ivy-current-prefix-arg))))
+  (let* ((from-buffer (ivy-state-buffer ivy-last))
+         (projectile-switch-project-action
+          `(lambda ()
+             (counsel-projectile ivy-current-prefix-arg ,from-buffer))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-find-file (project)
@@ -1282,7 +1331,10 @@ action."
 
 (defun counsel-projectile-switch-project-action-switch-to-buffer (project)
   "Jump to a buffer in PROJECT."
-  (let ((projectile-switch-project-action 'counsel-projectile-switch-to-buffer))
+  (let* ((from-buffer (ivy-state-buffer ivy-last))
+         (projectile-switch-project-action
+          `(lambda ()
+            (counsel-projectile-switch-to-buffer ,from-buffer))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-save-all-buffers (project)
@@ -1328,46 +1380,70 @@ action."
 
 (defun counsel-projectile-switch-project-action-run-shell (project)
   "Invoke `shell' from PROJECT's root."
-  (let ((projectile-switch-project-action 'projectile-run-shell))
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (projectile-run-shell ivy-current-prefix-arg))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-run-eshell (project)
   "Invoke `eshell' from PROJECT's root."
-  (let ((projectile-switch-project-action 'projectile-run-eshell))
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (projectile-run-eshell ivy-current-prefix-arg))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-run-term (project)
   "Invoke `term' from PROJECT's root."
   (let ((projectile-switch-project-action
          (lambda ()
-           (projectile-run-term nil))))
+           (projectile-run-term ivy-current-prefix-arg))))
+    (counsel-projectile-switch-project-by-name project)))
+
+(defun counsel-projectile-switch-project-action-run-vterm (project)
+  "Invoke `vterm' from PROJECT's root."
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (projectile-run-vterm ivy-current-prefix-arg))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-grep (project)
   "Search PROJECT with grep."
-  (let ((projectile-switch-project-action 'counsel-projectile-grep))
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (setq current-prefix-arg ivy-current-prefix-arg)
+           (counsel-projectile-grep))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-git-grep (project)
   "Search PROJECT with git grep."
-  (let ((projectile-switch-project-action 'counsel-projectile-git-grep))
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (setq current-prefix-arg ivy-current-prefix-arg)
+           (counsel-projectile-git-grep))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-ag (project)
   "Search PROJECT with ag."
-  (let ((projectile-switch-project-action 'counsel-projectile-ag))
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (setq current-prefix-arg ivy-current-prefix-arg)
+           (counsel-projectile-ag))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-rg (project)
   "Search PROJECT with rg."
-  (let ((projectile-switch-project-action 'counsel-projectile-rg))
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (setq current-prefix-arg ivy-current-prefix-arg)
+           (counsel-projectile-rg))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-org-capture (project)
   "Capture into PROJECT."
   (let* ((from-buffer (ivy-state-buffer ivy-last))
-         (projectile-switch-project-action `(lambda ()
-                                              (counsel-projectile-org-capture ,from-buffer))))
+         (projectile-switch-project-action
+          `(lambda ()
+             (counsel-projectile-org-capture ,from-buffer))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-org-agenda (project)
@@ -1481,7 +1557,7 @@ Relies on `ivy--switch-buffer-matcher' for buffers and the
 matcher specified in `counsel-projectile-find-file-matcher' for
 files."
   (append (ivy--switch-buffer-matcher regexp counsel-projectile--buffers)
-          (funcall counsel-projectile-find-file-matcher regexp counsel-projectile--non-visited-files)))
+          (counsel-projectile--find-file-matcher regexp counsel-projectile--non-visited-files)))
 
 (defun counsel-projectile-action (name)
   "Switch to buffer or find file named NAME."
@@ -1531,12 +1607,19 @@ directory of file named NAME."
     (propertize str 'face 'ivy-virtual)))
 
 ;;;###autoload
-(defun counsel-projectile (&optional arg)
+(defun counsel-projectile (&optional arg from-buffer)
   "Jump to a buffer or file in the current project.
 
 With a prefix ARG, invalidate the cache first.
 
-If not inside a project, call `counsel-projectile-switch-project'."
+If `counsel-projectile-preview-buffers' is non-nil, display a
+preview of the selected ivy completion candidate buffer as in
+`counsel-switch-buffer', falling back to the current buffer or
+optionally FROM-BUFFER.
+
+If `counsel-switch-buffer-preview-virtual-buffers' is also
+non-nil, also display a preview of the selected ivy completion
+candidate non-visited file."
   (interactive "P")
   (if (and (eq projectile-require-project-root 'prompt)
            (not (projectile-project-p)))
@@ -1551,11 +1634,13 @@ If not inside a project, call `counsel-projectile-switch-project'."
               :require-match t
               :action counsel-projectile-action
               :keymap counsel-projectile-map
+              :extra-props (list :from-buffer from-buffer)
               :caller 'counsel-projectile)))
 
-(ivy-set-display-transformer
- 'counsel-projectile
- 'counsel-projectile-transformer)
+(ivy-configure 'counsel-projectile
+:display-transformer-fn #'counsel-projectile-transformer
+ :update-fn #'counsel-projectile--switch-to-buffer-update-fn
+ :unwind-fn #'counsel--switch-buffer-unwind)
 
 ;;* counsel-projectile-mode
 
