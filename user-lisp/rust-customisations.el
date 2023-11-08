@@ -84,4 +84,7 @@ foo -> &foo[..]"
 
 (setq eglot-workspace-configuration '(("rust" "clippy_preference" "on")))
 
+;; https://emacs.stackexchange.com/questions/70654/how-to-automatically-go-to-file-when-there-is-only-one-match-in-xref
+(setq xref-show-xrefs-function #'xref-show-definitions-buffer)
+
 (provide 'rust-customisations)
