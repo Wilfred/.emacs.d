@@ -78,7 +78,7 @@ foo -> &foo[..]"
 
   (define-key rust-mode-map (kbd "C-c d") #'wh/rust-dbg-dwim)
 
-  (define-key rust-mode-map (kbd "C-c c") #'rust-check))
+  (define-key rust-mode-map (kbd "C-c c") #'wh/rust-clippy))
 
 (require 'lsp-customisations)
 
