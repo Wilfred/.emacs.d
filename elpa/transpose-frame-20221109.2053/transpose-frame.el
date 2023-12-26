@@ -4,8 +4,6 @@
 
 ;; Author: S. Irie
 ;; Keywords: window
-;; Package-Version: 20200307.2119
-;; Package-Commit: 12e523d70ff78cc8868097b56120848befab5dbc
 
 ;; This program is free software.
 
@@ -112,7 +110,6 @@
               (window-margins tree)
               (window-fringes tree)
               (window-dedicated-p tree)
-              (window-redisplay-end-trigger tree)
               tree
               (eq tree (frame-selected-window frame)))
       (let* ((vertical (car tree))
@@ -147,7 +144,6 @@
           (set-window-margins window (caar config) (cdr (pop config)))
           (apply 'set-window-fringes window (pop config))
           (set-window-dedicated-p window (pop config))
-          (set-window-redisplay-end-trigger window (pop config))
           (let* ((orig-window (pop config))
                  (ol-func (lambda (ol)
                             (when (eq (overlay-get ol 'window) orig-window)
