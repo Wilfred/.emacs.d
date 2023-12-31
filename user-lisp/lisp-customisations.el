@@ -126,12 +126,6 @@ test with the same name."
 (set-face-attribute 'highlight-quoted-quote nil
                     :inherit 'highlight-quoted-symbol)
 
-(use-package nameless
-  :config
-  (setq nameless-private-prefix t)
-  (define-key emacs-lisp-mode-map (kbd "_")
-    #'nameless-insert-name-or-self-insert))
-
 (dolist (hook '(emacs-lisp-mode-hook
                 clojure-mode-hook
                 racket-mode-hook))
@@ -204,14 +198,13 @@ test with the same name."
   (define-key lispy-mode-map (kbd ":") nil)
   (define-key lispy-mode-map-lispy (kbd ":") nil)
 
+  (define-key lispy-mode-map (kbd "C-<return>") nil)
+  (define-key lispy-mode-map-lispy (kbd "C-<return>") nil)
+
   ;; Use [ to insert a pair [] in lisp, because it's pretty common in
   ;; scheme and clojure. Keep ] as jumping to the close paren, as
   ;; that's useful and we autoclose square parens.
   (define-key lispy-mode-map-lispy (kbd "[") nil)
-
-  ;; lispy-underscore has some extra smarts, but they're only for
-  ;; Clojure. I like using _ with `nameless-mode'.
-  (define-key lispy-mode-map (kbd "_") nil)
 
   ;; I find myself going up a lot, and M-/ is already convenient to
   ;; type. Use u for going up.
@@ -312,6 +305,9 @@ E.g. \"~/.emacs.d/elpa/el-mock-20150906.321\" into \"el-mock\" and \"20150906.32
                (save-excursion
                  (end-of-defun)
                  (point)))))
+
+(define-key emacs-lisp-mode-map (kbd "M-RET") #'edebug-eval-defun)
+(define-key lispy-mode-map (kbd "<M-return>") nil)
 
 (setq lispy-eval-display-style 'overlay)
 
