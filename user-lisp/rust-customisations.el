@@ -56,9 +56,6 @@ foo -> &foo[..]"
 
 (use-package rust-mode
   :config
-  (require 'f)
-  (add-to-list 'exec-path (f-expand "~/.cargo/bin"))
-
   (add-hook 'rust-mode-hook #'wh/rust-company-settings)
   (add-hook 'rust-mode-hook #'eglot-ensure)
   (require 'rust-rustfmt)
