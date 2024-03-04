@@ -1,60 +1,20 @@
-;;; rust-mode.el --- A major-mode for editing Rust source code -*-lexical-binding: t-*-
-
-;; Version: 1.0.5
-;; Author: Mozilla
-;; Url: https://github.com/rust-lang/rust-mode
-;; Keywords: languages
-;; Package-Requires: ((emacs "25.1"))
-
-;; This file is distributed under the terms of both the MIT license and the
-;; Apache License (version 2.0).
-
+;;; rust-prog-mode.el --- old rust-mode without treesitter -*-lexical-binding: t-*-
 ;;; Commentary:
 
-;; This package implements a major-mode for editing Rust source code.
+;; rust-mode code deriving from prog-mode instead of rust-ts-mode
 
 ;;; Code:
-
-(eval-when-compile
-  (require 'rx)
-  (require 'subr-x))
-
-(defvar rust-load-optional-libraries t
-  "Whether loading `rust-mode' also loads optional libraries.
-This variable might soon be remove again.")
-
-(when rust-load-optional-libraries
-  (require 'rust-cargo)
-  (require 'rust-compile)
-  (require 'rust-playpen)
-  (require 'rust-rustfmt))
+(require 'rust-common)
 
 (defvar electric-pair-inhibit-predicate)
 (defvar electric-pair-skip-self)
 (defvar electric-indent-chars)
-
-(defcustom rust-before-save-hook 'rust-before-save-method
-  "Function for formatting before save."
-  :type 'function
-  :group 'rust-mode)
-
-(defcustom rust-after-save-hook 'rust-after-save-method
-  "Default method to handle rustfmt invocation after save."
-  :type 'function
-  :group 'rust-mode)
 
 (defvar rust-prettify-symbols-alist
   '(("&&" . ?∧) ("||" . ?∨)
     ("<=" . ?≤)  (">=" . ?≥) ("!=" . ?≠)
     ("INFINITY" . ?∞) ("->" . ?→) ("=>" . ?⇒))
   "Alist of symbol prettifications used for `prettify-symbols-alist'.")
-
-;;; Customization
-
-(defgroup rust-mode nil
-  "Support for Rust code."
-  :link '(url-link "https://www.rust-lang.org/")
-  :group 'languages)
 
 (defcustom rust-indent-offset 4
   "Indent Rust code by this number of spaces."
@@ -87,17 +47,6 @@ to the function arguments.  When nil, `->' will be indented one level."
   :type 'boolean
   :group 'rust-mode
   :safe #'booleanp)
-
-;;; Faces
-
-(define-obsolete-face-alias 'rust-unsafe-face
-  'rust-unsafe "0.6.0")
-(define-obsolete-face-alias 'rust-question-mark-face
-  'rust-question-mark "0.6.0")
-(define-obsolete-face-alias 'rust-builtin-formatting-macro-face
-  'rust-builtin-formatting-macro "0.6.0")
-(define-obsolete-face-alias 'rust-string-interpolation-face
-  'rust-string-interpolation "0.6.0")
 
 (defface rust-unsafe
   '((t :inherit font-lock-warning-face))
@@ -192,31 +141,6 @@ Create a hierarchical index of the item definitions in a Rust file.
 Imenu will show all the enums, structs, etc. in their own subheading.
 Use idomenu (imenu with `ido-mode') for best mileage.")
 
-(defvar rust-mode-syntax-table
-  (let ((table (make-syntax-table)))
-
-    ;; Operators
-    (dolist (i '(?+ ?- ?* ?/ ?% ?& ?| ?^ ?! ?< ?> ?~ ?@))
-      (modify-syntax-entry i "." table))
-
-    ;; Strings
-    (modify-syntax-entry ?\" "\"" table)
-    (modify-syntax-entry ?\\ "\\" table)
-
-    ;; Angle brackets.  We suppress this with syntactic propertization
-    ;; when needed
-    (modify-syntax-entry ?< "(>" table)
-    (modify-syntax-entry ?> ")<" table)
-
-    ;; Comments
-    (modify-syntax-entry ?/  ". 124b" table)
-    (modify-syntax-entry ?*  ". 23n"  table)
-    (modify-syntax-entry ?\n "> b"    table)
-    (modify-syntax-entry ?\^m "> b"   table)
-
-    table)
-  "Syntax definitions and helpers.")
-
 ;;; Prettify
 
 (defun rust--prettify-symbols-compose-p (start end match)
@@ -233,86 +157,6 @@ See `prettify-symbols-compose-predicate'."
                                     (line-beginning-position)))))
          ("&&" (char-equal (char-after end) ?\s))
          (_ t))))
-
-;;; Mode
-
-(defvar rust-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c C-d") #'rust-dbg-wrap-or-unwrap)
-    (when rust-load-optional-libraries
-      (define-key map (kbd "C-c C-c C-u") 'rust-compile)
-      (define-key map (kbd "C-c C-c C-k") 'rust-check)
-      (define-key map (kbd "C-c C-c C-t") 'rust-test)
-      (define-key map (kbd "C-c C-c C-r") 'rust-run)
-      (define-key map (kbd "C-c C-c C-l") 'rust-run-clippy)
-      (define-key map (kbd "C-c C-f") 'rust-format-buffer)
-      (define-key map (kbd "C-c C-n") 'rust-goto-format-problem))
-    map)
-  "Keymap for Rust major mode.")
-
-;;;###autoload
-(define-derived-mode rust-mode prog-mode "Rust"
-  "Major mode for Rust code.
-
-\\{rust-mode-map}"
-  :group 'rust-mode
-  :syntax-table rust-mode-syntax-table
-
-  ;; Syntax
-  (setq-local syntax-propertize-function #'rust-syntax-propertize)
-
-  ;; Indentation
-  (setq-local indent-line-function 'rust-mode-indent-line)
-
-  ;; Fonts
-  (setq-local font-lock-defaults
-              '(rust-font-lock-keywords
-                nil nil nil nil
-                (font-lock-syntactic-face-function
-                 . rust-mode-syntactic-face-function)))
-
-  ;; Misc
-  (setq-local comment-start "// ")
-  (setq-local comment-end   "")
-  (setq-local open-paren-in-column-0-is-defun-start nil)
-
-  ;; Auto indent on }
-  (setq-local electric-indent-chars
-              (cons ?} (and (boundp 'electric-indent-chars)
-                            electric-indent-chars)))
-
-  ;; Allow paragraph fills for comments
-  (setq-local comment-start-skip "\\(?://[/!]*\\|/\\*[*!]?\\)[[:space:]]*")
-  (setq-local paragraph-start
-              (concat "[[:space:]]*\\(?:"
-                      comment-start-skip
-                      "\\|\\*/?[[:space:]]*\\|\\)$"))
-  (setq-local paragraph-separate paragraph-start)
-  (setq-local normal-auto-fill-function #'rust-do-auto-fill)
-  (setq-local fill-paragraph-function #'rust-fill-paragraph)
-  (setq-local fill-forward-paragraph-function #'rust-fill-forward-paragraph)
-  (setq-local adaptive-fill-function #'rust-find-fill-prefix)
-  (setq-local adaptive-fill-first-line-regexp "")
-  (setq-local comment-multi-line t)
-  (setq-local comment-line-break-function #'rust-comment-indent-new-line)
-  (setq-local imenu-generic-expression rust-imenu-generic-expression)
-  (setq-local imenu-syntax-alist '((?! . "w"))) ; For macro_rules!
-  (setq-local beginning-of-defun-function #'rust-beginning-of-defun)
-  (setq-local end-of-defun-function #'rust-end-of-defun)
-  (setq-local parse-sexp-lookup-properties t)
-  (setq-local electric-pair-inhibit-predicate
-              #'rust-electric-pair-inhibit-predicate-wrap)
-  (add-function :before-until (local 'electric-pair-skip-self)
-                #'rust-electric-pair-skip-self)
-  ;; Configure prettify
-  (setq prettify-symbols-alist rust-prettify-symbols-alist)
-  (setq prettify-symbols-compose-predicate #'rust--prettify-symbols-compose-p)
-
-  (add-hook 'before-save-hook rust-before-save-hook nil t)
-  (add-hook 'after-save-hook rust-after-save-hook nil t))
-
-;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-mode))
 
 (defvar rust-top-item-beg-re
   (concat "\\s-*\\(?:priv\\|pub\\)?\\s-*"
@@ -1340,56 +1184,6 @@ should be considered a paired angle bracket."
          (group "'")))
     "A regular expression matching a character literal."))
 
-(defun rust--syntax-propertize-raw-string (str-start end)
-  "A helper for rust-syntax-propertize.
-
-This will apply the appropriate string syntax to the character
-from the STR-START up to the end of the raw string, or to END,
-whichever comes first."
-  (when (save-excursion
-          (goto-char str-start)
-          (looking-at "r\\(#*\\)\\(\"\\)"))
-    ;; In a raw string, so try to find the end.
-    (let ((hashes (match-string 1)))
-      ;; Match \ characters at the end of the string to suppress
-      ;; their normal character-quote syntax.
-      (when (re-search-forward (concat "\\(\\\\*\\)\\(\"" hashes "\\)") end t)
-        (put-text-property (match-beginning 1) (match-end 1)
-                           'syntax-table (string-to-syntax "_"))
-        (put-text-property (1- (match-end 2)) (match-end 2)
-                           'syntax-table (string-to-syntax "|"))
-        (goto-char (match-end 0))))))
-
-;;; Syntax Propertize
-
-(defun rust-syntax-propertize (start end)
-  "A `syntax-propertize-function' to apply properties from START to END."
-  (goto-char start)
-  (when-let ((str-start (rust-in-str-or-cmnt)))
-    (rust--syntax-propertize-raw-string str-start end))
-  (funcall
-   (syntax-propertize-rules
-    ;; Character literals.
-    (rust--char-literal-rx (1 "\"") (2 "\""))
-    ;; Raw strings.
-    ("\\(r\\)#*\""
-     (0 (ignore
-         (goto-char (match-end 0))
-         (unless (save-excursion (nth 8 (syntax-ppss (match-beginning 0))))
-           (put-text-property (match-beginning 1) (match-end 1)
-                              'syntax-table (string-to-syntax "|"))
-           (rust--syntax-propertize-raw-string (match-beginning 0) end)))))
-    ("[<>]"
-     (0 (ignore
-         (when (save-match-data
-                 (save-excursion
-                   (goto-char (match-beginning 0))
-                   (rust-ordinary-lt-gt-p)))
-           (put-text-property (match-beginning 0) (match-end 0)
-                              'syntax-table (string-to-syntax "."))
-           (goto-char (match-end 0)))))))
-   (point) end))
-
 (defun rust-fill-prefix-for-comment-start (line-start)
   "Determine what to use for `fill-prefix' based on the text at LINE-START."
   (let ((result
@@ -1576,7 +1370,140 @@ This is written mainly to be used as `end-of-defun-function' for Rust."
   (require 'rust-mode)
   (rust-mode))
 
-(provide 'rust-mode)
-(require 'rust-utils)
+(defvar rust-mode-syntax-table
+  (let ((table (make-syntax-table)))
 
-;;; rust-mode.el ends here
+    ;; Operators
+    (dolist (i '(?+ ?- ?* ?/ ?% ?& ?| ?^ ?! ?< ?> ?~ ?@))
+      (modify-syntax-entry i "." table))
+
+    ;; Strings
+    (modify-syntax-entry ?\" "\"" table)
+    (modify-syntax-entry ?\\ "\\" table)
+
+    ;; Angle brackets.  We suppress this with syntactic propertization
+    ;; when needed
+    (modify-syntax-entry ?< "(>" table)
+    (modify-syntax-entry ?> ")<" table)
+
+    ;; Comments
+    (modify-syntax-entry ?/  ". 124b" table)
+    (modify-syntax-entry ?*  ". 23n"  table)
+    (modify-syntax-entry ?\n "> b"    table)
+    (modify-syntax-entry ?\^m "> b"   table)
+
+    table)
+  "Syntax definitions and helpers.")
+
+(defun rust--syntax-propertize-raw-string (str-start end)
+  "A helper for rust-syntax-propertize.
+
+This will apply the appropriate string syntax to the character
+from the STR-START up to the end of the raw string, or to END,
+whichever comes first."
+  (when (save-excursion
+          (goto-char str-start)
+          (looking-at "r\\(#*\\)\\(\"\\)"))
+    ;; In a raw string, so try to find the end.
+    (let ((hashes (match-string 1)))
+      ;; Match \ characters at the end of the string to suppress
+      ;; their normal character-quote syntax.
+      (when (re-search-forward (concat "\\(\\\\*\\)\\(\"" hashes "\\)") end t)
+        (put-text-property (match-beginning 1) (match-end 1)
+                           'syntax-table (string-to-syntax "_"))
+        (put-text-property (1- (match-end 2)) (match-end 2)
+                           'syntax-table (string-to-syntax "|"))
+        (goto-char (match-end 0))))))
+
+;;; Syntax Propertize
+
+(defun rust-syntax-propertize (start end)
+  "A `syntax-propertize-function' to apply properties from START to END."
+  (goto-char start)
+  (when-let ((str-start (rust-in-str-or-cmnt)))
+    (rust--syntax-propertize-raw-string str-start end))
+  (funcall
+   (syntax-propertize-rules
+    ;; Character literals.
+    (rust--char-literal-rx (1 "\"") (2 "\""))
+    ;; Raw strings.
+    ("\\(r\\)#*\""
+     (0 (ignore
+         (goto-char (match-end 0))
+         (unless (save-excursion (nth 8 (syntax-ppss (match-beginning 0))))
+           (put-text-property (match-beginning 1) (match-end 1)
+                              'syntax-table (string-to-syntax "|"))
+           (rust--syntax-propertize-raw-string (match-beginning 0) end)))))
+    ("[<>]"
+     (0 (ignore
+         (when (save-match-data
+                 (save-excursion
+                   (goto-char (match-beginning 0))
+                   (rust-ordinary-lt-gt-p)))
+           (put-text-property (match-beginning 0) (match-end 0)
+                              'syntax-table (string-to-syntax "."))
+           (goto-char (match-end 0)))))))
+   (point) end))
+
+(define-derived-mode rust-mode prog-mode "Rust"
+  "Major mode for Rust code.
+
+\\{rust-mode-map}"
+  :group 'rust-mode
+  :syntax-table rust-mode-syntax-table
+
+  ;; Syntax
+  (setq-local syntax-propertize-function #'rust-syntax-propertize)
+
+  ;; Indentation
+  (setq-local indent-line-function 'rust-mode-indent-line)
+
+  ;; Fonts
+  (setq-local font-lock-defaults
+              '(rust-font-lock-keywords
+                nil nil nil nil
+                (font-lock-syntactic-face-function
+                 . rust-mode-syntactic-face-function)))
+
+  ;; Misc
+  (setq-local comment-start "// ")
+  (setq-local comment-end   "")
+  (setq-local open-paren-in-column-0-is-defun-start nil)
+
+  ;; Auto indent on }
+  (setq-local electric-indent-chars
+              (cons ?} (and (boundp 'electric-indent-chars)
+                            electric-indent-chars)))
+
+  ;; Allow paragraph fills for comments
+  (setq-local comment-start-skip "\\(?://[/!]*\\|/\\*[*!]?\\)[[:space:]]*")
+  (setq-local paragraph-start
+              (concat "[[:space:]]*\\(?:"
+                      comment-start-skip
+                      "\\|\\*/?[[:space:]]*\\|\\)$"))
+  (setq-local paragraph-separate paragraph-start)
+  (setq-local normal-auto-fill-function #'rust-do-auto-fill)
+  (setq-local fill-paragraph-function #'rust-fill-paragraph)
+  (setq-local fill-forward-paragraph-function #'rust-fill-forward-paragraph)
+  (setq-local adaptive-fill-function #'rust-find-fill-prefix)
+  (setq-local adaptive-fill-first-line-regexp "")
+  (setq-local comment-multi-line t)
+  (setq-local comment-line-break-function #'rust-comment-indent-new-line)
+  (setq-local imenu-generic-expression rust-imenu-generic-expression)
+  (setq-local imenu-syntax-alist '((?! . "w"))) ; For macro_rules!
+  (setq-local beginning-of-defun-function #'rust-beginning-of-defun)
+  (setq-local end-of-defun-function #'rust-end-of-defun)
+  (setq-local parse-sexp-lookup-properties t)
+  (setq-local electric-pair-inhibit-predicate
+              #'rust-electric-pair-inhibit-predicate-wrap)
+  (add-function :before-until (local 'electric-pair-skip-self)
+                #'rust-electric-pair-skip-self)
+  ;; Configure prettify
+  (setq prettify-symbols-alist rust-prettify-symbols-alist)
+  (setq prettify-symbols-compose-predicate #'rust--prettify-symbols-compose-p)
+
+  (add-hook 'before-save-hook rust-before-save-hook nil t)
+  (add-hook 'after-save-hook rust-after-save-hook nil t))
+
+(provide 'rust-prog-mode)
+;;; rust-prog-mode.el ends here

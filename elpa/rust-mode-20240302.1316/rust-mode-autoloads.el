@@ -14,6 +14,11 @@
 (register-definition-prefixes "rust-cargo" '("rust-"))
 
 
+;;; Generated autoloads from rust-common.el
+
+(register-definition-prefixes "rust-common" '("rust-"))
+
+
 ;;; Generated autoloads from rust-compile.el
 
 (register-definition-prefixes "rust-compile" '("cargo-compilation-regexps" "rustc-"))
@@ -21,12 +26,6 @@
 
 ;;; Generated autoloads from rust-mode.el
 
-(autoload 'rust-mode "rust-mode" "\
-Major mode for Rust code.
-
-\\{rust-mode-map}
-
-(fn)" t)
 (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-mode))
 (register-definition-prefixes "rust-mode" '("rust-"))
 
@@ -34,6 +33,11 @@ Major mode for Rust code.
 ;;; Generated autoloads from rust-playpen.el
 
 (register-definition-prefixes "rust-playpen" '("rust-"))
+
+
+;;; Generated autoloads from rust-prog-mode.el
+
+(register-definition-prefixes "rust-prog-mode" '("rust-"))
 
 
 ;;; Generated autoloads from rust-rustfmt.el
