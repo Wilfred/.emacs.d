@@ -1,7 +1,7 @@
 (defun wh/rust-clippy ()
   "Clippy command eqvivalent of `rust-check'."
   (interactive)
-  (rust--compile "%s clippy %s" rust-cargo-bin rust-cargo-default-arguments))
+  (rust--compile "%s clippy --workspace %s" rust-cargo-bin rust-cargo-default-arguments))
 
 (defun wh/rust-wrap-dbg (start end)
   "Wrap the current selection in dbg!(..)."
