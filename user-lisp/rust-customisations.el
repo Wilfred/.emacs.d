@@ -54,6 +54,11 @@ foo -> &foo[..]"
   (forward-symbol 1)
   (insert "[..]"))
 
+(defun wh/cargo-fmt ()
+  (interactive)
+  (let ((default-directory (vc-git-root (buffer-file-name))))
+    (shell-command "cargo fmt")))
+
 (use-package rust-mode
   :config
   (add-hook 'rust-mode-hook #'wh/rust-company-settings)
@@ -68,6 +73,8 @@ foo -> &foo[..]"
 
   ;; We want cargo check to apply to tests too.
   (setq rust-cargo-default-arguments "--all-targets")
+
+  (define-key rust-mode-map (kbd "C-c F") #'wh/cargo-fmt)
 
   (define-key rust-mode-map (kbd "C-c v") #'wh/rust-toggle-visibility)
 
