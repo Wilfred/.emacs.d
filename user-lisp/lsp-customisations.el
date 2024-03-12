@@ -15,7 +15,9 @@
   (define-key eglot-mode-map (kbd "C-c x") #'xref-find-references)
 
   ;; Mnemonic: action.
-  (define-key eglot-mode-map (kbd "C-c a") #'eglot-code-actions))
+  (define-key eglot-mode-map (kbd "C-c a") #'eglot-code-actions)
+
+  (define-key eglot-mode-map (kbd "C-c C-t") #'eglot-find-typeDefinition))
 
 ;; Use clippy for the check command in rust-analyzer, so we get yellow squiggles.
 (add-to-list 'eglot-server-programs
