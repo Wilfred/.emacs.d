@@ -22,6 +22,6 @@
 ;; Use clippy for the check command in rust-analyzer, so we get yellow squiggles.
 (add-to-list 'eglot-server-programs
              '((rust-ts-mode rust-mode) .
-               ("rust-analyzer" :initializationOptions (:check (:command "clippy")))))
+               ("/usr/bin/rust-analyzer" :initializationOptions (:check (:command "clippy")))))
 
 (provide 'lsp-customisations)
