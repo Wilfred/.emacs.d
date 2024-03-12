@@ -56,7 +56,10 @@ foo -> &foo[..]"
 
 (defun wh/cargo-fmt ()
   (interactive)
-  (let ((default-directory (vc-git-root (buffer-file-name))))
+  (let ((default-directory
+         ;; buffer-file-name returns nil in magit buffers, but
+         ;; default-directory is set.
+         (vc-git-root (or (buffer-file-name) default-directory))))
     (shell-command "cargo fmt")))
 
 (use-package rust-mode
