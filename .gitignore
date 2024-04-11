@@ -69,3 +69,6 @@ forge-database.sqlite
 
 # Part of magit
 transient
+
+# Created by copilot integration
+.cache
