@@ -402,6 +402,9 @@ a symmetrically-encrypted GPG file. Require explict saving in this case."
 (require 'bool-flip)
 (global-set-key (kbd "C-c t") #'bool-flip-do-flip)
 
+;; 'W'rite from register.
+(global-set-key (kbd "C-c w") #'insert-register)
+
 ;; http://stackoverflow.com/a/4459159/509706
 (defun aj/toggle-fold ()
   "Toggle fold all lines larger than indentation on current line."
