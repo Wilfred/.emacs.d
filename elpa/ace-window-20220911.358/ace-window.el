@@ -1,12 +1,10 @@
 ;;; ace-window.el --- Quickly switch windows. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2015-2020  Free Software Foundation, Inc.
+;; Copyright (C) 2015-2022  Free Software Foundation, Inc.
 
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 ;; Maintainer: Oleh Krehel <ohwoeowho@gmail.com>
 ;; URL: https://github.com/abo-abo/ace-window
-;; Package-Version: 20200606.1259
-;; Package-Commit: c7cb315c14e36fded5ac4096e158497ae974bec9
 ;; Version: 0.10.0
 ;; Package-Requires: ((avy "0.5.0"))
 ;; Keywords: window, location
@@ -409,6 +407,15 @@ LEAF is (PT . WND)."
         (overlay-put ol 'window wnd)
         (push ol avy--overlays-lead)))))
 
+(defvar aw--lead-overlay-fn #'aw--lead-overlay
+  "Function used to display the lead chars.")
+
+(defun aw--remove-leading-chars ()
+  (avy--remove-leading-chars))
+
+(defvar aw--remove-leading-chars-fn #'aw--remove-leading-chars
+  "Function used to cleanup lead chars.")
+
 (defun aw--make-backgrounds (wnd-list)
   "Create a dim background overlay for each window on WND-LIST."
   (when aw-background
@@ -573,8 +580,8 @@ Amend MODE-LINE to the mode line for the duration of the selection."
                                               (if (and ace-window-display-mode
                                                        (null aw-display-mode-overlay))
                                                   (lambda (_path _leaf))
-                                                #'aw--lead-overlay)
-                                              #'avy--remove-leading-chars)))
+                                                aw--lead-overlay-fn)
+                                              aw--remove-leading-chars-fn)))
                           (if (eq res 'exit)
                               (setq aw-action nil)
                             (or (cdr res)
