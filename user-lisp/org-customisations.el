@@ -71,15 +71,6 @@
 
 (define-key org-mode-map (kbd "C-c t") #'counsel-org-tag)
 
-(require 'org-expiry)
-
-(add-hook 'org-after-todo-state-change-hook
-          (lambda ()
-            (when (string= org-state "TODO")
-              (save-excursion
-                (org-back-to-heading)
-                (org-expiry-insert-created)))))
-
 (use-package deft
   :config
   (setq deft-directory "~/scratch")
