@@ -11,7 +11,7 @@
 
 ;;; Generated autoloads from eglot.el
 
-(define-obsolete-function-alias 'eglot-update 'eglot-upgrade-eglot "29.1")
+(define-obsolete-function-alias 'eglot-update #'eglot-upgrade-eglot "29.1")
 (autoload 'eglot "eglot" "\
 Start LSP server for PROJECT's buffers under MANAGED-MAJOR-MODES.
 
@@ -70,7 +70,7 @@ needed.")
 Update Eglot to latest version.
 
 (fn &rest _)" t)
-(put 'eglot-workspace-configuration 'safe-local-variable 'listp)
+(put 'eglot-workspace-configuration 'safe-local-variable #'listp)
 (put 'eglot--debbugs-or-github-bug-uri 'bug-reference-url-format t)
 (defun eglot--debbugs-or-github-bug-uri nil (format (if (string= (match-string 2) "github") "https://github.com/joaotavora/eglot/issues/%s" "https://debbugs.gnu.org/%s") (match-string 3)))
 (register-definition-prefixes "eglot" '("eglot-"))

@@ -10,7 +10,7 @@
 @copying
 This manual is for Eglot, the Emacs LSP client.
 
-Copyright @copyright{} 2022--2023 Free Software Foundation, Inc.
+Copyright @copyright{} 2022--2024 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -1405,8 +1405,6 @@ The remainder of the implementation consists of standard Elisp
 techniques to loop over arrays, manage buffers and overlays.
 
 @lisp
-(defvar-local eglot-clangd-inactive-region-overlays '())
-
 (cl-defmethod eglot-handle-notification
   (_server (_method (eql textDocument/inactiveRegions))
            &key regions textDocument &allow-other-keys)
@@ -1414,14 +1412,14 @@ techniques to loop over arrays, manage buffers and overlays.
                                      (cl-getf textDocument :uri))))
             (buffer (find-buffer-visiting path)))
       (with-current-buffer buffer
-        (mapc #'delete-overlay eglot-clangd-inactive-region-overlays)
+        (remove-overlays nil nil 'inactive-code t)
         (cl-loop
          for r across regions
          for (beg . end) = (eglot-range-region r)
          for ov = (make-overlay beg end)
          do
          (overlay-put ov 'face 'shadow)
-         (push ov eglot-clangd-inactive-region-overlays)))))
+         (overlay-put ov 'inactive-code t)))))
 @end lisp
 
 @end itemize
@@ -1457,7 +1455,7 @@ indicate the problems or at least provide a hint.
 @cindex performance problems, with Eglot
 A common and easy-to-fix cause of performance problems in Eglot
 (especially in older versions) is its events buffer, since it
-represent additional work that Eglot must do (@pxref{Eglot Commands,
+represents additional work that Eglot must do (@pxref{Eglot Commands,
 eglot-events-buffer}).  If you find Eglot is operating correctly but
 slowly, try to customize the variable
 @code{eglot-events-buffer-config} (@pxref{Eglot Variables}) and set
