@@ -1,7 +1,9 @@
 (defun wh/rust-clippy ()
   "Clippy command eqvivalent of `rust-check'."
   (interactive)
-  (rust--compile "%s clippy --workspace %s" rust-cargo-bin rust-cargo-default-arguments))
+  (rust--compile nil
+                 "%s clippy --workspace %s"
+                 rust-cargo-bin rust-cargo-default-arguments))
 
 (defun wh/rust-wrap-dbg (start end)
   "Wrap the current selection in dbg!(..)."
@@ -22,6 +24,7 @@
     (sp-splice-sexp)
     (backward-delete-char 4)))
 
+;; TODO: use rust-dbg-wrap-or-unwrap
 (defun wh/rust-dbg-dwim ()
   "Insert dbg!() if region is active, otherwise remove."
   (interactive)
@@ -86,6 +89,8 @@ foo -> &foo[..]"
   (define-key rust-mode-map (kbd "C-c d") #'wh/rust-dbg-dwim)
 
   (define-key rust-mode-map (kbd "C-c c") #'wh/rust-clippy))
+
+;; TODO: Looks like `highlight-symbol-mode' breaks `eglot-inlay-hints-mode'.
 
 (require 'lsp-customisations)
 

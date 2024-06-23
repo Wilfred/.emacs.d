@@ -26,6 +26,8 @@
 
 ;;; Generated autoloads from rust-mode.el
 
+(autoload 'rust-mode "rust-mode" "\
+Major mode for Rust code." t)
 (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-mode))
 (register-definition-prefixes "rust-mode" '("rust-"))
 
