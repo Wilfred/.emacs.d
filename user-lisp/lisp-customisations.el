@@ -261,7 +261,7 @@ E.g. \"~/.emacs.d/elpa/el-mock-20150906.321\" into \"el-mock\" and \"20150906.32
       (-let [(pkg . versions) it]
         (--each (-butlast versions)
           (f-delete it t)
-          (incf deleted-count))))
+          (cl-incf deleted-count))))
     (message "Deleted %d directories in ~/.emacs.d/elpa" deleted-count)))
 
 (require 'company)
