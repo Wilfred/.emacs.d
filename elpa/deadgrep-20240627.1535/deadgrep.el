@@ -1,11 +1,11 @@
 ;;; deadgrep.el --- fast, friendly searching with ripgrep  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2018  Wilfred Hughes
+;; Copyright (C) 2018-2024  Wilfred Hughes
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; URL: https://github.com/Wilfred/deadgrep
 ;; Keywords: tools
-;; Version: 0.13
+;; Version: 0.14
 ;; Package-Requires: ((emacs "25.1") (dash "2.12.0") (s "1.11.0") (spinner "1.7.3"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -168,6 +168,8 @@ We save the last line here, in case we need to append more text to it.")
   "If non-nil, don't (re)start searches.")
 (defvar-local deadgrep--running nil
   "If non-nil, a search is still running.")
+(defvar-local deadgrep--result-count nil
+  "The number of matches found for the current search.")
 
 (defvar-local deadgrep--debug-command nil)
 (put 'deadgrep--debug-command 'permanent-local t)
@@ -271,6 +273,11 @@ It is used to create `imenu' index.")
             ;; to hide this filename before we finished finding
             ;; results in it.
             (insert pretty-line-num content)
+
+            (when (null deadgrep--result-count)
+              (setq deadgrep--result-count 0))
+            (cl-incf deadgrep--result-count)
+
             (when truncate-p
               (insert
                (propertize " ... (truncated)"
@@ -1024,7 +1031,7 @@ Returns a list ordered by the most recently accessed."
   "Keymap for `deadgrep-edit-mode'.")
 
 (define-derived-mode deadgrep-mode special-mode
-  '("Deadgrep" (:eval (spinner-print deadgrep--spinner)))
+  '(:eval (deadgrep--mode-line))
   "Major mode for deadgrep results buffers."
   (remove-hook 'after-change-functions #'deadgrep--propagate-change t))
 
@@ -1452,6 +1459,7 @@ matches (if the result line has been truncated)."
   "Start a ripgrep search."
   (setq deadgrep--spinner (spinner-create 'progress-bar t))
   (setq deadgrep--running t)
+  (setq deadgrep--result-count 0)
   (spinner-start deadgrep--spinner)
   (let* ((args (deadgrep--arguments
                 search-term search-type case
@@ -1617,6 +1625,12 @@ deadgrep is ready but not yet searching."
       (insert
        (format "Press %s to start the search."
                (key-description restart-key))))))
+
+(defun deadgrep--mode-line ()
+  (let ((s (if deadgrep--result-count
+               (format "Deadgrep:%s" deadgrep--result-count)
+             "Deadgrep")))
+    (concat s (spinner-print deadgrep--spinner))))
 
 (defun deadgrep--create-imenu-index ()
   "Create `imenu' index for matched files."
