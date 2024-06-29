@@ -1,6 +1,6 @@
-(define-package "lua-mode" "20210809.1320" "a major-mode for editing Lua scripts"
+(define-package "lua-mode" "20231023.947" "a major-mode for editing Lua scripts"
   '((emacs "24.3"))
-  :commit "5a9bee8d5fc978dc64fcb677167417010321ba65" :authors
+  :commit "d074e4134b1beae9ed4c9b512af741ca0d852ba3" :authors
   '(("2011-2013 immerrr" . "immerrr+lua@gmail.com")
     ("2010-2011 Reuben Thomas" . "rrt@sc3d.org")
     ("2006 Juergen Hoetzel" . "juergen@hoetzel.info")
@@ -11,6 +11,8 @@
     ("with tons of assistance from")
     ("Paul Du Bois" . "pld-lua@gelatinous.com")
     ("Aaron Smith" . "aaron-lua@gelatinous.com"))
+  :maintainers
+  '(("2011-2013 immerrr" . "immerrr+lua@gmail.com"))
   :maintainer
   '("2011-2013 immerrr" . "immerrr+lua@gmail.com")
   :keywords

@@ -12,15 +12,15 @@
 ;;              Aaron Smith <aaron-lua@gelatinous.com>.
 ;;
 ;; URL:         https://immerrr.github.io/lua-mode
-;; Version:     20210802
+;; Version:     20221027
 ;; Package-Requires: ((emacs "24.3"))
 ;;
 ;; This file is NOT part of Emacs.
 ;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License
-;; as published by the Free Software Foundation; either version 2
-;; of the License, or (at your option) any later version.
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
 ;;
 ;; This program is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -28,9 +28,7 @@
 ;; GNU General Public License for more details.
 ;;
 ;; You should have received a copy of the GNU General Public License
-;; along with this program; if not, write to the Free Software
-;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-;; MA 02110-1301, USA.
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;; Keywords: languages, processes, tools
 
@@ -43,7 +41,8 @@
 
 ;; lua-mode provides support for editing Lua, including automatic
 ;; indentation, syntactical font-locking, running interactive shell,
-;; interacting with `hs-minor-mode' and online documentation lookup.
+;; Flymake checks with luacheck, interacting with `hs-minor-mode' and
+;; online documentation lookup.
 
 ;; The following variables are available for customization (see more via
 ;; `M-x customize-group lua`):
@@ -86,6 +85,10 @@
 ;; - Cmd `lua-send-defun': send current top-level function
 ;; - Cmd `lua-send-region': send active region
 ;; - Cmd `lua-restart-with-whole-file': restart REPL and send whole buffer
+
+;; To enable on-the-fly linting, make sure you have the luacheck
+;; program installed (available from luarocks) and activate
+;; `flymake-mode'.
 
 ;; See "M-x apropos-command ^lua-" for a list of commands.
 ;; See "M-x customize-group lua" for a list of customizable variables.
@@ -327,8 +330,9 @@ Should be a list of strings."
   :type 'string
   :group 'lua
   :set 'lua--customize-set-prefix-key
-  :get '(lambda (sym)
-          (let ((val (eval sym))) (if val (single-key-description (eval sym)) ""))))
+  :get (lambda (sym)
+         (let ((val (eval sym)))
+           (if val (single-key-description (eval sym)) ""))))
 
 (defvar lua-mode-menu (make-sparse-keymap "Lua")
   "Keymap for lua-mode's menu.")
@@ -393,10 +397,7 @@ If the latter is nil, the keymap translates into `lua-mode-map' verbatim.")
   "Buffer-local flag saying if this is a Lua REPL buffer.")
 (make-variable-buffer-local 'lua--repl-buffer-p)
 
-
-(defadvice compilation-find-file (around lua--repl-find-file
-                                         (marker filename directory &rest formats)
-                                         activate)
+(defun lua--compilation-find-file (fn marker filename directory &rest formats)
   "Return Lua REPL buffer when looking for \"stdin\" file in it."
   (if (and
        lua--repl-buffer-p
@@ -406,13 +407,12 @@ If the latter is nil, the keymap translates into `lua-mode-map' verbatim.")
        (not (file-exists-p (expand-file-name
                             filename
                             (when directory (expand-file-name directory))))))
-      (setq ad-return-value (current-buffer))
-    ad-do-it))
+      (current-buffer)
+    (apply fn marker filename directory formats)))
 
+(advice-add 'compilation-find-file :around #'lua--compilation-find-file)
 
-(defadvice compilation-goto-locus (around lua--repl-goto-locus
-                                          (msg mk end-mk)
-                                          activate)
+(defun lua--compilation-goto-locus (fn msg mk end-mk)
   "When message points to Lua REPL buffer, go to the message itself.
 Usually, stdin:XX line number points to nowhere."
   (let ((errmsg-buf (marker-buffer msg))
@@ -422,8 +422,9 @@ Usually, stdin:XX line number points to nowhere."
         (progn
           (compilation-set-window (display-buffer (marker-buffer msg)) msg)
           (goto-char msg))
-      ad-do-it)))
+      (funcall fn msg mk end-mk))))
 
+(advice-add 'compilation-goto-locus :around #'lua--compilation-goto-locus)
 
 (defcustom lua-indent-string-contents nil
   "If non-nil, contents of multiline string will be indented.
@@ -712,7 +713,7 @@ index of respective Lua reference manuals.")
     ;; via `lua-mode-map'.
     (setq-local electric-indent-chars
                 (append electric-indent-chars lua--electric-indent-chars)))
-
+  (add-hook 'flymake-diagnostic-functions #'lua-flymake nil t)
 
   ;; setup menu bar entry (XEmacs style)
   (if (and (featurep 'menubar)
@@ -994,7 +995,7 @@ placed before the string."
 (defun lua-find-regexp (direction regexp &optional limit)
   "Searches for a regular expression in the direction specified.
 
-Direction is one of 'forward and 'backward.
+Direction is one of \\='forward and \\='backward.
 
 Matches in comments and strings are ignored. If the regexp is
 found, returns point position, nil otherwise."
@@ -1097,12 +1098,12 @@ TOKEN-TYPE determines where the token occurs on a statement. open indicates that
   "Find matching open- or close-token for TOKEN in DIRECTION.
 Point has to be exactly at the beginning of TOKEN, e.g. with | being point
 
-  {{ }|}  -- (lua-find-matching-token-word \"}\" 'backward) will return
+  {{ }|}  -- (lua-find-matching-token-word \"}\" \\='backward) will return
           -- the first {
-  {{ |}}  -- (lua-find-matching-token-word \"}\" 'backward) will find
+  {{ |}}  -- (lua-find-matching-token-word \"}\" \\='backward) will find
           -- the second {.
 
-DIRECTION has to be either 'forward or 'backward."
+DIRECTION has to be either \\='forward or \\='backward."
   (let* ((token-info (lua-get-block-token-info token))
          (match-type (lua-get-token-type token-info))
          ;; If we are on a middle token, go backwards. If it is a middle or open,
@@ -1177,7 +1178,7 @@ at the current point.  Returns the point position of the first character of
 the matching token if successful, nil otherwise.
 
 Optional PARSE-START is a position to which the point should be moved first.
-DIRECTION has to be 'forward or 'backward ('forward by default)."
+DIRECTION has to be \\='forward or \\='backward (\\='forward by default)."
   (if parse-start (goto-char parse-start))
   (let ((case-fold-search nil))
     (if (looking-at lua-indentation-modifier-regexp)
@@ -1286,7 +1287,7 @@ Returns final value of point as integer or nil if operation failed."
   "Regexp that matches the ending of a line that needs continuation.
 
 This regexp starts from eol and looks for a binary operator or an unclosed
-block intro (i.e. 'for' without 'do' or 'if' without 'then') followed by
+block intro (i.e. `for' without `do' or `if' without `then') followed by
 an optional whitespace till the end of the line.")
 
 (defconst lua-cont-bol-regexp
@@ -1589,7 +1590,7 @@ block opening statement when it is closed.
 
 When a replace-matching token is seen, the last recorded info is removed,
 and the cdr of the replace-matching info is added in its place.  This is used
-when a middle-of the block (the only case is 'else') is seen on the same line
+when a middle-of the block (the only case is `else') is seen on the same line
 the block is opened."
   (cond
    ( (eq 'multiple (car pair))
@@ -1755,8 +1756,8 @@ token should be indented relative to left-shifter expression
 indentation rather then to block-open token.
 
 For example:
-   -- 'local a = ' is a left-shifter expression
-   -- 'function' is a block-open token
+   -- `local a = ' is a left-shifter expression
+   -- `function' is a block-open token
    local a = function()
       -- block contents is indented relative to left-shifter
       foobarbaz()
@@ -2196,6 +2197,58 @@ left out."
           (forward-sexp 1))
         (setq count (1- count))))))
 
+;; Flymake integration
+
+(defcustom lua-luacheck-program "luacheck"
+  "Name of the luacheck executable."
+  :type 'string
+  :group 'lua)
+
+(defvar-local lua--flymake-process nil)
+
+(defun lua-flymake (report-fn &rest _args)
+  "Flymake backend using the luacheck program.
+Takes a Flymake callback REPORT-FN as argument, as expected of a
+member of `flymake-diagnostic-functions'."
+  (when (process-live-p lua--flymake-process)
+    (kill-process lua--flymake-process))
+  (let ((source (current-buffer)))
+    (save-restriction
+      (widen)
+      (setq lua--flymake-process
+            (make-process
+             :name "luacheck" :noquery t :connection-type 'pipe
+             :buffer (generate-new-buffer " *flymake-luacheck*")
+             :command `(,lua-luacheck-program
+                        "--codes" "--ranges" "--formatter" "plain" "-")
+             :sentinel
+             (lambda (proc _event)
+               (when (eq 'exit (process-status proc))
+                 (unwind-protect
+                     (if (with-current-buffer source
+                           (eq proc lua--flymake-process))
+                         (with-current-buffer (process-buffer proc)
+                           (goto-char (point-min))
+                           (cl-loop
+                            while (search-forward-regexp
+                                   "^\\([^:]*\\):\\([0-9]+\\):\\([0-9]+\\)-\\([0-9]+\\): \\(.*\\)$"
+                                   nil t)
+                            for line = (string-to-number (match-string 2))
+                            for col1 = (string-to-number (match-string 3))
+                            for col2 = (1+ (string-to-number (match-string 4)))
+                            for msg = (match-string 5)
+                            for type = (if (string-match-p "\\`(E" msg) :error :warning)
+                            collect (flymake-make-diagnostic source
+                                                             (cons line col1)
+                                                             (cons line col2)
+                                                             type
+                                                             msg)
+                            into diags
+                            finally (funcall report-fn diags)))
+                       (flymake-log :warning "Canceling obsolete check %s" proc))
+                   (kill-buffer (process-buffer proc)))))))
+      (process-send-region lua--flymake-process (point-min) (point-max))
+      (process-send-eof lua--flymake-process))))
 
 ;; menu bar
 
