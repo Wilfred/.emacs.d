@@ -144,6 +144,7 @@
         flycheck-previous-error
         helm-M-x
         iedit-mode
+        indent-for-tab-command
         ivy-alt-done
         ivy-switch-buffer
         lispy-cursor-down
@@ -151,4 +152,5 @@
         smex
         sp-rewrap-sexp
         sp-splice-sexp
+        xref-pop-marker-stack
         ))
