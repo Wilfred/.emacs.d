@@ -45,7 +45,6 @@
 
 ;; Highlight new/removed/changed lines relative to the last commit in
 ;; VCS.
-(global-diff-hl-mode)
 (diff-hl-flydiff-mode)
 
 ;; Set up keybindings for moving between changes in a file.
