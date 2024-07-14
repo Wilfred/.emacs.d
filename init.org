@@ -642,15 +642,10 @@ it on the mode line. Hide it.
 receive that key sequence. When writing elisp, it's very useful, so we
 bind it to a convenient keybinding.
 
-=edebug-eval-defun= is even more powerful. It ensures that =defvar=
-and =defcustom= are re-evaluated, so they're reset to their initial
-values. It can even mark a function for edebug, if it's called with a
-prefix.
-
 #+NAME: edebug-keybinding
 #+BEGIN_SRC emacs-lisp
   (require 'edebug)
-  (define-key emacs-lisp-mode-map (kbd "C-c e") #'edebug-eval-defun)
+  (define-key emacs-lisp-mode-map (kbd "C-c e") #'eval-defun)
 #+END_SRC
 
 Similarly, toggle-debug-on-error is something I call a lot when

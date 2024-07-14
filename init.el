@@ -584,7 +584,7 @@ Visit the file after creation."
 
 (use-package elisp-mode
   :config
-  (require 'edebug)
+  (define-key emacs-lisp-mode-map (kbd "C-c e") #'eval-defun)
   (define-key emacs-lisp-mode-map (kbd "C-c e") #'edebug-eval-defun)
   (define-key emacs-lisp-mode-map (kbd "C-c d") 'toggle-debug-on-error)
   (define-key emacs-lisp-mode-map (kbd "C-c m") 'macrostep-expand)
