@@ -4386,6 +4386,17 @@ in Lisp when committed with \\[sly-edit-value-commit]."
   (sly-eval-async `(slynk:undefine-function ,symbol-name)
     (lambda (result) (sly-message "%s" result))))
 
+(defun sly-remove-method (name qualifiers specializers)
+  "Remove a method from generic function named NAME.
+The method removed is identified by QUALIFIERS and SPECIALIZERS."
+  (interactive (sly--read-method
+                "[sly] Remove method from which generic function: "
+                "[sly] Remove which method from %s"))
+  (sly-eval `(slynk:remove-method-by-name ,name
+                                          ',qualifiers
+                                          ',specializers))
+  (sly-message "Method removed"))
+
 (defun sly-unintern-symbol (symbol-name package)
   "Unintern the symbol given with SYMBOL-NAME PACKAGE."
   (interactive (list (sly-read-symbol-name "Unintern symbol: " t)
@@ -6102,7 +6113,7 @@ Interactively get the number from a button at point."
                                         ""
                                         'sly-db-invoke-restart-by-name))))
   (sly-db-invoke-restart (cl-position restart-name sly-db-restarts
-                                      :test 'string= :key 'first)))
+                                      :test 'string= :key #'cl-first)))
 
 (defun sly-db-break-with-default-debugger (&optional dont-unwind)
   "Enter default debugger."
@@ -6470,7 +6481,7 @@ was called originally."
       (when (time-less-p end (current-time))
         (sly-message "Quit timeout expired.  Disconnecting.")
         (delete-process connection))
-      (sit-for 0 100)))
+      (sit-for 0.1)))
   (sly-update-connection-list))
 
 (defun sly-restart-connection-at-point (connection)
@@ -7464,11 +7475,25 @@ can be found."
 ;;;###autoload
 (add-hook 'lisp-mode-hook 'sly-editing-mode)
 
+(defcustom sly-replace-slime 'ask
+  "Specify whether SLY should replace SLIME at load time.
+
+This only has an effect if parts of SLIME components are already
+loaded (e.g. in `lisp-mode-hook').
+
+If `ask' prompt the user at load-time; if nil never replace; if t or
+other non-nil value to unconditionally replace SLIME."
+  :type '(choice (const :tag "Ask user" ask)
+                 (const :tag "Do not replace SLIME" nil)
+                 (const :tag "Do replace SLIME" t)))
+
 (cond
  ((or (not (memq 'slime-lisp-mode-hook lisp-mode-hook))
       noninteractive
       (prog1
-          (y-or-n-p "[sly] SLIME detected in `lisp-mode-hook', causes keybinding conflicts.  Remove it for this Emacs session?")
+          (if (eq sly-replace-slime 'ask)
+              (y-or-n-p "[sly] SLIME detected in `lisp-mode-hook', causes keybinding conflicts.  Remove it for this Emacs session?")
+            sly-replace-slime)
         (warn "To restore SLIME in this session, customize `lisp-mode-hook'
 and replace `sly-editing-mode' with `slime-lisp-mode-hook'.")))
   (remove-hook 'lisp-mode-hook 'slime-lisp-mode-hook)

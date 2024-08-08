@@ -33,29 +33,28 @@
 
 ;;; Backend completion
 
-;; This "completion style" delegates all the work to the completion
-;; table which is then free to implement its own completion style.
-;; Typically this is used to take advantage of some external tool which
-;; already has its own completion system and doesn't give you efficient
-;; access to the prefix completion needed by other completion styles.
+;; This predates Emacs's 29's external-completion.el, generally
+;; the same idea.  Maybe use that some day
 
 (add-to-list 'completion-styles-alist
-             '(backend
-               completion-backend-try-completion
-               completion-backend-all-completions
-               "Ad-hoc completion style provided by the completion table"))
+             '(sly--external-completion
+               sly--external-tryc
+               sly--external-allc
+               "Ad-hoc \"external completion\" style  (SLY flavor)"))
 
-(defun completion--backend-call (op string table pred point)
-  (when (functionp table)
-    (let ((res (funcall table string pred (cons op point))))
-      (when (eq op (car-safe res))
-        (cdr res)))))
+(defun sly--external-allc (string table pred _point)
+  "Like `completion-all-completions', ask table for all completions."
+  (funcall table string pred t)) 
 
-(defun completion-backend-try-completion (string table pred point)
-  (completion--backend-call 'try-completion string table pred point))
-
-(defun completion-backend-all-completions (string table pred point)
-  (completion--backend-call 'all-completions string table pred point))
+(defun sly--external-tryc (pat table pred point)
+  "Like `completion-try-completions', but knowing how SLY works."
+  (let* ((all (funcall table pat pred t)) ; invoke all-completions!
+         (probe (car all)))
+    (cond ((and probe (null (cdr all)))
+           (if (string= pat probe)
+               t
+             (cons probe (length probe))))
+           (t (cons pat point)))))
 
 
 ;;; Forward declarations (later replace with a `sly-common' lib)
@@ -204,20 +203,23 @@ COMPLETIONS is a list of propertized strings."
                                                completion))
            (add-text-properties 0
                                 (length completion)
-                                `(sly--annotation
-                                  ,(format "%s %5.2f%%"
-                                           classification
-                                           (* score 100))
-                                  sly--suggestion
-                                  ,suggestion)
+                                `(sly--classification ,classification
+                                  sly--score ,score
+                                  sly--suggestion ,suggestion)
                                 completion)
 
            collect completion into formatted
            finally return (list formatted nil)))
 
 (defun sly-completion-annotation (completion)
-  "Grab the annotation of COMPLETION, a string, if any"
-  (get-text-property 0 'sly--annotation completion))
+  "Compute annotation of COMPLETION as a string.
+Return the empty string if none exists."
+  (let ((classification (get-text-property 0 'sly--classification completion))
+        (score (get-text-property 0 'sly--score completion)))
+    (string-join
+     (delete nil `(,classification
+                   ,(and score (format "%5.2f%%" (* score 100)))))
+     " ")))
 
 ;;; backward-compatibility
 (defun sly-fuzzy-completions (pattern)
@@ -236,24 +238,17 @@ ANNOTATION) describing each completion possibility."
 
 (when (boundp 'completion-category-overrides)
   (add-to-list 'completion-category-overrides
-               '(sly-completion (styles . (backend)))))
+               '(sly-completion (styles . (sly--external-completion)))))
 
 (defun sly--completion-function-wrapper (fn)
   (let ((cache (make-hash-table :test #'equal)))
-    (lambda (string pred action)
+    (lambda (pattern pred action)
       (cl-labels ((all
                    ()
-                   (let ((probe (gethash string cache :missing)))
+                   (let ((probe (gethash pattern cache :missing)))
                      (if (eq probe :missing)
-                         (puthash string (funcall fn string) cache)
-                       probe)))
-                  (try ()
-                       (let ((all (all)))
-                         (and (car all)
-                              (if (and (null (cdr (car all)))
-                                       (string= string (caar all)))
-                                  t
-                                string)))))
+                         (puthash pattern (funcall fn pattern) cache)
+                       probe))))
         (pcase action
           ;; identify this to the custom `sly--completion-in-region-function'
           (`sly--identify t)
@@ -264,13 +259,9 @@ ANNOTATION) describing each completion possibility."
           ;; all completions
           (`t (car (all)))
           ;; try completion
-          (`nil (try))
-          (`(try-completion . ,point)
-           (cons 'try-completion (cons string point)))
-          (`(all-completions . ,_point) (cons 'all-completions (car (all))))
+          (`nil (try-completion pattern (car (all))))
           (`(boundaries . ,thing)
-           (completion-boundaries string (all) pred thing))
-
+           (completion-boundaries pattern (car (all)) pred thing))
           ;; boundaries or any other value
           (_ nil))))))
 
@@ -281,50 +272,67 @@ ANNOTATION) describing each completion possibility."
 (defun sly--completions-complete-symbol-1 (fn)
   (let* ((beg (sly-symbol-start-pos))
          (end (sly-symbol-end-pos)))
-    (list beg end
-          (sly--completion-function-wrapper fn)
-          :annotation-function #'sly-completion-annotation
-          :exit-function (lambda (obj _status)
-                           (let ((suggestion
-                                  (get-text-property 0 'sly--suggestion
-                                                     obj)))
-                             (when suggestion
-                               (delete-region (- (point) (length obj)) (point))
-                               (insert suggestion))))
-          :company-docsig
-          (lambda (obj)
-            (when (sit-for 0.1)
-              (sly--responsive-eval (arglist `(slynk:operator-arglist
-                                               ,(substring-no-properties obj)
-                                               ,(sly-current-package)))
-                (or (and arglist
-                         (sly-autodoc--fontify arglist))
-                    "no autodoc information"))))
-          :company-no-cache t
-          :company-doc-buffer
-          (lambda (obj)
-            (when (sit-for 0.1)
-              (sly--responsive-eval (doc `(slynk:describe-symbol
-                                           ,(substring-no-properties obj)))
-                (when doc
-                  (with-current-buffer (get-buffer-create " *sly-completion doc*")
-                    (erase-buffer)
-                    (insert doc)
-                    (current-buffer))))))
-          :company-require-match 'never
-          :company-match
-          (lambda (obj)
-            (get-text-property 0 'sly-completion-chunks obj))
-          :company-location
-          (lambda (obj)
-            (save-window-excursion
-              (let* ((buffer (sly-edit-definition
-                              (substring-no-properties obj))))
-                (when (buffer-live-p buffer) ; on the safe side
-                  (cons buffer (with-current-buffer buffer
-                                 (point)))))))
-          :company-prefix-length
-          (and (sly--completion-inside-string-or-comment-p) 0))))
+    (append
+     (list beg end
+           (sly--completion-function-wrapper fn)
+           :annotation-function #'sly-completion-annotation
+           :exit-function (lambda (obj _status)
+                            (let ((suggestion
+                                   (get-text-property 0 'sly--suggestion
+                                                      obj)))
+                              (when suggestion
+                                (delete-region (- (point) (length obj)) (point))
+                                (insert suggestion))))
+           :company-docsig
+           (lambda (obj)
+             (when (sit-for 0.1)
+               (sly--responsive-eval (arglist `(slynk:operator-arglist
+                                                ,(substring-no-properties obj)
+                                                ,(sly-current-package)))
+                 (or (and arglist
+                          (sly-autodoc--fontify arglist))
+                     "no autodoc information"))))
+           :company-no-cache t
+           :company-doc-buffer
+           (lambda (obj)
+             (when (sit-for 0.1)
+               (sly--responsive-eval (doc `(slynk:describe-symbol
+                                            ,(substring-no-properties obj)))
+                 (when doc
+                   (with-current-buffer (get-buffer-create " *sly-completion doc*")
+                     (erase-buffer)
+                     (insert doc)
+                     (current-buffer))))))
+           :company-require-match 'never
+           :company-match
+           (lambda (obj)
+             (get-text-property 0 'sly-completion-chunks obj))
+           :company-location
+           (lambda (obj)
+             (save-window-excursion
+               (let* ((buffer (sly-edit-definition
+                               (substring-no-properties obj))))
+                 (when (buffer-live-p buffer) ; on the safe side
+                   (cons buffer (with-current-buffer buffer
+                                  (point)))))))
+           :company-prefix-length
+           (and (sly--completion-inside-string-or-comment-p) 0))
+     (when (eq sly-complete-symbol-function 'sly-flex-completions)
+       (list
+        :company-kind
+        (lambda (obj)
+          (pcase (get-text-property 0 'sly--classification obj)
+            ("fn" 'function)
+            ("generic-fn" 'function)
+            ("generic-fn,cla" 'method)
+            ("cla,type" 'class)
+            ("cla" 'class)
+            ("special-op" 'operator)
+            ("type" 'struct)
+            ("constant" 'constant)
+            ("var" 'variable)
+            ("pak" 'module)
+            ("macro" 'macro))))))))
 
 (defun sly-simple-complete-symbol ()
   "Prefix completion on the symbol at point.
@@ -601,8 +609,7 @@ Intended to go into `completion-at-point-functions'"
              sly--completion-explanation))
     (cl-loop with first = (point)
              for completion in completions
-             for annotation = (or (get-text-property 0 'sly--annotation completion)
-                                  "")
+             for annotation = (sly-completion-annotation completion)
              for start = (point)
              do
              (cl-loop for (beg . end) in
@@ -757,6 +764,42 @@ symbol at point, or if QUERY is non-nil."
                  (t (funcall do-it))))
           (t sym-at-point))))
 
+(defun sly--read-method (prompt-for-generic
+                         prompt-for-method-within-generic)
+  "Read triplet (GENERIC-NAME QUALIFIERS SPECIALIZERS) for a method."
+  (let* ((generic-name (sly-read-symbol-name prompt-for-generic t))
+         (format-spec (lambda (spec)
+                        (let ((qualifiers (car spec)))
+                          (if (null qualifiers)
+                              (format "%s" (cadr spec))
+                            (format "%s %s" (string-join qualifiers " ")
+                                    (cadr spec))))))
+         (methods-by-formatted-name
+          (cl-loop for spec in (sly-eval `(slynk:generic-method-specs ,generic-name))
+                   collect (cons (funcall format-spec spec) spec)))
+         (context-at-point (sly-parse-context generic-name))
+         (probe (and (eq :defmethod (car context-at-point))
+                     (equal generic-name (cadr context-at-point))
+                     (string-replace
+                      "'" "" (mapconcat #'prin1-to-string (cddr context-at-point)
+                                        " "))))
+         default
+         (reordered
+          (cl-loop for e in methods-by-formatted-name
+                   if (cl-equalp (car e) probe) do (setq default e)
+                   else collect e into others
+                   finally (cl-return (if default (cons default others)
+                                        others)))))
+    (unless reordered
+      (sly-user-error "Generic `%s' doesn't have any methods!" generic-name))
+    (cons generic-name
+          (cdr (assoc (completing-read
+                       (concat (format prompt-for-method-within-generic generic-name)
+                               (if default (format " (default %s)" (car default)))
+                               ": ")
+                       (mapcar #'car reordered)
+                       nil t nil nil (car default))
+                      reordered)))))
+
 (provide 'sly-completion)
 ;;; sly-completion.el ends here
-
