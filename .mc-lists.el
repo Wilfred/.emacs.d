@@ -137,16 +137,19 @@
 
 (setq mc/cmds-to-run-once
       '(
+        ace-window
         ag-project-at-point
         comment-dwim
         counsel-M-x
         describe-key
+        end-of-buffer
         flycheck-previous-error
         helm-M-x
         iedit-mode
         indent-for-tab-command
         ivy-alt-done
         ivy-switch-buffer
+        keyboard-escape-quit
         lispy-cursor-down
         mouse-set-region
         smex
