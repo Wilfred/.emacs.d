@@ -1,11 +1,14 @@
+(add-to-list 'load-path "/home/wilfred/src/copilot.el")
 (require 'copilot)
+
 (global-set-key (kbd "C-<return>") #'copilot-accept-completion)
 (global-set-key (kbd "S-<return>") #'copilot-accept-completion-by-line)
 
-;; Don't trigger copilot on idle.
-(setq copilot-idle-delay 999)
+;; Don't trigger copilot on idle too aggressively.
+(setq copilot-idle-delay 1)
 
-;; Instead, use it explicitly.
+;; Add a keybinding to trigger it explicitly.
 (global-set-key (kbd "<backtab>") #'copilot-complete)
 
-;; (add-hook 'prog-mode-hook 'copilot-mode)
+(add-hook 'prog-mode-hook 'copilot-mode)
+;; (remove-hook 'prog-mode-hook 'copilot-mode)
