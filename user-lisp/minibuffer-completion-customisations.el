@@ -77,7 +77,15 @@
   ;; Allow using the input as entered. This is useful when you want to
   ;; input a value that doesn't yet exist, such as creating a new file
   ;; with C-x C-f.
-  (setq ivy-use-selectable-prompt t))
+  (setq ivy-use-selectable-prompt t)
+
+  ;; By default ivy sorts completion-at-point results by length,
+  ;; shortest first. I prefer preserving the original sort order,
+  ;; which is usually alphabetical.
+  (setq ivy-sort-matches-functions-alist
+        '((t)
+          (ivy-completion-in-region . nil)
+          (ivy-switch-buffer . ivy-sort-function-buffer))))
 
 (global-set-key (kbd "M-x") 'counsel-M-x)
 (global-set-key (kbd "C-x C-f") 'counsel-find-file)
