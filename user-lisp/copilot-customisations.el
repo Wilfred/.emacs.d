@@ -1,6 +1,8 @@
 (add-to-list 'load-path "/home/wilfred/src/copilot.el")
 (require 'copilot)
 
+(setq copilot-indent-offset-warning-disable t)
+
 (global-set-key (kbd "C-<return>") #'copilot-accept-completion)
 (global-set-key (kbd "S-<return>") #'copilot-accept-completion-by-line)
 
