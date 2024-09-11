@@ -126,9 +126,6 @@
 
   (define-key company-active-map (kbd "RET") #'company-complete-selection)
 
-  ;; Remember which completions we've used before, and sort those first.
-  (add-hook 'after-init-hook #'company-statistics-mode)
-
   (defadvice company-etags--candidates (around wh/etags-blacklist-modes activate)
     "Don't offer etags completion in modes where it's not helpful."
     (unless (memq major-mode '(asm-mode))
