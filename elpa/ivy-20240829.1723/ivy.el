@@ -1,10 +1,11 @@
 ;;; ivy.el --- Incremental Vertical completYon -*- lexical-binding: t -*-
 
-;; Copyright (C) 2015-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2015-2024 Free Software Foundation, Inc.
 
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
+;; Maintainer: Basil L. Contovounesios <basil@contovou.net>
 ;; URL: https://github.com/abo-abo/swiper
-;; Version: 0.14.0
+;; Version: 0.14.2
 ;; Package-Requires: ((emacs "24.5"))
 ;; Keywords: matching
 
@@ -46,7 +47,16 @@
 (require 'ring)
 
 (eval-when-compile
-  (require 'subr-x))
+  (require 'subr-x)
+
+  (unless (fboundp 'static-if)
+    (defmacro static-if (condition then-form &rest else-forms)
+      "Expand to THEN-FORM or ELSE-FORMS based on compile-time CONDITION.
+Polyfill for Emacs 30 `static-if'."
+      (declare (debug (sexp sexp &rest sexp)) (indent 2))
+      (if (eval condition lexical-binding)
+          then-form
+        (macroexp-progn else-forms)))))
 
 ;;* Customization
 (defgroup ivy nil
@@ -254,7 +264,8 @@ plus some extra information.
 
 This lambda is called only on the `ivy-height' candidates that
 are about to be displayed, not on the whole collection."
-  (declare (obsolete "Use `ivy-configure' :display-transformer-fn" "<2020-05-20 Wed>"))
+  (declare (obsolete "use `ivy-configure' :display-transformer-fn instead."
+                     "0.13.2 (2020-05-20)"))
   (ivy--alist-set 'ivy--display-transformers-alist cmd transformer))
 
 (defvar ivy--sources-list nil
@@ -733,6 +744,25 @@ candidate, not the prompt."
   "Display alternative actions."
   "The doc visible in the tooltip for mouse-3 binding in the minibuffer.")
 
+(make-obsolete-variable 'ivy-mouse-1-tooltip 'ivy-mouse-1-help
+                        "0.15.0 (2024-01-14)")
+(make-obsolete-variable 'ivy-mouse-3-tooltip 'ivy-mouse-3-help
+                        "0.15.0 (2024-01-14)")
+
+(defvar ivy-mouse-1-help
+  (format (if (> emacs-major-version 28) "\\`%s': %s" "%s: %s")
+          "mouse-1" "Exit the minibuffer with the selected candidate")
+  "Tooltip doc for \\`mouse-1' binding in the minibuffer.")
+
+(defvar ivy-mouse-3-help
+  (format (if (> emacs-major-version 28) "\\`%s': %s" "%s: %s")
+          "mouse-3" "Display alternative actions")
+  "Tooltip doc for \\`mouse-3' binding in the minibuffer.")
+
+(defun ivy--help-echo (_win _obj _pos)
+  "Return a `help-echo' string for mouse bindings on minibuffer candidates."
+  (concat ivy-mouse-1-help (if tooltip-mode "\n" "   ") ivy-mouse-3-help))
+
 (defun ivy-mouse-offset (event)
   "Compute the offset between the candidate at point and the selected one."
   (if event
@@ -1037,6 +1067,10 @@ contains a single candidate.")
              (defvar tramp-completion-mode)
              (with-no-warnings
                (let* ((tramp-completion-mode t)
+                      ;; Alternative to `tramp-completion-mode' in newer Tramp.
+                      (non-essential t)
+                      ;; Non-nil changes completion since Tramp 2.6.0.2.
+                      (minibuffer-completing-file-name nil)
                       (file (expand-file-name
                              (if (> ivy--length 0) (ivy-state-current ivy-last) ivy-text)
                              ivy--directory)))
@@ -1732,13 +1766,11 @@ This string is inserted into the minibuffer."
 (defun ivy-sort-file-function-default (x y)
   "Compare two files X and Y.
 Prioritize directories."
-  (if (get-text-property 0 'dirp x)
-      (if (get-text-property 0 'dirp y)
-          (string< (directory-file-name x) (directory-file-name y))
-        t)
-    (if (get-text-property 0 'dirp y)
-        nil
-      (string< x y))))
+  (let ((xdir (get-text-property 0 'ivy--dir x))
+        (ydir (get-text-property 0 'ivy--dir y)))
+    (if xdir
+        (or (not ydir) (string< xdir ydir))
+      (and (not ydir) (string< x y)))))
 
 (defun ivy-string< (x y)
   "Like `string<', but operate on CARs when given cons cells."
@@ -1746,7 +1778,7 @@ Prioritize directories."
            (if (consp y) (car y) y)))
 
 (define-obsolete-function-alias 'ivy-sort-file-function-using-ido
-    'ido-file-extension-lessp "<2019-10-12 Sat>")
+    'ido-file-extension-lessp "0.13.0 (2019-10-12)")
 
 (defcustom ivy-sort-functions-alist
   '((t . ivy-string<))
@@ -1977,29 +2009,49 @@ The child caller inherits and can override the settings of the parent.")
       "Return non-nil if NAME ends with a directory separator."
       (string-suffix-p "/" name))))
 
+(defalias 'ivy--string-search
+  (if (fboundp 'string-search)
+      #'string-search
+    (lambda (needle haystack) ;; Faster than `cl-search'.
+      (string-match-p (regexp-quote needle) haystack)))
+  "Compatibility shim for Emacs 28 `string-search'.
+\n(fn NEEDLE HAYSTACK)")
+
+(defalias 'ivy--string-replace
+  (if (fboundp 'string-replace)
+      #'string-replace
+    (lambda (from to in)
+      (replace-regexp-in-string (regexp-quote from) to in t t)))
+  "Compatibility shim for Emacs 28 `string-replace'.
+\n(fn FROM TO IN)")
+
+;; Moved to subr.el in Emacs 27.1.
+(autoload 'xor "array")
+
 (defun ivy--sorted-files (dir)
   "Return the list of files in DIR.
 Directories come first."
-  (let* ((default-directory dir)
-         (seq (condition-case nil
-                  (mapcar (lambda (s) (replace-regexp-in-string "\\$\\$" "$" s))
-                          (all-completions "" #'read-file-name-internal
-                                           (ivy-state-predicate ivy-last)))
-                (error
-                 (directory-files dir))))
-         sort-fn)
-    (setq seq (delete "./" (delete "../" seq)))
-    (when (eq (setq sort-fn (ivy--sort-function #'read-file-name-internal))
-              #'ivy-sort-file-function-default)
-      (setq seq (mapcar (lambda (x)
-                          (propertize x 'dirp (ivy--dirname-p x)))
-                        seq)))
+  (let* ((coll #'read-file-name-internal)
+         (sort-fn (ivy--sort-function coll))
+         (dirs-first (eq sort-fn #'ivy-sort-file-function-default))
+         (seq (cl-mapcan
+               (lambda (f)
+                 (unless (member f '("./" "../"))
+                   (setq f (ivy--string-replace "$$" "$" f))
+                   (list (if (and dirs-first (ivy--dirname-p f))
+                             (propertize f 'ivy--dir (directory-file-name f))
+                           f))))
+               (condition-case nil
+                   (let ((default-directory dir))
+                     (all-completions "" coll (ivy-state-predicate ivy-last)))
+                 (error (directory-files
+                         dir nil directory-files-no-dot-files-regexp))))))
     (when sort-fn
       (setq seq (sort seq sort-fn)))
-    (dolist (dir ivy-extra-directories)
-      (push dir seq))
+    (dolist (extra ivy-extra-directories)
+      (push extra seq))
     (if (string= dir "/")
-        (cl-remove-if (lambda (s) (string-match ":$" s)) (delete "../" seq))
+        (cl-delete-if (lambda (s) (string-suffix-p ":" s)) (delete "../" seq))
       seq)))
 
 (defun ivy-alist-setting (alist &optional key)
@@ -2035,7 +2087,7 @@ found, it falls back to the key t."
          "Keyword (C-M-j to end): ")
         (t
          ;; misearch.el
-         (replace-regexp-in-string "RET to end" "C-M-j to end" prompt))))
+         (ivy--string-replace "RET to end" "C-M-j to end" prompt))))
 
 ;;** Entry Point
 ;;;###autoload
@@ -2461,7 +2513,7 @@ This is useful for recursive `ivy-read'."
 
 (defun ivy--quote-format-string (str)
   "Make STR suitable for `format' with no extra arguments."
-  (replace-regexp-in-string "%" "%%" str t t))
+  (ivy--string-replace "%" "%%" str))
 
 ;;;###autoload
 (defun ivy-completing-read (prompt collection
@@ -2502,17 +2554,14 @@ INHERIT-INPUT-METHOD is currently ignored."
       (let ((str (ivy-read
                   prompt collection
                   :predicate predicate
-                  :require-match (when (and collection require-match)
-                                   require-match)
-                  :initial-input (cond ((consp initial-input)
-                                        (car initial-input))
-                                       ((and (stringp initial-input)
-                                             (not (eq collection #'read-file-name-internal))
-                                             (string-match-p "\\+" initial-input))
-                                        (replace-regexp-in-string
-                                         "\\+" "\\\\+" initial-input))
-                                       (t
-                                        initial-input))
+                  :require-match (and collection require-match)
+                  :initial-input
+                  (cond ((consp initial-input)
+                         (car initial-input))
+                        ((and (stringp initial-input)
+                              (not (eq collection #'read-file-name-internal)))
+                         (ivy--string-replace "+" "\\+" initial-input))
+                        (initial-input))
                   :preselect def
                   :def def
                   :history history
@@ -2756,13 +2805,10 @@ Each element of RE-SEQ must match for the function to return true.
 
 This concept is used to generalize regular expressions for
 `ivy--regex-plus' and `ivy--regex-ignore-order'."
-  (let ((res t)
-        re)
-    (while (and res (setq re (pop re-seq)))
-      (setq res
-            (if (cdr re)
-                (string-match-p (car re) str)
-              (not (string-match-p (car re) str)))))
+  (let ((res t))
+    (while (let ((pair (pop re-seq)))
+             (and pair (setq res (xor (not (cdr pair))
+                                      (string-match-p (car pair) str))))))
     res))
 
 (defvar ivy--regex-hash
@@ -2807,7 +2853,7 @@ regexp is passed to `regexp-quote'."
                        (setq ivy--input-garbage (substring str i))
                        (throw 'break nil)))
                  (cl-incf i)))
-              ((= ?\  c)
+              ((= ?\s c)
                (string-match " +" str i)
                (setq match-len (- (match-end 0) (match-beginning 0)))
                (if (= match-len 1)
@@ -2816,7 +2862,7 @@ regexp is passed to `regexp-quote'."
                        (push (substring str start i) res))
                      (setq start (1+ i)))
                  (setq str (replace-match
-                            (make-string (1- match-len) ?\ )
+                            (make-string (1- match-len) ?\s)
                             nil nil str))
                  (setq len (length str))
                  (cl-incf i (1- match-len)))
@@ -2884,7 +2930,7 @@ When GREEDY is non-nil, join words in a greedy way."
                                (format "\\(%s\\)" x)))
                            subs
                            (if greedy ".*" ".*?"))
-                          nil t))))
+                          t t))))
                     ivy--regex-hash)))))
 
 (defun ivy--regex-p (object)
@@ -2902,10 +2948,10 @@ Do not split if the delimiter is escaped as \\!.
 Assumes there is at most one un-escaped delimiter and discards
 text after delimiter if it is empty.  Modifies match data."
   (unless (string= str "")
-    (let ((delim "\\(?:\\`\\|[^\\]\\)\\(!\\)"))
-      (mapcar (lambda (split)
-                ;; Store "\!" as "!".
-                (replace-regexp-in-string "\\\\!" "!" split t t))
+    (mapcar (lambda (split)
+              ;; Store "\!" as "!".
+              (ivy--string-replace "\\!" "!" split))
+            (let ((delim "\\(?:\\`\\|[^\\]\\)\\(!\\)"))
               (if (string-match delim str)
                   ;; Ignore everything past first un-escaped ! rather than
                   ;; crashing.  We can't warn or error because the minibuffer is
@@ -3252,7 +3298,7 @@ Possible choices are `ivy-magic-slash-non-match-cd-selected',
             ((string-suffix-p "//" ivy-text)
              (ivy--cd
               (ivy--magic-file-doubleslash-directory)))
-            ((string-match-p "\\`/ssh:" ivy-text)
+            ((string-prefix-p "/ssh:" ivy-text)
              (ivy--cd (file-name-directory ivy-text)))
             ((string-match "[[:alpha:]]:/\\'" ivy-text)
              (let ((drive-root (match-string 0 ivy-text)))
@@ -3412,8 +3458,8 @@ Should be run via minibuffer `post-command-hook'."
               (setq ivy--old-re nil)
               (setq in-progress t))
             (when (or ivy--all-candidates
-                      (and (not (get-process " *counsel*"))
-                           (not in-progress)))
+                      (not (or (get-process " *counsel*")
+                               in-progress)))
               (ivy--set-index-dynamic-collection)
               (ivy--format ivy--all-candidates)))
         (cond (ivy--directory
@@ -3421,18 +3467,16 @@ Should be run via minibuffer `post-command-hook'."
                           (and (string= "~" ivy-text)
                                ivy-magic-tilde))
                       (ivy--cd (ivy--magic-tilde-directory ivy--directory)))
-                     ((string-match "/\\'" ivy-text)
+                     ((string-suffix-p "/" ivy-text)
                       (ivy--magic-file-slash))))
               ((eq (ivy-state-collection ivy-last) #'internal-complete-buffer)
-               (when (or (and (string-match "\\` " ivy-text)
-                              (not (string-match "\\` " ivy--old-text)))
-                         (and (string-match "\\` " ivy--old-text)
-                              (not (string-match "\\` " ivy-text))))
-                 (setq ivy--all-candidates
-                       (if (= (string-to-char ivy-text) ?\s)
-                           (ivy--buffer-list " ")
-                         (ivy--buffer-list "" ivy-use-virtual-buffers)))
-                 (setq ivy--old-re nil))))
+               (let ((spaced (= (string-to-char ivy-text) ?\s)))
+                 (when (xor spaced (= (string-to-char ivy--old-text) ?\s))
+                   (setq ivy--all-candidates
+                         (if spaced
+                             (ivy--buffer-list " ")
+                           (ivy--buffer-list "" ivy-use-virtual-buffers)))
+                   (setq ivy--old-re nil)))))
         (with-current-buffer (ivy-state-buffer ivy-last)
           (ivy--format
            (ivy--filter ivy-text ivy--all-candidates))))
@@ -3472,7 +3516,7 @@ Should be run via minibuffer `post-command-hook'."
 
 (make-obsolete-variable 'ivy-auto-shrink-minibuffer
                         'ivy-auto-shrink-minibuffer-alist
-                        "<2020-04-28 Tue>")
+                        "0.13.2 (2020-04-28)")
 
 (defcustom ivy-auto-shrink-minibuffer-alist nil
   "An alist to configure auto-shrinking of the minibuffer.
@@ -3565,23 +3609,31 @@ In any Ivy completion session, the case folding starts with
   ;; Reset cache so that the candidate list updates.
   (setq ivy--old-re nil))
 
-(defun ivy--re-filter (re candidates &optional mkpred)
-  "Return all RE matching CANDIDATES.
-RE is a list of cons cells, with a regexp car and a boolean cdr.
-When the cdr is t, the car must match.
-Otherwise, the car must not match."
-  (if (equal re "")
+(defun ivy--re-filter (filter candidates &optional mkpred)
+  "Return all CANDIDATES matching FILTER, or nil on error.
+FILTER is either a string or a list of (REGEXP . BOOLEAN).
+The result includes those CANDIDATES which are matched by each REGEXP
+whose BOOLEAN is non-nil, and not matched by any other REGEXP.
+A string FILTER is equivalent to ((FILTER . t)).
+
+If MKPRED is non-nil, it is a function to be called on each REGEXP,
+returning a unary predicate for filtering CANDIDATES which overrides
+this function's default regexp matching behavior."
+  (if (member filter '("" ()))
       candidates
+    (setq candidates (copy-sequence candidates))
+    ;; Return nil (not candidates) on error, e.g., when we try to filter
+    ;; `swiper-isearch' numeric candidates with `string-match-p'.
     (ignore-errors
-      (dolist (re (if (stringp re) (list (cons re t)) re))
-        (let* ((re-str (car re))
+      (dolist (matcher (if (stringp filter) (list (cons filter t)) filter))
+        (let* ((re (car matcher))
                (pred
                 (if mkpred
-                    (funcall mkpred re-str)
-                  (lambda (x) (string-match-p re-str x)))))
+                    (funcall mkpred re)
+                  (lambda (x) (string-match-p re x)))))
           (setq candidates
-                (cl-remove nil candidates
-                           (if (cdr re) :if-not :if)
+                (cl-delete nil candidates
+                           (if (cdr matcher) :if-not :if)
                            pred))))
       candidates)))
 
@@ -3604,12 +3656,10 @@ CANDIDATES are assumed to be static."
                       ((and ivy--old-re
                             (stringp re)
                             (stringp ivy--old-re)
-                            (not (string-match-p "\\\\" ivy--old-re))
+                            (not (ivy--string-search "\\" ivy--old-re))
                             (not (equal ivy--old-re ""))
-                            (memq (cl-search
-                                   (if (string-match-p "\\\\)\\'" ivy--old-re)
-                                       (substring ivy--old-re 0 -2)
-                                     ivy--old-re)
+                            (memq (ivy--string-search
+                                   (string-remove-suffix "\\)" ivy--old-re)
                                    re)
                                   '(0 2))
                             ivy--old-cands
@@ -3649,11 +3699,20 @@ CANDIDATES are assumed to be static."
               (delete-dups res)
             res))))
 
+(eval-and-compile
+  (defconst ivy--new-sort-p
+    (condition-case nil
+        (with-no-warnings (sort []))
+      (wrong-number-of-arguments))
+    "Whether Emacs 30 `sort' calling convention is available."))
+
 (defun ivy--shorter-matches-first (_name cands)
   "Sort CANDS according to their length."
   (if (nthcdr ivy-sort-max-size cands)
       cands
-    (cl-sort (copy-sequence cands) #'< :key #'length)))
+    (static-if (bound-and-true-p ivy--new-sort-p)
+        (sort cands :key #'length)
+      (cl-sort (copy-sequence cands) #'< :key #'length))))
 
 (defcustom ivy-sort-matches-functions-alist
   '((t . nil)
@@ -3710,9 +3769,9 @@ Prefix matches to NAME are put ahead of the list."
           res-prefix
           res-noprefix)
       (dolist (s candidates)
-        (if (string-match-p re-prefix s)
-            (push s res-prefix)
-          (push s res-noprefix)))
+        (push s (if (string-match-p re-prefix s)
+                    res-prefix
+                  res-noprefix)))
       (nconc
        (nreverse res-prefix)
        (nreverse res-noprefix)))))
@@ -3736,25 +3795,18 @@ before substring matches."
           (= (aref name 0) ?^))
       candidates
     (let* ((base-re (ivy-re-to-str (funcall ivy--regex-function name)))
-           (re-star-prefix (concat "\\`\\*" base-re))
-           (re-prefix (concat "\\`" base-re))
+           (re-prefix (concat "\\`\\*?" base-re))
            res-prefix
            res-noprefix
            res-virtual-prefix
            res-virtual-noprefix)
       (dolist (s candidates)
-        (cond
-          ((and (assoc s ivy--virtual-buffers)
-                (or (string-match-p re-star-prefix s)
-                    (string-match-p re-prefix s)))
-           (push s res-virtual-prefix))
-          ((assoc s ivy--virtual-buffers)
-           (push s res-virtual-noprefix))
-          ((or (string-match-p re-star-prefix s)
-               (string-match-p re-prefix s))
-           (push s res-prefix))
-          (t
-           (push s res-noprefix))))
+        (let ((virtual (assoc s ivy--virtual-buffers))
+              (prefixed (string-match-p re-prefix s)))
+          (push s (cond ((and virtual prefixed) res-virtual-prefix)
+                        (virtual res-virtual-noprefix)
+                        (prefixed res-prefix)
+                        (t res-noprefix)))))
       (nconc
        (nreverse res-prefix)
        (nreverse res-noprefix)
@@ -3956,27 +4008,36 @@ N wraps around, but skips the first element of the list."
             (push cand cands-left)))
 
         ;; pre-sort the candidates by length before partitioning
-        (setq cands-left (cl-sort cands-left #'< :key #'length))
+        (setq cands-left (static-if (bound-and-true-p ivy--new-sort-p)
+                             (sort cands-left :key #'length :in-place t)
+                           (cl-sort cands-left #'< :key #'length)))
 
         ;; partition the candidates into sorted and unsorted groups
         (dotimes (_ (min (length cands-left) ivy-flx-limit))
           (push (pop cands-left) cands-to-sort))
 
         (nconc
-         ;; Compute all of the flx scores in one pass and sort
-         (mapcar #'car
-                 (sort (mapcar
-                        (lambda (cand)
-                          (cons cand
-                                (car (flx-score cand flx-name ivy--flx-cache))))
-                        cands-to-sort)
-                       (lambda (c1 c2)
-                         ;; Break ties by length
-                         (if (/= (cdr c1) (cdr c2))
-                             (> (cdr c1)
-                                (cdr c2))
-                           (< (length (car c1))
-                              (length (car c2)))))))
+         (static-if (bound-and-true-p ivy--new-sort-p)
+             (sort cands-to-sort :in-place t
+                   :key (lambda (cand)
+                          (let ((s (flx-score cand flx-name ivy--flx-cache)))
+                            ;; Sort by decreasing score, increasing length.
+                            (cons (- (car s)) (length cand)))))
+           ;; Compute all of the flx scores in one pass and sort.
+           (mapcar #'car
+                   (sort (mapcar
+                          (lambda (cand)
+                            (cons cand
+                                  (car (flx-score cand flx-name
+                                                  ivy--flx-cache))))
+                          cands-to-sort)
+                         (lambda (c1 c2)
+                           ;; Break ties by length
+                           (if (/= (cdr c1) (cdr c2))
+                               (> (cdr c1)
+                                  (cdr c2))
+                             (< (length (car c1))
+                                (length (car c2))))))))
 
          ;; Add the unsorted candidates
          cands-left))
@@ -4081,12 +4142,16 @@ of `ivy-minibuffer-faces'.  Otherwise, always use the first face
 in this case."
   :type 'boolean)
 
+(defun ivy--positive-regexps ()
+  "Return a list of the positive regexps in `ivy-regex'."
+  (let ((re ivy-regex))
+    (if (listp re)
+        (cl-mapcan (lambda (x) (and (cdr x) (list (car x)))) re)
+      (list re))))
+
 (defun ivy--highlight-default (str)
   "Highlight STR, using the default method."
-  (let ((regexps
-         (if (listp ivy-regex)
-             (mapcar #'car (cl-remove-if-not #'cdr ivy-regex))
-           (list ivy-regex)))
+  (let ((regexps (ivy--positive-regexps))
         start)
     (dolist (re regexps)
       (ignore-errors
@@ -4117,36 +4182,31 @@ in this case."
               (cl-incf i)))))))
   str)
 
-(defun ivy--format-minibuffer-line (str annot)
-  "Format line STR for use in minibuffer."
+(defun ivy--format-minibuffer-line (str &optional affix)
+  "Format line STR for use in minibuffer.
+AFFIX is either the (PREFIX SUFFIX) cdr returned by
+`affixation-function', or the result of `annotation-function'."
   (let* ((str (ivy-cleanup-string (copy-sequence str)))
-         (str (if (eq ivy-display-style 'fancy)
-                  (if (memq (ivy-state-caller ivy-last)
-                            ivy-highlight-grep-commands)
-                      (let* ((start (if (string-match "\\`[^:]+:\\(?:[^:]+:\\)?" str)
-                                        (match-end 0) 0))
-                             (file (substring str 0 start))
-                             (match (substring str start)))
-                        (concat file (funcall ivy--highlight-function match)))
-                    (funcall ivy--highlight-function str))
-                str))
-         (olen (length str)))
-    (add-text-properties
-     0 olen
-     '(mouse-face
-       ivy-minibuffer-match-highlight
-       help-echo
-       (format
-        (if tooltip-mode
-            "mouse-1: %s\nmouse-3: %s"
-          "mouse-1: %s   mouse-3: %s")
-        ivy-mouse-1-tooltip ivy-mouse-3-tooltip))
-     str)
-    (when annot
-      (setq str (concat str (funcall annot str)))
-      (add-face-text-property
-       olen (length str) 'ivy-completions-annotations t str))
-    str))
+         (str (cond
+               ((not (eq ivy-display-style 'fancy)) str)
+               ((memq (ivy-state-caller ivy-last) ivy-highlight-grep-commands)
+                (let* ((start (if (string-match "\\`[^:]+:\\(?:[^:]+:\\)?" str)
+                                  (match-end 0) 0))
+                       (file (substring str 0 start))
+                       (match (substring str start)))
+                  (concat file (funcall ivy--highlight-function match))))
+               ((funcall ivy--highlight-function str))))
+         (mouse '( mouse-face ivy-minibuffer-match-highlight
+                   help-echo ivy--help-echo)))
+    (add-text-properties 0 (length str) mouse str)
+    (cond ((consp affix)
+           (concat (nth 0 affix) str (nth 1 affix)))
+          (affix
+           ;; Existing face takes priority.
+           (unless (text-property-not-all 0 (length affix) 'face nil affix)
+             (setq affix (ivy-append-face affix 'ivy-completions-annotations)))
+           (concat str affix))
+          (str))))
 
 (defun ivy-read-file-transformer (str)
   "Transform candidate STR when reading files."
@@ -4186,21 +4246,37 @@ CANDS is a list of candidates that :display-transformer can turn into strings."
             (setq wnd-cands (mapcar transformer-fn wnd-cands)))))
       (ivy--wnd-cands-to-str wnd-cands))))
 
+(defalias 'ivy--metadata-get
+  (if (>= emacs-major-version 30)
+      #'completion-metadata-get
+    (lambda (metadata prop)
+      (or (completion-metadata-get metadata prop)
+          (plist-get completion-extra-properties
+                     (or (get prop 'ivy--metadata-kwd)
+                         (put prop 'ivy--metadata-kwd
+                              (intern (concat ":" (symbol-name prop)))))))))
+  "Compatibility shim for Emacs 30 `completion-metadata-get'.
+\n(fn METADATA PROP)")
+
 (defun ivy--wnd-cands-to-str (wnd-cands)
   (let* ((metadata (unless (ivy-state-dynamic-collection ivy-last)
                      (completion-metadata "" minibuffer-completion-table
                                           minibuffer-completion-predicate)))
-         (annot (or (completion-metadata-get metadata 'annotation-function)
-                    (plist-get completion-extra-properties :annotation-function)))
-         (str (concat "\n"
-                      (funcall (ivy-alist-setting ivy-format-functions-alist)
-                               (condition-case nil
-                                   (mapcar
-                                    (lambda (cand) (ivy--format-minibuffer-line cand annot))
-                                    wnd-cands)
-                                 (error wnd-cands))))))
-    (put-text-property 0 (length str) 'read-only nil str)
-    str))
+         (affix (ivy--metadata-get metadata 'affixation-function))
+         (annot (or affix (ivy--metadata-get metadata 'annotation-function)))
+         (fmt (cond (affix
+                     (lambda (triple)
+                       (ivy--format-minibuffer-line (car triple) (cdr triple))))
+                    (annot
+                     (lambda (cand)
+                       (ivy--format-minibuffer-line cand (funcall annot cand))))
+                    (#'ivy--format-minibuffer-line)))
+         (str (funcall (ivy-alist-setting ivy-format-functions-alist)
+                       (condition-case nil
+                           (mapcar fmt (if affix (funcall affix wnd-cands)
+                                         wnd-cands))
+                         (error wnd-cands)))))
+    (concat "\n" (ivy--remove-props str 'read-only))))
 
 (defvar recentf-list)
 (defvar bookmark-alist)
@@ -4584,7 +4660,7 @@ Otherwise, forward to `ivy-kill-line'."
   (insert
    (if (stringp x)
        (ivy--trim-grep-line-number x)
-       x (car x))))
+     (car x))))
 
 (defun ivy--action-copy (x)
   (kill-new
@@ -4597,13 +4673,13 @@ Otherwise, forward to `ivy-kill-line'."
 Skip buffers that match `ivy-ignore-buffers'."
   (if (string-match-p "^:" ivy-text)
       (delete-dups
-       (cl-remove-if-not
+       (cl-delete-if-not
         (lambda (s)
-          (let ((b (get-buffer s)))
-            (and b
-                 (string-match-p regexp (buffer-local-value 'default-directory b))
-                 (not (string-match-p "^\\*" s)))))
-        candidates))
+          (when (/= (string-to-char s) ?*)
+            (let ((b (get-buffer s)))
+              (and b (string-match-p
+                      regexp (buffer-local-value 'default-directory b))))))
+        (copy-sequence candidates)))
     (let ((res (ivy--re-filter regexp candidates)))
       (if (or (null ivy-use-ignore)
               (null ivy-ignore-buffers))
@@ -5259,9 +5335,7 @@ EVENT gives the mouse position."
           (looking-at "\\(?:.[/\\]\\|    \\)\\(.*\\)$"))
     (let* ((ivy-last ivy-occur-last)
            (ivy-text (ivy-state-text ivy-last))
-           (str (buffer-substring
-                 (match-beginning 1)
-                 (match-end 1)))
+           (str (match-string 1))
            (offset (or (get-text-property 0 'offset str) 0))
            (coll (ivy-state-collection ivy-last))
            (action (ivy--get-action ivy-last))

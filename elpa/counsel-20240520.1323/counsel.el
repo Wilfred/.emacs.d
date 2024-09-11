@@ -1,11 +1,12 @@
 ;;; counsel.el --- Various completion functions using Ivy -*- lexical-binding: t -*-
 
-;; Copyright (C) 2015-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2015-2024 Free Software Foundation, Inc.
 
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
+;; Maintainer: Basil L. Contovounesios <basil@contovou.net>
 ;; URL: https://github.com/abo-abo/swiper
-;; Version: 0.14.0
-;; Package-Requires: ((emacs "24.5") (ivy "0.14.0") (swiper "0.14.0"))
+;; Version: 0.14.2
+;; Package-Requires: ((emacs "24.5") (ivy "0.14.2") (swiper "0.14.2"))
 ;; Keywords: convenience, matching, tools
 
 ;; This file is part of GNU Emacs.
@@ -79,7 +80,7 @@ complex regexes."
         (mapconcat
          (lambda (pair)
            (let ((subexp (counsel--elisp-to-pcre (car pair))))
-             (if (string-match-p "|" subexp)
+             (if (ivy--string-search "|" subexp)
                  (format "(?:%s)" subexp)
                subexp)))
          (cl-remove-if-not #'cdr regex)
@@ -177,6 +178,10 @@ Return a list or string depending on input."
                        (lambda (it) (if (equal it "%s") (pop args) it))
                        formatter)))
    (t (apply #'format formatter args))))
+
+(defalias 'counsel--null-device
+  (if (fboundp 'null-device) #'null-device (lambda () null-device))
+  "Compatibility shim for Emacs 28 function `null-device'.")
 
 ;;* Async Utility
 (defvar counsel--async-time nil
@@ -317,13 +322,20 @@ caused by spawning too many subprocesses too quickly."
   "The amount of microseconds to wait until updating `counsel--async-filter'."
   :type 'integer)
 
+(defalias 'counsel--async-filter-update-time
+  (if (fboundp 'time-convert)
+      ;; Preferred (TICKS . HZ) format since Emacs 27.1.
+      (lambda () (cons counsel-async-filter-update-time 1000000))
+    (lambda () (list 0 0 counsel-async-filter-update-time)))
+  "Return `counsel-async-filter-update-time' as a time value.")
+
 (defun counsel--async-filter (process str)
   "Receive from PROCESS the output STR.
 Update the minibuffer with the amount of lines collected every
 `counsel-async-filter-update-time' microseconds since the last update."
   (with-current-buffer (process-buffer process)
     (insert str))
-  (when (time-less-p (list 0 0 counsel-async-filter-update-time)
+  (when (time-less-p (counsel--async-filter-update-time)
                      (time-since counsel--async-time))
     (let (numlines)
       (with-current-buffer (process-buffer process)
@@ -332,7 +344,7 @@ Update the minibuffer with the amount of lines collected every
          (let ((lines (counsel--split-string))
                (ignore-re (ivy-alist-setting counsel-async-ignore-re-alist)))
            (if (stringp ignore-re)
-               (cl-remove-if (lambda (line)
+               (cl-delete-if (lambda (line)
                                (string-match-p ignore-re line))
                              lines)
              lines))))
@@ -347,10 +359,14 @@ Update the minibuffer with the amount of lines collected every
       (delete-process process))))
 
 ;;* Completion at point
-(define-obsolete-function-alias 'counsel-el #'complete-symbol "<2020-05-20 Wed>")
-(define-obsolete-function-alias 'counsel-cl #'complete-symbol "<2020-05-20 Wed>")
-(define-obsolete-function-alias 'counsel-jedi #'complete-symbol "<2020-05-20 Wed>")
-(define-obsolete-function-alias 'counsel-clj #'complete-symbol "<2020-05-20 Wed>")
+(define-obsolete-function-alias 'counsel-el
+  #'complete-symbol "0.13.2 (2020-05-20)")
+(define-obsolete-function-alias 'counsel-cl
+  #'complete-symbol "0.13.2 (2020-05-20)")
+(define-obsolete-function-alias 'counsel-jedi
+  #'complete-symbol "0.13.2 (2020-05-20)")
+(define-obsolete-function-alias 'counsel-clj
+  #'complete-symbol "0.13.2 (2020-05-20)")
 
 ;;** `counsel-company'
 (defvar company-candidates)
@@ -1325,7 +1341,8 @@ INITIAL-INPUT can be given as the initial minibuffer input."
   (counsel-cmd-to-dired
    (counsel--expand-ls
     (format "%s | %s | xargs ls"
-            (replace-regexp-in-string "\\(-0\\)\\|\\(-z\\)" "" counsel-git-cmd)
+            (replace-regexp-in-string
+             "\\(-0\\)\\|\\(-z\\)" "" counsel-git-cmd t t)
             (counsel--file-name-filter)))))
 
 (defvar counsel-dired-listing-switches "-alh"
@@ -1398,8 +1415,7 @@ This function should set `ivy--old-re'."
   (format counsel-git-grep-cmd
           (setq ivy--old-re
                 (if (eq ivy--regex-function #'ivy--regex-fuzzy)
-                    (replace-regexp-in-string
-                     "\n" "" (ivy--regex-fuzzy str))
+                    (ivy--string-replace "\n" "" (ivy--regex-fuzzy str))
                   (ivy--regex str t)))))
 
 (defun counsel-git-grep-cmd-function-ignore-order (str)
@@ -1462,7 +1478,7 @@ files in a project.")
        (if (setq proj
                  (cl-find-if
                   (lambda (x)
-                    (string-match (car x) dd))
+                    (string-match-p (car x) dd))
                   counsel-git-grep-projects-alist))
            (setq cmd (cdr proj))
          (setq cmd
@@ -1620,10 +1636,8 @@ When CMD is non-nil, prompt for a specific \"git grep\" command."
 
 (defun counsel--git-grep-occur-cmd (input)
   (let* ((regex ivy--old-re)
-         (positive-pattern (replace-regexp-in-string
-                            ;; git-grep can't handle .*?
-                            "\\.\\*\\?" ".*"
-                            (ivy-re-to-str regex)))
+         (positive-pattern ;; git-grep can't handle .*?
+          (ivy--string-replace ".*?" ".*" (ivy-re-to-str regex)))
          (negative-patterns
           (if (stringp regex) ""
             (mapconcat (lambda (x)
@@ -1701,8 +1715,7 @@ done") "\n" t)))
       ;; "git log --grep" likes to have groups quoted e.g. \(foo\).
       ;; But it doesn't like the non-greedy ".*?".
       (format counsel-git-log-cmd
-              (replace-regexp-in-string "\\.\\*\\?" ".*"
-                                        (ivy-re-to-str ivy--old-re))))
+              (ivy--string-replace ".*?" ".*" (ivy-re-to-str ivy--old-re))))
      nil)))
 
 (defun counsel-git-log-action (x)
@@ -1738,7 +1751,7 @@ TREE is the selected candidate."
 
 (defun counsel-git-worktree-parse-root (tree)
   "Return worktree from candidate TREE."
-  (substring tree 0 (string-match-p " " tree)))
+  (substring tree 0 (ivy--string-search " " tree)))
 
 (defun counsel-git-close-worktree-files-action (root-dir)
   "Close all buffers from the worktree located at ROOT-DIR."
@@ -1778,7 +1791,7 @@ character (#x20), or the string's end if it lacks a space."
   (shell-command
    (format "git checkout %s"
            (shell-quote-argument
-            (substring branch 0 (string-match-p " " branch))))))
+            (substring branch 0 (ivy--string-search " " branch))))))
 
 (defun counsel-git-branch-list ()
   "Return list of branches in the current Git repository.
@@ -2110,8 +2123,8 @@ If USE-IGNORE is non-nil, try to generate a command that respects
                           (cons ignore-re regex)))))
         (setq cmd (format (car filter-cmd)
                           (counsel--elisp-to-pcre regex (cdr filter-cmd))))
-        (if (string-match-p "csh\\'" shell-file-name)
-            (replace-regexp-in-string "\\?!" "?\\\\!" cmd)
+        (if (string-suffix-p "csh" shell-file-name)
+            (ivy--string-replace "?!" "?\\!" cmd)
           cmd)))))
 
 (defun counsel--occur-cmd-find ()
@@ -2125,10 +2138,9 @@ If USE-IGNORE is non-nil, try to generate a command that respects
 
 (defun counsel--cmd-to-dired-by-type (type cmd)
   (let ((exclude-dots
-         (if (string-match "^\\." ivy-text)
-             ""
-           " | grep -v '/\\\\.'")))
-    (replace-regexp-in-string
+         (unless (string-prefix-p "." ivy-text)
+           " | grep -v '/\\.'")))
+    (ivy--string-replace
      " | grep"
      (concat " -type " type exclude-dots " | grep") cmd)))
 
@@ -2142,7 +2154,7 @@ If USE-IGNORE is non-nil, try to generate a command that respects
     (counsel-cmd-to-dired
      (counsel--expand-ls
       (format counsel-find-file-occur-cmd
-              (if (string-match-p "grep" counsel-find-file-occur-cmd)
+              (if (ivy--string-search "grep" counsel-find-file-occur-cmd)
                   ;; for backwards compatibility
                   (counsel--elisp-to-pcre ivy--old-re)
                 (counsel--file-name-filter t)))))))
@@ -2203,9 +2215,10 @@ See variable `counsel-up-directory-level'."
 (defun counsel-at-git-issue-p ()
   "When point is at an issue in a Git-versioned file, return the issue string."
   (and (looking-at "#[0-9]+")
-       (or (eq (vc-backend buffer-file-name) 'Git)
-           (memq major-mode '(magit-commit-mode vc-git-log-view-mode))
-           (bound-and-true-p magit-commit-mode))
+       (save-match-data
+         (or (eq (vc-backend buffer-file-name) 'Git)
+             (memq major-mode '(magit-commit-mode vc-git-log-view-mode))
+             (bound-and-true-p magit-commit-mode)))
        (match-string-no-properties 0)))
 
 (defun counsel-github-url-p ()
@@ -2406,13 +2419,8 @@ This function uses the `dom' library from Emacs 25.1 or later."
   "Return candidates for `counsel-buffer-or-recentf'."
   (require 'recentf)
   (recentf-mode)
-  (let ((buffers
-         (delq nil
-               (mapcar (lambda (b)
-                         (when (buffer-file-name b)
-                           (buffer-file-name b)))
-                       (buffer-list)))))
-    (append
+  (let ((buffers (delq nil (mapcar #'buffer-file-name (buffer-list)))))
+    (nconc
      buffers
      (cl-remove-if (lambda (f) (member f buffers))
                    (counsel-recentf-candidates)))))
@@ -2499,7 +2507,7 @@ By default `counsel-bookmark' opens a dired buffer for directories."
 (defun counsel-bookmarked-directory--candidates ()
   "Get a list of bookmarked directories sorted by file path."
   (bookmark-maybe-load-default-file)
-  (sort (cl-remove-if-not
+  (sort (cl-delete-if-not
          #'ivy--dirname-p
          (delq nil (mapcar #'bookmark-get-filename bookmark-alist)))
         #'string<))
@@ -2639,7 +2647,9 @@ library, which see."
 (defun counsel-locate-cmd-mdfind (input)
   "Return a `mdfind' shell command based on INPUT."
   (counsel-require-program "mdfind")
-  (format "mdfind -name %s" (shell-quote-argument input)))
+  (format "mdfind -name %s 2>%s"
+          (shell-quote-argument input)
+          (shell-quote-argument (counsel--null-device))))
 
 (defun counsel-locate-cmd-es (input)
   "Return a `es' shell command based on INPUT."
@@ -2672,7 +2682,7 @@ library, which see."
 
 (defun counsel-file-stale-p (fname seconds)
   "Return non-nil if FNAME was modified more than SECONDS ago."
-  (> (float-time (time-subtract nil (nth 5 (file-attributes fname))))
+  (> (float-time (time-since (nth 5 (file-attributes fname))))
      seconds))
 
 (defun counsel--locate-updatedb ()
@@ -3129,7 +3139,7 @@ Works for `counsel-git-grep', `counsel-ag', etc."
   (if (ivy--case-fold-p ivy-text)
       "-i"
     (if (and (stringp counsel-ag-base-command)
-             (string-match-p "\\`pt" counsel-ag-base-command))
+             (string-prefix-p "pt" counsel-ag-base-command))
         "-S"
       "-s")))
 
@@ -3138,9 +3148,10 @@ Works for `counsel-git-grep', `counsel-ag', etc."
     (ivy-occur-grep-mode)
     (setq default-directory (ivy-state-directory ivy-last)))
   (ivy-set-text
-   (if (string-match "\"\\(.*\\)\"" (buffer-name))
-       (match-string 1 (buffer-name))
-     (ivy-state-text ivy-occur-last)))
+   (let ((name (buffer-name)))
+     (if (string-match "\"\\(.*\\)\"" name)
+         (match-string 1 name)
+       (ivy-state-text ivy-occur-last))))
   (let* ((cmd
           (if (functionp cmd-template)
               (funcall cmd-template ivy-text)
@@ -3240,7 +3251,7 @@ Note: don't use single quotes for the regexp."
     (let ((files
            (dired-get-marked-files 'no-dir nil nil t)))
       (when (or (cdr files)
-                (when (string-match-p "\\*ivy-occur" (buffer-name))
+                (when (ivy--string-search "*ivy-occur" (buffer-name))
                   (dired-toggle-marks)
                   (setq files (dired-get-marked-files 'no-dir))
                   (dired-toggle-marks)
@@ -3356,14 +3367,12 @@ relative to the last position stored here.")
             (swiper--add-overlays (ivy--regex ivy-text))))))))
 
 (defun counsel-grep-occur (&optional _cands)
-  "Generate a custom occur buffer for `counsel-grep'."
-  (counsel-grep-like-occur
-   (format
-    "grep -niE %%s %s /dev/null"
-    (shell-quote-argument
-     (file-name-nondirectory
-      (buffer-file-name
-       (ivy-state-buffer ivy-last)))))))
+  "Generate a custom Occur buffer for `counsel-grep'."
+  (let ((file (buffer-file-name (ivy-state-buffer ivy-last))))
+    (counsel-grep-like-occur
+     (format "grep -niE %%s %s %s"
+             (if file (shell-quote-argument (file-name-nondirectory file)) "")
+             (shell-quote-argument (counsel--null-device))))))
 
 (defvar counsel-grep-history nil
   "History for `counsel-grep'.")
@@ -4039,21 +4048,16 @@ This variable has no effect unless
             (text (nth 4 components))
             (tags (and counsel-org-headline-display-tags
                        (nth 5 components))))
-       (list
-        (mapconcat
-         #'identity
-         (cl-remove-if #'null
-                       (list
-                        level
-                        todo
-                        (and priority (format "[#%c]" priority))
-                        (mapconcat #'identity
-                                   (append path (list text))
-                                   counsel-outline-path-separator)
-                        tags))
-         " ")
-        buffer-file-name
-        (point))))
+       (list (string-join
+              (delq nil (list level
+                              todo
+                              (and priority (format "[#%c]" priority))
+                              (string-join (append path (list text))
+                                           counsel-outline-path-separator)
+                              tags))
+              " ")
+             buffer-file-name
+             (point))))
    nil
    'agenda))
 
@@ -4168,13 +4172,13 @@ point to indicarte where the candidate mark is."
                   marks))))))
 
 (defun counsel-mark--ivy-read (prompt candidates caller)
-  "call `ivy-read' with sane defaults for traversing marks.
+  "Call `ivy-read' with sane defaults for traversing marks.
 CANDIDATES should be an alist with the `car' of the list being
-the string displayed by ivy and the `cdr' being the point that
+the completion candidate string and the `cdr' being the point that
 mark should take you to.
 
-NOTE This has been abstracted out into it's own method so it can
-be used by both `counsel-mark-ring' and `counsel-evil-marks'"
+This subroutine is intended to be used by both `counsel-mark-ring' and
+`counsel-evil-marks'."
   (ivy-read prompt candidates
             :require-match t
             :update-fn #'counsel--mark-ring-update-fn
@@ -4224,8 +4228,8 @@ register tied to a mark in the message string."
           ;; with prefix, ignore register exclusion list.
           (if all-markers-p
               all-markers
-            (cl-remove-if-not
-             (lambda (x) (not (member (car x) counsel-evil-marks-exclude-registers)))
+            (cl-remove-if
+             (lambda (x) (member (car x) counsel-evil-marks-exclude-registers))
              all-markers)))
          ;; separate the markers from the evil registers
          ;; for call to `counsel-mark--get-candidates'
@@ -4447,19 +4451,29 @@ Additional actions:\\<ivy-minibuffer-map>
    cand-pairs
    (propertize counsel-yank-pop-separator 'face 'ivy-separator)))
 
+;; Macro to leverage `compiler-macro' of `cl-member' in Emacs >= 24.
+(defmacro counsel--idx-of (elt list test)
+  "Return index of ELT in LIST, comparing with TEST.
+Typically faster than `cl-position' using `equal' on large LIST."
+  ;; No `macroexp-let2*' before Emacs 25.
+  (macroexp-let2 nil elt elt
+    (macroexp-let2 nil list list
+      (macroexp-let2 nil tail `(cl-member ,elt ,list :test ,test)
+        `(and ,tail (- (length ,list) (length ,tail)))))))
+
 (defun counsel--yank-pop-position (s)
   "Return position of S in `kill-ring' relative to last yank."
-  (or (cl-position s kill-ring-yank-pointer :test #'equal-including-properties)
-      (cl-position s kill-ring-yank-pointer :test #'equal)
-      (+ (or (cl-position s kill-ring :test #'equal-including-properties)
-             (cl-position s kill-ring :test #'equal))
+  (or (counsel--idx-of s kill-ring-yank-pointer #'equal-including-properties)
+      (counsel--idx-of s kill-ring-yank-pointer #'equal)
+      (+ (or (counsel--idx-of s kill-ring #'equal-including-properties)
+             (counsel--idx-of s kill-ring #'equal))
          (- (length kill-ring-yank-pointer)
             (length kill-ring)))))
 
 (defun counsel-string-non-blank-p (s)
   "Return non-nil if S includes non-blank characters.
 Newlines and carriage returns are considered blank."
-  (not (string-match-p "\\`[\n\r[:blank:]]*\\'" s)))
+  (string-match-p "[^\n\r[:blank:]]" s))
 
 (defcustom counsel-yank-pop-filter #'counsel-string-non-blank-p
   "Unary filter function applied to `counsel-yank-pop' candidates.
@@ -4468,8 +4482,52 @@ will be destructively removed from `kill-ring' before completion.
 All blank strings are deleted from `kill-ring' by default."
   :type '(radio
           (function-item counsel-string-non-blank-p)
-          (function-item identity)
+          (function-item identity) ;; Faster than the newer `always'.
           (function :tag "Other")))
+
+(defun counsel--equal-w-props ()
+  "Return a `hash-table-test' using `equal-including-properties'.
+If not available, return nil."
+  ;; Added in Emacs 28.
+  (when (fboundp 'sxhash-equal-including-properties)
+    (let ((name 'counsel--equal-w-props))
+      ;; Define the test only once.
+      (unless (get name 'hash-table-test)
+        (define-hash-table-test name #'equal-including-properties
+                                #'sxhash-equal-including-properties))
+      name)))
+
+(defun counsel--yank-pop-filter (kills)
+  "Apply `counsel-yank-pop-filter' to and deduplicate KILLS.
+Equality is defined by `equal-including-properties' for some consistency
+with `kill-do-not-save-duplicates' (which is otherwise ignored).  This
+function tries to be faster than `cl-delete-duplicates' when possible."
+  (let* ((pred counsel-yank-pop-filter)
+         (len (length kills))
+         ;; Same threshold as `delete-dups'.
+         (test (and (> len 100) (counsel--equal-w-props))))
+    (if (not test) ;; Slow fallback.
+        (cl-delete-duplicates (cl-delete-if-not pred kills)
+                              :test #'equal-including-properties
+                              :from-end t)
+      ;; The rest is `delete-dups' combined with `delete' in a single pass.
+      ;; Find first (or no) element that passes through filter.
+      (while (unless (funcall pred (car kills))
+               (cl-decf len)
+               (setq kills (cdr kills))))
+      (let ((ht (make-hash-table :test test :size len))
+            (tail kills)
+            retail)
+        ;; Mark it and continue with the rest.
+        (puthash (car tail) t ht)
+        (while (setq retail (cdr tail))
+          (let ((elt (car retail)))
+            (if (or (gethash elt ht)
+                    (not (funcall pred elt)))
+                (setcdr tail (cdr retail))
+              (puthash elt t ht)
+              (setq tail retail)))))
+      kills)))
 
 (defun counsel--yank-pop-kills ()
   "Return filtered `kill-ring' for `counsel-yank-pop' completion.
@@ -4481,11 +4539,9 @@ and incorporate `interprogram-paste-function'."
   ;; `interprogram-paste-function' both being nil
   (ignore-errors (current-kill 0))
   ;; Keep things consistent with the rest of Emacs
-  (dolist (sym '(kill-ring kill-ring-yank-pointer))
-    (set sym (cl-delete-duplicates
-              (cl-delete-if-not counsel-yank-pop-filter (symbol-value sym))
-              :test #'equal-including-properties :from-end t)))
-  kill-ring)
+  (prog1 (setq kill-ring (counsel--yank-pop-filter kill-ring))
+    (setq kill-ring-yank-pointer
+          (counsel--yank-pop-filter kill-ring-yank-pointer))))
 
 (defcustom counsel-yank-pop-after-point nil
   "Whether `counsel-yank-pop' yanks after point.
@@ -4523,9 +4579,10 @@ buffer position."
 
 (defun counsel-yank-pop-action-remove (s)
   "Remove all occurrences of S from the kill ring."
-  (dolist (sym '(kill-ring kill-ring-yank-pointer))
-    (set sym (cl-delete s (symbol-value sym)
-                        :test #'equal-including-properties)))
+  (setq kill-ring
+        (cl-delete s kill-ring :test #'equal-including-properties))
+  (setq kill-ring-yank-pointer
+        (cl-delete s kill-ring-yank-pointer :test #'equal-including-properties))
   ;; Update collection and preselect for next `ivy-call'
   (setf (ivy-state-collection ivy-last) kill-ring)
   (setf (ivy-state-preselect ivy-last)
@@ -4561,9 +4618,6 @@ prefix argument of `counsel-yank-pop' defaults to 1 (as per
 preselected.  Otherwise, the prefix argument defaults to 0, which
 results in the most recent kill being preselected."
   :type 'boolean)
-
-;; Moved to subr.el in Emacs 27.1.
-(autoload 'xor "array")
 
 ;;;###autoload
 (defun counsel-yank-pop (&optional arg)
@@ -4692,7 +4746,7 @@ matching the register's value description against a regexp in
 S will be of the form \"[register]: content\"."
   (with-ivy-window
     (insert
-     (replace-regexp-in-string "\\`\\[.*?\\]: " "" s))))
+     (replace-regexp-in-string "\\`\\[.*?]: " "" s t t))))
 
 ;;** `counsel-imenu'
 (defvar imenu-auto-rescan)
@@ -4749,8 +4803,8 @@ PREFIX is used to create the key."
   "Categorize all the functions of imenu."
   (let ((fns (cl-remove-if #'listp items :key #'cdr)))
     (if fns
-        (nconc (cl-remove-if #'nlistp items :key #'cdr)
-               `(("Functions" ,@fns)))
+        (append (cl-remove-if #'nlistp items :key #'cdr)
+                `(("Functions" ,@fns)))
       items)))
 
 (defun counsel-imenu-action (x)
@@ -5113,7 +5167,8 @@ buffers."
     (cond (counsel-org-headline-display-statistics
            heading)
           (heading
-           (org-trim (replace-regexp-in-string statistics-re " " heading))))))
+           (org-trim (replace-regexp-in-string
+                      statistics-re " " heading t t))))))
 
 (defun counsel-outline-title-markdown ()
   "Return title of current outline heading.
@@ -6075,7 +6130,7 @@ the command to launch it."
   (format "% -45s: %s%s"
           (propertize
            (ivy--truncate-string
-            (replace-regexp-in-string "env +[^ ]+ +" "" exec)
+            (replace-regexp-in-string "env +[^ ]+ +" "" exec t t)
             45)
            'face 'counsel-application-name)
           name
@@ -6287,11 +6342,10 @@ When ARG is non-nil, ignore NoDisplay property in *.desktop files."
   "Clear temporary file buffers and restore `buffer-list'.
 The buffers are those opened during a session of `counsel-switch-buffer'."
   (mapc #'kill-buffer counsel--switch-buffer-temporary-buffers)
-  (mapc #'bury-buffer (cl-remove-if-not
-                       #'buffer-live-p
-                       counsel--switch-buffer-previous-buffers))
-  (setq counsel--switch-buffer-temporary-buffers nil
-        counsel--switch-buffer-previous-buffers nil))
+  (dolist (buf counsel--switch-buffer-previous-buffers)
+    (when (buffer-live-p buf) (bury-buffer buf)))
+  (setq counsel--switch-buffer-temporary-buffers ())
+  (setq counsel--switch-buffer-previous-buffers ()))
 
 (defcustom counsel-switch-buffer-preview-virtual-buffers t
   "When non-nil, `counsel-switch-buffer' will preview virtual buffers."
@@ -6416,8 +6470,13 @@ Use `projectile-project-root' to determine the root."
 (defun counsel--project-current ()
   "Return root of current project or nil on failure.
 Use `project-current' to determine the root."
-  (and (fboundp 'project-current)
-       (cdr (project-current))))
+  (let ((proj (and (fboundp 'project-current)
+                   (project-current))))
+    (cond ((not proj) nil)
+          ((fboundp 'project-root)
+           (project-root proj))
+          ((fboundp 'project-roots)
+           (car (project-roots proj))))))
 
 (defun counsel--configure-root ()
   "Return root of current project or nil on failure.
@@ -6594,10 +6653,16 @@ If there are non-directory files in BLDDIR, include BLDDIR in the
 list as it may also be a build directory."
   (let* ((files (directory-files-and-attributes
                  blddir t directory-files-no-dot-files-regexp t))
-         (dirs (cl-remove-if-not #'cl-second files)))
+         (total (length files))
+         (dirs (cl-delete-if-not
+                (lambda (entry)
+                  (let ((dir (nth 1 entry)))
+                    (and dir (or (eq dir t)
+                                 ;; Symlink.
+                                 (file-directory-p (nth 0 entry))))))
+                files)))
     ;; Any non-dir files?
-    (when (< (length dirs)
-             (length files))
+    (when (< (length dirs) total)
       (push (cons blddir (file-attributes blddir)) dirs))
     (mapcar #'car (sort dirs (lambda (x y)
                                (time-less-p (nth 6 y) (nth 6 x)))))))
@@ -6844,7 +6909,8 @@ Additional actions:\\<ivy-minibuffer-map>
   (interactive)
   (ivy-read "Major modes: " obarray
             :predicate (lambda (f)
-                         (and (commandp f) (string-match "-mode$" (symbol-name f))
+                         (and (commandp f)
+                              (string-suffix-p "-mode" (symbol-name f))
                               (or (and (autoloadp (symbol-function f))
                                        (let ((doc-split (help-split-fundoc (documentation f) f)))
                                          ;; major mode starters have no arguments
@@ -6872,7 +6938,7 @@ Additional actions:\\<ivy-minibuffer-map>
      "https://duckduckgo.com/html/?q="
      counsel--search-request-data-ddg))
   "Search engine parameters for `counsel-search'."
-  :type '(list))
+  :type '(alist :key-type symbol :value-type (list string string function)))
 
 (defun counsel--search-request-data-google (data)
   (mapcar #'identity (aref data 1)))
@@ -6918,7 +6984,7 @@ We update it in the callback with `ivy-update-candidates'."
             :caller 'counsel-search))
 
 (define-obsolete-function-alias 'counsel-google
-    #'counsel-search "<2019-10-17 Thu>")
+    #'counsel-search "0.13.2 (2019-10-17)")
 
 ;;** `counsel-compilation-errors'
 (defun counsel--compilation-errors-buffer (buf)
