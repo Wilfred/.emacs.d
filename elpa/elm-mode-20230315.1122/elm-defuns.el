@@ -1,11 +1,10 @@
-;;; elm-mode.el --- Major mode for Elm
+;;; elm-defuns.el --- Find start/end of elm defuns  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2013, 2014  Joseph Collard
 ;; Copyright (C) 2015, 2016  Bogdan Popa
+;; Copyright (C) 2023  Steve Purcell
 
-;; Author: Joseph Collard
-;; Package-Requires: ((f "0.17") (let-alist "1.0.4") (seq "2.2") (s "1.7.0") (emacs "24.4") (dash "2.13.0"))
-;; URL: https://github.com/jcollard/elm-mode
+;; Author: Steve Purcell
 
 ;; This file is not part of GNU Emacs.
 
@@ -23,18 +22,8 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;; Code:
-(require 'elm-tags)
-(require 'elm-format)
-(require 'elm-imenu)
-(require 'elm-indent)
-(require 'elm-interactive)
-(require 'elm-font-lock)
 
-(defgroup elm nil
-  "Support for the elm programming language."
-  :link '(url-link :tag "Github" "https://github.com/jcollard/elm-mode")
-  :group 'languages)
+;;; Code:
 
 (defun elm-beginning-of-defun (&optional arg)
   "Move backward to the beginning of an ELM \"defun\".
@@ -101,77 +90,5 @@ Find the roots of this function in the c-awk-mode."
       (eq arg 0))))
 
 
-(defun elm-mode-after-save-handler ()
-  "Perform various operations upon saving a buffer."
-  (when elm-sort-imports-on-save
-    (elm-sort-imports))
-  (when elm-tags-on-save
-    (elm-mode-generate-tags))
-  (when elm-format-on-save
-    (elm-mode-format-buffer))
-  (when (or elm-sort-imports-on-save
-            elm-tags-on-save
-            elm-format-on-save)
-    (let ((before-save-hook '())
-          (after-save-hook '()))
-      (basic-save-buffer))))
-
-(defvar elm-mode-map
-  (let ((map (make-keymap)))
-    (define-key map (kbd "C-c C-f") 'elm-mode-format-buffer)
-    (define-key map (kbd "C-c M-t") 'elm-mode-generate-tags)
-    (define-key map (kbd "M-.") 'elm-mode-goto-tag-at-point)
-    (define-key map (kbd "M-,") 'pop-tag-mark)
-    (define-key map (kbd "C-c C-l") 'elm-repl-load)
-    (define-key map (kbd "C-c C-p") 'elm-repl-push)
-    (define-key map (kbd "C-c C-e") 'elm-repl-push-decl)
-    (define-key map (kbd "C-c C-z") 'run-elm-interactive)
-    (define-key map (kbd "C-c C-a") 'elm-compile-add-annotations)
-    (define-key map (kbd "C-c C-r") 'elm-compile-clean-imports)
-    (define-key map (kbd "C-c C-c") 'elm-compile-buffer)
-    (define-key map (kbd "C-c M-c") 'elm-compile-main)
-    (define-key map (kbd "C-c M-k") 'elm-package-catalog)
-    (define-key map (kbd "C-c C-n") 'elm-preview-buffer)
-    (define-key map (kbd "C-c C-m") 'elm-preview-main)
-    (define-key map (kbd "C-c C-d") 'elm-documentation-lookup)
-    (define-key map (kbd "C-c C-i") 'elm-import)
-    (define-key map (kbd "C-c C-s") 'elm-sort-imports)
-    (define-key map (kbd "C-c C-t") 'elm-oracle-type-at-point)
-    (define-key map (kbd "C-c M-d") 'elm-oracle-doc-at-point)
-    (define-key map (kbd "C-c C-v") 'elm-test-project)
-    map)
-  "Keymap for Elm major mode.")
-
-;;;###autoload
-(define-derived-mode elm-mode prog-mode "Elm"
-  "Major mode for editing Elm source code."
-  (setq-local indent-tabs-mode nil)
-
-  ;; Elm is not generally suitable for electric indentation, since
-  ;; there is no unambiguously correct indent level for any given
-  ;; line.
-  (when (boundp 'electric-indent-inhibit)
-    (setq-local electric-indent-inhibit t))
-
-  (setq-local comment-start "--")
-  (setq-local comment-end "")
-  (setq-local imenu-create-index-function #'elm-imenu-create-index)
-  (setq-local paragraph-separate "\\(\r\t\n\\|-}\\)$")
-  (setq-local beginning-of-defun-function #'elm-beginning-of-defun)
-  (setq-local end-of-defun-function #'elm-end-of-defun)
-
-  (add-function :before-until (local 'eldoc-documentation-function) #'elm-eldoc)
-
-  (add-hook 'after-save-hook #'elm-mode-after-save-handler nil t)
-
-  (turn-on-elm-font-lock))
-
-;; We enable intelligent indenting, but users can remove this from the
-;; hook if they prefer.
-(add-hook 'elm-mode-hook 'elm-indent-mode)
-
-;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))
-
-(provide 'elm-mode)
-;;; elm-mode.el ends here
+(provide 'elm-defuns)
+;;; elm-defuns.el ends here

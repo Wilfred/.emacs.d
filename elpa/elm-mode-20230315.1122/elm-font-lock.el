@@ -1,4 +1,4 @@
-;;; elm-font-lock.el --- Font locking module for Elm mode.
+;;; elm-font-lock.el --- Font locking module for Elm mode.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2013, 2014 Joseph Collard
 ;; Copyright (C) 2015 Bogdan Popa
@@ -55,9 +55,14 @@ To disable this highlighting, set this to nil."
   :group 'elm-font-lock)
 
 (defconst elm--keywords
-  '("let" "case" "in" "if" "of" "then" "else" "effect"
-    "module" "import" "as" "exposing" "type" "where"
-    "alias" "port" "infix" "infixr" "infixl")
+  '("if" "then" "else"
+    "case" "of"
+    "let" "in"
+    "type" "alias"
+    "module"
+    "where"
+    "import" "as" "exposing"
+    "port")
   "Reserved keywords.")
 
 (defconst elm--regexp-keywords
@@ -115,6 +120,7 @@ To disable this highlighting, set this to nil."
     (modify-syntax-entry ?\}  "){4nb" st)
     (modify-syntax-entry ?-  ". 123" st)
     (modify-syntax-entry ?\n ">" st)
+    (modify-syntax-entry ?. "_" st)
 
     (modify-syntax-entry ?\" "\"\"" st)
     (modify-syntax-entry ?\\ "\\" st)
@@ -150,7 +156,7 @@ To disable this highlighting, set this to nil."
 
 (defconst elm--regexp-multiline-list-comma-closing-brackets
   (concat "^[[:space:]]*" (regexp-opt '("," "]" "}") t))
-  "A regular expression representing commas and closing brackets in multiline lists and records.")
+  "Regexp for commas and closing brackets in multiline lists/records.")
 
 (defconst elm--font-lock-multiline-list-comma-closing-brackets
   (cons elm--regexp-multiline-list-comma-closing-brackets
@@ -158,8 +164,9 @@ To disable this highlighting, set this to nil."
   "Highlighting for commas and closing brackets in multiline lists and records.")
 
 (defun elm--match-multiline-list-opening-bracket (limit)
-  "Highlighting search function for opening brackets in multiline lists and records.
-Also highlights opening brackets without a matching bracket."
+  "Search for opening brackets in multiline lists and records.
+Also highlights opening brackets without a matching bracket.
+LIMIT is the extent of the search."
   (when (elm--search-forward-opening-bracket limit)
     (let ((opening (point))
           (eol (line-end-position))
@@ -179,7 +186,8 @@ Also highlights opening brackets without a matching bracket."
         t)))
 
 (defun elm--search-forward-closing-bracket ()
-  "Go to the next matching bracket, assuming that the cursor is on an opening bracket."
+  "Go to the next matching bracket.
+Assumes that the cursor is on an opening bracket."
   (ignore-errors
     (save-match-data
       (forward-sexp)))
@@ -198,7 +206,7 @@ Also highlights opening brackets without a matching bracket."
               elm--font-lock-operators)
         nil nil))
 
-(defun turn-on-elm-font-lock ()
+(defun elm--font-lock-enable ()
   "Turn on Elm font lock."
   (setq font-lock-multiline t)
   (set-syntax-table elm--syntax-table)

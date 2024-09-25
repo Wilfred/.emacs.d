@@ -23,10 +23,12 @@
 
 ;;; Commentary:
 ;;; Code:
+(require 'elm-defuns)
 (require 'f)
 (require 'json)
 (require 'let-alist)
 (require 's)
+(require 'pulse)
 
 (require 'haskell-decl-scan nil 'noerror)
 (require 'inf-haskell nil 'noerror)
@@ -41,9 +43,24 @@
   :type 'number
   :group 'elm-util)
 
-(defconst elm-package-json
-  "elm-package.json"
-  "The name of the package JSON configuration file.")
+(defcustom elm-package-json
+  "elm.json"
+  "The name of the package JSON configuration file."
+  :type 'string
+  :group 'elm-util)
+
+(when (require 'project nil t)
+  (defun elm-project-find-function (dir)
+    "Find a project for project.el looking upwards from DIR.
+This can be added to `project-find-functions' so that
+`project-root' will return the directory in which the
+`elm-package-json' file is found."
+    (let ((root-dir (locate-dominating-file dir elm-package-json)))
+      (when root-dir
+        (cons 'elm root-dir))))
+
+  (cl-defmethod project-root ((project (head elm)))
+    (cdr project)))
 
 (defun elm--get-module-name ()
   "Return the qualified name of the module in the current buffer."
@@ -54,24 +71,24 @@
     (buffer-substring-no-properties (match-beginning 1) (match-end 1))))
 
 (defun elm--get-decl ()
-  "Return the current declaration.
-
-Relies on `haskell-mode' stuff."
-  (unless (fboundp #'haskell-ds-backward-decl)
-    (error "This functionality requires haskell-mode"))
-
+  "Return the current declaration."
   (save-excursion
     (goto-char (1+ (point)))
-    (let* ((start (or (haskell-ds-backward-decl) (point-min)))
-           (end (or (haskell-ds-forward-decl) (point-max)))
-           (raw-decl (s-trim-right (buffer-substring start end)))
-           (lines (split-string raw-decl "\n"))
-           (first-line (car lines)))
+    (unless (elm-beginning-of-defun)
+      (user-error "Not in a declaration"))
+    (let ((start (point)))
+      (elm-end-of-defun)
+      (let* ((end (point))
+             (raw-decl (s-trim-right (buffer-substring start end)))
+             (lines (split-string raw-decl "\n"))
+             (first-line (car lines))
+             ;; Shadow the defcustom pulse-delay variable.
+             (pulse-delay (/ elm-flash-duration 10.0)))
 
-      (inferior-haskell-flash-decl start end elm-flash-duration)
-      (if (string-match-p "^[a-z].*:" first-line)
-          (cdr lines)
-        lines))))
+        (pulse-momentary-highlight-region start end)
+        (if (string-match-p "^[a-z].*:" first-line)
+            (cdr lines)
+          lines)))))
 
 (defun elm--build-import-statement ()
   "Generate a statement that will import the current module."
@@ -79,7 +96,7 @@ Relies on `haskell-mode' stuff."
 
 (defun elm--get-buffer-dirname ()
   "Return the absolute dirname of the current buffer."
-  (concat (f-dirname (buffer-file-name)) "/"))
+  (file-name-as-directory default-directory))
 
 (defun elm--buffer-local-file-name ()
   "Return the current file name relative to the dependency file."
@@ -131,10 +148,10 @@ per the `elm-package-json' variable."
         (f-join source-dir elm-main-file)))))
 
 (defun elm--shell-and-command ()
-  "Determine the appropriate 'and' command for the current shell.
+  "Determine the appropriate \"and\" command for the current shell.
 
-Currently only special cases the Fish shell, returning '; and ' when
-Fish is used as the default system shell.  Returns ' && ' in all other
+Currently only special cases the Fish shell, returning \"; and \" when
+Fish is used as the default system shell.  Returns \" && \" in all other
 cases."
   ;; TODO: Windows?
   (let* ((shell (getenv "SHELL"))

@@ -31,7 +31,7 @@
   :type 'boolean)
 
 (defcustom elm-tags-exclude-elm-stuff t
-  "Controls whether or not sources in the `elm-stuff' directory should be excluded from the TAGS file."
+  "Whether to exclude the `elm-stuff' directory from the TAGS file."
   :group 'elm-tags
   :type 'boolean)
 
@@ -39,15 +39,6 @@
   (f-join
    (f-dirname load-file-name)
    "elm.tags"))
-
-;;;###autoload
-(defun elm-mode-goto-tag-at-point ()
-  "Go to tag at point."
-  (interactive)
-  (let ((tag (find-tag-default)))
-    (unless tag
-      (user-error "No tag candidate found around point"))
-    (find-tag tag)))
 
 ;;;###autoload
 (defun elm-mode-generate-tags ()
