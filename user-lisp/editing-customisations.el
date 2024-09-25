@@ -342,14 +342,6 @@ If the region is active, toggle commenting on the whole region."
     (insert (format "(provide '%s)" (f-no-ext filename)))
     (insert (format "\n;;; %s ends here" filename))))
 
-;; Disable fringe now we're using diff-hl-mode. TODO: find a better file for this.
-(use-package flycheck
-  :init
-  (setq flycheck-indication-mode nil))
-
-(require 'flymake)
-(setq flymake-fringe-indicator-position nil)
-
 (require 'backup-each-save)
 (defun wh/show-backups ()
   "Show the directory containing all the backups of the current buffer."
