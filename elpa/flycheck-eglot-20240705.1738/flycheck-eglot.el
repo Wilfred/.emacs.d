@@ -5,10 +5,8 @@
 ;; Author: Sergey Firsov <intramurz@gmail.com>
 ;; Maintainer: Sergey Firsov <intramurz@gmail.com>
 ;; Version: 0.1
-;; Package-Version: 20230202.1844
-;; Package-Commit: 31905ad676d67fb2967a3b6d907312380696615f
 ;; Package-Requires: ((emacs "28.1") (eglot "1.9") (flycheck "32"))
-;; URL: https://github.com/intramurz/flycheck-eglot
+;; URL: https://github.com/flycheck/flycheck-eglot
 ;; Keywords: convenience language tools
 
 
@@ -58,7 +56,7 @@
 ;; By default, the Flycheck-Eglot considers the Eglot to be the only provider
 ;; of syntax checks.  Other Flycheck checkers are ignored.
 ;; There is a variable `flycheck-eglot-exclusive' that controls this.
-;; You can override it system wide or for some major modes.
+;; You can override it system-wide or for some major modes.
 
 ;;; Code:
 
@@ -81,6 +79,28 @@
   :group 'flycheck-eglot)
 
 
+(defcustom flycheck-eglot-enable-diagnostic-tags t
+  "Enable display of diagnostic tags."
+  :type 'boolean
+  :group 'flycheck-eglot)
+
+
+(defvar flycheck-eglot-tag-labels
+  '((deprecated . "*")
+    (unnecessary . "?"))
+  "Diagnostic tag labels.")
+
+
+(defvar flycheck-eglot-level-tag-separator
+  ":"
+  "Separator between the level name and diagnostic tag labels.")
+
+
+(defvar flycheck-eglot-tag-separator
+  ""
+  "Diagnostic tag label separator.")
+
+
 (defvar-local flycheck-eglot--current-errors nil)
 
 
@@ -94,6 +114,64 @@ CALLBACK is a callback function provided by Flycheck."
              flycheck-eglot--current-errors)))
 
 
+(flymake--diag-accessor flymake-diagnostic-overlay-properties
+                        flymake--diag-overlay-properties overlay-properties)
+
+
+(defun flycheck-eglot--get-error-level (diag)
+  "Select or create (if necessary) a flycheck error level.
+DIAG is the Eglot diagnostics in Flymake format."
+  (let ((level (pcase (flymake-diagnostic-type diag)
+                 ('eglot-note 'info)
+                 ('eglot-warning 'warning)
+                 ('eglot-error 'error)
+                 (_ (error "Unknown diagnostic type: %S" diag))))
+        (overlay-props (flymake-diagnostic-overlay-properties diag)))
+    (if (and flycheck-eglot-enable-diagnostic-tags
+             overlay-props)
+        (let* ((faces (alist-get 'face overlay-props))
+               (tags (mapcar
+                      (lambda (face)
+                        (pcase face
+                          ('eglot-diagnostic-tag-unnecessary-face 'unnecessary)
+                          ('eglot-diagnostic-tag-deprecated-face 'deprecated)
+                          (_ (error "Unknown eglot face: %S" face))))
+                      faces))
+               (name (format "%s%s%s"
+                             level
+                             flycheck-eglot-level-tag-separator
+                             (mapconcat (lambda (tag)
+                                          (alist-get tag flycheck-eglot-tag-labels))
+                                        tags flycheck-eglot-tag-separator))))
+
+          (or (intern-soft name)
+              (let* ((new-level (intern name))
+                     (face (get (flycheck-error-level-overlay-category level)
+                                'face))
+                     (faces (append faces
+                                    (list face)))
+                     (priority (get (flycheck-error-level-overlay-category level)
+                                    'priority))
+                     (bitmaps (cons (flycheck-error-level-fringe-bitmap level)
+                                    (flycheck-error-level-fringe-bitmap level t)))
+                     (category (intern (format "%s-category" name))))
+
+                (setf (get category 'face) faces)
+                (setf (get category 'priority) priority)
+
+                (flycheck-define-error-level new-level
+                  :severity (flycheck-error-level-severity level)
+                  :compilation-level (flycheck-error-level-compilation-level level)
+                  :overlay-category category
+                  :fringe-bitmap bitmaps
+                  :fringe-face (flycheck-error-level-fringe-face level)
+                  :margin-spec (flycheck-error-level-margin-spec level)
+                  :error-list-face (flycheck-error-level-error-list-face level))
+
+                new-level)))
+      level)))
+
+
 (defun flycheck-eglot--report-eglot-diagnostics (diags &rest _)
   "Report function for the `eglot-flymake-backend'.
 DIAGS is the Eglot diagnostics list in Flymake format."
@@ -103,11 +181,7 @@ DIAGS is the Eglot diagnostics list in Flymake format."
                     (with-current-buffer (flymake-diagnostic-buffer diag)
                       (flycheck-error-new-at-pos
                        (flymake-diagnostic-beg diag) ; POS
-                       (pcase (flymake-diagnostic-type diag) ; LEVEL
-                         ('eglot-note 'info)
-                         ('eglot-warning 'warning)
-                         ('eglot-error 'error)
-                         (_ (error "Unknown diagnostic type: %S" diag)))
+                       (flycheck-eglot--get-error-level diag) ; LEVEL
                        (flymake-diagnostic-text diag)  ; MESSAGE
                        :end-pos (flymake-diagnostic-end diag)
                        :checker 'eglot-check
@@ -132,6 +206,21 @@ DIAGS is the Eglot diagnostics list in Flymake format."
   :modes '(prog-mode text-mode))
 
 
+(defun flycheck-eglot--flymake-diagnostics-wrapper (orig &optional beg end)
+  "Does the job of the `flymake-diagnostic' when it can't.
+ORIG is the original function, (BEG END) is the range"
+  (if (not flycheck-eglot-mode)
+      (funcall orig beg end)
+    (cl-remove-if-not (lambda (s)
+                        (cond (end (<= beg
+                                       (flymake-diagnostic-beg s)
+                                       (flymake-diagnostic-end s)
+                                       end))
+                              (beg (= beg (flymake-diagnostic-beg s)))
+                              (t t)))
+                      eglot--diagnostics)))
+
+
 (defun flycheck-eglot--setup ()
   "Setup flycheck-eglot."
   (when (flycheck-eglot--eglot-available-p)
@@ -147,6 +236,7 @@ DIAGS is the Eglot diagnostics list in Flymake format."
         (unless (eq current-checker 'eglot-check)
           (flycheck-add-next-checker 'eglot-check current-checker))))
     (eglot-flymake-backend #'flycheck-eglot--report-eglot-diagnostics)
+    (advice-add #'flymake-diagnostics :around #'flycheck-eglot--flymake-diagnostics-wrapper)
     (flymake-mode -1)
     (flycheck-mode 1)))
 

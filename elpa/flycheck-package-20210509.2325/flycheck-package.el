@@ -5,8 +5,6 @@
 ;; Author: Steve Purcell <steve@sanityinc.com>
 ;;         Fanael Linithien <fanael4@gmail.com>
 ;; Keywords: lisp
-;; Package-Version: 20210509.2323
-;; Package-Commit: 30362dddca2a5f02d5e611e8fe802b528c610e10
 ;; Version: 0
 ;; URL: https://github.com/purcell/flycheck-package
 ;; Package-Requires: ((emacs "24.1") (flycheck "0.22") (package-lint "0.2"))
