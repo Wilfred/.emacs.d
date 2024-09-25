@@ -20,7 +20,6 @@ tramp
 amx-items
 smex-items
 
-
 bookmarks
 session.*
 url/
@@ -60,6 +59,8 @@ emojis
 
 # anaconda is a virtualenv with eggs, so shouldn't be checked in.
 anaconda-mode
+
+org-roam.db
 
 forge-database.sqlite
 
