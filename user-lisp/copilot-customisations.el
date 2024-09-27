@@ -12,5 +12,12 @@
 ;; Add a keybinding to trigger it explicitly.
 (global-set-key (kbd "<backtab>") #'copilot-complete)
 
-(add-hook 'prog-mode-hook 'copilot-mode)
-;; (remove-hook 'prog-mode-hook 'copilot-mode)
+(defun wh/copilot-enable ()
+  (interactive)
+  ;; This differs from `global-copilot-mode' in that we're only
+  ;; enabling copilot for prog-mode and modes derived from it.
+  (add-hook 'prog-mode-hook 'copilot-mode))
+
+(defun wh/copilot-disable ()
+  (interactive)
+  (remove-hook 'prog-mode-hook 'copilot-mode))
