@@ -466,15 +466,6 @@ Visit the file after creation."
 
 
 
-;; I prefer my errors underlined.
-
-
-(custom-set-faces
- '(flycheck-error ((((class color)) (:underline "Red"))))
- '(flycheck-warning ((((class color)) (:underline "Orange")))))
-
-
-
 ;; It's really useful to be able to move between flymake errors, so we
 ;; bind =F8= and =F9= for this. Since there's a gap between these two
 ;; keys, they're easy to find.

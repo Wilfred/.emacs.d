@@ -559,15 +559,7 @@ highlight the whole line, as it's much faster. See
 [[https://github.com/lunaryorn/flycheck/issues/153#issuecomment-19450255][flycheck issue #53]].
 
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (setq flycheck-highlighting-mode 'lines)
-#+END_SRC
-
-I prefer my errors underlined.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :comments org
-  (custom-set-faces
-   '(flycheck-error ((((class color)) (:underline "Red"))))
-   '(flycheck-warning ((((class color)) (:underline "Orange")))))
+  (setq flycheck-highlighting-mode 'symbols)
 #+END_SRC
 
 It's really useful to be able to move between flymake errors, so we
