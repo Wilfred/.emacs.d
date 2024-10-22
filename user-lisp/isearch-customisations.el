@@ -58,10 +58,7 @@ This is useful when followed by an immediate kill."
 (global-set-key (kbd "<f12>") #'swiper)
 (global-set-key (kbd "C-c <f12>") #'swiper-all)
 
-;; Show the index of the current match in addition to the total
-;; matches with ivy (used by swiper). Anzu style.
-(require 'ivy)
-(setq ivy-count-format "(%d/%d) ")
-(setq ivy-display-style 'fancy)
+;; Show the match count when running isearch.
+(setq isearch-lazy-count t)
 
 (provide 'isearch-customisations)
