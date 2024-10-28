@@ -18,39 +18,4 @@
       (setq string (concat string (random-choice chars))))
     string))
 
-(defun wh/words ()
-  (let ((buf (find-file-noselect "~/.emacs.d/user-lisp/words.txt")))
-    (with-current-buffer buf
-      (s-lines (s-trim (buffer-string))))))
-
-(defun random-xkcd-password (&optional word-count)
-  (interactive)
-  (unless word-count
-    (setq word-count 4))
-  (let ((all-words (wh/words))
-        words
-        password)
-    (dotimes (_ word-count)
-      (push (random-choice all-words) words))
-    (setq password (s-join " " words))
-    (message "%s (also copied to clipboard)" password)
-    (let ((select-enable-clipboard t))
-      (kill-new password))))
-
-(defun random-password ()
-  "Generate a random 32 character string."
-  (interactive)
-  ;; Set random seed to system entropy, if available, otherwise uses
-  ;; the system time.
-  (random t)
-  (let ((password
-         (random-string
-          32
-          (split-string
-           "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !&.|@"
-           "" t))))
-    (message "%s (also copied to clipboard)" password)
-    (let ((x-select-enable-clipboard t))
-      (kill-new password))))
-
 (provide 'random-utils)
