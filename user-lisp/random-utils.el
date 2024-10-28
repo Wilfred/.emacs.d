@@ -18,10 +18,6 @@
       (setq string (concat string (random-choice chars))))
     string))
 
-(defun random-reseed-securely ()
-  "Securely reseed Emacs' random number generator."
-  (random (shell-command "cat < /dev/urandom | fold -w32 | head -n1")))
-
 (defun wh/words ()
   (let ((buf (find-file-noselect "~/.emacs.d/user-lisp/words.txt")))
     (with-current-buffer buf
@@ -44,7 +40,9 @@
 (defun random-password ()
   "Generate a random 32 character string."
   (interactive)
-  (random-reseed-securely)
+  ;; Set random seed to system entropy, if available, otherwise uses
+  ;; the system time.
+  (random t)
   (let ((password
          (random-string
           32
