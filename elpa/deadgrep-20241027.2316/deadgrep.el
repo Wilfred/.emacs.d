@@ -5,7 +5,8 @@
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; URL: https://github.com/Wilfred/deadgrep
 ;; Keywords: tools
-;; Version: 0.14
+;; Package-Version: 20241027.2316
+;; Package-Revision: c37365013ece
 ;; Package-Requires: ((emacs "25.1") (dash "2.12.0") (s "1.11.0") (spinner "1.7.3"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -148,6 +149,13 @@ display."
 (put 'deadgrep--search-case 'permanent-local t)
 (defvar-local deadgrep--file-type 'all)
 (put 'deadgrep--file-type 'permanent-local t)
+
+(defvar-local deadgrep--skip-if-hidden nil
+  "Whether deadgrep should ignore hidden files (e.g. files called .foo).")
+(put 'deadgrep--skip-if-hidden 'permanent-local t)
+(defvar-local deadgrep--skip-if-vcs-ignore 't
+  "Whether deadgrep should ignore files if they're listed in .gitignore.")
+(put 'deadgrep--skip-if-vcs-ignore 'permanent-local t)
 
 (defvar-local deadgrep--context nil
   "When set, also show context of results.
@@ -497,6 +505,24 @@ with a text face property `deadgrep-match-face'."
   'case nil
   'help-echo "Change file type")
 
+(define-button-type 'deadgrep-skip-hidden-type
+  'action #'deadgrep--skip-if-hidden
+  'case nil
+  'help-echo "Toggle whether to skip dotfiles")
+
+(defun deadgrep--skip-if-hidden (_button)
+  (setq deadgrep--skip-if-hidden (not deadgrep--skip-if-hidden))
+  (deadgrep-restart))
+
+(define-button-type 'deadgrep-vcs-skip-type
+  'action #'deadgrep--skip-if-vcs-ignore
+  'case nil
+  'help-echo "Toggle whether to skip files listed in .gitignore")
+
+(defun deadgrep--skip-if-vcs-ignore (_button)
+  (setq deadgrep--skip-if-vcs-ignore (not deadgrep--skip-if-vcs-ignore))
+  (deadgrep-restart))
+
 (defun deadgrep--format-file-type (file-type extensions)
   (let* ((max-exts 4)
          (truncated (> (length extensions) max-exts)))
@@ -736,6 +762,11 @@ to obtain ripgrep results."
       (push (format "--before-context=%s" (car context)) args)
       (push (format "--after-context=%s" (cdr context)) args))
 
+    (unless deadgrep--skip-if-hidden
+      (push "--hidden" args))
+    (unless deadgrep--skip-if-vcs-ignore
+      (push "--no-ignore-vcs" args))
+
     (push "--" args)
     (push search-term args)
     (push "." args)
@@ -839,6 +870,15 @@ search settings."
             (if (eq (car-safe deadgrep--file-type) 'glob)
                 (format ":%s" (cdr deadgrep--file-type))
               "")
+            "\n"
+            (propertize "Skip: "
+                        'face 'deadgrep-meta-face)
+            (deadgrep--button "dotfiles" 'deadgrep-skip-hidden-type)
+            (if deadgrep--skip-if-hidden ":yes" ":no")
+            " "
+            (deadgrep--button ".gitignore items" 'deadgrep-vcs-skip-type)
+            (if deadgrep--skip-if-vcs-ignore ":yes" ":no")
+            " "
             "\n\n")
     (put-text-property
      start-pos (point)
@@ -1224,7 +1264,6 @@ If POS is nil, use the beginning position of the current line."
       ;; consistent with `compilation-next-error-function' and also
       ;; useful with `deadgrep-visit-result-other-window'.
       (setq overlay-arrow-position (copy-marker pos))
-      (setq next-error-last-buffer (current-buffer))
 
       (funcall open-fn file-name)
       (goto-char (point-min))
@@ -1627,10 +1666,13 @@ deadgrep is ready but not yet searching."
                (key-description restart-key))))))
 
 (defun deadgrep--mode-line ()
-  (let ((s (if deadgrep--result-count
-               (format "Deadgrep:%s" deadgrep--result-count)
-             "Deadgrep")))
-    (concat s (spinner-print deadgrep--spinner))))
+  (let* ((s (if deadgrep--result-count
+                (format "Deadgrep:%s" deadgrep--result-count)
+              "Deadgrep"))
+         (spinner-str (spinner-print deadgrep--spinner)))
+    (if spinner-str
+        (concat s " " spinner-str)
+      s)))
 
 (defun deadgrep--create-imenu-index ()
   "Create `imenu' index for matched files."
@@ -1670,6 +1712,7 @@ don't actually start the search."
     (with-current-buffer buf
       (setq imenu-create-index-function #'deadgrep--create-imenu-index)
       (setq next-error-function #'deadgrep-next-error)
+      (setq next-error-last-buffer buf)
 
       ;; If we have previous search settings, apply them to our new
       ;; search results buffer.
