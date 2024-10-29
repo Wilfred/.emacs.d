@@ -415,4 +415,28 @@ a symmetrically-encrypted GPG file. Require explict saving in this case."
 ;; Allow repeated C-SPC to pop the mark.
 (setq set-mark-command-repeat-pop t)
 
+(defun wh/copy-as-buffer ()
+  "Copy the current region or defun to a separate buffer, so we can
+keep it visible when editing other similar code."
+  (interactive)
+  (let* ((s (if (region-active-p)
+                (buffer-substring (region-beginning) (region-end))
+              (save-excursion
+                (let (start-pos end-pos)
+                  (beginning-of-defun)
+                  (setq start-pos (point))
+                  (end-of-defun)
+                  (setq end-pos (point))
+                  (buffer-substring start-pos end-pos)))))
+         (words (s-split " " s))
+         (buf (get-buffer-create (format "*copy: %s*" (nth 1 words))))
+         (inhibit-read-only t))
+    (with-current-buffer buf
+      (delete-region (point-min) (point-max))
+      (insert s)
+      (goto-char (point-min))
+      (special-mode)
+      (setq buffer-read-only t))
+    (switch-to-buffer buf)))
+
 (provide 'editing-customisations)
