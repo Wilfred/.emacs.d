@@ -430,7 +430,7 @@ keep it visible when editing other similar code."
                   (buffer-substring start-pos end-pos)))))
          (words (s-split " " s))
          (buf (get-buffer-create
-               (format "*%s: %s*" (buffer-name) (s-trim (nth 1 words)))))
+               (format "*COPY %s: %s*" (buffer-name) (s-trim (nth 1 words)))))
          (inhibit-read-only t))
     (with-current-buffer buf
       (delete-region (point-min) (point-max))
