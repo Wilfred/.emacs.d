@@ -427,6 +427,7 @@ keep it visible when editing other similar code."
                   (setq start-pos (point))
                   (end-of-defun)
                   (setq end-pos (point))
+                  (font-lock-ensure start-pos end-pos)
                   (buffer-substring start-pos end-pos)))))
          (words (s-split " " s))
          (buf (get-buffer-create
