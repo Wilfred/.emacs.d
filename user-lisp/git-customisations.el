@@ -90,6 +90,7 @@
 (use-package git-gutter
   :diminish ""
   :config
+  (add-hook 'prog-mode-hook #'git-gutter-mode)
   (global-set-key (kbd "C-c n") #'git-gutter:next-hunk)
   (global-set-key (kbd "C-c p") #'git-gutter:previous-hunk))
 
