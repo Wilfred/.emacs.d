@@ -151,14 +151,6 @@ test with the same name."
   :config
   (add-hook 'racket-mode-hook #'flycheck-mode))
 
-(use-package geiser
-  :config
-  ;; Use racket-mode for racket.
-  ;; https://github.com/jaor/geiser/pull/228
-  (setq
-   auto-mode-alist
-   (remove '("\\.rkt\\'" . scheme-mode) auto-mode-alist)))
-
 ;; Common Lisp configuration
 (setq inferior-lisp-program "/usr/bin/sbcl")
 (use-package sly
