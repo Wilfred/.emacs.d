@@ -2,4 +2,4 @@
 # name: collv
 # key: collv
 # --
-.collect::<Vec<_>>()
+collect::<Vec<_>>()
