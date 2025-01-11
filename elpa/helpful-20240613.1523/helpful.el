@@ -5,7 +5,8 @@
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; URL: https://github.com/Wilfred/helpful
 ;; Keywords: help, lisp
-;; Version: 0.22
+;; Package-Version: 20240613.1523
+;; Package-Revision: 4ba24cac9fb1
 ;; Package-Requires: ((emacs "25") (dash "2.18.0") (s "1.11.0") (f "0.20.0") (elisp-refs "1.2"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -95,6 +96,12 @@ To disable cleanup entirely, set this variable to nil. See also
 (defcustom helpful-switch-buffer-function
   #'pop-to-buffer
   "Function called to display the *Helpful* buffer."
+  :type 'function
+  :group 'helpful)
+
+(defcustom helpful-set-variable-function
+  (if (< 29 emacs-major-version) #'setopt #'setq)
+  "Function used by `helpful--set' to interactively set variables."
   :type 'function
   :group 'helpful)
 
@@ -600,6 +607,7 @@ overrides that to include previously opened buffers."
   (let* ((sym (button-get button 'symbol))
          (buf (button-get button 'buffer))
          (sym-value (helpful--sym-value sym buf))
+         (set-func (symbol-name helpful-set-variable-function))
          ;; Inspired by `counsel-read-setq-expression'.
          (expr
           (minibuffer-with-setup-hook
@@ -608,7 +616,7 @@ overrides that to include previously opened buffers."
                               #'elisp-eldoc-documentation-function)
                 (run-hooks 'eval-expression-minibuffer-setup-hook)
                 (goto-char (minibuffer-prompt-end))
-                (forward-char (length (format "(setq %S " sym))))
+                (forward-char (length (format "(%s %S " set-func sym))))
             (read-from-minibuffer
              "Eval: "
              (format
@@ -616,9 +624,9 @@ overrides that to include previously opened buffers."
                       (and (symbolp sym-value)
                            (not (null sym-value))
                            (not (keywordp sym-value))))
-                  "(setq %s '%S)"
-                "(setq %s %S)")
-              sym sym-value)
+                  "(%s %s '%S)"
+                "(%s %s %S)")
+              set-func sym sym-value)
              read-expression-map t
              'read-expression-history))))
     (save-current-buffer
@@ -793,16 +801,17 @@ bound) or else highlight."
        sym-name)
       (propertize sym-name
                   'face 'font-lock-builtin-face))
-     ((and (boundp sym) (s-ends-with-p "variable " before-txt))
+     ((and (boundp sym) (s-ends-with-p "variable " (downcase before-txt)))
       (helpful--button
        sym-name
        'helpful-describe-exactly-button
        'symbol sym
        'callable-p nil))
-     ((and (fboundp sym) (or
-                          (s-starts-with-p " command" after-txt)
-                          (s-ends-with-p "command " before-txt)
-                          (s-ends-with-p "function " before-txt)))
+     ((and (fboundp sym)
+           (or
+            (s-starts-with-p " command" (downcase after-txt))
+            (s-ends-with-p "command " (downcase before-txt))
+            (s-ends-with-p "function " (downcase before-txt))))
       (helpful--button
        sym-name
        'helpful-describe-exactly-button
@@ -1251,7 +1260,10 @@ If the source code cannot be found, return the sexp used."
                   ;; function.
                   (progn
                     (setq pos (line-beginning-position))
-                    (forward-list)
+                    ;; HACK Use the elisp syntax table even though the file is a
+                    ;; C file. This is a temporary workaround for issue #329.
+                    (with-syntax-table emacs-lisp-mode-syntax-table
+                      (forward-list))
                     (forward-char)
                     (narrow-to-region pos (point)))
                 ;; Narrow to the top-level definition.
@@ -1498,7 +1510,7 @@ buffer."
           ;; that.
           (save-excursion
             (condition-case _err
-                (setq pos (cdr (find-variable-noselect sym 'defvar)))
+                (setq pos (cdr (find-variable-noselect sym library-name)))
               (search-failed nil)
               ;; If your current Emacs instance doesn't match the source
               ;; code configured in find-function-C-source-directory, we can
@@ -2704,7 +2716,7 @@ See also `helpful-function'."
      ((null sym)
       (user-error "No command is bound to %s"
                   (key-description key-sequence)))
-     ((commandp sym)
+     ((commandp sym t)
       (helpful--update-and-switch-buffer sym t))
      (t
       (user-error "%s is bound to %s which is not a command"
