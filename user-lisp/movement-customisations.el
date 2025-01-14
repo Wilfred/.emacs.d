@@ -22,6 +22,15 @@
 (define-key compilation-mode-map (kbd "n") #'compilation-next-error)
 (define-key compilation-mode-map (kbd "p") #'compilation-previous-error)
 
+(defun wh/single-window-then-split ()
+  "Make this window the only window, then split and focus on the right window."
+  (interactive)
+  (delete-other-windows)
+  (split-window-horizontally)
+  (other-window 1))
+
+(global-set-key (kbd "C-c s") #'wh/single-window-then-split)
+
 (require 'modalka-customisations)
 
 (provide 'movement-customisations)
