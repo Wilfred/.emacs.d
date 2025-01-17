@@ -49,4 +49,37 @@ The original buffer and file are untouched."
                       "user-lisp" (format "%s.el" name))))
     (find-file path)))
 
+(defun wh--visit-parts (path line-num &optional col-num)
+  "Visit the path/line/column specified."
+  (let ((buf (find-file-noselect path)))
+    (pop-to-buffer buf)
+    (widen)
+    (goto-char (point-min))
+    (when line-num
+      (forward-line (1- line-num))
+      (when col-num
+        (forward-char col-num)))))
+
+(defun wh--visit (path-and-pos)
+  "Visit \"/foo/bar:123:4\"."
+  (let* ((parts (s-split ":" path-and-pos))
+         (path (nth 0 parts))
+         (line-num (read (nth 1 parts)))
+         (col-num (read (nth 2 parts))))
+    (find-file path)
+    (widen)
+    (goto-char (point-min))
+    (forward-line (1- line-num))
+    (forward-char (1- col-num))))
+
+(defun wh/visit-abs-file-at-pos ()
+  (interactive)
+  ;; E.g. "#0 Errors /home/wilfred/foo/bar.ml:2196:3"
+  (let* ((line
+          (buffer-substring (line-beginning-position)
+                            (line-end-position)))
+         (parts (s-split " " line))
+         (line-spec (-last-item parts)))
+    (wh--visit line-spec)))
+
 (provide 'file-customisations)
