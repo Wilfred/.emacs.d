@@ -38,6 +38,7 @@
         markdown-outdent-or-delete
         open-newline-and-indent
         org-delete-char
+        org-end-of-line
         org-self-insert-command
         paredit-backward
         paredit-backward-kill-word
