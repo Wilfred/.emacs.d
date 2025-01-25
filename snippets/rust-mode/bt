@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: backtrace
+# key: bt
+# --
+println!("My backtrace: {}", std::backtrace::Backtrace::force_capture());
