@@ -14,6 +14,15 @@
     (goto-char start)
     (insert "dbg!(")))
 
+(defun wh/rust-wrap-vec (start end)
+  "Wrap the current selection in vec![..]."
+  (interactive "r")
+  (save-excursion
+    (goto-char end)
+    (insert "]")
+    (goto-char start)
+    (insert "vec![")))
+
 (defun wh/rust-unwrap-dbg ()
   "Remove dbg!(foo) to just foo on the line at point."
   (interactive)
