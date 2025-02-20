@@ -91,7 +91,7 @@ foo -> &foo[..]"
 
   (define-key rust-mode-map (kbd "C-c F") #'wh/cargo-fmt)
 
-  (define-key rust-mode-map (kbd "C-c v") #'wh/rust-toggle-visibility)
+  (define-key rust-mode-map (kbd "C-c v") #'wh/rust-wrap-vec)
 
   (define-key rust-mode-map (kbd "C-c d") #'wh/rust-dbg-dwim)
 
