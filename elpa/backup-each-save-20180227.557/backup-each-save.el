@@ -3,8 +3,9 @@
 ;; Copyright (C) 2004  Free Software Foundation, Inc.
 
 ;; Author: Benjamin Rutt <brutt@bloomington.in.us>
-;; Version: 20130704.1432
-;; X-Original-Version: 1.4
+;; Maintainer: Conor Nash <conor@nashcobusinessservicesllc.com>
+;; Package-Version: 20180227.557
+;; Package-Revision: 3c414b9d6b27
 
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
