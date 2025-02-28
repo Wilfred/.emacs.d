@@ -126,13 +126,13 @@ test with the same name."
 (set-face-attribute 'highlight-quoted-quote nil
                     :inherit 'highlight-quoted-symbol)
 
-(dolist (hook '(emacs-lisp-mode-hook
-                clojure-mode-hook
-                racket-mode-hook))
-  (add-hook hook
-            (lambda ()
-              (setq use-hl-line nil)
-              (hl-sexp-mode))))
+;; (dolist (hook '(emacs-lisp-mode-hook
+;;                 clojure-mode-hook
+;;                 racket-mode-hook))
+;;   (add-hook hook
+;;             (lambda ()
+;;               (setq use-hl-line nil)
+;;               (hl-sexp-mode))))
 
 (eval-after-load 'flycheck
   '(add-hook 'flycheck-mode-hook #'flycheck-cask-setup))
