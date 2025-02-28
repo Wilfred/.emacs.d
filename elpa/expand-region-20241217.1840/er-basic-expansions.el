@@ -1,6 +1,6 @@
-;;; er-basic-expansions.el --- Words, symbols, strings, et al
+;;; er-basic-expansions.el --- Words, symbols, strings, et al  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2011-2013 Magnar Sveen
+;; Copyright (C) 2011-2023  Free Software Foundation, Inc
 
 ;; Author: Magnar Sveen <magnars@gmail.com>
 ;; Keywords: marking region
@@ -69,11 +69,11 @@ period and marks next symbol."
   (when (use-region-p)
     (when (< (point) (mark))
       (exchange-point-and-mark))
-    (let ((symbol-regexp "\\s_\\|\\sw"))
+    ;; (let ((symbol-regexp "\\s_\\|\\sw"))
       (when (looking-at "\\.")
         (forward-char 1)
         (skip-syntax-forward "_w")
-        (exchange-point-and-mark)))))
+        (exchange-point-and-mark)))) ;; )
 
 (defun er/mark-method-call ()
   "Mark the current symbol (including dots) and then paren to closing paren."
@@ -101,14 +101,14 @@ period and marks next symbol."
   (interactive)
   (when (er--point-is-in-comment-p)
     (let ((p (point)))
-      (while (er--point-is-in-comment-p)
+      (while (and (er--point-is-in-comment-p) (not (eobp)))
         (forward-char 1))
-      (skip-chars-backward " \n\t\r")
+      (skip-chars-backward "\n\r")
       (set-mark (point))
       (goto-char p)
       (while (er--point-is-in-comment-p)
         (forward-char -1))
-      (skip-chars-forward " \n\t\r"))))
+      (forward-char 1))))
 
 ;; Quotes
 
@@ -116,7 +116,7 @@ period and marks next symbol."
   "The char that is the current quote delimiter"
   (nth 3 (syntax-ppss)))
 
-(defalias 'er--point-inside-string-p 'er--current-quotes-char)
+(defalias 'er--point-inside-string-p #'er--current-quotes-char)
 
 (defun er--move-point-forward-out-of-string ()
   "Move point forward until it exits the current quoted string."
@@ -189,7 +189,8 @@ period and marks next symbol."
 (defun er/mark-outside-pairs ()
   "Mark pairs (as defined by the mode), including the pair chars."
   (interactive)
-  (if (er/looking-back-on-line "\\s)+\\=")
+  (if (and (er/looking-back-on-line "\\s)+\\=")
+           (not (er--looking-at-pair)))
       (ignore-errors (backward-list 1))
     (skip-chars-forward er--space-str))
   (when (and (er--point-inside-pairs-p)
@@ -240,6 +241,27 @@ period and marks next symbol."
                 er/mark-email
                 er/mark-defun)
               er/try-expand-list))
+
+(when (and (>= emacs-major-version 29)
+           (treesit-available-p))
+  (defun er/mark-ts-node ()
+    "Mark tree sitter node around or after point."
+    (interactive)
+    (when (treesit-language-at (point))
+      (let* ((node (if (use-region-p)
+                       (treesit-node-on (region-beginning) (region-end))
+                     (treesit-node-at (point))))
+             (node-start (treesit-node-start node))
+             (node-end (treesit-node-end node)))
+        ;; when the node fits the region exactly, try its parent node instead
+        (when (and (= (region-beginning) node-start)
+                   (= (region-end) node-end))
+          (when-let ((node (treesit-node-parent node)))
+            (setq node-start (treesit-node-start node)
+                  node-end (treesit-node-end node))))
+        (goto-char node-start)
+        (set-mark node-end))))
+  (setq er/try-expand-list (append er/try-expand-list '(er/mark-ts-node))))
 
 (provide 'er-basic-expansions)
 ;;; er-basic-expansions.el ends here

@@ -1,6 +1,6 @@
-;;; expand-region-core.el --- Increase selected region by semantic units.
+;;; expand-region-core.el --- Increase selected region by semantic units.  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2011-2013 Magnar Sveen
+;; Copyright (C) 2011-2023  Free Software Foundation, Inc
 
 ;; Author: Magnar Sveen <magnars@gmail.com>
 ;; Keywords: marking region
@@ -26,7 +26,6 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
 (require 'expand-region-custom)
 (declare-function er/expand-region "expand-region")
 
@@ -39,10 +38,17 @@
 (defvar er--space-str " \t\n")
 (defvar er--blank-list (append er--space-str nil))
 
-(set-default 'er--show-expansion-message nil)
+(defvar er--show-expansion-message nil)
 
 (defvar er/try-expand-list nil
   "A list of functions that are tried when expanding.")
+
+(defvar er/save-mode-excursion nil
+  "A function to save excursion state when expanding.")
+
+(defsubst er--first-invocation ()
+  "t if this is the first invocation of `er/expand-region' or `er/contract-region'."
+  (not (memq last-command '(er/expand-region er/contract-region))))
 
 (defun er--prepare-expanding ()
   (when (and (er--first-invocation)
@@ -50,9 +56,8 @@
     (push-mark nil t)  ;; one for keeping starting position
     (push-mark nil t)) ;; one for replace by set-mark in expansions
 
-  (when (or (not (eq t transient-mark-mode))
-            shift-select-mode)
-    (setq transient-mark-mode (cons 'only transient-mark-mode))))
+  (when (not transient-mark-mode)
+    (setq-local transient-mark-mode (cons 'only transient-mark-mode))))
 
 (defun er--copy-region-to-register ()
   (when (and (stringp expand-region-autocopy-register)
@@ -66,6 +71,13 @@
     (defmacro save-mark-and-excursion (&rest body)
       `(save-excursion ,@body))))
 
+(defmacro er--save-excursion (&rest body)
+  `(let ((action (lambda ()
+                   (save-mark-and-excursion ,@body))))
+     (if er/save-mode-excursion
+         (funcall er/save-mode-excursion action)
+       (funcall action))))
+
 (defun er--expand-region-1 ()
   "Increase selected region by semantic units.
 Basically it runs all the mark-functions in `er/try-expand-list'
@@ -78,11 +90,12 @@ moving point or mark as little as possible."
          (try-list er/try-expand-list)
          (best-start (point-min))
          (best-end (point-max))
-         (set-mark-default-inactive nil))
+         ;; (set-mark-default-inactive nil)
+         )
 
     ;; add hook to clear history on buffer changes
     (unless er/history
-      (add-hook 'after-change-functions 'er/clear-history t t))
+      (add-hook 'after-change-functions #'er/clear-history t t))
 
     ;; remember the start and end points so we can contract later
     ;; unless we're already at maximum size
@@ -97,7 +110,7 @@ moving point or mark as little as possible."
       (setq start (point)))
 
     (while try-list
-      (save-mark-and-excursion
+      (er--save-excursion
        (ignore-errors
          (funcall (car try-list))
          (when (and (region-active-p)
@@ -123,61 +136,20 @@ moving point or mark as little as possible."
                (= best-end (point-max))) ;; We didn't find anything new, so exit early
       'early-exit)))
 
-(defun er--expansion-score (start end)
-  "Assign a score to the region between START and END inclusive.
-The bigger the score, the more semantic elements in the region.
-A better expansion should have a lower score."
-  (save-mark-and-excursion
-   (let ((word-chars 0)
-         (symbol-chars 0)
-         (punctuation-chars 0)
-         (space-chars 0)
-         (string-delim-chars 0)
-         (paren-chars 0)
-         (unbalanced-parens 0))
-     (goto-char start)
-     ;; For every character in the region, count the character classes.
-     (while (and (< (point) end) (not (eobp)))
-       (cl-case (char-syntax (following-char))
-         (?w (cl-incf word-chars))
-         (?_ (cl-incf symbol-chars))
-         (?. (cl-incf punctuation-chars))
-         (?\s (cl-incf space-chars))
-         (?\" (cl-incf string-delim-chars))
-         (?\( (cl-incf paren-chars) (cl-incf unbalanced-parens))
-         (?\) (cl-incf paren-chars) (cl-decf unbalanced-parens)))
-       (forward-char 1))
-     ;; Assign a score to the character classes, so
-     ;; "foobar" < "fo_bar"
-     ;; "fo_bar" < "fo.bar"
-     ;; "foobar()" < "fo = bar"
-     ;; and so on.
-     (+ word-chars
-        (* 10 symbol-chars)
-        (* 100 punctuation-chars)
-        (* 1000 paren-chars)
-        (* 10000 space-chars)
-        (* 100000 string-delim-chars)
-        ;; Heavily penalise unbalanced parens.
-        (* 1000000 (abs unbalanced-parens))))))
-
 (defun er--this-expansion-is-better (start end best-start best-end)
   "t if the current region is an improvement on previous expansions.
 
 This is provided as a separate function for those that would like
 to override the heuristic."
-  (let ((new-start (point))
-        (new-end (mark)))
-    (and
-     ;; The current region must include, and be bigger than, START...END.
-     (<= new-start start)
-     (>= new-end end)
-     (> (- new-end new-start) (- end start))
-     ;; The current region is better than BEST-START...BEST-END if it
-     ;; includes fewer syntactic elements (it's a tighter expansion).
-     (< (er--expansion-score new-start new-end)
-        (er--expansion-score best-start best-end)))))
+  (and
+   (<= (point) start)
+   (>= (mark) end)
+   (> (- (mark) (point)) (- end start))
+   (or (> (point) best-start)
+       (and (= (point) best-start)
+            (< (mark) best-end)))))
 
+;;;###autoload
 (defun er/contract-region (arg)
   "Contract the selected region to its previous size.
 With prefix argument contracts that many times.
@@ -193,7 +165,7 @@ before calling `er/expand-region' for the first time."
         (setq arg (length er/history)))
 
       (when (not transient-mark-mode)
-        (setq transient-mark-mode (cons 'only transient-mark-mode)))
+        (setq-local transient-mark-mode (cons 'only transient-mark-mode)))
 
       ;; Advance through the list the desired distance
       (while (and (cdr er/history)
@@ -243,15 +215,16 @@ before calling `er/expand-region' for the first time."
              `(lambda ()
                 (interactive)
                 (setq this-command `,(cadr ',binding))
-                (or (minibufferp) (message "%s" ,msg))
+                (or (not expand-region-show-usage-message) (minibufferp) (message "%s" ,msg))
                 (eval `,(cdr ',binding))))))
        t)
-      (or (minibufferp) (message "%s" msg)))))
+      (or (not expand-region-show-usage-message) (minibufferp) (message "%s" msg)))))
 
-(if (fboundp 'set-temporary-overlay-map)
-    (fset 'er/set-temporary-overlay-map 'set-temporary-overlay-map)
-  ;; Backport this function from newer emacs versions
-  (defun er/set-temporary-overlay-map (map &optional keep-pred)
+(defalias 'er/set-temporary-overlay-map
+  (if (fboundp 'set-temporary-overlay-map) ;Emacs≥24.3
+      #'set-temporary-overlay-map
+    ;; Backport this function from newer emacs versions
+    (lambda (map &optional keep-pred)
     "Set a new keymap that will only exist for a short period of time.
 The new keymap to use must be given in the MAP variable. When to
 remove the keymap depends on user input and KEEP-PRED:
@@ -285,29 +258,28 @@ remove the keymap depends on user input and KEEP-PRED:
       (fset clearfunsym clearfun)
       (add-hook 'pre-command-hook clearfunsym)
 
-      (push alist emulation-mode-map-alists))))
+      (push alist emulation-mode-map-alists)))))
 
-(defadvice keyboard-quit (before collapse-region activate)
+(advice-add 'keyboard-quit :before #'er--collapse-region-before)
+(advice-add 'cua-cancel    :before #'er--collapse-region-before)
+(defun er--collapse-region-before (&rest _)
+  ;; FIXME: Re-use `er--first-invocation'?
   (when (memq last-command '(er/expand-region er/contract-region))
     (er/contract-region 0)))
 
-(defadvice minibuffer-keyboard-quit (around collapse-region activate)
+(advice-add 'minibuffer-keyboard-quit
+            :around #'er--collapse-region-minibuffer-keyboard-quit)
+(defun er--collapse-region-minibuffer-keyboard-quit (orig-fun &rest args)
+  ;; FIXME: Re-use `er--first-invocation'?
   (if (memq last-command '(er/expand-region er/contract-region))
       (er/contract-region 0)
-    ad-do-it))
+    (apply orig-fun args)))
 
-(defadvice cua-cancel (before collapse-region activate)
-  (when (memq last-command '(er/expand-region er/contract-region))
-    (er/contract-region 0)))
 
-(defun er/clear-history (&rest args)
+(defun er/clear-history (&rest _)
   "Clear the history."
   (setq er/history '())
-  (remove-hook 'after-change-functions 'er/clear-history t))
-
-(defsubst er--first-invocation ()
-  "t if this is the first invocation of er/expand-region or er/contract-region"
-  (not (memq last-command '(er/expand-region er/contract-region))))
+  (remove-hook 'after-change-functions #'er/clear-history t))
 
 (defun er--point-is-surrounded-by-white-space ()
   (and (or (memq (char-before) er--blank-list)
@@ -316,10 +288,18 @@ remove the keymap depends on user input and KEEP-PRED:
 
 (defun er/enable-mode-expansions (mode add-fn)
   (add-hook (intern (format "%s-hook" mode)) add-fn)
-  (save-window-excursion
+  (save-window-excursion ;; FIXME: Why?
     (dolist (buffer (buffer-list))
       (with-current-buffer buffer
         (when (derived-mode-p mode)
+          (funcall add-fn))))))
+
+(defun er/enable-minor-mode-expansions (mode add-fn)
+  (add-hook (intern (format "%s-hook" mode)) add-fn)
+  (save-window-excursion
+    (dolist (buffer (buffer-list))
+      (with-current-buffer buffer
+        (when (symbol-value mode)
           (funcall add-fn))))))
 
 ;; Some more performant version of `looking-back'

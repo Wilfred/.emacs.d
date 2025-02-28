@@ -1,6 +1,6 @@
-;;; the-org-mode-expansions.el --- Expansions for expand-region to be used in org-mode
+;;; the-org-mode-expansions.el --- Expansions for expand-region to be used in org-mode  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2012 Magnar Sveen
+;; Copyright (C) 2012-2023  Free Software Foundation, Inc
 
 ;; Author: Magnar Sveen
 ;; Based on text-mode-expansions by: Ivan Andrus
@@ -32,9 +32,33 @@
 ;;; Code:
 
 (require 'expand-region-core)
+(require 'er-basic-expansions)
+(require 'org-macs)
+(require 'org-element)
 
 (declare-function org-up-element "org")
 (declare-function org-mark-subtree "org")
+
+(defun er/mark-org-element ()
+  (interactive)
+  (let* ((el (org-element-at-point))
+         (begin (plist-get (cadr el) :begin))
+         (end (plist-get (cadr el) :end)))
+    (goto-char begin)
+    (set-mark (point))
+    (goto-char end)
+    (exchange-point-and-mark)))
+
+(defun er/mark-org-element-parent ()
+  (interactive)
+  (let* ((el (plist-get (cadr (org-element-at-point)) :parent))
+         (begin (plist-get (cadr el) :begin))
+         (end (plist-get (cadr el) :end)))
+    (when (and begin end)
+      (goto-char begin)
+      (set-mark (point))
+      (goto-char end)
+      (exchange-point-and-mark))))
 
 (defun er/mark-sentence ()
   "Marks one sentence."
@@ -71,17 +95,26 @@
   (org-up-element)
   (org-mark-subtree))
 
+(defun er/save-org-mode-excursion (action)
+  "Save outline visibility while expanding in org-mode"
+  (org-save-outline-visibility t
+    (funcall action)))
+
 (defun er/add-org-mode-expansions ()
   "Adds org-specific expansions for buffers in org-mode"
   (set (make-local-variable 'er/try-expand-list)
        (append
         (remove #'er/mark-defun er/try-expand-list)
         '(org-mark-subtree
+          er/mark-org-element
+          er/mark-org-element-parent
           er/mark-org-code-block
           er/mark-sentence
           er/mark-org-parent
-          er/mark-paragraph))))
+          er/mark-paragraph)))
+  (set (make-local-variable 'er/save-mode-excursion)
+       #'er/save-org-mode-excursion))
 
-(er/enable-mode-expansions 'org-mode 'er/add-org-mode-expansions)
+(er/enable-mode-expansions 'org-mode #'er/add-org-mode-expansions)
 
 (provide 'the-org-mode-expansions)
