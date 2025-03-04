@@ -225,7 +225,7 @@ If it is split, repeat the current buffer in a vertical split."
 (setq eldoc-idle-delay 0.1)
 
 ;; Just kill the current buffer rather than prompting.
-(global-set-key (kbd "C-x k") #'kill-this-buffer)
+(global-set-key (kbd "C-x k") #'kill-current-buffer)
 
 ;; http://emacs.stackexchange.com/a/10444/304
 ;; http://blog.vivekhaldar.com/post/4809065853/dotemacs-extract-interactively-change-font-size
