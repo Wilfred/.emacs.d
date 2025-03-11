@@ -67,7 +67,9 @@
                            (eq major-mode (with-current-buffer it major-mode))
                            (buffer-list))))
     (cl-letf (((symbol-function 'buffer-list)
-               (lambda () matching-buffers)))
+               ;; `buffer-list` has 1 optional argument as of Emacs
+               ;; 30, but be conservative.
+               (lambda (&rest _) matching-buffers)))
       (try-expand-dabbrev-all-buffers old))))
 
 (defun try-expand-dabbrev-other-buffers (old)
@@ -75,7 +77,7 @@
                            (eq major-mode (with-current-buffer it major-mode))
                            (buffer-list))))
     (cl-letf (((symbol-function 'buffer-list)
-               (lambda () matching-buffers)))
+               (lambda (&rest _) matching-buffers)))
       (try-expand-dabbrev-all-buffers old))))
 
 ;; fixme: we don't want lisp symbols on non-lisp modes
