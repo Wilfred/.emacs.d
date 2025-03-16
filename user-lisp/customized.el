@@ -26,8 +26,6 @@
  '(diff-hl-delete ((t (:inherit diff-removed :background "red3" :foreground "red3"))))
  '(diff-hl-insert ((t (:inherit diff-added :background "green4" :foreground "green4"))))
  '(ethan-wspace-face ((t (:background "#2e3434"))))
- '(flycheck-error ((((class color)) (:underline "Red"))))
- '(flycheck-warning ((((class color)) (:underline "Orange"))))
  '(flymake-errline ((((class color)) (:underline "Red"))) t)
  '(flymake-warnline ((((class color)) (:underline "Orange"))) t)
  '(font-lock-fic-face ((t (:foreground "Red"))) t)

@@ -58,8 +58,6 @@
 ;; bold faces for definitions. It also has good support for a range of
 ;; popular packages.
 
-;; TODO: I would also prefer zig-zag underlines for flycheck.
-
 
 (load-theme 'tangotango t)
 

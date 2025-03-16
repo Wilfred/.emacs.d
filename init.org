@@ -134,8 +134,6 @@ I like the tangotango theme. It has very contrasting colours and uses
 bold faces for definitions. It also has good support for a range of
 popular packages.
 
-TODO: I would also prefer zig-zag underlines for flycheck.
-
 #+BEGIN_SRC emacs-lisp :tangle yes :comments org
   (load-theme 'tangotango t)
 #+END_SRC
