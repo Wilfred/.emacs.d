@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: colv
+# key: colv
+# --
+collect::<Vec<_>>()
