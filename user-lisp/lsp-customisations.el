@@ -19,12 +19,17 @@
 
   (define-key eglot-mode-map (kbd "C-c C-t") #'eglot-find-typeDefinition))
 
-;; Use clippy for the check command in rust-analyzer, so we get yellow squiggles.
-(add-to-list 'eglot-server-programs
-             '((rust-ts-mode rust-mode) .
-               ;; Prefer the system installed rust-analyzer over the
-               ;; ~/.cargo/bin/rust-analyzer provided by rustup. On
-               ;; Arch Linux, the system package is much newer.
-               ("/usr/bin/rust-analyzer" :initializationOptions (:check (:command "clippy")))))
+(let ((rust-analyzer-path
+       (if (eq system-type 'gnu/linux)
+           ;; Prefer the system installed rust-analyzer over the
+           ;; ~/.cargo/bin/rust-analyzer provided by rustup. On
+           ;; Arch Linux, the system package is much newer.
+           "/usr/bin/rust-analyzer"
+         "~/.cargo/bin/rust-analyzer")))
+  (add-to-list 'eglot-server-programs
+               `((rust-ts-mode rust-mode) .
+                 (,rust-analyzer-path
+                  ;; Use clippy for the check command in rust-analyzer, so we get yellow squiggles.
+                  :initializationOptions (:check (:command "clippy"))))))
 
 (provide 'lsp-customisations)
