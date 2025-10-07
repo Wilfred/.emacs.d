@@ -31,6 +31,7 @@ third-party-lisp/pylookup/*.zip
 eshell/
 network-security.data
 .litable-lists.el
+ielm-history.eld
 
 .cask
 
