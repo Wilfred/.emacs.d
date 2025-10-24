@@ -152,10 +152,15 @@ test with the same name."
   (add-hook 'racket-mode-hook #'flycheck-mode))
 
 ;; Common Lisp configuration
-(setq inferior-lisp-program "/usr/bin/sbcl")
 (use-package sly
   :config
-  (define-key sly-mode-map (kbd "C-c e") 'sly-eval-defun))
+  (setq inferior-lisp-program "/usr/bin/sbcl")
+
+  (define-key sly-mode-map (kbd "C-c e") 'sly-eval-defun)
+  ;; These are normally for sly buttons, but I use them heavily for
+  ;; navigation.
+  (define-key sly-editing-mode-map (kbd "M-p") nil)
+  (define-key sly-editing-mode-map (kbd "M-n") nil))
 
 ;; Ensure elisp code is continuously indented.
 (use-package aggressive-indent
