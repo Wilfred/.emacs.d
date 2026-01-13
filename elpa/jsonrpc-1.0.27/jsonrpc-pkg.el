@@ -1,0 +1,2 @@
+;; Generated package description from jsonrpc.el  -*- no-byte-compile: t -*-
+(define-package "jsonrpc" "1.0.27" "JSON-RPC library" '((emacs "25.2")) :commit "6caf598ac49b3ed592f22e31307fe71e71490f2b" :url "https://elpa.gnu.org/packages/jsonrpc.html" :authors '(("João Távora" . "joaotavora@gmail.com")) :maintainer '("João Távora" . "joaotavora@gmail.com") :keywords '("processes" "languages" "extensions"))

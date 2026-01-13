@@ -66,6 +66,8 @@ command only needs to be invoked once per project, as all other
 files of a given major mode visited within the same project will
 automatically become managed with no further user intervention
 needed.")
+(autoload 'eglot-manual "eglot" "\
+Read Eglot's manual." t)
 (autoload 'eglot-upgrade-eglot "eglot" "\
 Update Eglot to latest version.
 

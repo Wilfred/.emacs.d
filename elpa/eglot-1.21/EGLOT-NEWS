@@ -1,6 +1,6 @@
 Eglot NEWS                                                     -*- outline -*-
 
-Copyright (C) 2018-2024 Free Software Foundation, Inc.
+Copyright (C) 2018-2026 Free Software Foundation, Inc.
 See the end of the file for license conditions.
 
 Please send Eglot bug reports to 'bug-gnu-emacs@gnu.org', and Cc (or
@@ -18,7 +18,187 @@ to look up issue github#1234, go to
 https://github.com/joaotavora/eglot/issues/1234.
 
 
-* Changes in upcoming Eglot
+* Changes in Eglot 1.21 (11/1/2026)
+
+This is a bugfix release with small fixes for semantic tokens and Emacs
+26.3 compatibility.
+
+
+* Changes in Eglot 1.20 (11/1/2026)
+
+** Dramatically faster handling of files with many diagnostics
+
+Diagnostic conversion between LSP and Flymake versions is now much
+faster.  Previously, editing, e.g. a Python file with thousands of
+diagnostics was next to impossible to to periodic interruptions of
+diagnostic reports.  Now it's practically unnoticeable.
+
+** Support for LSP server multiplexers via Rassumfrassum
+
+Eglot can now leverage LSP server multiplexer programs like Rassumfrassum
+(invoked via the 'rass' command) to use multiple language servers in a
+single buffer.  This enables combining spell-checkers with language
+servers, using multiple servers for the same language (e.g., 'ty' for
+type checking and 'ruff' for linting in Python), or handling
+multi-language files like Vue.
+
+Some invocations of 'rass' are offered as alternatives in the built-in
+'eglot-server-programs' variable.  The manual (readable with 'M-x
+eglot-manual') contains a comprehensive discussion of how to set up and
+use multiplexers in the new "Multi-server support" chapter.
+
+** Support for pull diagnostics (github#1559, github#1290)
+
+For servers supporting the 'diagnosticProvider' capability, Eglot
+requests diagnostics explicitly rather than relying on sporadic
+'publishDiagnostics' notifications, aka. "push diagnostics".  The 'tsgo'
+server is known to support the "pull" variant exclusively, while the
+'ty' server is known to support it alongside "push".
+
+** New command 'eglot-momentary-inlay-hints'
+
+When bound to a single key in 'eglot-mode-map' this will arrange for
+inlay hints to be displayed as long as the key is held down, and then
+hidden shortly after it is released.  Emacs doesn't support binding to
+\"key up\" events, but this function offers an approximation.  It relies
+on measuring your keyboard initial delay and repeat rate, and may not be
+100% accurate.
+
+** Support for watching files outside the project (bug#79809)
+
+Eglot now supports and advertises the 'relativePatternSupport'
+sub-feature of 'didChangeWatchedFiles'.  Some LSP servers use it to ask
+for file watches outside the current project's root and so be notified
+of changes to dependencies that affect the current project.
+
+** Support for semantic tokens (bug#79374)
+
+The new minor mode 'eglot-semantic-tokens-mode' provides enhanced syntax
+highlighting based on the language server's analysis, going beyond
+traditional regular-expression-based fontification.  The
+'eglot-semantic-faces' customization group contains options for
+controlling which token types and modifiers to consider, as well as
+faces for customizing their appearance.  The minor mode is on by
+default: consult the manual on how to turn it off.
+
+** Reading the Eglot manual in Emacs is easy again
+
+The command 'M-x eglot-manual' is now easier to reach and directly drops
+the user into the manual.
+
+
+* Changes in Eglot 1.19 (23/10/2025)
+
+** Support for call and type hierarchies
+
+The new commands 'eglot-show-type-hierarchy' and
+'eglot-show-call-hierarchy', when invoked on a symbol, pop up a special
+buffer showing an interactive tree which represents a hierarchy of sub-
+and super-types or callers and callees for that symbol.
+
+** New 'eglot-advertise-cancellation' variable
+
+Tweaking this variable may help some LSP servers avoid doing costly but
+ultimately useless work on behalf of the client, improving overall
+performance.
+
+** Suggests code actions at point
+
+A commonly requested feature, Eglot will use ElDoc to ask the server for
+code actions available at point.  This is indicated to the user, who may
+quickly execute via the usual 'eglot-code-actions' command or with the
+mouse.  Customize with 'eglot-code-action-indications' and
+'eglot-code-action-indicator'.
+
+** Mode line is customizable
+
+The composition of Eglot's mode line can be fully customized by adding
+or removing symbols and strings from the customizable variable
+'eglot-mode-line-format'
+
+** Improved diagnostic-reporting performance and bugfixes (bug#77588)
+
+Eglot remembers the LSP document version pertaining to the diagnostics
+reported by the LSP server.  This helps in skipping useless or confusing
+diagnostic updates, avoids flakiness with code actions and prevents
+flickering overlays when the buffer is changed.
+
+** Markdown links migrating to *eldoc* buffer now clickable (bug#79552)
+
+Eglot now preserves crucial properties in the Markdown documentation
+provided by the LSP server, fixing a longstanding bug with clickable
+hyperlinks.  See also github#1238.
+
+** Compliant shutdown requests  (bug#79653, bug#66144, github#1540)
+
+Eglot now complies with the latest LSP spec, which mandates that the
+shutdown request mustn't have any parameters.  This should fix problems
+with some servers.
+
+
+* Changes in Eglot 1.18 (20/1/2025)
+
+** 'eglot-managed-mode-hook' now run when turning off Eglot (bug#70958)
+
+** Better handling of 'eglot-report-progress'
+
+Eglot no longer advertises the 'workDoneProgress' capability when this
+customization variable is set to nil.  This requires a restart of the
+server for the change to take effect.
+
+** LSP MarkedString interface is now supported (bug#71353)
+
+Some servers still use this deprecated interface for communicating
+documentation snippets.
+
+** Fixes to completion logic (bug#68699, github#1339, github#1349)
+
+These affect mostly the "vanilla" frontend to completions (invoked with
+C-M-i).
+
+** More strict completion expansion (bug#72705).
+
+Ensures that "expand common" commands (such as C-M-i or TAB in
+third-party frontends) don't result in fewer completions than before
+they are called.
+
+** More robust completion results when typing quickly (github#1474, bug#73279)
+
+** Support for 'InsertReplaceEdit' objects (bug#73857)
+
+This allows servers such as Zig's 'zls' to behave better when completion
+starts from the middle of an incomplete symbol.
+
+** Experimental support for Eglot-only subprojects (github#1337)
+
+Useful for complex projects with subprojects needing different language
+servers.  See associated github issue
+https://github.com/joaotavora/eglot/discussions/1337 for examples.
+
+** Support nested {} in server-provided globs (github#1403)
+
+In short, play nice with 'tailwindcss-language-server' which seems to
+use this.
+
+** Eglot commands have a 'command-modes' property (bug#70554)
+
+** Fix to function signature display (bug#74914)
+
+** Fix command execution (bug#71642)
+
+** New servers have been added to 'eglot-server-programs'.
+
+- blueprint (bug#70015)
+- BasedPyright (bug#69925)
+- move-analyzer (bug#69796)
+- millet
+- nushell (bug#68823)
+
+** Eglot uses an internal 'track-changes.el' library (bug#70077)
+
+This should in theory help smooth the Eglot's handling of events that
+change the buffer.  The library has been problematic in the past, let's
+hope we're past that phase.
 
 
 * Changes in Eglot 1.17 (25/1/2024)
@@ -685,4 +865,3 @@ bug-reference-bug-regexp: "\\(\\(github\\|bug\\)#\\([0-9]+\\)\\)"
 bug-reference-url-format: eglot--debbugs-or-github-bug-uri
 paragraph-separate: "[	 ]"
 End:
-
