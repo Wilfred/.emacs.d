@@ -124,6 +124,7 @@
         special-lispy-widen
         special-lispy-x
         special-pop-tag-mark
+        wdired--self-insert
         wh/decrement-number-decimal
         wh/increment-number-decimal
         wh/kill-symbol
