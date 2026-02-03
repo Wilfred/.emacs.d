@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: msgcode
+# key: mc
+# --
+msgcode!("$0"),
