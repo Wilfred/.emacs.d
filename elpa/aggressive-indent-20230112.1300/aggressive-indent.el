@@ -4,9 +4,8 @@
 
 ;; Author: Artur Malabarba <emacs@endlessparentheses.com>
 ;; URL: https://github.com/Malabarba/aggressive-indent-mode
-;; Package-Version: 20210701.2224
-;; Package-Commit: cb416faf61c46977c06cf9d99525b04dc109a33c
-;; Version: 1.10.0
+;; Package-Version: 20230112.1300
+;; Package-Revision: a437a45868f9
 ;; Package-Requires: ((emacs "24.3"))
 ;; Keywords: indent lisp maint tools
 ;; Prefix: aggressive-indent
@@ -131,7 +130,7 @@ active.  If the minor mode is turned on with the local command,
   :type '(repeat symbol)
   :package-version '(aggressive-indent . "1.8.4"))
 
-(defcustom aggressive-indent-protected-commands '(undo undo-tree-undo undo-tree-redo whitespace-cleanup)
+(defcustom aggressive-indent-protected-commands '(undo undo-tree-undo undo-tree-redo undo-tree-visualize undo-tree-visualize-undo undo-tree-visualize-redo whitespace-cleanup)
   "Commands after which indentation will NOT be performed.
 Aggressive indentation could break things like `undo' by locking
 the user in a loop, so this variable is used to control which
@@ -140,7 +139,7 @@ commands will NOT be followed by a re-indent."
   :package-version '(aggressive-indent . "0.1"))
 
 (defcustom aggressive-indent-protected-current-commands
-  '(query-replace-regexp query-replace)
+  '(query-replace-regexp query-replace exit-minibuffer)
   "Like `aggressive-indent-protected-commands', but for the current command.
 For instance, with the default value, this variable prevents
 indentation during `query-replace' (but not after)."
@@ -489,19 +488,20 @@ If BODY finishes, `while-no-input' returns whatever value BODY produced."
 ;;; Minor modes
 ;;;###autoload
 (define-minor-mode aggressive-indent-mode
-  nil nil " =>"
-  `((,(kbd "C-c C-q") . aggressive-indent-indent-defun)
-    ([backspace]
-     menu-item "maybe-delete-indentation" ignore :filter
-     (lambda (&optional _)
-       (when (and (looking-back "^[[:blank:]]+")
-                  ;; Wherever we don't want to indent, we probably also
-                  ;; want the default backspace behavior.
-                  (not (run-hook-wrapped 'aggressive-indent--internal-dont-indent-if #'eval))
-                  (not (aggressive-indent--run-user-hooks)))
-         #'delete-indentation))))
+  "Minor mode to keep your code always indented."
+  :lighter " =>"
+  :keymap `((,(kbd "C-c C-q") . aggressive-indent-indent-defun)
+            ([backspace]
+             menu-item "maybe-delete-indentation" ignore :filter
+             (lambda (&optional _)
+               (when (and (looking-back "^[[:blank:]]+")
+                          ;; Wherever we don't want to indent, we probably also
+                          ;; want the default backspace behavior.
+                          (not (run-hook-wrapped 'aggressive-indent--internal-dont-indent-if #'eval))
+                          (not (aggressive-indent--run-user-hooks)))
+                 #'delete-indentation))))
   (if aggressive-indent-mode
-      (if (and global-aggressive-indent-mode
+      (if (and (bound-and-true-p global-aggressive-indent-mode)
                (or (cl-member-if #'derived-mode-p aggressive-indent-excluded-modes)
                    (equal indent-line-function #'indent-relative)
                    (derived-mode-p 'text-mode)
