@@ -1,8 +1,11 @@
-;;; cmake-mode.el --- major-mode for editing CMake sources
-;; Package-Version: 20160928.505
+;;; cmake-mode.el --- major-mode for editing CMake sources -*- lexical-binding: t; -*-
+
+;; Package-Version: 20260127.1603
+;; Package-Revision: 53ae242d55f8
+;; Package-Requires: ((emacs "24.1"))
 
 ; Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
-; file Copyright.txt or https://cmake.org/licensing for details.
+; file LICENSE.rst or https://cmake.org/licensing for details.
 
 ;------------------------------------------------------------------------------
 
@@ -26,6 +29,9 @@
 ;; cmake-command-help Written by James Bigler
 ;;
 
+(require 'rst)
+(require 'rx)
+
 (defcustom cmake-mode-cmake-executable "cmake"
   "*The name of the cmake executable.
 
@@ -37,8 +43,8 @@ set the path with these commands:
   :group 'cmake)
 
 ;; Keywords
-(defconst cmake-keywords-block-open '("IF" "MACRO" "FOREACH" "ELSE" "ELSEIF" "WHILE" "FUNCTION"))
-(defconst cmake-keywords-block-close '("ENDIF" "ENDFOREACH" "ENDMACRO" "ELSE" "ELSEIF" "ENDWHILE" "ENDFUNCTION"))
+(defconst cmake-keywords-block-open '("BLOCK" "IF" "MACRO" "FOREACH" "ELSE" "ELSEIF" "WHILE" "FUNCTION"))
+(defconst cmake-keywords-block-close '("ENDBLOCK" "ENDIF" "ENDFOREACH" "ENDMACRO" "ELSE" "ELSEIF" "ENDWHILE" "ENDFUNCTION"))
 (defconst cmake-keywords
   (let ((kwds (append cmake-keywords-block-open cmake-keywords-block-close nil)))
     (delete-dups kwds)))
@@ -49,6 +55,9 @@ set the path with these commands:
 (defconst cmake-regex-comment "#.*")
 (defconst cmake-regex-paren-left "(")
 (defconst cmake-regex-paren-right ")")
+(defconst cmake-regex-closing-parens-line (concat "^[[:space:]]*\\("
+                                                  cmake-regex-paren-right
+                                                  "+\\)[[:space:]]*$"))
 (defconst cmake-regex-argument-quoted
   (rx ?\" (* (or (not (any ?\" ?\\)) (and ?\\ anything))) ?\"))
 (defconst cmake-regex-argument-unquoted
@@ -56,7 +65,7 @@ set the path with these commands:
       (* (or (not (any space "()#\\\n")) (and ?\\ nonl)))))
 (defconst cmake-regex-token
   (rx-to-string `(group (or (regexp ,cmake-regex-comment)
-                            ?( ?)
+                            ?\( ?\)
                             (regexp ,cmake-regex-argument-unquoted)
                             (regexp ,cmake-regex-argument-quoted)))))
 (defconst cmake-regex-indented
@@ -70,6 +79,8 @@ set the path with these commands:
 (defconst cmake-regex-close
   (rx-to-string `(and bol (* space) (regexp ,cmake-regex-block-close)
                       (* space) (regexp ,cmake-regex-paren-left))))
+(defconst cmake-regex-token-paren-left (concat "^" cmake-regex-paren-left "$"))
+(defconst cmake-regex-token-paren-right (concat "^" cmake-regex-paren-right "$"))
 
 ;------------------------------------------------------------------------------
 
@@ -126,44 +137,61 @@ set the path with these commands:
         (save-excursion
           (beginning-of-line)
           (let ((point-start (point))
+                (closing-parens-only (looking-at cmake-regex-closing-parens-line))
                 (case-fold-search t)  ;; case-insensitive
                 token)
-            ; Search back for the last indented line.
+            ;; Search back for the last indented line.
             (cmake-find-last-indented-line)
-            ; Start with the indentation on this line.
+            ;; Start with the indentation on this line.
             (setq cur-indent (current-indentation))
-            ; Search forward counting tokens that adjust indentation.
-            (while (re-search-forward cmake-regex-token point-start t)
-              (setq token (match-string 0))
-              (when (or (string-match (concat "^" cmake-regex-paren-left "$") token)
-                        (and (string-match cmake-regex-block-open token)
-                             (looking-at (concat "[ \t]*" cmake-regex-paren-left))))
-                (setq cur-indent (+ cur-indent cmake-tab-width)))
-              (when (string-match (concat "^" cmake-regex-paren-right "$") token)
-                (setq cur-indent (- cur-indent cmake-tab-width)))
-              )
-            (goto-char point-start)
-            ;; If next token closes the block, decrease indentation
-            (when (looking-at cmake-regex-close)
-              (setq cur-indent (- cur-indent cmake-tab-width))
+            (if closing-parens-only
+                (let ((open-parens 0))
+                  (while (re-search-forward cmake-regex-token point-start t)
+                    (setq token (match-string 0))
+                    (cond
+                     ((string-match cmake-regex-token-paren-left token)
+                      (setq open-parens (+ open-parens 1)))
+                     ((string-match cmake-regex-token-paren-right token)
+                      (setq open-parens (- open-parens 1)))))
+                  ;; Don't outdent if last indented line has open parens
+                  (unless (> open-parens 0)
+                    (setq cur-indent (- cur-indent cmake-tab-width))))
+              ;; Skip detailed analysis if last indented line is a 'closing
+              ;; parens only line'
+              (unless (looking-at cmake-regex-closing-parens-line)
+                ;; Search forward counting tokens that adjust indentation.
+                (while (re-search-forward cmake-regex-token point-start t)
+                  (setq token (match-string 0))
+                  (when (or (string-match cmake-regex-token-paren-left token)
+                            (and (string-match cmake-regex-block-open token)
+                                 (looking-at (concat "[ \t]*" cmake-regex-paren-left))))
+                    (setq cur-indent (+ cur-indent cmake-tab-width)))
+                  (when (string-match cmake-regex-token-paren-right token)
+                    (setq cur-indent (- cur-indent cmake-tab-width)))
+                  ))
+              (goto-char point-start)
+              ;; If next token closes the block, decrease indentation
+              (when (looking-at cmake-regex-close)
+                (setq cur-indent (- cur-indent cmake-tab-width))
+                )
               )
             )
           )
-        ; Indent this line by the amount selected.
+        ;; Indent this line by the amount selected.
         (cmake-indent-line-to (max cur-indent 0))
         )
       )
     )
   )
 
-(defun cmake-point-in-indendation ()
-  (string-match "^[ \\t]*$" (buffer-substring (point-at-bol) (point))))
+(defun cmake-point-in-indentation ()
+  (string-match "^[ \\t]*$" (buffer-substring (line-beginning-position) (point))))
 
 (defun cmake-indent-line-to (column)
   "Indent the current line to COLUMN.
 If point is within the existing indentation it is moved to the end of
 the indentation.  Otherwise it retains the same position on the line"
-  (if (cmake-point-in-indendation)
+  (if (cmake-point-in-indentation)
       (indent-line-to column)
     (save-excursion (indent-line-to column))))
 
@@ -187,6 +215,52 @@ the indentation.  Otherwise it retains the same position on the line"
     )
   )
 
+
+;------------------------------------------------------------------------------
+
+;;
+;; Navigation / marking by function or macro
+;;
+
+(defconst cmake--regex-defun-start
+  (rx line-start
+      (zero-or-more space)
+      (or "function" "macro")
+      (zero-or-more space)
+      "("))
+
+(defconst cmake--regex-defun-end
+  (rx line-start
+      (zero-or-more space)
+      "end"
+      (or "function" "macro")
+      (zero-or-more space)
+      "(" (zero-or-more (not-char ")")) ")"))
+
+(defun cmake-beginning-of-defun ()
+  "Move backward to the beginning of a CMake function or macro.
+
+Return t unless search stops due to beginning of buffer."
+  (interactive)
+  (when (not (region-active-p))
+    (push-mark))
+  (let ((case-fold-search t))
+    (when (re-search-backward cmake--regex-defun-start nil 'move)
+      t)))
+
+(defun cmake-end-of-defun ()
+  "Move forward to the end of a CMake function or macro.
+
+Return t unless search stops due to end of buffer."
+  (interactive)
+  (when (not (region-active-p))
+    (push-mark))
+  (let ((case-fold-search t))
+    (when (re-search-forward cmake--regex-defun-end nil 'move)
+      (forward-line)
+      t)))
+
+
 ;------------------------------------------------------------------------------
 
 ;;
@@ -207,6 +281,39 @@ the indentation.  Otherwise it retains the same position on the line"
 
 ;------------------------------------------------------------------------------
 
+(defun cmake--syntax-propertize-until-bracket-close (syntax end)
+  ;; This function assumes that a previous search has matched the
+  ;; beginning of a bracket_comment or bracket_argument and that the
+  ;; second capture group has matched the equal signs between the two
+  ;; opening brackets
+  (let* ((mb (match-beginning 2))
+         (me (match-end 2))
+         (cb (format "]%s]" (buffer-substring mb me))))
+    (save-match-data
+      (if (search-forward cb end 'move)
+          (progn
+            (setq me (match-end 0))
+            (put-text-property
+             (1- me)
+             me
+             'syntax-table
+             (string-to-syntax syntax)))
+        (setq me end)))
+    (put-text-property
+     (match-beginning 1)
+     me
+     'syntax-multiline
+     t)))
+
+(defconst cmake--syntax-propertize-function
+  (syntax-propertize-rules
+   ("\\(#\\)\\[\\(=*\\)\\["
+    (1
+     (prog1 "!" (cmake--syntax-propertize-until-bracket-close "!" end))))
+   ("\\(\\[\\)\\(=*\\)\\["
+    (1
+     (prog1 "|" (cmake--syntax-propertize-until-bracket-close "|" end))))))
+
 ;; Syntax table for this mode.
 (defvar cmake-mode-syntax-table nil
   "Syntax table for CMake mode.")
@@ -225,25 +332,27 @@ the indentation.  Otherwise it retains the same position on the line"
 ;;
 (defvar cmake-mode-hook nil)
 
-;------------------------------------------------------------------------------
-
-;; For compatibility with Emacs < 24
-(defalias 'cmake--parent-mode
-  (if (fboundp 'prog-mode) 'prog-mode 'fundamental-mode))
-
 ;;------------------------------------------------------------------------------
 ;; Mode definition.
 ;;
 ;;;###autoload
-(define-derived-mode cmake-mode cmake--parent-mode "CMake"
+(define-derived-mode cmake-mode prog-mode "CMake"
   "Major mode for editing CMake source files."
+
+  ;; Setup jumping to beginning/end of a CMake function/macro.
+  (set (make-local-variable 'beginning-of-defun-function) #'cmake-beginning-of-defun)
+  (set (make-local-variable 'end-of-defun-function) #'cmake-end-of-defun)
 
   ; Setup font-lock mode.
   (set (make-local-variable 'font-lock-defaults) '(cmake-font-lock-keywords))
   ; Setup indentation function.
   (set (make-local-variable 'indent-line-function) 'cmake-indent)
   ; Setup comment syntax.
-  (set (make-local-variable 'comment-start) "#"))
+  (set (make-local-variable 'comment-start) "#")
+  ;; Setup syntax propertization
+  (set (make-local-variable 'syntax-propertize-function) cmake--syntax-propertize-function)
+  (add-hook 'syntax-propertize-extend-region-functions #'syntax-propertize-multiline nil t))
+
 
 ; Help mode starts here
 
@@ -255,7 +364,7 @@ optional argument topic will be appended to the argument list."
   (interactive "s")
   (let* ((bufname (if buffer buffer (concat "*CMake" type (if topic "-") topic "*")))
          (buffer  (if (get-buffer bufname) (get-buffer bufname) (generate-new-buffer bufname)))
-         (command (concat cmake-mode-cmake-executable " " type " " topic))
+         (command (concat cmake-mode-cmake-executable " " type " " (if topic (shell-quote-argument topic) topic)))
          ;; Turn of resizing of mini-windows for shell-command.
          (resize-mini-windows nil)
          )
@@ -263,7 +372,27 @@ optional argument topic will be appended to the argument list."
     (save-selected-window
       (select-window (display-buffer buffer 'not-this-window))
       (cmake-mode)
-      (read-only-mode 1))
+      (read-only-mode 1)
+      (view-mode 1))
+    )
+  )
+
+;;;###autoload
+(defun cmake-command-run-help (type &optional topic buffer)
+  "`cmake-command-run' but rendered in `rst-mode'."
+  (interactive "s")
+  (let* ((bufname (if buffer buffer (concat "*CMake" type (if topic "-") topic "*")))
+         (buffer  (if (get-buffer bufname) (get-buffer bufname) (generate-new-buffer bufname)))
+         (command (concat cmake-mode-cmake-executable " " type " " (if topic (shell-quote-argument topic) topic)))
+         ;; Turn of resizing of mini-windows for shell-command.
+         (resize-mini-windows nil)
+         )
+    (shell-command command buffer)
+    (save-selected-window
+      (select-window (display-buffer buffer 'not-this-window))
+      (rst-mode)
+      (read-only-mode 1)
+      (view-mode 1))
     )
   )
 
@@ -271,7 +400,7 @@ optional argument topic will be appended to the argument list."
 (defun cmake-help-list-commands ()
   "Prints out a list of the cmake commands."
   (interactive)
-  (cmake-command-run "--help-command-list")
+  (cmake-command-run-help "--help-command-list")
   )
 
 (defvar cmake-commands '() "List of available topics for --help-command.")
@@ -297,7 +426,7 @@ and store the result as a list in LISTVAR."
     (if (not (symbol-value listvar))
         (let ((temp-buffer-name "*CMake Temporary*"))
           (save-window-excursion
-            (cmake-command-run (concat "--help-" listname "-list") nil temp-buffer-name)
+            (cmake-command-run-help (concat "--help-" listname "-list") nil temp-buffer-name)
             (with-current-buffer temp-buffer-name
               ; FIXME: Ignore first line if it is "cmake version ..." from CMake < 3.0.
               (set listvar (split-string (buffer-substring-no-properties (point-min) (point-max)) "\n" t)))))
@@ -331,29 +460,30 @@ and store the result as a list in LISTVAR."
 (defun cmake-help-command ()
   "Prints out the help message for the command the cursor is on."
   (interactive)
-  (cmake-command-run "--help-command" (cmake-help-type "command") "*CMake Help*"))
+  (cmake-command-run-help "--help-command" (cmake-help-type "command") "*CMake Help*"))
 
 ;;;###autoload
 (defun cmake-help-module ()
   "Prints out the help message for the module the cursor is on."
   (interactive)
-  (cmake-command-run "--help-module" (cmake-help-type "module") "*CMake Help*"))
+  (cmake-command-run-help "--help-module" (cmake-help-type "module") "*CMake Help*"))
 
 ;;;###autoload
 (defun cmake-help-variable ()
   "Prints out the help message for the variable the cursor is on."
   (interactive)
-  (cmake-command-run "--help-variable" (cmake-help-type "variable") "*CMake Help*"))
+  (cmake-command-run-help "--help-variable" (cmake-help-type "variable") "*CMake Help*"))
 
 ;;;###autoload
 (defun cmake-help-property ()
   "Prints out the help message for the property the cursor is on."
   (interactive)
-  (cmake-command-run "--help-property" (cmake-help-type "property") "*CMake Help*"))
+  (cmake-command-run-help "--help-property" (cmake-help-type "property") "*CMake Help*"))
 
 ;;;###autoload
 (defun cmake-help ()
-  "Queries for any of the four available help topics and prints out the approriate page."
+  "Queries for any of the four available help topics and prints out the
+appropriate page."
   (interactive)
   (let* ((default-entry (cmake-symbol-at-point))
          (command-list (cmake-get-list "command"))
@@ -372,13 +502,13 @@ and store the result as a list in LISTVAR."
     (if (string= input "")
         (error "No argument given")
       (if (member input command-list)
-          (cmake-command-run "--help-command" input "*CMake Help*")
+          (cmake-command-run-help "--help-command" input "*CMake Help*")
         (if (member input variable-list)
-            (cmake-command-run "--help-variable" input "*CMake Help*")
+            (cmake-command-run-help "--help-variable" input "*CMake Help*")
           (if (member input module-list)
-              (cmake-command-run "--help-module" input "*CMake Help*")
+              (cmake-command-run-help "--help-module" input "*CMake Help*")
             (if (member input property-list)
-                (cmake-command-run "--help-property" input "*CMake Help*")
+                (cmake-command-run-help "--help-property" input "*CMake Help*")
               (error "Not a know help topic.") ; this really should not happen
               ))))))
   )
