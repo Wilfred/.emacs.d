@@ -4,7 +4,8 @@
 
 ;; Author: Sergey Firsov <intramurz@gmail.com>
 ;; Maintainer: Sergey Firsov <intramurz@gmail.com>
-;; Version: 0.1
+;; Package-Version: 20260109.1536
+;; Package-Revision: 87cc55936f84
 ;; Package-Requires: ((emacs "28.1") (eglot "1.9") (flycheck "32"))
 ;; URL: https://github.com/flycheck/flycheck-eglot
 ;; Keywords: convenience language tools
@@ -218,37 +219,54 @@ ORIG is the original function, (BEG END) is the range"
                                        end))
                               (beg (= beg (flymake-diagnostic-beg s)))
                               (t t)))
-                      eglot--diagnostics)))
+                      (cond ((boundp 'eglot--diagnostics)
+                             ;; `eglot--diagnostics' was a list before,
+                             ;; but it is now wrapped in a list as of 4aff16bf9e8be9e45b5ac5b98a323957e3af6444
+                             ;; in https://github.com/emacs-mirror/emacs/.
+                             (pcase eglot--diagnostics
+                               (`(,(pred proper-list-p) ,_ ,_) (car eglot--diagnostics))
+                               (`(nil) nil)
+                               ((pred proper-list-p) eglot--diagnostics)
+                               (_ (car eglot--diagnostics))))
+
+                            ;; if eglot--diagnostics is not bound, it's most likely
+                            ;; removed as of da4c693e0be6ede3f245d29ad67d0dfc64c5656b
+                            ;; in https://github.com/emacs-mirror/emacs
+                            ;;
+                            ;; The diagnostics are present in `eglot--pushed-diagnostics`
+                            ;; and `eglot--pulled-diagnostics` or maybe both.
+                            ((and (boundp 'eglot--pushed-diagnostics) (boundp 'eglot--pulled-diagnostics))
+                             (append (car eglot--pushed-diagnostics) (car eglot--pulled-diagnostics)))))))
 
 
 (defun flycheck-eglot--setup ()
   "Setup flycheck-eglot."
   (when (flycheck-eglot--eglot-available-p)
-    (add-to-list 'flycheck-checkers 'eglot-check)
-    (setq flycheck-disabled-checkers
-          (remove 'eglot-check
-                  flycheck-disabled-checkers))
-    (let ((current-checker (flycheck-get-checker-for-buffer)))
-      (flycheck-add-mode 'eglot-check major-mode)
-      (if (or flycheck-eglot-exclusive
-              (null current-checker))
-          (setq flycheck-checker 'eglot-check)
-        (unless (eq current-checker 'eglot-check)
-          (flycheck-add-next-checker 'eglot-check current-checker))))
+    (flycheck-eglot--register-eglot-checker major-mode)
+    (setq flycheck-checker 'eglot-check)
     (eglot-flymake-backend #'flycheck-eglot--report-eglot-diagnostics)
     (advice-add #'flymake-diagnostics :around #'flycheck-eglot--flymake-diagnostics-wrapper)
     (flymake-mode -1)
     (flycheck-mode 1)))
 
+(defun flycheck-eglot--register-eglot-checker (mode)
+  "Register `eglot-check' for major mode MODE."
+  (add-to-list 'flycheck-checkers 'eglot-check t)
+  (unless (member mode (flycheck-checker-get 'eglot-check 'modes))
+    (flycheck-add-mode 'eglot-check mode))
+  (if flycheck-eglot-exclusive
+      (setf (flycheck-checker-get 'eglot-check 'next-checkers) nil)
+    (when-let ((checker (cl-find-if (lambda (checker)
+                                      (and (not (eq checker 'eglot-check))
+                                           (flycheck-checker-supports-major-mode-p checker mode)))
+                                    flycheck-checkers)))
+      (flycheck-add-next-checker 'eglot-check checker))))
 
 (defun flycheck-eglot--teardown ()
   "Teardown flycheck-eglot."
   (when (flycheck-eglot--eglot-available-p)
     (eglot-flymake-backend #'ignore)
     (setq flycheck-checker nil)
-    (setq flycheck-disabled-checkers
-          (cl-adjoin 'eglot-check
-                     flycheck-disabled-checkers))
     (setq flycheck-eglot--current-errors nil)
     (flycheck-buffer-deferred)))
 
