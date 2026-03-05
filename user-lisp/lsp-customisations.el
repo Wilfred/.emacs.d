@@ -8,6 +8,10 @@
   (add-hook 'eglot--managed-mode-hook (lambda () (flymake-mode -1)))
   (global-flycheck-eglot-mode)
 
+  ;; Rendering in the margin (default) uses an emoji, making the line
+  ;; to too tall and causing flicker.
+  (setq eglot-code-action-indications '(eldoc-hint mode-line))
+
   (define-key eglot-mode-map (kbd "C-c f") #'eglot-format-buffer)
 
   (define-key eglot-mode-map (kbd "C-c r") #'eglot-rename)
