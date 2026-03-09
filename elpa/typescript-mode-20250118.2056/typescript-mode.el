@@ -1,9 +1,9 @@
-;;; typescript-mode.el --- Major mode for editing typescript
+;;; typescript-mode.el --- Major mode for editing typescript  -*- lexical-binding: t -*-
 
 ;; -----------------------------------------------------------------------------------
 ;;     TypeScript support for Emacs
 ;;     Unmodified original sourve available at http://www.karllandstrom.se/downloads/emacs/javascript.el
-;;     Copyright (c) 2008 Free Software Foundation
+;;     Copyright (c) 2008-2025 Free Software Foundation
 ;;     Portions Copyright (C) Microsoft Open Technologies, Inc. All rights reserved.
 ;;
 ;;     This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,8 @@
 ;; -------------------------------------------------------------------------------------------
 
 ;; URL: http://github.com/ananthakumaran/typescript.el
-;; Version: 0.4
+;; Package-Version: 20250118.2056
+;; Package-Revision: 481df3ad2cdf
 ;; Keywords: typescript languages
 ;; Package-Requires: ((emacs "24.3"))
 
@@ -266,12 +267,12 @@ Match group 1 is MUMBLE.")
 (defconst typescript--keyword-re
   (typescript--regexp-opt-symbol
    '("abstract" "any" "as" "async" "await" "boolean" "bigint" "break" "case" "catch" "class" "const"
-     "constructor" "continue" "declare" "default" "delete" "do" "else"
+     "constructor" "continue" "debugger" "declare" "default" "delete" "do" "else"
      "enum" "export" "extends" "extern" "false" "finally" "for"
-     "function" "from" "get" "goto" "if" "implements" "import" "in" "instanceof"
+     "function" "from" "get" "goto" "if" "implements" "import" "in" "infer" "instanceof"
      "interface" "keyof" "let" "module" "namespace" "never" "new" "null" "number" "object" "of"
-     "override" "private" "protected" "public" "readonly" "return" "set" "static" "string"
-     "super" "switch"  "this" "throw" "true"
+     "override" "private" "protected" "public" "readonly" "return" "satisfies" "set" "static"
+     "string" "super" "switch" "this" "throw" "true"
      "try" "type" "typeof" "unknown" "var" "void"
      "while")) ; yield is handled separately
   "Regexp matching any typescript keyword.")
@@ -312,13 +313,13 @@ Match group 1 is MUMBLE.")
 
 (defconst typescript--font-lock-keywords-2
   (append typescript--font-lock-keywords-1
-          (list (cons typescript--constant-re font-lock-constant-face)
-                (cons typescript--basic-type-re font-lock-type-face)
-                (list typescript--keyword-re 1 font-lock-keyword-face)
-                (list "\\_<for\\_>"
-                      "\\s-+\\(each\\)\\_>" nil nil
-                      (list 1 'font-lock-keyword-face))
-                (cons "\\_<yield\\(\\*\\|\\_>\\)" 'font-lock-keyword-face)))
+          `((,typescript--constant-re (0 'font-lock-constant-face))
+            (,typescript--basic-type-re (0 'font-lock-type-face))
+            (,typescript--keyword-re (1 'font-lock-keyword-face))
+            ("\\_<for\\_>"
+             ("\\s-+\\(each\\)\\_>" nil nil
+              (1 'font-lock-keyword-face)))
+            ("\\_<yield\\(\\*\\|\\_>\\)" (0 'font-lock-keyword-face))))
   "Level two font lock keywords for `typescript-mode'.")
 
 ;; typescript--pitem is the basic building block of the lexical
@@ -711,7 +712,7 @@ is called whenever a plain string delimiter is typed in the buffer."
              (string-start (or (and str-terminator (nth 8 syntax))
                                ;; We have to consider the case that we're on the start delimiter of a string.
                                ;; We tentatively take (point) as string-start. If it turns out we're
-                               ;; wrong, then typescript--move-to-end-of-plain-string will fail anway,
+                               ;; wrong, then typescript--move-to-end-of-plain-string will fail anyway,
                                ;; and we won't use the bogus value.
                                (progn
                                  (forward-char)
@@ -935,15 +936,16 @@ point at BOB."
 This function invokes `re-search-forward', but treats the buffer
 as if strings and comments have been removed."
   (let ((saved-point (point))
-        (search-expr
+        (search-fun
          (cond ((null count)
-                '(typescript--re-search-forward-inner regexp bound 1))
+                (lambda () (typescript--re-search-forward-inner regexp bound 1)))
                ((< count 0)
-                '(typescript--re-search-backward-inner regexp bound (- count)))
+                (lambda () (typescript--re-search-backward-inner regexp bound (- count))))
                ((> count 0)
-                '(typescript--re-search-forward-inner regexp bound count)))))
+                (lambda () (typescript--re-search-forward-inner regexp bound count)))
+               (t #'ignore))))
     (condition-case err
-        (eval search-expr)
+        (funcall search-fun)
       (search-failed
        (goto-char saved-point)
        (unless noerror
@@ -990,15 +992,16 @@ If the point is in the last line, searching back for \"\\n\" will
 skip over the line with \"let b\". The newline found will be the
 one at the end of the line with \"let a\"."
   (let ((saved-point (point))
-        (search-expr
+        (search-fun
          (cond ((null count)
-                `(typescript--re-search-backward-inner ,regexp ,bound 1))
+                (lambda () (typescript--re-search-backward-inner regexp bound 1)))
                ((< count 0)
-                `(typescript--re-search-forward-inner ,regexp ,bound (- ,count)))
+                (lambda () (typescript--re-search-forward-inner regexp bound (- count))))
                ((> count 0)
-                `(typescript--re-search-backward-inner ,regexp ,bound ,count)))))
+                (lambda () (typescript--re-search-backward-inner regexp bound count)))
+               (t #'ignore))))
     (condition-case err
-        (eval search-expr)
+        (funcall search-fun)
       (search-failed
        (goto-char saved-point)
        (unless noerror
@@ -1015,7 +1018,7 @@ lines."
                         (progn
                           (forward-comment most-positive-fixnum)
                           (memq (char-after) '(?\, ?\; ?\] ?\) ?\}))))
-              do (forward-sexp)))
+                 do (forward-sexp)))
    while (and (eq (char-after) ?\n)
               (save-excursion
                 (forward-char)
@@ -1500,7 +1503,7 @@ LIMIT defaults to point."
 ;; Like (up-list -1), but only considers lists that end nearby"
 (defun typescript--up-nearby-list ()
   (save-restriction
-    ;; Look at a very small region so our compuation time doesn't
+    ;; Look at a very small region so our computation time doesn't
     ;; explode in pathological cases.
     (narrow-to-region (max (point-min) (- (point) 500)) (point))
     (up-list -1)))
@@ -1686,6 +1689,82 @@ point of view of font-lock.  It applies highlighting directly with
   ;; Matcher always "fails"
   nil)
 
+(defun typescript--function-argument-matcher (limit)
+  "Font-lock matcher for variables in argument lists.
+
+Because the syntax of the argument list is shared between
+functions, arrow functions and methods, this same matcher is used
+for all of them.  The context for the search is set up as
+anchored matcher.
+
+This is a cc-mode-style matcher that *always* fails, from the
+point of view of font-lock.  It applies highlighting directly
+with `font-lock-apply-highlight'."
+  (condition-case nil
+      (save-restriction
+        (widen)
+        (narrow-to-region (point-min) limit)
+        (while (re-search-forward
+                (rx (group
+                     (regexp "[a-zA-Z_$]\\(?:\\s_\\|\\sw\\)*")
+                     ;; name can be optionally followed by ? to mark
+                     ;; the argument optional
+                     (? "?"))
+                    (* whitespace)
+                    (group (or "," ":" ")"
+                               ;; last variable in the list with a
+                               ;; paren on next line and no hanging
+                               ;; comma.  extra logic is added to deal
+                               ;; with possible comments after the
+                               ;; variable.
+                               eol
+                               (and (* whitespace) (or "//" "/*") (* any) eol))))
+                nil t)
+          (font-lock-apply-highlight '(1 font-lock-variable-name-face t))
+
+          ;; If ender is a ":" it means that the currently matched
+          ;; variable also has a type signature.
+          (let ((ender (match-string 2)))
+            ;; We need to skip the type specification.  The regexp
+            ;; basically either searches for the next thing which we
+            ;; believe is a parameter or the end of the argument list.
+            (when (equal ender ":")
+              (let ((perform-match t))
+                (while (and perform-match
+                            (re-search-forward
+                             (rx (or
+                                  ;; variable without type at the end
+                                  ;; of line
+                                  (and "," eol)
+                                  ;; next thing is a functional
+                                  ;; argument, such as f:(x) => void
+                                  (and "(")
+                                  ;; closing of a function type argument.
+                                  ;; here, the type of `f'.
+                                  ;; (f: (x: number) => foo): void => { }
+                                  (and ")" (? (* whitespace) "=>" (* whitespace)))
+                                  (and ","
+                                       (* whitespace)
+                                       (regexp "[a-zA-Z_$]\\(?:\\s_\\|\\sw\\)*")
+                                       ;; optional ? to mark the
+                                       ;; argument optional
+                                       (? "?")
+                                       (group (or ":" ")")))))
+                             nil t))
+                  ;; In case the skipped type was the end of a
+                  ;; function type argument, the next token is the
+                  ;; return type of the inner function, so we need to
+                  ;; match but not fontify the next "name" (which
+                  ;; really is the type).
+                  (if (string-match-p "=>" (match-string 0))
+                      (setq perform-match t)
+                    (goto-char (match-beginning 0))
+                    (setq perform-match nil))))))))
+    ;; conditions to handle
+    (scan-error nil)
+    (end-of-buffer nil))
+  nil)
+
 (defun typescript--in-documentation-comment-p ()
   "Reports whether point is inside a documentation comment."
   (let ((parse (syntax-ppss)))
@@ -1737,6 +1816,14 @@ and searches for the next token to be highlighted."
   `(
     ,@typescript--font-lock-keywords-2
 
+    ;; Remove the fontification of keywords and built-ins when they
+    ;; are keys in an interface, object or class.
+    (,(rx "{")
+     (,(concat "\\(" typescript--keyword-re "\\):")
+      (save-excursion (ignore-errors (up-list)) (point))
+      nil
+      (1 'default t t)))
+
     (typescript--jsdoc-param-matcher (1 'typescript-jsdoc-tag t t)
                                      (2 'typescript-jsdoc-type t t)
                                      (3 'typescript-jsdoc-value t t))
@@ -1755,35 +1842,35 @@ and searches for the next token to be highlighted."
      (0 'typescript-jsdoc-value t))
 
     (typescript--tslint-flag-matcher
-     (1 font-lock-preprocessor-face t))
+     (1 'font-lock-preprocessor-face t))
 
     ("\\.\\(prototype\\)\\_>"
-     (1 font-lock-constant-face))
+     (1 'font-lock-constant-face))
 
     (,(rx symbol-start "class" (+ space) (group (+ (or (syntax word) (syntax symbol)))))
-     (1 font-lock-type-face))
+     (1 'font-lock-type-face))
 
     (,(rx symbol-start "extends" (+ space) (group (+ (or (syntax word) (syntax symbol)))))
-     (1 font-lock-type-face))
+     (1 'font-lock-type-face))
 
     (,(rx symbol-start "implements" (+ space))
-     (,(rx symbol-start (+ (syntax word))) nil nil (0 font-lock-type-face)))
+     (,(rx symbol-start (+ (syntax word))) nil nil (0 'font-lock-type-face)))
 
     (,(rx symbol-start "interface" (+ space) (group (+ (or (syntax word) (syntax symbol)))))
-     (1 font-lock-type-face))
+     (1 'font-lock-type-face))
 
     (,(rx symbol-start "type" (+ space) (group (+ (or (syntax word) (syntax symbol)))))
-     (1 font-lock-type-face))
+     (1 'font-lock-type-face))
 
     (,(rx symbol-start "enum" (+ space) (group (+ (or (syntax word) (syntax symbol)))))
-     (1 font-lock-type-face))
+     (1 'font-lock-type-face))
 
     ;; Highlights class being declared, in parts
     (typescript--class-decl-matcher
      ,(concat "\\(" typescript--name-re "\\)\\(?:\\.\\|.*$\\)")
      (goto-char (match-beginning 1))
      nil
-     (1 font-lock-type-face))
+     (1 'font-lock-type-face))
 
     ;; Highlights parent class, in parts, if available
     (typescript--class-decl-matcher
@@ -1800,11 +1887,11 @@ and searches for the next token to be highlighted."
        (save-excursion
          (goto-char typescript--tmp-location)
          (delete-char 1)))
-     (1 font-lock-type-face))
+     (1 'font-lock-type-face))
 
     ;; Highlights parent class
     (typescript--class-decl-matcher
-     (2 font-lock-type-face nil t))
+     (2 'font-lock-type-face nil t))
 
     ;; Dojo needs its own matcher to override the string highlighting
     (,(typescript--make-framework-matcher
@@ -1812,8 +1899,8 @@ and searches for the next token to be highlighted."
        "^\\s-*dojo\\.declare\\s-*(\""
        "\\(" typescript--dotted-name-re "\\)"
        "\\(?:\"\\s-*,\\s-*\\(" typescript--dotted-name-re "\\)\\)?")
-     (1 font-lock-type-face t)
-     (2 font-lock-type-face nil t))
+     (1 'font-lock-type-face t)
+     (2 'font-lock-type-face nil t))
 
     ;; Match Dojo base classes. Of course Mojo has to be different
     ;; from everything else under the sun...
@@ -1825,7 +1912,7 @@ and searches for the next token to be highlighted."
               "\\(?:\\].*$\\)?")
      (backward-char)
      (end-of-line)
-     (1 font-lock-type-face))
+     (1 'font-lock-type-face))
 
     ;; continued Dojo base-class list
     (,(typescript--make-framework-matcher
@@ -1838,7 +1925,7 @@ and searches for the next token to be highlighted."
          (forward-symbol -1)
        (end-of-line))
      (end-of-line)
-     (1 font-lock-type-face))
+     (1 'font-lock-type-face))
 
     ;; variable declarations
     ,(list
@@ -1846,36 +1933,81 @@ and searches for the next token to be highlighted."
       (list #'typescript--variable-decl-matcher nil nil nil))
 
     ;; class instantiation
-    ,(list
-      (concat "\\_<new\\_>\\s-+\\(" typescript--dotted-name-re "\\)")
-      (list 1 'font-lock-type-face))
+    (,(concat "\\_<new\\_>\\s-+\\(" typescript--dotted-name-re "\\)")
+     (1 'font-lock-type-face))
 
     ;; instanceof
-    ,(list
-      (concat "\\_<instanceof\\_>\\s-+\\(" typescript--dotted-name-re "\\)")
-      (list 1 'font-lock-type-face))
+    (,(concat "\\_<instanceof\\_>\\s-+\\(" typescript--dotted-name-re "\\)")
+     (1 'font-lock-type-face))
 
-    ;; formal parameters
+    ;; formal parameters in "function" function call
+    ;; function helloWorld(a: number, b: Promise<number>): void { }
     ,(list
       (concat
        "\\_<function\\_>\\(\\s-+" typescript--name-re "\\)?\\s-*\\(<.*>\\)?\\s-*(\\s-*"
-       typescript--name-start-re)
-      (list (concat "\\(" typescript--name-re "\\)\\(\\s-*).*\\)?")
-            '(backward-char)
-            '(end-of-line)
-            '(1 font-lock-variable-name-face)))
+       "\\(?:$\\|" typescript--name-start-re "\\)")
+      `(typescript--function-argument-matcher
+        (prog1 (save-excursion (ignore-errors (up-list)) (point))
+          (backward-char))
+        nil
+        nil))
 
-    ;; continued formal parameter list
+    ;; formal parameters in arrow function
+    ;; const helloWorld = (a: number, b: Promise<number>): void => { }
     ,(list
-      (concat
-       "^\\s-*" typescript--name-re "\\s-*[,)]")
-      (list typescript--name-re
-            '(if (save-excursion (backward-char)
-                                 (typescript--inside-param-list-p))
-                 (forward-symbol -1)
-               (end-of-line))
-            '(end-of-line)
-            '(0 font-lock-variable-name-face))))
+      (rx (group "=>") (* whitespace) (? eol) (* whitespace) "{")
+      '(1 font-lock-keyword-face)
+      `(typescript--function-argument-matcher
+        (prog1 (progn
+                 (backward-char)
+                 (typescript--backward-to-parameter-list)
+                 (point))
+          (backward-sexp))
+        (re-search-forward "{" nil t)
+        nil))
+
+    ;; formal parameters in method definitions
+    ;; class Foo { helloWorld(a: number, b: Promise<number>): void { } }
+    ,(list
+      typescript--function-call-re
+      `(typescript--function-argument-matcher
+        (let ((point-orig (point))
+              (is-method-def
+               (ignore-errors
+                 (up-list)
+                 (and
+                  (or
+                   ;; After the "argument list" is a bracket, this is
+                   ;; either a special form (if, while...) or a method
+                   ;; declaration.
+                   (looking-at-p (rx (* (or whitespace ?\n)) "{"))
+                   ;; After the "argument list" is a colon, this is
+                   ;; either a method declaration with a return type
+                   ;; annotation or ternary form.  We need to discard
+                   ;; the ternary form case.
+                   (and
+                    (looking-at-p (rx (* (or whitespace ?\n)) ":"))
+                    (save-excursion
+                      (backward-sexp 2)
+                      (skip-syntax-backward " >")
+                      (not (eq (char-before) ??)))))
+                  ;; HACK: here we check the fontification of
+                  ;; the "function name".  Because the keywords
+                  ;; are fontified before this check runs, a
+                  ;; keyword would already have been fontified
+                  ;; and therefore we can conclude it is not a
+                  ;; function/method definition.
+                  (save-excursion
+                    (backward-sexp)
+                    (backward-word)
+                    (not (memq
+                          'font-lock-keyword-face
+                          (face-at-point nil t))))))))
+          (if is-method-def
+              (prog1 (point) (goto-char point-orig))
+            (point)))
+        nil
+        nil)))
   "Level three font lock for `typescript-mode'.")
 
 (defun typescript--flyspell-mode-predicate ()
@@ -1953,7 +2085,7 @@ will be returned."
 
 (defun typescript-syntactic-context ()
   "Return the typescript syntactic context at point.
-When called interatively, also display a message with that
+When called interactively, also display a message with that
 context."
   (interactive)
   (let* ((syntactic-context (typescript--syntactic-context-from-pstate
@@ -1984,6 +2116,20 @@ This performs fontification according to `typescript--class-styles'."
         return t
         else do (goto-char orig-end)))
 
+(defun typescript--match-subst-in-quotes (limit)
+  "Match dollar substitutions inside backticks."
+  (catch 'done
+    (while (re-search-forward
+            ;; `rx' is cool, mkay.
+            (rx (or line-start (not (any "\\")))
+                (group "${")
+                (group (+? nonl))
+                (group "}"))
+            limit t)
+      (let ((string-delim (nth 3 (syntax-ppss))))
+        (when (and string-delim (= string-delim 96))
+          (throw 'done (point)))))))
+
 (defconst typescript--font-lock-keywords-4
   `(
     ;; highlights that override previous levels
@@ -2013,10 +2159,14 @@ This performs fontification according to `typescript--class-styles'."
     ;; - private generic: SomeType<Foo>
     ;; - private genericArray: SomeType<Foo>[]
     ;; - function testFunc(): SomeType<> {
+    ;; - function testFunc(a): a is SomeType<> {
+    ;; - () => SomeType
     ;; TODO: namespaced classes!
     ,(list
-      (concat ":\\s-\\(" typescript--type-name-re "\\)\\(<" typescript--type-name-re ">\\)?\\(\[\]\\)?\\([,;]\\)?\\s-*{?")
-      '(1 'font-lock-type-face))
+      (concat "\\(?::\\|=>\\)\\s-\\(?:\\s-*\\(" typescript--name-re "\\)\\s-*\\(is\\)\\s-*\\)?" "\\(" typescript--type-name-re "\\)\\(<" typescript--type-name-re ">\\)?\\(\\[\\]\\)?\\([,;]\\)?\\s-*{?")
+      '(1 'font-lock-variable-name-face nil t)
+      '(2 'font-lock-keyword-face nil t)
+      '(3 'font-lock-type-face))
 
     ;; type-casts
     ,(list
@@ -2027,14 +2177,37 @@ This performs fontification according to `typescript--class-styles'."
     ;;
     ,@typescript--font-lock-keywords-3
 
-    (,typescript--decorator-re (1 font-lock-function-name-face))
-    (,typescript--function-call-re (1 font-lock-function-name-face))
-    (,typescript--builtin-re (1 font-lock-type-face))
+    (,typescript--decorator-re (1 'font-lock-function-call-face))
+    (,typescript--function-call-re (1 (typescript--function-face)))
+    (,(concat "\\(?:\\.\\s-*\\)" typescript--function-call-re)
+     (1 'font-lock-function-call-face t))
+    (,typescript--builtin-re (1 'font-lock-type-face))
 
     ;; arrow function
     ("\\(=>\\)"
-     (1 font-lock-keyword-face)))
+     (1 'font-lock-keyword-face))
+
+    (typescript--match-subst-in-quotes
+     (1 'font-lock-keyword-face t)
+     (2 'default t)
+     (3 'font-lock-keyword-face t)))
   "Level four font lock for `typescript-mode'.")
+
+(defun typescript--function-face ()
+  "Return the face to use depending if it's a definition or a call.
+Point is assumed to be right after the open paren."
+  (save-excursion
+    (forward-char -1)
+    (if (condition-case nil
+            (progn
+              (forward-sexp 1)
+              (forward-comment (point-max))
+              (memq (char-after) '(?: ?\{)))
+          (scan-error nil))
+        ;; Looks like a declaration/definition.
+        'font-lock-function-name-face
+      ;; Probably just a call.
+      'font-lock-function-call-face)))
 
 (defconst typescript--font-lock-keywords
   '(typescript--font-lock-keywords-4 typescript--font-lock-keywords-1
@@ -2094,7 +2267,7 @@ This performs fontification according to `typescript--class-styles'."
     ;; but need care to avoid affecting the // and */ comment markers.
     ("\\(?:^\\|[=([{,:;|&!]\\|\\_<return\\_>\\)\\(?:[ \t]\\)*\\(/\\)[^/*]"
      (1 (ignore
-	 (forward-char -1)
+     (forward-char -1)
          (when (or (not (memq (char-after (match-beginning 0)) '(?\s ?\t)))
                    ;; If the / is at the beginning of line, we have to check
                    ;; the end of the previous text.
@@ -2330,20 +2503,20 @@ the same column as the current line."
   (save-excursion
     (save-match-data
       (when (looking-at "\\s-*\\_<while\\_>")
-	(if (save-excursion
-	      (skip-chars-backward "[ \t\n]*}")
-	      (looking-at "[ \t\n]*}"))
-	    (save-excursion
-	      (backward-list) (forward-symbol -1) (looking-at "\\_<do\\_>"))
-	  (typescript--re-search-backward "\\_<do\\_>" (point-at-bol) t)
-	  (or (looking-at "\\_<do\\_>")
-	      (let ((saved-indent (current-indentation)))
-		(while (and (typescript--re-search-backward "^\\s-*\\_<" nil t)
-			    (/= (current-indentation) saved-indent)))
-		(and (looking-at "\\s-*\\_<do\\_>")
-		     (not (typescript--re-search-forward
-			   "\\_<while\\_>" (point-at-eol) t))
-		     (= (current-indentation) saved-indent)))))))))
+    (if (save-excursion
+          (skip-chars-backward "[ \t\n]*}")
+          (looking-at "[ \t\n]*}"))
+        (save-excursion
+          (backward-list) (forward-symbol -1) (looking-at "\\_<do\\_>"))
+      (typescript--re-search-backward "\\_<do\\_>" (point-at-bol) t)
+      (or (looking-at "\\_<do\\_>")
+          (let ((saved-indent (current-indentation)))
+        (while (and (typescript--re-search-backward "^\\s-*\\_<" nil t)
+                (/= (current-indentation) saved-indent)))
+        (and (looking-at "\\s-*\\_<do\\_>")
+             (not (typescript--re-search-forward
+               "\\_<while\\_>" (point-at-eol) t))
+             (= (current-indentation) saved-indent)))))))))
 
 
 (defun typescript--ctrl-statement-indentation ()
@@ -2911,7 +3084,7 @@ the broken-down class name of the item to insert."
 ;;; Main Function
 
 ;;;###autoload
-(define-derived-mode typescript-mode prog-mode "typescript"
+(define-derived-mode typescript-mode prog-mode "TypeScript"
   "Major mode for editing typescript.
 
 Key bindings:
@@ -2926,6 +3099,7 @@ Key bindings:
   (setq-local end-of-defun-function 'typescript-end-of-defun)
   (setq-local open-paren-in-column-0-is-defun-start nil)
   (setq-local font-lock-defaults (list typescript--font-lock-keywords))
+  (setq-local font-lock-multiline t)
   (setq-local syntax-propertize-function #'typescript-syntax-propertize)
   (setq-local parse-sexp-ignore-comments t)
   (setq-local parse-sexp-lookup-properties t)
@@ -2946,14 +3120,15 @@ Key bindings:
         c-paragraph-start "$"
         c-paragraph-separate "$"
         c-block-comment-prefix "* "
+        c-block-comment-ender-regexp "\\*/"
         c-line-comment-starter "//"
         c-comment-start-regexp "/[*/]\\|\\s!"
         comment-start-skip "\\(//+\\|/\\*+\\)\\s *")
 
   (setq-local electric-indent-chars
-	      (append "{}():;," electric-indent-chars))
+          (append "{}():;," electric-indent-chars))
   (setq-local electric-layout-rules
-	      '((?\; . after) (?\{ . after) (?\} . before)))
+          '((?\; . after) (?\{ . after) (?\} . before)))
 
   (let ((c-buffer-is-cc-mode t))
     ;; FIXME: These are normally set by `c-basic-common-init'.  Should
@@ -2980,7 +3155,7 @@ Key bindings:
      (folding-add-to-marks-list 'typescript-mode "// {{{" "// }}}" )))
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-mode))
+(add-to-list 'auto-mode-alist '("\\.tsx?\\'" . typescript-mode))
 
 (provide 'typescript-mode)
 
