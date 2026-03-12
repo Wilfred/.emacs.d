@@ -6,7 +6,7 @@
 (global-set-key "\263" #'wh/insert-hash)
 
 
-(defun wh/toggle-meta-key ()
+(defun wh/toggle-meta-key-for-macos ()
   "Toggle whether the option or command key is treated as meta."
   (interactive)
   (if (eq mac-command-modifier 'meta)
