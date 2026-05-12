@@ -254,7 +254,7 @@ argument to `flycheck-define-checker'.
 (fn SYMBOL CHECKER &optional FILE-NAME &rest CUSTOM-ARGS)" nil t)
 (function-put 'flycheck-def-config-file-var 'lisp-indent-function 3)
 (autoload 'flycheck-def-option-var "flycheck" "\
-Define SYMBOL as option variable with INIT-VALUE for CHECKER.
+Define SYMBOL as option variable with INIT-VALUE for CHECKERS.
 
 SYMBOL is declared as customizable variable using `defcustom', to
 provide an option for the given syntax CHECKERS (a checker or a
@@ -284,12 +284,7 @@ SYMBOL with `flycheck-def-executable-var'.
 
 ;;; Generated autoloads from flycheck-buttercup.el
 
-(register-definition-prefixes "flycheck-buttercup" '("flycheck-buttercup-format-error-list"))
-
-
-;;; Generated autoloads from flycheck-ert.el
-
-(register-definition-prefixes "flycheck-ert" '("flycheck-er"))
+(register-definition-prefixes "flycheck-buttercup" '("flycheck-buttercup-"))
 
 ;;; End of scraped data
 
