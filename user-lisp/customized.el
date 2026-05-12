@@ -5,15 +5,56 @@
  ;; If there is more than one, they won't work right.
  '(frame-background-mode 'dark)
  '(package-selected-packages
-   '(blacken lsp-treemacs company lsp-mode tuareg merlin merlin-eldoc ht hack-mode monky elisp-def helpful undercover company-tabnine magit magit-section smalltalk-mode js2-mode helm helm-ag ggtags zencoding-mode yascroll yaml-mode whole-line-or-region wgrep-ag visual-regexp use-package unfill undo-tree typescript-mode twittering-mode top-mode toml-mode tangotango-theme tabulated-list sws-mode super-save suggest string-edit sqlplus sotlisp smex smartscan smartparens smart-tab slime shut-up scf-mode rhtml-mode repl-toggle refine realgud rcirc-color rainbow-mode rainbow-delimiters racer python-info python-django pytest pyimport pyfmt pip-requirements php-mode pcre2el page-break-lines org-plus-contrib org-password-manager org-bullets nodejs-repl nginx-mode nameless multifiles multi-compile move-dup mosey modalka markdown-toc lua-mode logstash-conf llvm-mode litable list-environment lispy less-css-mode keyfreq jump-char json-mode js2-refactor jade-mode io-mode-inf io-mode interaction-log impatient-mode imenu-anywhere ido-vertical-mode ido-ubiquitous hyperbole hungry-delete httprepl html-check-frag hl-sexp highlight-symbol highlight-quoted groovy-mode google-maps go-mode gitignore-mode github-issues github-clone git-timemachine gist flycheck-title flycheck-rust flycheck-pyflakes flycheck-pkg-config flycheck-haskell flycheck-cask firestarter fic-mode feature-mode fancy-narrow ez-query-replace exec-path-from-shell eval-in-repl ert-expectations erlang emr emojify emacs-eclim elisp-refs el2markdown el-x el-mock dpaste dockerfile-mode disaster dired+ diff-hl cython-mode csv-mode crux crontab-mode counsel company-try-hard company-tern company-statistics company-quickhelp company-c-headers company-anaconda coffee-mode cmake-mode cider change-inner cbm cask-mode c-eldoc bug-hunter browse-kill-ring browse-at-remote brainfuck-mode bison-mode backup-each-save avy-zap auto-yasnippet assess anzu ansi aggressive-indent ag ac-dabbrev))
+   '(ac-dabbrev ag aggressive-indent ansi anzu assess auto-yasnippet
+                avy-zap backup-each-save bison-mode blacken
+                brainfuck-mode browse-at-remote browse-kill-ring
+                bug-hunter c-eldoc cask-mode cbm change-inner cider
+                cmake-mode coffee-mode company company-anaconda
+                company-c-headers company-quickhelp company-statistics
+                company-tabnine company-tern company-try-hard counsel
+                crontab-mode crux csv-mode cython-mode diff-hl dired+
+                disaster dockerfile-mode dpaste eglot el-mock el-x
+                el2markdown elisp-def elisp-refs emacs-eclim emojify
+                emr erlang ert-expectations eval-in-repl
+                exec-path-from-shell ez-query-replace fancy-narrow
+                feature-mode fic-mode firestarter flycheck-cask
+                flycheck-pkg-config flycheck-pyflakes
+                flycheck-rust flycheck-title ggtags gist
+                git-timemachine github-clone github-issues
+                gitignore-mode go-mode google-maps groovy-mode
+                hack-mode helm helm-ag helpful highlight-quoted
+                highlight-symbol hl-sexp ht html-check-frag httprepl
+                hungry-delete hyperbole ido-ubiquitous
+                ido-vertical-mode imenu-anywhere impatient-mode
+                interaction-log io-mode io-mode-inf jade-mode js2-mode
+                js2-refactor json-mode jump-char keyfreq less-css-mode
+                lispy list-environment litable llvm-mode logstash-conf
+                lsp-mode lsp-treemacs lua-mode magit magit-section
+                markdown-toc merlin merlin-eldoc modalka monky mosey
+                move-dup multi-compile multifiles nameless nginx-mode
+                nix-mode nodejs-repl org-bullets org-password-manager
+                org-plus-contrib page-break-lines pcre2el php-mode
+                pip-requirements pyfmt pyimport pytest python-django
+                python-info racer rainbow-delimiters rainbow-mode
+                rcirc-color realgud refine repl-toggle rhtml-mode
+                scf-mode shut-up slime smalltalk-mode smart-tab
+                smartparens smartscan smex sotlisp sqlplus string-edit
+                suggest super-save sws-mode tabulated-list
+                tangotango-theme toml-mode top-mode tuareg
+                twittering-mode typescript-mode undercover undo-tree
+                unfill use-package visual-regexp wgrep-ag
+                whole-line-or-region yaml-mode yascroll zencoding-mode))
  '(safe-local-variable-values
    '((eval font-lock-add-keywords nil
-           `((,(concat "("
-                       (regexp-opt
-                        '("sp-do-move-op" "sp-do-move-cl" "sp-do-put-op" "sp-do-put-cl" "sp-do-del-op" "sp-do-del-cl")
-                        t)
-                       "\\_>")
-              1 'font-lock-variable-name-face))))))
+           `
+           ((,(concat "("
+                      (regexp-opt
+                       '("sp-do-move-op" "sp-do-move-cl"
+                         "sp-do-put-op" "sp-do-put-cl" "sp-do-del-op"
+                         "sp-do-del-cl")
+                       t)
+                      "\\_>")
+             1 'font-lock-variable-name-face))))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -33,6 +74,7 @@
  '(eglot-semantic-property ((t (:inherit nil))))
  '(eglot-semantic-static ((t (:inherit nil))))
  '(ethan-wspace-face ((t (:background "#2e3434"))))
+ '(fixed-pitch-serif ((t (:family "default"))))
  '(flymake-errline ((((class color)) (:underline "Red"))) t)
  '(flymake-warnline ((((class color)) (:underline "Orange"))) t)
  '(font-lock-fic-face ((t (:foreground "Red"))) t)
