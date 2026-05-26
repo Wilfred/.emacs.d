@@ -124,40 +124,6 @@
 
 (exec-path-from-shell-copy-env "WORKON_HOME")
 
-(defadvice python-nav-up-list (before python-nav-push-mark activate)
-  "Push the mark before this Python nav command.
-This means `pop-mark' can take us back to our previous position."
-  (push-mark))
-
-;; Anaconda is great for jump-to-definition. You do need to
-;; tell it which virtualenv you're using, see `venv-workon'.
-(use-package anaconda-mode
-  :diminish "Ana"
-  :config
-  (add-to-list 'python-mode-hook #'anaconda-mode)
-
-  (define-key anaconda-mode-map (kbd "M-,") #'anaconda-mode-go-back)
-
-  ;; Sometimes it's still useful to find tags, even when we're using
-  ;; anaconda. Provide a fallback keybinding.
-  (define-key anaconda-mode-map (kbd "C-c M-.") #'xref-find-definitions)
-
-  (require 'company)
-  (defun wh/company-in-python-mode ()
-    (setq-local company-idle-delay 0.3)
-    (setq-local company-minimum-prefix-length 2)
-    (set (make-local-variable 'company-backends)
-         (list
-          ;; It's rare for company-files to fire, but it's great
-          ;; when we want it. Low noise, so put it first.
-          #'company-files
-          ;; anaconda is able to do smarter Python analysis, so it's
-          ;; particularly useful with built-ins like IndexError and
-          ;; packages like 'from foo import bar'.
-          #'company-anaconda)))
-
-  (add-hook 'python-mode-hook #'wh/company-in-python-mode))
-
 ;; From http://emacsredux.com/blog/2015/01/18/clear-comint-buffers/
 ;; (but widely used e.g. spacemacs has it too).
 ;;
