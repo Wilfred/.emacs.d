@@ -9,18 +9,18 @@
                 avy-zap backup-each-save bison-mode blacken
                 brainfuck-mode browse-at-remote browse-kill-ring
                 bug-hunter c-eldoc cask-mode cbm change-inner cider
-                cmake-mode coffee-mode company company-anaconda
-                company-c-headers company-quickhelp company-statistics
-                company-tabnine company-tern company-try-hard counsel
-                crontab-mode crux csv-mode cython-mode diff-hl dired+
-                disaster dockerfile-mode dpaste eglot el-mock el-x
-                el2markdown elisp-def elisp-refs emacs-eclim emojify
-                emr erlang ert-expectations eval-in-repl
-                exec-path-from-shell ez-query-replace fancy-narrow
-                feature-mode fic-mode firestarter flycheck-cask
-                flycheck-pkg-config flycheck-pyflakes
-                flycheck-rust flycheck-title ggtags gist
-                git-timemachine github-clone github-issues
+                cmake-mode coffee-mode commander company
+                company-anaconda company-c-headers company-quickhelp
+                company-statistics company-tabnine company-tern
+                company-try-hard counsel crontab-mode crux csv-mode
+                cython-mode diff-hl dired+ disaster dockerfile-mode
+                dpaste eglot el-mock el-x el2markdown elisp-def
+                elisp-refs emacs-eclim emojify emr erlang
+                ert-expectations eval-in-repl exec-path-from-shell
+                ez-query-replace fancy-narrow feature-mode fic-mode
+                firestarter flycheck-cask flycheck-pkg-config
+                flycheck-pyflakes flycheck-rust flycheck-title ggtags
+                gist git git-timemachine github-clone github-issues
                 gitignore-mode go-mode google-maps groovy-mode
                 hack-mode helm helm-ag helpful highlight-quoted
                 highlight-symbol hl-sexp ht html-check-frag httprepl
