@@ -76,3 +76,5 @@ transient
 .cache
 
 eln-cache
+
+tree-sitter
