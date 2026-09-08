@@ -1,4 +1,7 @@
 ;;; -*- lexical-binding: nil; -*-
+(defvar mac-command-modifier)
+(defvar mac-option-modifier)
+
 (defun wh/insert-hash ()
   (interactive)
   (insert "#"))
