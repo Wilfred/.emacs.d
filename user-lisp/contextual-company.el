@@ -107,7 +107,7 @@
      elisp-complete--recent-syms
      (-take elisp-complete--history-size syms))))
 
-(defadvice edebug-eval-defun (after elisp-complete--record-form activate)
+(define-advice edebug-eval-defun (:after (&rest _) elisp-complete--record-form)
   (let ((form (edebug-read-top-level-form)))
     (elisp-complete--add-to-recent form)))
 
