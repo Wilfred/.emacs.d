@@ -293,13 +293,14 @@ Handy when editing markdown."
   :bind ("M-i" . change-inner))
 
 ;; TODO: send a PR to change-inner to add this behaviour.
-(defadvice change-inner (around change-inner-delete activate)
+(define-advice change-inner (:around (old-function &rest args)
+                             change-inner-delete)
   "Don't add the removed text to the kill ring.
 I'm frequently removing text between double-quotes so I can
 replace it with a value from the clipboard. Thus it's annoying if
 the kill-ring gets modified by `change-inner'."
   (let (kill-ring)
-    ad-do-it))
+    (apply old-function args)))
 
 (use-package hungry-delete
   :bind ("C-d" . hungry-delete-forward))
