@@ -1,4 +1,6 @@
 ;;; -*- lexical-binding: nil; -*-
+(declare-function crux-smart-open-line-above "crux")
+
 (use-package js2-mode
   :config
   ;; fix js2-mode's function parameter colour, which is too dark for a dark theme
