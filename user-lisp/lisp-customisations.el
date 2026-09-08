@@ -8,6 +8,7 @@
 (declare-function paredit-forward "paredit")
 (declare-function paredit-forward-down "paredit")
 (declare-function paredit-forward-up "paredit")
+(declare-function edebug-eval-defun "edebug")
 (declare-function wisent-python-default-setup "semantic/wisent/python")
 (declare-function wh/switch-on-paredit "lisp-customisations")
 (declare-function wh/was-compiled-p "lisp-customisations")
@@ -307,15 +308,16 @@ E.g. \"~/.emacs.d/elpa/el-mock-20150906.321\" into \"el-mock\" and \"20150906.32
                  (end-of-defun)
                  (point)))))
 
-(advice-add 'edebug-eval-defun :filter-return
-            (lambda (r)
-              (endless/eval-overlay
-               r
-               (save-excursion
-                 (end-of-defun)
-                 (point)))))
+(with-suppressed-warnings ((obsolete edebug-eval-defun))
+  (advice-add 'edebug-eval-defun :filter-return
+              (lambda (r)
+                (endless/eval-overlay
+                 r
+                 (save-excursion
+                   (end-of-defun)
+                   (point)))))
 
-(define-key emacs-lisp-mode-map (kbd "M-RET") #'edebug-eval-defun)
+  (define-key emacs-lisp-mode-map (kbd "M-RET") #'edebug-eval-defun))
 (define-key lispy-mode-map (kbd "<M-return>") nil)
 
 (setq lispy-eval-display-style 'overlay)
