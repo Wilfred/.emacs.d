@@ -4,6 +4,7 @@
 
 (declare-function rust--compile "rust-cargo")
 (declare-function sp-splice-sexp "smartparens")
+(declare-function vc-git-root "vc-git")
 
 (defun wh/rust-clippy ()
   "Clippy command eqvivalent of `rust-check'."
