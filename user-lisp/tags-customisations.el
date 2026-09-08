@@ -1,6 +1,8 @@
 ;;; -*- lexical-binding: nil; -*-
 ;;; tags-customisations.el
 
+(defvar tags-revert-without-query)
+
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>
 ;; Created: 1 October 2012
 
