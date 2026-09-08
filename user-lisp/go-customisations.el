@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (use-package go-mode
   :config
   ;; Jump to definitions.

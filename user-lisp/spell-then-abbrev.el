@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;; http://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html
 (define-key ctl-x-map "\C-i"
   #'endless/ispell-word-then-abbrev)

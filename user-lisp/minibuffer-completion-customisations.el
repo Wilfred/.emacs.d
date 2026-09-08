@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; Commentary:
 ;; Good minibuffer completion is crucial in Emacs: it affects user
 ;; efficiency and discoverability of Emacs features.

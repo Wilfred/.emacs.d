@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; python-customisations
 
 ;;; Commentary:

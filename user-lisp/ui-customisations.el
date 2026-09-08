@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;; scroll one row at at time
 (setq scroll-step 1)
 

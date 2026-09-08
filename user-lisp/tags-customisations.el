@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; tags-customisations.el
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>

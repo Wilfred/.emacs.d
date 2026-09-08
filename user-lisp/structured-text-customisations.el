@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;; csv mode stuff, since it's used extensively in GBBO
 (autoload 'csv-mode "csv-mode")
 

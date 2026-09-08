@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (require 'em-cmpl)
 
 ;; Auto-complete in eshell should stop at the first ambiguity.

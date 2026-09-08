@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (defun time-as-unixtime (most-sig-bits least-sig-bits microseconds)
   "Return the number of seconds since 1st of January 1970."
   (+ (lsh most-sig-bits 16) least-sig-bits

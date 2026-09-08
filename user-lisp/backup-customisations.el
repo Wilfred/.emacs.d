@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (require 'f)
 (require 'backup-each-save)
 

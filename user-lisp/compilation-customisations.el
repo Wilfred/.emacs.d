@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (require 'ansi-color)
 
 ;; http://stackoverflow.com/q/3072648/509706

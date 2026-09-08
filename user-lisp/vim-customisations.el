@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 
 
 (defadvice viper-maybe-checkout (around viper-svn-git-checkin-fix activate)

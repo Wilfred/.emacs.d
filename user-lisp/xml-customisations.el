@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (defun nxml-pretty-print-region (begin end)
   "Pretty format XML markup in region.
 The function inserts linebreaks to separate tags that have

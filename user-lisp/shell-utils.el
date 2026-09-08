@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;; FIXME: make upstream shell-command-to-string not die when
 ;; default-directory has value "/foo/bar/baz"
 (defun shell-command-to-string-in-dir (command directory)

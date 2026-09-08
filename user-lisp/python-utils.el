@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (require 'deadgrep)
 (require 'dash)
 (require 's)

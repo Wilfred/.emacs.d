@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (defun time-list-to-float (most-sig-bits least-sig-bits microseconds)
   "Return a float of seconds since 1st of January 1970."
   (+ (lsh most-sig-bits 16) least-sig-bits

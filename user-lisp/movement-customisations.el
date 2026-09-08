@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;; To be consistent with our paredit keybindings, use super for syntatic movement.
 (global-set-key (kbd "s-a") #'beginning-of-defun)
 

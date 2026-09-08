@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (require 's)
 (require 'f)
 

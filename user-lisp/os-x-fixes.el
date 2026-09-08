@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (defun wh/insert-hash ()
   (interactive)
   (insert "#"))

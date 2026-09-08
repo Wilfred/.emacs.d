@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; conflicts-customisations.el -- Conveniences for handling files with conflicts
 
 (defun wh/conflicts-list ()

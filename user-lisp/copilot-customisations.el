@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (add-to-list 'load-path "/home/wilfred/src/copilot.el")
 (require 'copilot)
 

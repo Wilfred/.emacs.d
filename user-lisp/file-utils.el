@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (require 'f)
 
 ;;;; files related to buffers

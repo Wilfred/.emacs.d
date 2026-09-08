@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (use-package js2-mode
   :config
   ;; fix js2-mode's function parameter colour, which is too dark for a dark theme

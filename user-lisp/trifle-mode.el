@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; trifle-mode.el --- A major mode for Trifle lisp.
 
 ;; Copyright (C) 2013 Wilfred Hughes <me@wilfred.me.uk>

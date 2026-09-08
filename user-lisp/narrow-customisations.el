@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;;###autoload
 ;; Author: Zane Ashby
 ;; (http://demonastery.org/2013/04/emacs-narrow-to-region-indirect/)

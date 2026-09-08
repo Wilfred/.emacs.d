@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (use-package org
   :config
   ;; When clocking in, just use the time from the last clocked out

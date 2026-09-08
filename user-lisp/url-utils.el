@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (defun url-get (url)
   "HTTP GET to URL."
   (with-current-buffer

@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;; Fastest load, according to https://github.com/jwiegley/use-package#use-packageel-is-no-longer-needed-at-runtime
 (eval-when-compile
   (require 'use-package))

@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;; emacs doesn't actually save undo history with revert-buffer
 ;; see http://lists.gnu.org/archive/html/bug-gnu-emacs/2011-04/msg00151.html
 ;; fix that.

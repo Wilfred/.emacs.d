@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;; top of kill ring should also be in X clipboard
 (setq x-select-enable-clipboard t)
 

@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (use-package tuareg
   :config
   ;; Don't move past the expression after evaluating. I usually want

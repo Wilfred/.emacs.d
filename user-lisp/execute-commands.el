@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; execute-commands.el --- asynchronous sequential commands
 
 ;; This program is free software; you can redistribute it and/or modify

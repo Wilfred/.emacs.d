@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; regexp-utils.el --- making string regexps easier in Emacs
 
 ;; Author: Wilfred Hughes <me@wilfred.me.uk>

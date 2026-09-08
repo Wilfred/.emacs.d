@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (use-package sgml-mode
   :init
   ;; Don't bind C-c C-n, I use it for renaming files.

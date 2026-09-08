@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (require 'highlight-symbol)
 
 (add-hook 'prog-mode-hook #'symbol-overlay-mode)

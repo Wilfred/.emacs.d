@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (require 'flycheck)
 
 ;; TODO: this doesn't belong here.

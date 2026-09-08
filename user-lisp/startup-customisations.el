@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ; no startup screen
 (setq-default inhibit-startup-screen t)
 

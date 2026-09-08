@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; Commentary
 ;; There are two types of completion: precise, and greedy.
 ;;

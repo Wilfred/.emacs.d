@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; mu.el --- play on a MUSH or MUD within Emacs
 
 ;; Copyright (C) 2001, 2004  Alex Schroeder <alex@gnu.org>

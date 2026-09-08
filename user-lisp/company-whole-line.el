@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;; TODO: proper header.
 
 (require 'cl-lib)

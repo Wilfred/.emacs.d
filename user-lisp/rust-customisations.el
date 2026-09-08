@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (defun wh/rust-clippy ()
   "Clippy command eqvivalent of `rust-check'."
   (interactive)

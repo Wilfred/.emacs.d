@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; lisp-customisations --- Emacs configuration for lisp languages
 
 (require 'dash)

@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; random-utils.el --- Missing random functions in elisp
 
 ;; Copyright (C) 2013 Wilfred Hughes <me@wilfred.me.uk>

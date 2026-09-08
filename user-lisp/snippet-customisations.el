@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;; yasnippet, clever abbreviation expansion
 (require 'yasnippet)
 (diminish 'yas-minor-mode)

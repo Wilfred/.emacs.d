@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;; Ideas:
 
 ;; (defcustom racer-complete-in-comments

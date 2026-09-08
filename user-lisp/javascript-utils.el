@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (require 'buffer-utils)
 
 (defun indent-json ()

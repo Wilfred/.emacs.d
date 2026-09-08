@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; es-log-mode --- Basic highlighting for elasticsearch log files
 
 (defvar es-log-mode-font-lock-keywords

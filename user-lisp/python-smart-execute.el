@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; python-smart-execute.el --- Send blocks of code to a Python process
 
 ;; Copyright (C) 2015 Tom Bowles

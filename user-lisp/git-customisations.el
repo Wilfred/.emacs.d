@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (use-package magit
   :config
   ;; The default magit section highlighting is almost invisible on tangotango, so

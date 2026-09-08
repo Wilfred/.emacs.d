@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (require 'dash)
 
 (defun full-stack--indent (form highlight-index-path)
