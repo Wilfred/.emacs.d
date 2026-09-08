@@ -1,4 +1,7 @@
 ;;; -*- lexical-binding: nil; -*-
+(defvar rust-cargo-bin)
+(defvar rust-cargo-default-arguments)
+
 (defun wh/rust-clippy ()
   "Clippy command eqvivalent of `rust-check'."
   (interactive)
