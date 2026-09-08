@@ -1,5 +1,6 @@
 ;;; -*- lexical-binding: nil; -*-
 (defvar ivy-format-function)
+(defvar imenu-max-item-length)
 
 (declare-function ivy-alt-done "ivy")
 (declare-function ivy-immediate-done "ivy")
