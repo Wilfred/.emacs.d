@@ -47,7 +47,7 @@
     (insert (format "<a name=\"%s\"></a>" name))))
 
 (defun wh/slugify (heading-text)
-  "Convert 'Foo Bar/Baz?' to 'foo-barbaz'."
+  "Convert \='Foo Bar/Baz?\=' to \='foo-barbaz\='."
   (->> heading-text
        s-downcase
        s-trim
