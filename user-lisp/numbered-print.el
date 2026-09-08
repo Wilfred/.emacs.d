@@ -1,5 +1,7 @@
 ;;; numbered-print.el --- easily insert multiple numbered print statements  -*- lexical-binding: t; -*-
 
+(declare-function whole-line-or-region-delete "whole-line-or-region")
+
 ;; Copyright (C) 2016  Hughes, Wilfred (London)
 
 ;; Author: Hughes, Wilfred (London) <me@wilfred.me.uk>
