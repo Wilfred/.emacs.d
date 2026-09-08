@@ -1,4 +1,10 @@
 ;;; -*- lexical-binding: nil; -*-
+(declare-function godef-jump "go-mode")
+(declare-function rats-run-test-under-point "rats")
+(declare-function wh/gofmt-before-save "go-customisations")
+(declare-function wh/set-go-tab-width "go-customisations")
+(declare-function wh/setup-company "go-customisations")
+
 (use-package go-mode
   :config
   ;; Jump to definitions.
