@@ -1,0 +1,1069 @@
+;; cider-util.el --- Common utility functions that don't belong anywhere else -*- lexical-binding: t -*-
+
+;; Copyright © 2012-2026 Tim King, Phil Hagelberg, Bozhidar Batsov
+;; Copyright © 2013-2026 Bozhidar Batsov, Artur Malabarba and CIDER contributors
+;;
+;; Author: Tim King <kingtim@gmail.com>
+;;         Phil Hagelberg <technomancy@gmail.com>
+;;         Bozhidar Batsov <bozhidar@batsov.dev>
+;;         Artur Malabarba <bruce.connor.am@gmail.com>
+;;         Hugo Duncan <hugo@hugoduncan.org>
+;;         Steve Purcell <steve@sanityinc.com>
+
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; Common utility functions that don't belong anywhere else.
+
+;;; Code:
+
+;; Built-ins
+(require 'ansi-color)
+(require 'color)
+(require 'seq)
+(require 'subr-x)
+(require 'thingatpt)
+(require 'project)
+
+;; Third-party
+(require 'compat)
+(require 'clojure-mode)
+(require 'nrepl-dict)
+
+;; Optional clojure-ts-mode / tree-sitter support (Emacs 29+); guarded at
+;; runtime by `cider--clojure-ts-mode-available-p'.
+(declare-function treesit-ready-p "treesit")
+(declare-function major-mode-remap "subr")
+(defvar major-mode-remap-alist)
+
+(defalias 'cider-pop-back #'pop-tag-mark)
+
+;;; Clojure syntax helpers
+;; CIDER-owned copies of a few small clojure-mode internals, so we don't
+;; reach into its private (`clojure--…') API - which is unstable across
+;; versions and absent from clojure-ts-mode.
+
+(eval-and-compile
+  (defconst cider--sym-forbidden-rest-chars "][\";@\\^`~\(\)\{\}\\,\s\t\n\r"
+    "Chars that a Clojure symbol or namespace alias cannot contain.")
+  (defconst cider--sym-forbidden-1st-chars (concat cider--sym-forbidden-rest-chars "0-9:'")
+    "Chars that a Clojure symbol or namespace alias cannot start with.")
+  (defconst cider--sym-regexp
+    (concat "[^" cider--sym-forbidden-1st-chars "][^" cider--sym-forbidden-rest-chars "]*")
+    "A regexp matching a Clojure symbol or namespace alias."))
+
+(defun cider--looking-at-non-logical-sexp ()
+  "Return non-nil if text after point is a \"non-logical\" sexp.
+\"Non-logical\" sexps are ^metadata and #reader.macros."
+  (comment-normalize-vars t) ;; `t': avoid prompts
+  (comment-forward (point-max))
+  (looking-at-p "\\(?:#?\\^\\)\\|#:?:?[[:alpha:]]"))
+
+(defcustom cider-font-lock-max-length 10000
+  "The max length of strings to fontify in `cider-font-lock-as'.
+
+Setting this to nil removes the fontification restriction."
+  :group 'cider
+  :type '(choice (const :tag "No limit" nil) (integer))
+  :package-version '(cider . "0.10.0"))
+
+(defun cider-util--hash-keys (hashtable)
+  "Return a list of keys in HASHTABLE."
+  (let ((keys '()))
+    (maphash (lambda (k _v) (setq keys (cons k keys))) hashtable)
+    keys))
+
+(defun cider-clojure-major-mode-p ()
+  "Return non-nil if current buffer is managed by a Clojure major mode."
+  (derived-mode-p 'clojure-mode 'clojure-ts-mode))
+
+(defun cider-clojurescript-major-mode-p ()
+  "Return non-nil if current buffer is managed by a ClojureScript major mode."
+  (derived-mode-p 'clojurescript-mode 'clojure-ts-clojurescript-mode))
+
+(defun cider-clojurec-major-mode-p ()
+  "Return non-nil if current buffer is managed by a ClojureC major mode."
+  (derived-mode-p 'clojurec-mode 'clojure-ts-clojurec-mode))
+
+(defun cider-clojure-ts-mode-p ()
+  "Return non-nil if current buffer is managed by a Clojure[TS] major mode."
+  (derived-mode-p 'clojure-ts-mode))
+
+(defun cider-util--clojure-buffers ()
+  "Return a list of all existing `clojure-mode' buffers."
+  (seq-filter
+   (lambda (buffer)
+     (with-current-buffer buffer
+       (cider-clojure-major-mode-p)))
+   (buffer-list)))
+
+(defun cider-current-dir ()
+  "Return the directory of the current buffer."
+  (if buffer-file-name
+      (file-name-directory buffer-file-name)
+    default-directory))
+
+(defcustom cider-build-tool-files
+  '("project.clj"      ; Leiningen
+    "build.boot"       ; Boot
+    "build.gradle"     ; Gradle
+    "build.gradle.kts" ; Gradle Kotlin
+    "deps.edn"         ; Clojure CLI (tools.deps)
+    "shadow-cljs.edn"  ; shadow-cljs
+    "bb.edn"           ; babashka
+    "nbb.edn"          ; nbb
+    "basilisp.edn"     ; Basilisp (Python)
+    )
+  "Files indicating the root of a Clojure project.
+Used by `cider-project-dir' to locate the nearest enclosing build-tool
+file, walking up from the current buffer."
+  :type '(repeat string)
+  :group 'cider
+  :safe (lambda (value)
+          (and (listp value)
+               (seq-every-p #'stringp value))))
+
+(defun cider-project-dir (&optional dir)
+  "Return the absolute path of the current Clojure project root, or nil.
+DIR defaults to `default-directory'.
+
+Walks up from DIR looking for any of `cider-build-tool-files'; the
+deepest match wins.  This finds the Clojure project root even when a
+broader VC repo (e.g. a `.git' monorepo) sits higher up, and regardless
+of whether `project-current' is backed by `project-try-vc', projectile,
+or any other discovery function plugged into `project-find-functions'.
+
+Falls back to `project-current' when no build-tool file is found
+anywhere up from DIR, so `cider-connect' invoked from a non-Clojure
+directory still has a sensible default."
+  (let ((default-directory (or dir default-directory)))
+    (or (when-let* ((hits (delq nil
+                                (mapcar (lambda (f)
+                                          (locate-dominating-file
+                                           default-directory f))
+                                        cider-build-tool-files))))
+          (expand-file-name (car (sort hits #'file-in-directory-p))))
+        (when-let* ((proj (project-current)))
+          (expand-file-name (project-root proj))))))
+
+(defun cider-in-string-p ()
+  "Return non-nil if point is in a string."
+  (let ((beg (save-excursion (beginning-of-defun-raw) (point))))
+    (ppss-string-terminator (parse-partial-sexp beg (point)))))
+
+(defun cider-in-comment-p ()
+  "Return non-nil if point is in a comment."
+  (let ((beg (save-excursion (beginning-of-defun-raw) (point))))
+    (ppss-comment-depth (parse-partial-sexp beg (point)))))
+
+(defun cider--tooling-file-p (file-name)
+  "Return t if FILE-NAME is not a real source file.
+Currently, only check if the relative file name starts with `form-init'
+which nREPL uses for temporary evaluation file names."
+  (let ((fname (file-name-nondirectory file-name)))
+    (string-match-p "^form-init" fname)))
+
+(defun cider-keyword-at-point-p (&optional point)
+  "Return non-nil if POINT is in a Clojure keyword.
+
+Take into consideration current major mode."
+  (let ((pos (or point (point))))
+    (if (and (cider-clojure-ts-mode-p)
+             (fboundp 'clojure-ts--keyword-node-p)
+             (fboundp 'treesit-node-parent)
+             (fboundp 'treesit-node-at))
+        (clojure-ts--keyword-node-p (treesit-node-parent (treesit-node-at pos)))
+      (member 'clojure-keyword-face (text-properties-at pos)))))
+
+
+;;; Thing at point
+
+(defun cider--text-or-limits (bounds start end)
+  "Return the substring or the bounds of text.
+If BOUNDS is non-nil, return the list (START END) of character
+positions.  Else returns the substring from START to END."
+  (funcall (if bounds #'list #'buffer-substring-no-properties)
+           start end))
+
+;; The clojure-mode var is a defcustom that comes with the required
+;; clojure-mode; the clojure-ts-mode one is declared so we can bind it
+;; even when only clojure-mode is loaded.
+(defvar clojure-ts-toplevel-inside-comment-form)
+
+(defun cider-defun-at-point (&optional bounds)
+  "Return the text of the top level sexp at point.
+Inside a `comment' form the enclosed form is treated as the top level
+one, so the whole CIDER command family (eval, pprint, inspect, debug,
+format...) behaves consistently in rich-comment blocks - evaluating a
+whole `(comment ...)' yields nil, which is never what anyone wants.
+If BOUNDS is non-nil, return a list of its starting and ending position
+instead."
+  (save-excursion
+    (save-match-data
+      (let ((clojure-toplevel-inside-comment-form t)
+            (clojure-ts-toplevel-inside-comment-form t))
+        (if (derived-mode-p 'cider-repl-mode)
+            (goto-char (point-max)) ;; in repls, end-of-defun won't work, so we perform the closest reasonable thing
+          (end-of-defun))
+        (let ((end (point)))
+          (clojure-backward-logical-sexp 1)
+          (cider--text-or-limits bounds (point) end))))))
+
+(defun cider-get-ns-name ()
+  "Return the current namespace in the buffer, suppressing any errors.
+Uses `clojure-ts-find-ns' when the buffer is in `clojure-ts-mode',
+otherwise falls back to `clojure-find-ns'.
+Therefore, possibly returns nil, so please handle that value from any callsites."
+  (if (and (cider-clojure-ts-mode-p)
+           (fboundp 'clojure-ts-find-ns))
+      (clojure-ts-find-ns)
+    (clojure-find-ns :supress-errors)))
+
+(defun cider-ns-form ()
+  "Retrieve the ns form."
+  (when (cider-get-ns-name)
+    (save-excursion
+      (goto-char (match-beginning 0))
+      (cider-defun-at-point))))
+
+(defun cider-symbol-at-point (&optional look-back)
+  "Return the name of the symbol at point, otherwise nil.
+Ignores the REPL prompt.  If LOOK-BACK is non-nil, move backwards trying to
+find a symbol if there isn't one at point.
+Does not strip the : from keywords, nor attempt to expand :: auto-resolved
+keywords."
+  (or (when-let* ((str (thing-at-point 'symbol)))
+        (unless (text-property-any 0 (length str) 'field 'cider-repl-prompt str)
+          ;; remove font-locking
+          (setq str (substring-no-properties str))
+          (if (member str '("." ".."))
+              str
+            ;; Remove prefix quotes, and trailing . from constructors like Record.
+            (thread-last
+              str
+              ;; constructors (Foo.)
+              (string-remove-suffix ".")
+              ;; quoted symbols ('sym)
+              (string-remove-prefix "'")
+              ;; var references (#'inc 2)
+              (string-remove-prefix "#'")))))
+      (when look-back
+        (save-excursion
+          (ignore-errors
+            (when (looking-at "(")
+              (forward-char 1))
+            (while (not (looking-at "\\sw\\|\\s_\\|\\`"))
+              (forward-sexp -1)))
+          (cider-symbol-at-point)))))
+
+
+;;; sexp navigation
+(defun cider--include-leading-metadata (b)
+  "Extend the bounds cons B backwards over leading ^metadata, if any.
+The `thing-at-point' machinery doesn't know Clojure metadata belongs to
+the form it annotates; `clojure-backward-logical-sexp' does."
+  (let ((logical-start (ignore-errors
+                         (save-excursion
+                           (goto-char (cdr b))
+                           (clojure-backward-logical-sexp 1)
+                           (point)))))
+    (if (and logical-start
+             (< logical-start (car b))
+             (eq (char-after logical-start) ?^))
+        (cons logical-start (cdr b))
+      b)))
+
+(defun cider-sexp-at-point (&optional bounds)
+  "Return the sexp at point as a string, otherwise nil.
+When point is on a closing delimiter, this is the sexp it closes; leading
+metadata is considered part of the sexp.
+If BOUNDS is non-nil, return a list of its starting and ending position
+instead."
+  (when-let* ((b (cond
+                  ;; on a closing delimiter: the form it closes
+                  ((eq (char-syntax (or (char-after) ?\s)) ?\))
+                   (ignore-errors
+                     (save-excursion
+                       (up-list 1)
+                       (let ((end (point)))
+                         (backward-sexp 1)
+                         (cons (point) end)))))
+                  ;; hide stuff before ( to avoid quirks with '( etc.
+                  ((and (equal (char-after) ?\()
+                        (member (char-before) '(?\' ?\, ?\@)))
+                   (save-restriction
+                     (narrow-to-region (point) (point-max))
+                     (bounds-of-thing-at-point 'sexp)))
+                  (t (bounds-of-thing-at-point 'sexp)))))
+    (let ((b (cider--include-leading-metadata b)))
+      (funcall (if bounds #'list #'buffer-substring-no-properties)
+               (car b) (cdr b)))))
+
+(defun cider-list-at-point (&optional bounds)
+  "Return the list (compound form) at point as a string, otherwise nil.
+If BOUNDS is non-nil, return a list of its starting and ending position
+instead."
+  (when-let* ((b (or (and (equal (char-after) ?\()
+                          (member (char-before) '(?\' ?\, ?\@))
+                          ;; hide stuff before ( to avoid quirks with '( etc.
+                          (save-restriction
+                            (narrow-to-region (point) (point-max))
+                            (bounds-of-thing-at-point 'list)))
+                     (bounds-of-thing-at-point 'list))))
+    (funcall (if bounds #'list #'buffer-substring-no-properties)
+             (car b) (cdr b))))
+
+(defun cider--skip-back-over-comment ()
+  "Move to the start of the line comment point sits in, if any.
+Sexp motion has no notion of comments once point is inside one: it
+happily walks over the prose as if the words were symbols.  Stepping out
+of the comment first means the search for a form resumes from the code
+that precedes it."
+  (let ((ppss (syntax-ppss)))
+    (when (nth 4 ppss)
+      (goto-char (nth 8 ppss)))))
+
+(defun cider-last-sexp (&optional bounds)
+  "Return the sexp preceding the point.
+If BOUNDS is non-nil, return a list of its starting and ending position
+instead.
+A line comment before point is skipped over rather than read as code."
+  (apply (if bounds #'list #'buffer-substring-no-properties)
+         (save-excursion
+           (cider--skip-back-over-comment)
+           (clojure-backward-logical-sexp 1)
+           (list (point)
+                 (if (looking-at-p "\\s<")
+                     ;; nothing but comments behind us; walking forward from
+                     ;; here would hand back the comment as if it were code
+                     (point)
+                   (progn (clojure-forward-logical-sexp 1)
+                          (point)))))))
+
+(defun cider--last-sexp-bounds ()
+  "Return the bounds (BEG . END) of the sexp before point, or nil.
+A forgiving wrapper around `cider-last-sexp': it answers nil where that
+signals (unbalanced code) or where the answer is degenerate, which suits
+callers that want to fall back rather than fail.
+
+Note that sexp motion no-ops at the start of a buffer, so there the
+answer is the *following* form.  That quirk belongs to `cider-last-sexp'
+and is preserved here."
+  (ignore-errors
+    (pcase-let ((`(,beg ,end) (cider-last-sexp 'bounds)))
+      (when (< beg end)
+        (cons beg end)))))
+
+(defun cider--goto-end-of-thing-at-point (thing)
+  "Move point to the end of the THING at point, `sexp' or `list'.
+Where there is none - in the whitespace between forms, say - falls back to
+the sexp preceding point, and only then signals a `user-error'.  The
+commands that operate on the thing at point are all built this way: step
+to its end, then hand off to the command that operates on the sexp
+preceding point, so the two share their handlers and their options."
+  (goto-char (or (cadr (pcase thing
+                         ('sexp (cider-sexp-at-point 'bounds))
+                         ('list (cider-list-at-point 'bounds))
+                         (_ (error "Unknown thing: %S" thing))))
+                 ;; Nothing is at point in the whitespace between forms,
+                 ;; which is where you land after typing one.  Fall back
+                 ;; to the preceding form, so these commands can serve as
+                 ;; drop-in replacements for their `last-sexp' siblings.
+                 (cdr (cider--last-sexp-bounds))
+                 (user-error "No %s at point" thing))))
+
+(defun cider--goto-end-of-call-at-point ()
+  "Move point to the end of the call form around point.
+That is the sexp at point when it is a compound form, and the enclosing
+list when it is a bare symbol or another atom, since an expansion needs a
+call form and never a lone symbol.  Where there is neither, falls back to
+the sexp preceding point before signalling a `user-error'."
+  (let ((sexp (cider-sexp-at-point 'bounds)))
+    (goto-char (or (cadr (or (and sexp
+                                  ;; a compound form always ends in a closing
+                                  ;; delimiter, whatever reader prefix it carries
+                                  (eq (char-syntax (char-before (cadr sexp))) ?\))
+                                  sexp)
+                             (cider-list-at-point 'bounds)))
+                   ;; as above: in whitespace, act on the preceding form
+                   (cdr (cider--last-sexp-bounds))
+                   (user-error "No call form at point")))))
+
+(defun cider-start-of-next-sexp (&optional skip)
+  "Move to the start of the next sexp.
+Skip any non-logical sexps like ^metadata or #reader macros.
+If SKIP is an integer, also skip that many logical sexps first.
+Can only error if SKIP is non-nil."
+  (while (cider--looking-at-non-logical-sexp)
+    (forward-sexp 1))
+  (when (and skip (> skip 0))
+    (dotimes (_ skip)
+      (forward-sexp 1)
+      (cider-start-of-next-sexp))))
+
+(defun cider-second-sexp-in-list ()
+  "Return the second sexp in the list at point."
+  (condition-case nil
+      (save-excursion
+        (backward-up-list)
+        (forward-char)
+        (forward-sexp 2)
+        (cider-sexp-at-point))
+    (error nil)))
+
+
+;;; Plists
+
+(defalias 'cider-plist-get #'nrepl-plist-get)
+(defalias 'cider-plist-put #'nrepl-plist-put)
+
+
+;;; Text properties
+
+(defun cider-maybe-intern (name)
+  "If NAME is a symbol, return it; otherwise, intern it."
+  (if (symbolp name) name (intern name)))
+
+(defun cider-intern-keys (plist)
+  "Copy PLIST, with any non-symbol keys replaced with symbols."
+  (when plist
+    (cons (cider-maybe-intern (pop plist))
+          (cons (pop plist) (cider-intern-keys plist)))))
+
+(defmacro cider-propertize-region (props &rest body)
+  "Execute BODY and add PROPS to all the inserted text.
+More precisely, PROPS are added to the region between the point's
+positions before and after executing BODY."
+  (declare (indent 1)
+           (debug (sexp body)))
+  (let ((start (make-symbol "start")))
+    `(let ((,start (point)))
+       (prog1 (progn ,@body)
+         (add-text-properties ,start (point) ,props)))))
+
+(put 'cider-propertize-region 'lisp-indent-function 1)
+
+(defun cider-property-bounds (prop)
+  "Return the positions of the previous and next change to PROP.
+PROP is the name of a text property."
+  (let ((end (next-single-char-property-change (point) prop)))
+    (list (previous-single-char-property-change end prop) end)))
+
+(defun cider-insert (text &optional face break more-text)
+  "Insert TEXT with FACE, optionally followed by a line BREAK and MORE-TEXT."
+  (insert (if face (propertize text 'font-lock-face face) text))
+  (when more-text (insert more-text))
+  (when break (insert "\n")))
+
+
+;;; Hooks
+
+(defun cider-run-chained-hook (hook arg)
+  "Like `run-hook-with-args' but pass intermediate return values through.
+HOOK is a name of a hook (a symbol).  You can use `add-hook' or
+`remove-hook' to add functions to this variable.  ARG is passed to first
+function.  Its return value is passed to the second function and so forth
+till all functions are called or one of them returns nil.  Return the value
+return by the last called function."
+  (let ((functions (copy-sequence (symbol-value hook))))
+    (while (and functions arg)
+      (if (eq (car functions) t)
+          ;; global value of the hook
+          (let ((functions (default-value hook)))
+            (while (and functions arg)
+              (setq arg (funcall (car functions) arg))
+              (setq functions (cdr functions))))
+        (setq arg (funcall (car functions) arg)))
+      (setq functions (cdr functions)))
+    arg))
+
+
+;;; Font lock
+
+(defvar cider--mode-buffers nil
+  "A list of buffers for different major modes.")
+
+(defun cider--make-buffer-for-mode (mode)
+  "Return a temp buffer using `major-mode' MODE.
+This buffer is not designed to display anything to the user.  For that, use
+`cider-make-popup-buffer' instead."
+  (setq cider--mode-buffers (seq-filter (lambda (x) (buffer-live-p (cdr x)))
+                                        cider--mode-buffers))
+  (or (cdr (assq mode cider--mode-buffers))
+      (let ((b (generate-new-buffer (format " *cider-temp %s*" mode))))
+        (push (cons mode b) cider--mode-buffers)
+        (with-current-buffer b
+          ;; suppress major mode hooks as we care only about their font-locking
+          ;; otherwise modes like whitespace-mode and paredit might interfere
+          (setq-local delay-mode-hooks t)
+          (setq delayed-mode-hooks nil)
+          (funcall mode))
+        b)))
+
+(defun cider-ansi-color-string-p (string)
+  "Return non-nil if STRING is an ANSI string."
+  (string-match "^\\[" string))
+
+(defun cider-font-lock-as (mode string)
+  "Use MODE to font-lock the STRING."
+  (let ((string (if (cider-ansi-color-string-p string)
+                    (substring-no-properties (ansi-color-apply string))
+                  string)))
+    (if (or (null cider-font-lock-max-length)
+            (< (length string) cider-font-lock-max-length))
+        (with-current-buffer (cider--make-buffer-for-mode mode)
+          (erase-buffer)
+          (insert string)
+          ;; don't try to font-lock unbalanced Clojure code
+          (when (eq mode 'clojure-mode)
+            (check-parens))
+          (font-lock-fontify-region (point-min) (point-max))
+          (buffer-string))
+      string)))
+
+(defun cider-font-lock-region-as (mode beg end &optional buffer)
+  "Use MODE to font-lock text between BEG and END.
+
+Unless you specify a BUFFER it will default to the current one."
+  (with-current-buffer (or buffer (current-buffer))
+    (let ((text (buffer-substring beg end)))
+      (delete-region beg end)
+      (goto-char beg)
+      (insert (cider-font-lock-as mode text)))))
+
+(defcustom cider-preferred-clojure-mode 'auto
+  "Which Clojure major mode CIDER should use for the Clojure it produces.
+This governs both the font-locking of Clojure snippets CIDER renders (REPL
+input and results, doc examples, debug and enlighten overlays, xref labels,
+and so on) and the major mode of the Clojure display buffers it pops up
+\(macroexpansion, results, tracing, and the like):
+
+  `auto' (the default): use `clojure-ts-mode' when Clojure source files
+  open in it and its tree-sitter grammar is ready, otherwise `clojure-mode'.
+  `clojure-mode': always use `clojure-mode'.
+  `clojure-ts-mode': use `clojure-ts-mode' when available, else fall back
+  to `clojure-mode'."
+  :type '(choice (const :tag "Auto-detect" auto)
+                 (const :tag "clojure-mode" clojure-mode)
+                 (const :tag "clojure-ts-mode" clojure-ts-mode))
+  :group 'cider
+  :package-version '(cider . "2.1.0"))
+
+(defun cider--clojure-ts-mode-available-p ()
+  "Return non-nil if `clojure-ts-mode' and the Clojure grammar are usable."
+  (and (fboundp 'clojure-ts-mode)
+       (featurep 'treesit)
+       (treesit-ready-p 'clojure t)))
+
+(defun cider--clojure-ts-mode-preferred-p ()
+  "Return non-nil when Clojure source files open in `clojure-ts-mode'.
+Handles both mechanisms clojure-ts-mode registers with: remapping
+`clojure-mode' and a direct `auto-mode-alist' entry for Clojure files."
+  (or (eq 'clojure-ts-mode
+          (if (fboundp 'major-mode-remap)
+              (major-mode-remap 'clojure-mode)
+            (and (boundp 'major-mode-remap-alist)
+                 (alist-get 'clojure-mode major-mode-remap-alist))))
+      (eq 'clojure-ts-mode
+          (assoc-default "a.clj" auto-mode-alist #'string-match-p))))
+
+(defun cider--preferred-clojure-mode ()
+  "Return the Clojure major mode CIDER should use for the code it produces.
+Resolves `cider-preferred-clojure-mode', falling back to `clojure-mode'
+whenever `clojure-ts-mode' or its grammar is unavailable."
+  (pcase cider-preferred-clojure-mode
+    ('clojure-mode 'clojure-mode)
+    ('clojure-ts-mode (if (cider--clojure-ts-mode-available-p)
+                          'clojure-ts-mode
+                        'clojure-mode))
+    (_ (if (and (cider--clojure-ts-mode-available-p)
+                (cider--clojure-ts-mode-preferred-p))
+           'clojure-ts-mode
+         'clojure-mode))))
+
+(defun cider-font-lock-as-clojure (string)
+  "Font-lock STRING as Clojure code.
+The major mode used is chosen by `cider-preferred-clojure-mode'."
+  ;; If something goes wrong (e.g. the code is not balanced)
+  ;; we simply return the string.
+  (condition-case nil
+      (cider-font-lock-as (cider--preferred-clojure-mode) string)
+    (error string)))
+
+;; Button allowing use of `font-lock-face', ignoring any inherited `face'
+(define-button-type 'cider-plain-button
+  'face nil)
+
+(defun cider-add-face (regexp face &optional foreground-only sub-expr object)
+  "Propertize all occurrences of REGEXP with FACE.
+If FOREGROUND-ONLY is non-nil, change only the foreground of matched
+regions.  SUB-EXPR is a sub-expression of REGEXP to be
+propertized (defaults to 0).  OBJECT is an object to be
+propertized (defaults to current buffer)."
+  (setq sub-expr (or sub-expr 0))
+  (when (and regexp face)
+    (let ((beg 0)
+          (end 0))
+      (with-current-buffer (or (and (bufferp object) object)
+                               (current-buffer))
+        (while (if (stringp object)
+                   (string-match regexp object end)
+                 (re-search-forward regexp nil t))
+          (setq beg (match-beginning sub-expr)
+                end (match-end sub-expr))
+          (if foreground-only
+              (let ((face-spec (list (cons 'foreground-color
+                                           (face-attribute face :foreground nil t)))))
+                (font-lock-prepend-text-property beg end 'face face-spec object))
+            (put-text-property beg end 'face face object)))))))
+
+
+;;; Colors
+
+(defun cider-scale-background-color ()
+  "Scale the current background color to get a slighted muted version."
+  (let ((color (frame-parameter nil 'background-color))
+        (darkp (eq (frame-parameter nil 'background-mode) 'dark)))
+    (unless (equal "unspecified-bg" color)
+      (color-lighten-name color (if darkp 5 -5)))))
+
+(defvar cider-version)
+(defvar cider-codename)
+
+(defun cider--version ()
+  "Retrieve CIDER's version.
+A codename is added to stable versions."
+  (if (string-match-p "-snapshot" cider-version)
+      (let ((pkg-version (package-get-version)))
+        (if pkg-version
+            ;; snapshot versions include the MELPA package version
+            (format "%s (package: %s)" cider-version pkg-version)
+          cider-version))
+    ;; stable versions include the codename of the release
+    (format "%s (%s)" cider-version cider-codename)))
+
+
+;;; Strings
+
+(defun cider-join-into-alist (candidates &optional separator)
+  "Make an alist from CANDIDATES.
+The keys are the elements joined with SEPARATOR and values are the original
+elements.  Useful for `completing-read' when candidates are complex
+objects."
+  (mapcar (lambda (el)
+            (if (listp el)
+                (cons (string-join el (or separator ":")) el)
+              (cons el el)))
+          candidates))
+
+(defun cider-add-to-alist (symbol car cadr)
+  "Add (CAR CADR) to the alist stored in SYMBOL.
+If CAR already corresponds to an entry in the alist, destructively replace
+the entry's second element with CADR.
+
+This can be used, for instance, to update the version of an injected
+plugin or dependency with:
+  (cider-add-to-alist \\='cider-jack-in-lein-plugins
+                  \"plugin/artifact-name\" \"THE-NEW-VERSION\")"
+  (let ((alist (symbol-value symbol)))
+    (if-let* ((cons (assoc car alist)))
+        (setcdr cons (list cadr))
+      (set symbol (cons (list car cadr) alist)))))
+
+(defun cider-namespace-qualified-p (sym)
+  "Return t if SYM is namespace-qualified."
+  (string-match-p "[^/]+/" sym))
+
+(defvar cider-version)
+
+(defconst cider-manual-url "https://docs.cider.mx/cider/%s"
+  "The URL to CIDER's manual.")
+
+(defun cider-version-sans-patch ()
+  "Return the version sans that patch."
+  (string-join (seq-take (split-string cider-version "\\.") 2) "."))
+
+(defun cider--manual-version ()
+  "Convert the version to a ReadTheDocs-friendly version."
+  (if (string-match-p "-snapshot" cider-version)
+      ""
+    (concat (cider-version-sans-patch) "/")))
+
+(defun cider-manual-url ()
+  "The CIDER manual's url."
+  (format cider-manual-url (cider--manual-version)))
+
+;;;###autoload
+(defun cider-view-manual ()
+  "View the manual in your default browser."
+  (interactive)
+  (browse-url (cider-manual-url)))
+
+(defun cider--manual-button (label section-id)
+  "Return a button string that links to the online manual.
+LABEL is the displayed string, and SECTION-ID is where it points
+to."
+  (with-temp-buffer
+    (insert-text-button
+     label
+     'follow-link t
+     'action (lambda (&rest _) (interactive)
+               (browse-url (concat (cider-manual-url)
+                                   section-id))))
+    (buffer-string)))
+
+(defconst cider-refcard-url "https://github.com/clojure-emacs/cider/raw/%s/refcard/cider-refcard.pdf"
+  "The URL to CIDER's refcard.")
+
+(defun cider--github-version ()
+  "Convert the version to a GitHub-friendly version."
+  (if (string-match-p "-snapshot" cider-version)
+      "master"
+    (concat "v" cider-version)))
+
+(defun cider-refcard-url ()
+  "The CIDER manual's url."
+  (format cider-refcard-url (cider--github-version)))
+
+(defun cider-view-refcard ()
+  "View the refcard in your default browser."
+  (interactive)
+  (browse-url (cider-refcard-url)))
+
+(defconst cider-report-bug-url "https://github.com/clojure-emacs/cider/issues/new"
+  "The URL to report a CIDER issue.")
+
+(defun cider-report-bug ()
+  "Report a bug in your default browser."
+  (interactive)
+  (browse-url cider-report-bug-url))
+
+(defun cider--project-name (dir)
+  "Extract a project name from DIR, possibly nil.
+The project name is the final component of DIR if not nil."
+  (when dir
+    (file-name-nondirectory (directory-file-name dir))))
+
+;;; Vectors
+(defun cider--deep-vector-to-list (x)
+  "Convert vectors in X to lists.
+If X is a sequence, return a list of `cider--deep-vector-to-list' applied to
+each of its elements.
+Any other value is just returned."
+  (if (sequencep x)
+      (mapcar #'cider--deep-vector-to-list x)
+    x))
+
+(defun cider--modern-indent-spec-p (spec)
+  "Return non-nil if SPEC is a modern tuple-based indent spec.
+Modern specs are lists of rules like ((:block N)) or ((:inner D))."
+  (and (listp spec)
+       spec
+       (seq-every-p (lambda (rule)
+                      (and (listp rule)
+                           (memq (car rule) '(:block :inner))))
+                    spec)))
+
+(defun cider--indent-spec-to-legacy (spec)
+  "Convert a modern indent SPEC to legacy format for older clojure-mode.
+Returns SPEC unchanged if it is not in modern format.
+
+Modern format uses ((:block N)), ((:inner D)), ((:inner D I)).
+Legacy format uses integers, :defn, and positional lists.
+
+This ensures compatibility with clojure-mode versions that don't
+understand the modern format."
+  (if (not (cider--modern-indent-spec-p spec))
+      spec
+    (let ((block-n nil)
+          (inner-no-idx nil)
+          (inner-with-idx nil))
+      (dolist (rule spec)
+        (pcase rule
+          (`(:block ,n) (setq block-n n))
+          (`(:inner ,d) (push d inner-no-idx))
+          (`(:inner ,d ,i) (push (cons d i) inner-with-idx))))
+      (cond
+       ;; Simple: only (:block N)
+       ((and block-n (null inner-no-idx) (null inner-with-idx))
+        block-n)
+       ;; Simple: only (:inner 0)
+       ((and (null block-n) (null inner-with-idx)
+             (equal inner-no-idx '(0)))
+        :defn)
+       ;; Complex: build positional list
+       (t
+        (let ((result (list))
+              (wrap-defn (lambda (depth)
+                           (let ((s :defn))
+                             (dotimes (_ depth)
+                               (setq s (list s)))
+                             s))))
+          (when block-n
+            (setq result (list block-n)))
+          ;; Place indexed :inner rules at their positions
+          (dolist (ir inner-with-idx)
+            (let* ((depth (car ir))
+                   (idx (cdr ir))
+                   (pos (+ (if block-n 1 0) idx))
+                   (wrapped (funcall wrap-defn depth)))
+              (while (<= (length result) pos)
+                (setq result (append result (list nil))))
+              (setf (nth pos result) wrapped)))
+          ;; Append non-indexed :inner rules (ascending depth)
+          (dolist (depth (sort inner-no-idx #'<))
+            (setq result (append result (list (funcall wrap-defn depth)))))
+          ;; Trailing nil for specs with indexed rules
+          (when inner-with-idx
+            (setq result (append result (list nil))))
+          result))))))
+
+
+;;; Help mode
+
+;; Same as https://github.com/emacs-mirror/emacs/blob/86d083438dba60dc00e9e96414bf7e832720c05a/lisp/help-mode.el#L355
+;; the original function uses some buffer local variables, but the buffer used
+;; is not configurable. It defaults to (help-buffer)
+
+(defun cider--help-setup-xref (item interactive-p buffer)
+  "Invoked from commands using the \"*Help*\" buffer to install some xref info.
+
+ITEM is a (FUNCTION . ARGS) pair appropriate for recreating the help
+buffer after following a reference.  INTERACTIVE-P is non-nil if the
+calling command was invoked interactively.  In this case the stack of
+items for help buffer \"back\" buttons is cleared.  Use BUFFER for the
+buffer local variables.
+
+This should be called very early, before the output buffer is cleared,
+because we want to record the \"previous\" position of point so we can
+restore it properly when going back."
+  (with-current-buffer buffer
+    (when help-xref-stack-item
+      (push (cons (point) help-xref-stack-item) help-xref-stack)
+      (setq help-xref-forward-stack nil))
+    (when interactive-p
+      (let ((tail (nthcdr 10 help-xref-stack)))
+        ;; Truncate the stack.
+        (if tail (setcdr tail nil))))
+    (setq help-xref-stack-item item)))
+
+(defcustom cider-doc-xref-regexp
+  (eval-and-compile
+    (rx-to-string
+     `(or (: "`" (group-n 1 (+ (not space))) "`")  ; `var`
+          (: "[[" (group-n 1 (+ (not space))) "]]") ; [[var]]
+          (group-n 1 (regexp ,cider--sym-regexp) "/" (regexp ,cider--sym-regexp))))) ;; Fully qualified
+  "The regexp used to search Clojure vars in doc buffers."
+  :type 'regexp
+  :safe #'stringp
+  :group 'cider
+  :package-version '(cider . "0.13.0"))
+
+(defun cider--find-symbol-xref ()
+  "Parse and return the first clojure symbol in current buffer.
+Use `cider-doc-xref-regexp' for the search.  Set match data and return a
+string of the Clojure symbol.  Return nil if there are no more matches in
+the buffer."
+  (when (re-search-forward cider-doc-xref-regexp nil t)
+    (match-string 1)))
+
+(declare-function cider-doc-lookup "cider-doc")
+(declare-function cider--eldoc-remove-dot "cider-eldoc")
+
+;; Taken from: https://github.com/emacs-mirror/emacs/blob/65c8c7cb96c14f9c6accd03cc8851b5a3459049e/lisp/help-mode.el#L551-L565
+(defun cider--make-back-forward-xrefs (&optional buffer)
+  "Insert special references `back' and `forward', as in `help-make-xrefs'.
+
+Optional argument BUFFER is the buffer in which to insert references.
+Default is current buffer."
+  (with-current-buffer (or buffer (current-buffer))
+    (insert "\n")
+    (when (or help-xref-stack help-xref-forward-stack)
+      (insert "\n"))
+    ;; Make a back-reference in this buffer if appropriate.
+    (when help-xref-stack
+      (help-insert-xref-button help-back-label 'help-back
+                               (current-buffer)))
+    ;; Make a forward-reference in this buffer if appropriate.
+    (when help-xref-forward-stack
+      (when help-xref-stack
+        (insert "\t"))
+      (help-insert-xref-button help-forward-label 'help-forward
+                               (current-buffer)))
+    (when (or help-xref-stack help-xref-forward-stack)
+      (insert "\n"))))
+
+;; Similar to https://github.com/emacs-mirror/emacs/blob/65c8c7cb96c14f9c6accd03cc8851b5a3459049e/lisp/help-mode.el#L404
+(defun cider--doc-make-xrefs ()
+  "Parse and hyperlink documentation cross-references in current buffer.
+Find cross-reference information in a buffer and activate such cross
+references for selection with `help-xref'.  Cross-references are parsed
+using `cider--find-symbol-xref'.
+
+Special references `back' and `forward' are made to go back and forth
+through a stack of help buffers.  Variables `help-back-label' and
+`help-forward-label' specify the text for that."
+  (interactive "b")
+
+  ;; parse the docstring and create xrefs for symbols
+  (save-excursion
+    (goto-char (point-min))
+    (let ((symbol))
+      (while (setq symbol (cider--find-symbol-xref))
+        (replace-match "")
+        (insert-text-button symbol
+                            'type 'help-xref
+                            'help-function (apply-partially #'cider-doc-lookup
+                                                            (cider--eldoc-remove-dot symbol))))))
+  (cider--make-back-forward-xrefs))
+
+
+(defun cider-column-number-at-pos (pos)
+  "Analog to `line-number-at-pos'.
+Return buffer column number at position POS."
+  (save-excursion
+    (goto-char pos)
+    ;; we have to adjust the column number by 1 to account for the fact
+    ;; that Emacs starts counting columns from 0 and Clojure from 1
+    (1+ (current-column))))
+
+(defun cider-propertize (text kind)
+  "Propertize TEXT as KIND.
+KIND can be the symbols `ns', `var', `emph', `fn', or a face name."
+  (propertize text 'face (pcase kind
+                           (`fn 'font-lock-function-name-face)
+                           (`method 'font-lock-function-name-face)
+                           (`special-form 'font-lock-keyword-face)
+                           (`macro 'font-lock-keyword-face)
+                           (`var 'font-lock-variable-name-face)
+                           (`ns 'font-lock-type-face)
+                           (`emph 'font-lock-keyword-face)
+                           (face face))))
+
+(defun cider--menu-add-help-strings (menu-list)
+  "Add a :help entries to items in MENU-LIST."
+  (mapcar (lambda (x)
+            (cond
+             ((listp x) (cider--menu-add-help-strings x))
+             ((and (vectorp x)
+                   (not (plist-get (append x nil) :help))
+                   (functionp (elt x 1)))
+              (vconcat x `[:help ,(documentation (elt x 1))]))
+             (t x)))
+          menu-list))
+
+
+;;; Deprecated keybindings
+;;
+;; Emacs has `make-obsolete' for symbols, but nothing for keybindings.  As CIDER
+;; reorganizes its keymaps (grouping commands under prefixes) we want to retire
+;; bindings without yanking them out from under people's muscle memory: the old
+;; key keeps working throughout a deprecation window but, once per session,
+;; nudges you toward the replacement.  `cider-list-deprecated-keybindings' shows
+;; everything still pending removal.
+
+(defcustom cider-warn-on-deprecated-keybindings t
+  "Whether to hint when a deprecated CIDER keybinding is used.
+The command still runs either way; this only controls the one-time message
+nudging you toward the replacement binding."
+  :type 'boolean
+  :group 'cider
+  :package-version '(cider . "2.0.0"))
+
+(defvar cider--deprecated-keybindings nil
+  "Registry of CIDER's deprecated keybindings.
+Each entry is a plist with `:key', `:command', `:replacement' and `:since'.
+Populated by `cider--define-deprecated-key', listed by
+`cider-list-deprecated-keybindings'.")
+
+(defvar cider--deprecated-keys-warned (make-hash-table :test #'equal)
+  "Keys already warned about this session, so each warns at most once.")
+
+(defun cider--warn-deprecated-key (key replacement)
+  "Hint once per session that KEY is deprecated in favor of REPLACEMENT."
+  (when (and cider-warn-on-deprecated-keybindings
+             (not (gethash key cider--deprecated-keys-warned)))
+    (puthash key t cider--deprecated-keys-warned)
+    (message "CIDER: `%s' is deprecated; use %s instead" key replacement)))
+
+(defun cider--define-deprecated-key (map key command replacement &optional since)
+  "In keymap MAP bind KEY to COMMAND, marking it a deprecated alias.
+KEY is a `kbd' string.  Triggering it runs COMMAND as usual, but also hints
+once per session (subject to `cider-warn-on-deprecated-keybindings') that
+REPLACEMENT - a human-readable description of the new binding - should be used
+instead.  SINCE is the CIDER version the deprecation started in.
+
+This is how CIDER retires a binding gradually: the old key keeps working
+throughout the deprecation window, then is removed in a later release."
+  ;; Keyed by the key-string alone (not the map): the user-facing listing wants
+  ;; one entry per key, and today each key is deprecated in a single map.
+  (setq cider--deprecated-keybindings
+        (cons (list :key key :command command :replacement replacement :since since)
+              (seq-remove (lambda (e) (equal (plist-get e :key) key))
+                          cider--deprecated-keybindings)))
+  (define-key map (kbd key)
+    (lambda ()
+      (interactive)
+      (cider--warn-deprecated-key key replacement)
+      ;; Present the wrapped command (not this anonymous alias) as
+      ;; `this-command', so commands that inspect it see themselves.
+      (setq this-command command)
+      (call-interactively command))))
+
+(defun cider-list-deprecated-keybindings ()
+  "Display CIDER's deprecated keybindings and what to use instead."
+  (interactive)
+  (if (null cider--deprecated-keybindings)
+      (message "No deprecated CIDER keybindings")
+    (with-help-window "*cider-deprecated-keybindings*"
+      (princ "Deprecated CIDER keybindings (still working, but slated for removal):\n\n")
+      (dolist (entry (reverse cider--deprecated-keybindings))
+        (princ (format "  %-10s  use %s%s\n"
+                       (plist-get entry :key)
+                       (plist-get entry :replacement)
+                       (if-let* ((since (plist-get entry :since)))
+                           (format "  (deprecated since %s)" since)
+                         "")))))))
+
+(declare-function shr-insert-document "shr" (dom))
+(defvar shr-blocked-images)
+
+(defun cider--render-html-string (html)
+  "Return HTML rendered to displayable text via shr.
+Remote images (any `scheme://' URL) are blocked, so rendering a result
+never makes a network request on its own - which would otherwise leak the
+user's IP the moment a result contained a remote `<img>' (a tracking-pixel
+vector), bypassing the on-demand fetch the external-content path requires.
+Inline `data:' images are safe and still render.
+Falls back to the raw HTML when Emacs lacks libxml support."
+  (if (and (fboundp 'libxml-available-p) (libxml-available-p))
+      (progn
+        (require 'shr)
+        (with-temp-buffer
+          (insert html)
+          (let ((dom (libxml-parse-html-region (point-min) (point-max)))
+                ;; Block remote image fetching (see the docstring); `data:'
+                ;; URLs have no `//' authority, so they are not matched.
+                (shr-blocked-images "\\`[a-z][-a-z0-9+.]*://"))
+            (erase-buffer)
+            (shr-insert-document dom)
+            (string-trim (buffer-string)))))
+    html))
+
+(provide 'cider-util)
+
+;;; cider-util.el ends here
