@@ -367,11 +367,12 @@ If the region is active, toggle commenting on the whole region."
   (super-save-mode +1)
   :diminish super-save-mode)
 
-(defadvice super-save-command (around wh/dont-super-save-gpg activate)
+(define-advice super-save-command (:around (old-function &rest args)
+                                   wh/dont-super-save-gpg)
   "It's very tedious to type the password every time I change
 a symmetrically-encrypted GPG file. Require explict saving in this case."
   (unless (s-ends-with-p ".gpg" (buffer-file-name))
-    ad-do-it))
+    (apply old-function args)))
 
 ;; http://pragmaticemacs.com/emacs/insert-file-name/
 (defun bjm/insert-file-name (filename &optional args)
