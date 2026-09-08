@@ -86,6 +86,10 @@
 
 (defvar elisp-complete--recent-syms nil)
 (defvar elisp-complete--history-size 1000)
+(defvar company-minimum-prefix-length)
+
+(declare-function company-begin-backend "company")
+(declare-function company-grab-symbol "company")
 
 (defun elisp-complete--global-syms (form)
   "Return all the globally bound symbol references in FORM."
