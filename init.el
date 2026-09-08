@@ -1018,8 +1018,6 @@ Visit the file after creation."
 ;; TODO: distinguish missing file from error during execution
 (ignore-errors (require 'site-customisations))
 
-(setq ag-highlight-search 't)
-(global-set-key (kbd "<f5>") #'ag-project)
 (global-set-key (kbd "<f5>") #'deadgrep)
 
 (require 'conflicts-customisations)

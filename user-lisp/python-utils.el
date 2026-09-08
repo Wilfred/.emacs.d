@@ -1,4 +1,4 @@
-(require 'ag)
+(require 'deadgrep)
 (require 'dash)
 (require 's)
 (require 'f)
@@ -27,7 +27,7 @@ a specific search string."
                       (virtualenv-search--dwim-at-point)))
         (libraries-path
          (f-join python-shell-virtualenv-path "lib/python2.7/site-packages")))
-    (ag/search search-term libraries-path)))
+    (deadgrep search-term libraries-path)))
 
 (define-key python-mode-map (kbd "C-c v s") 'virtualenv-search)
 
