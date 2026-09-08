@@ -24,6 +24,11 @@
 (defvar flycheck-python-mypy-args)
 (defvar pytest-cmd-flags)
 
+(declare-function python-smart-execute "python-smart-execute")
+(declare-function python-smart-execute-no-move "python-smart-execute")
+(declare-function sp-backward-sexp "smartparens")
+(declare-function sp-forward-sexp "smartparens")
+
 (defun wh/backward-up-python (old-function &rest args)
   "Use Python navigation, or call OLD-FUNCTION with ARGS in other modes."
   (if (eq major-mode 'python-mode)
