@@ -20,14 +20,14 @@ Otherwise, get the symbol at point and return a search term for its definition."
   "Search the source code in the current virtualenv for
 a specific search string."
   (interactive)
-  (unless python-shell-virtualenv-path
-    (error "Need to set `python-shell-virtualenv-path', see `virtualenv-workon'"))
+  (unless python-shell-virtualenv-root
+    (error "Need to set `python-shell-virtualenv-root', see `virtualenv-workon'"))
   (let ((search-term (read-from-minibuffer
                       (format "Search %s virtualenv for: "
-                              (f-filename python-shell-virtualenv-path))
+                              (f-filename python-shell-virtualenv-root))
                       (virtualenv-search--dwim-at-point)))
         (libraries-path
-         (f-join python-shell-virtualenv-path "lib/python2.7/site-packages")))
+         (f-join python-shell-virtualenv-root "lib/python2.7/site-packages")))
     (deadgrep search-term libraries-path)))
 
 (define-key python-mode-map (kbd "C-c v s") 'virtualenv-search)
