@@ -1,4 +1,8 @@
 ;;; -*- lexical-binding: nil; -*-
+(declare-function merlin-locate "merlin")
+(declare-function merlin-pop-stack "merlin")
+(declare-function ocamlformat "ocamlformat")
+
 (use-package tuareg
   :config
   ;; Don't move past the expression after evaluating. I usually want
