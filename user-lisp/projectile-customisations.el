@@ -1,4 +1,6 @@
 ;;; -*- lexical-binding: nil; -*-
+(defvar projectile-mode-line)
+
 (setq projectile-svn-command
       "find . -type f | grep -v '/.svn/' | tr '\\n' '\\0'")
 
