@@ -1,7 +1,7 @@
 ;;; -*- lexical-binding: nil; -*-
 (defun time-as-unixtime (most-sig-bits least-sig-bits microseconds)
   "Return the number of seconds since 1st of January 1970."
-  (+ (lsh most-sig-bits 16) least-sig-bits
+  (+ (ash most-sig-bits 16) least-sig-bits
      (/ microseconds 1000000.0)))
 
 (defun time-difference (from-time to-time)
@@ -19,4 +19,3 @@ by (current-time)."
        (message "(require \'%s) took %.2f seconds."
                 (symbol-name ,feature)
                 (time-difference ,timing-var (current-time))))))
-
