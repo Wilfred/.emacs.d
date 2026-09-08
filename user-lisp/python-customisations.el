@@ -103,7 +103,7 @@
   ;; Don't font lock in an inferior python shell. It's too easy for a
   ;; docstring (when using foo? in ipython) to contain doublequotes and
   ;; all the highlighting is broken from then onwards.
-  (setq python-shell-enable-font-lock nil)
+  (setq python-shell-font-lock-enable nil)
 
   (define-key python-mode-map (kbd "C-c C-t") #'pytest-one)
 
