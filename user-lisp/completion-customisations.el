@@ -130,10 +130,11 @@
 
   (define-key company-active-map (kbd "RET") #'company-complete-selection)
 
-  (defadvice company-etags--candidates (around wh/etags-blacklist-modes activate)
+  (define-advice company-etags--candidates (:around (old-function &rest args)
+                                             wh/etags-blacklist-modes)
     "Don't offer etags completion in modes where it's not helpful."
     (unless (memq major-mode '(asm-mode))
-      ad-do-it))
+      (apply old-function args)))
 
   :diminish "Comp")
 
