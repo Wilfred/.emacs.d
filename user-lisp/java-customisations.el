@@ -4,6 +4,10 @@
 (defvar eclim-executable)
 (defvar help-at-pt-timer-delay)
 
+(declare-function buffer-contains-string-p "buffer-utils")
+(declare-function find-path-parent-directory "file-utils")
+(declare-function path-for-current-buffer "file-utils")
+
 (setq eclim-executable (expand-file-name "~/.eclipse/org.eclipse.platform_3.7.0_155965261/eclim"))
 
 (defvar eclim-in-use nil)
