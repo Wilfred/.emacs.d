@@ -36,6 +36,11 @@
 
 (global-set-key (kbd "C-z") #'eacl-complete-line)
 
+(defun wh/etags-blacklist-modes (old-function &rest args)
+  "Call OLD-FUNCTION with ARGS outside modes where etags is unhelpful."
+  (unless (memq major-mode '(asm-mode))
+    (apply old-function args)))
+
 (defun wh/company-whole-line-with-activate ()
   "Call `company-whole-line', temporarily enabling company-mode if necessary."
   (interactive)
@@ -130,11 +135,7 @@
 
   (define-key company-active-map (kbd "RET") #'company-complete-selection)
 
-  (define-advice company-etags--candidates (:around (old-function &rest args)
-                                             wh/etags-blacklist-modes)
-    "Don't offer etags completion in modes where it's not helpful."
-    (unless (memq major-mode '(asm-mode))
-      (apply old-function args)))
+  (advice-add 'company-etags--candidates :around #'wh/etags-blacklist-modes)
 
   :diminish "Comp")
 
