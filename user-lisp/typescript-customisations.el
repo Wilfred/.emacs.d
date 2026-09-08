@@ -1,4 +1,5 @@
 ;;; -*- lexical-binding: nil; -*-
+(defvar typescript-indent-level)
 
 (add-hook 'typescript-mode-hook #'tide-setup)
 
