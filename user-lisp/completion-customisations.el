@@ -108,7 +108,7 @@
 
   ;; Show a list of numbers next to completion options, where M-1
   ;; selects the first option and so on.
-  (setq company-show-numbers t)
+  (setq company-show-quick-access t)
 
   ;; In the completion list, wrap around so going backwards from the
   ;; last option shows the first.
