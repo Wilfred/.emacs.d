@@ -1,12 +1,13 @@
 ;;; -*- lexical-binding: nil; -*-
 
 
-(defadvice viper-maybe-checkout (around viper-svn-git-checkin-fix activate)
-  "Advise viper-maybe-checkout to ignore svn and git files."
-  (let ((file (expand-file-name (buffer-file-name buf))))
-    (when (and (featurep 'vc-hooks)
-               (not (memq (vc-backend file) '(nil SVN Git))))
-      ad-do-it)))
+(with-suppressed-warnings ((obsolete defadvice))
+  (defadvice viper-maybe-checkout (around viper-svn-git-checkin-fix activate)
+    "Advise viper-maybe-checkout to ignore svn and git files."
+    (let ((file (expand-file-name (buffer-file-name buf))))
+      (when (and (featurep 'vc-hooks)
+                 (not (memq (vc-backend file) '(nil SVN Git))))
+        ad-do-it))))
 
 (ad-activate 'viper-maybe-checkout)
 
