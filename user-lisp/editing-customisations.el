@@ -70,7 +70,7 @@ The point is also moved one character forward."
 (defun wh/format-symbol (string format)
   "Convert a given string to a specified formatting convention.
 
- \(wh/format-symbol \"fooBar\" 'constant) => \"FOO_BAR\""
+ \(wh/format-symbol \"fooBar\" \='constant) => \"FOO_BAR\""
   (let ((components))
     ;; split the string into its word components
     (if (s-contains? "_" string)
