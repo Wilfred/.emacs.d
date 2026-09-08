@@ -1,6 +1,8 @@
 ;;; -*- lexical-binding: nil; -*-
 (defvar diff-hl-command-map)
 
+(require 'dash)
+
 (declare-function diff-hl-next-hunk "diff-hl")
 (declare-function diff-hl-previous-hunk "diff-hl")
 (declare-function git-commit-insert-header "git-commit")
