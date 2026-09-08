@@ -3,6 +3,14 @@
 
 (require 'dash)
 
+(declare-function paredit-backward "paredit")
+(declare-function paredit-backward-up "paredit")
+(declare-function paredit-forward "paredit")
+(declare-function paredit-forward-down "paredit")
+(declare-function paredit-forward-up "paredit")
+(declare-function wh/switch-on-paredit "lisp-customisations")
+(declare-function wh/was-compiled-p "lisp-customisations")
+
 (setq load-prefer-newer t)
 
 (defun wh/trace-enclosing-fn-at-point ()
