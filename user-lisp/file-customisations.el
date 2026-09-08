@@ -1,4 +1,9 @@
 ;;; -*- lexical-binding: nil; -*-
+(declare-function -last-item "dash")
+(declare-function f-expand "f")
+(declare-function f-join "f")
+(declare-function s-split "s")
+
 ;; emacs doesn't actually save undo history with revert-buffer
 ;; see http://lists.gnu.org/archive/html/bug-gnu-emacs/2011-04/msg00151.html
 ;; fix that.
