@@ -106,13 +106,14 @@
     (defmacro python-rx (&rest regexps)
       "Python mode specialized rx macro.
 This variant of `rx' supports common Python named REGEXPS."
-      (let ((rx-constituents (append python-rx-constituents rx-constituents)))
-        (cond ((null regexps)
-               (error "No regexp"))
-              ((cdr regexps)
-               (rx-to-string `(and ,@regexps) t))
-              (t
-               (rx-to-string (car regexps) t)))))))
+      (with-suppressed-warnings ((obsolete rx-constituents))
+        (let ((rx-constituents (append python-rx-constituents rx-constituents)))
+          (cond ((null regexps)
+                 (error "No regexp"))
+                ((cdr regexps)
+                 (rx-to-string `(and ,@regexps) t))
+                (t
+                 (rx-to-string (car regexps) t))))))))
 
 (defun pse--start-indent-at-0 (string)
   "Given python code STRING, unindent it so the minimum indent is zero."
