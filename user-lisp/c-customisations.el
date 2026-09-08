@@ -1,6 +1,8 @@
 ;;; -*- lexical-binding: nil; -*-
 (require 'flycheck)
 
+(defvar c-basic-offset)
+
 ;; TODO: this doesn't belong here.
 (require 'which-func)
 (setq which-func-modes (list #'c-mode))
