@@ -1,6 +1,23 @@
 ;;; -*- lexical-binding: nil; -*-
 (defvar diff-hl-command-map)
 
+(declare-function diff-hl-next-hunk "diff-hl")
+(declare-function diff-hl-previous-hunk "diff-hl")
+(declare-function git-commit-insert-header "git-commit")
+(declare-function git-commit-read-ident "git-commit")
+(declare-function git-gutter:next-hunk "git-gutter")
+(declare-function git-gutter:previous-hunk "git-gutter")
+(declare-function magit-call-git "magit-process")
+(declare-function magit-commit-add-log "magit-commit")
+(declare-function magit-get-current-branch "magit-git")
+(declare-function magit-get-indirect-upstream-branch "magit-git")
+(declare-function magit-get-upstream-branch "magit-git")
+(declare-function magit-read-string-ns "magit-utils")
+(declare-function magit-refresh "magit-mode")
+(declare-function magit-run-git "magit-process")
+(declare-function wh/magit-branch-from-current-and-checkout "git-customisations")
+(declare-function with-editor-finish "with-editor")
+
 (use-package magit
   :config
   ;; The default magit section highlighting is almost invisible on tangotango, so
