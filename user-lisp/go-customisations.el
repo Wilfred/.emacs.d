@@ -1,4 +1,7 @@
 ;;; -*- lexical-binding: nil; -*-
+(defvar company-backends)
+
+(declare-function company-go "company-go")
 (declare-function godef-jump "go-mode")
 (declare-function rats-run-test-under-point "rats")
 (declare-function wh/gofmt-before-save "go-customisations")
