@@ -26,8 +26,8 @@
 
 ;;; Generated autoloads from rust-mode.el
 
-(autoload 'rust-mode "rust-mode" "\
-Major mode for Rust code." t)
+(autoload 'rust-mode "rust-mode"
+"Major mode for Rust code." t)
 (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-mode))
 (register-definition-prefixes "rust-mode" '("rust-"))
 
@@ -49,8 +49,11 @@ Major mode for Rust code." t)
 
 ;;; Generated autoloads from rust-utils.el
 
-(autoload 'rust-dbg-wrap-or-unwrap "rust-utils" "\
-Either remove or add the dbg! macro." t)
+(autoload 'rust-dbg-wrap-or-unwrap "rust-utils"
+"Either remove or add the dbg! macro." t)
+(autoload 'rust-toggle-mutability "rust-utils"
+"Toggle the mutability of the binding or reference near point.
+Handles `let' <-> `let mut' and `&' <-> `&mut' (including `&self')." t)
 (register-definition-prefixes "rust-utils" '("rust-"))
 
 ;;; End of scraped data

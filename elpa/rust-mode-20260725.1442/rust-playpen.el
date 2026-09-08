@@ -17,7 +17,7 @@
   :group 'rust-mode)
 
 (defcustom rust-playpen-enable-shortener t
-  "Enable shortended URL for playpen links."
+  "Enable shortened URL for playpen links."
   :type 'boolean
   :safe #'booleanp
   :group 'rust-mode)
