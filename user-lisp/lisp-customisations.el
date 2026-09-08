@@ -1,5 +1,7 @@
 ;;; lisp-customisations --- Emacs configuration for lisp languages
 
+(require 'dash)
+
 (setq load-prefer-newer t)
 
 (defun wh/trace-enclosing-fn-at-point ()
