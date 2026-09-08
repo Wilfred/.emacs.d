@@ -82,6 +82,8 @@
 (require 's)
 (require 'elisp-def)
 
+(declare-function edebug-read-top-level-form "edebug")
+
 (defvar elisp-complete--recent-syms nil)
 (defvar elisp-complete--history-size 1000)
 
