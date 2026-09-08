@@ -1,6 +1,8 @@
 ;;; -*- lexical-binding: nil; -*-
 ;;; mu.el --- play on a MUSH or MUD within Emacs
 
+(declare-function set-keymap-parents nil)
+
 ;; Copyright (C) 2001, 2004  Alex Schroeder <alex@gnu.org>
 
 ;; Emacs Lisp Archive Entry
