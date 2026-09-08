@@ -20,6 +20,10 @@
 ;; dabbrev-expand should match case
 (require 'dabbrev)
 (defvar company-dabbrev-code-modes)
+(declare-function company-begin-backend "company")
+(declare-function company-complete-selection "company")
+(declare-function company-select-next "company")
+(declare-function company-select-previous "company")
 (setq dabbrev-case-fold-search nil)
 
 (use-package company-dabbrev
