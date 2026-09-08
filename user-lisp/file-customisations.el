@@ -14,7 +14,7 @@
   (insert-file-contents (buffer-file-name))
 
   ;; mark the buffer as not modified
-  (not-modified)
+  (set-buffer-modified-p nil)
   (set-visited-file-modtime))
 
 (defun duplicate-buffer (new-name)
