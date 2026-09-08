@@ -23,6 +23,11 @@
  (autoload 'docker-container-shell "docker-container" nil t)
  (autoload 'docker-container-shell-env "docker-container" nil t)
  (autoload 'docker-container-vterm "docker-container" nil t)
+ (autoload 'docker-container-vterm-env "docker-container" nil t)
+ (autoload 'docker-container-eat "docker-container" nil t)
+ (autoload 'docker-container-eat-env "docker-container" nil t)
+ (autoload 'docker-container-ghostel "docker-container" nil t)
+ (autoload 'docker-container-ghostel-env "docker-container" nil t)
  (autoload 'docker-containers "docker-container" nil t)
 (register-definition-prefixes "docker-container" '("docker-container-"))
 
@@ -43,7 +48,7 @@
 
  (autoload 'docker-image-pull-one "docker-image" nil t)
  (autoload 'docker-images "docker-image" nil t)
-(register-definition-prefixes "docker-image" '("docker-"))
+(register-definition-prefixes "docker-image" '("docker-image-"))
 
 
 ;;; Generated autoloads from docker-network.el

@@ -22,6 +22,8 @@
 ;;; Commentary:
 
 ;;; Code:
+(eval-when-compile
+  (setq-local byte-compile-warnings '(not docstrings)))
 
 (require 's)
 (require 'aio)
@@ -36,7 +38,7 @@
   "Docker compose customization group."
   :group 'docker)
 
-(defcustom docker-compose-command "docker-compose"
+(defcustom docker-compose-command "docker compose"
   "The `docker-compose' binary."
   :group 'docker-compose
   :type 'string)
@@ -47,7 +49,7 @@
 
 (defun docker-compose-run-docker-compose-async-with-buffer (action &rest args)
   "Execute \"`docker-compose-command' ACTION ARGS\" and display output in a new buffer."
-  (apply #'docker-run-async-with-buffer docker-compose-command (docker-compose-arguments) action args))
+  (apply #'docker-run-async-with-buffer-interactive docker-compose-command (docker-compose-arguments) action args))
 
 (aio-defun docker-compose-services ()
   "Return the list of services."
@@ -67,7 +69,7 @@
    prompt
    ;; in docker compose v2, we can obtain the list of
    ;; projects with 'ls' argument
-   (if (string-match-p "*?docker compose*?" docker-compose-command)
+   (if (string-match-p "\\bdocker\\s-+compose\\b" docker-compose-command)
        (split-string
 	(shell-command-to-string
 	 (concat docker-compose-command " ls" " --all" " -q"))
@@ -181,12 +183,11 @@
   "Transient for \"docker-compose logs\"."
   :man-page "docker-compose logs"
   ["Arguments"
-   ("T" "Tail" "--tail=" read-string)
+   ("T" "Tail" "--tail " read-string)
    ("f" "Follow" "--follow")
    ("n" "No color" "--no-color")
    ("t" "Timestamps" "--timestamps")]
   ["Actions"
-
    ("L" "Logs" docker-compose-run-action-for-one-service)
    ("A" "All services" docker-compose-run-action-for-all-services)])
 
@@ -281,6 +282,20 @@
    ("U" "Up" docker-compose-run-action-for-one-service)
    ("A" "All services" docker-compose-run-action-for-all-services)])
 
+(transient-define-prefix docker-compose-pause ()
+  "Transient for \"docker-compose pause\"."
+  :man-page "docker-compose pause"
+  ["Actions"
+   ("Z" "Pause" docker-compose-run-action-for-one-service)
+   ("A" "All services" docker-compose-run-action-for-all-services)])
+
+(transient-define-prefix docker-compose-unpause ()
+  "Transient for \"docker-compose unpause\"."
+  :man-page "docker-compose unpause"
+  ["Actions"
+   ("N" "Unpause" docker-compose-run-action-for-one-service)
+   ("A" "All services" docker-compose-run-action-for-all-services)])
+
 (docker-utils-define-transient-arguments docker-compose)
 
 ;;;###autoload (autoload 'docker-compose "docker-compose" nil t)
@@ -305,6 +320,8 @@
    ["Containers"
     ("C" "Create"     docker-compose-create)
     ("D" "Remove"     docker-compose-rm)
+    ("Z" "Pause"      docker-compose-pause)
+    ("N" "Unpause"    docker-compose-unpause)
     ("U" "Up"         docker-compose-up)
     ("W" "Down"       docker-compose-down)]
    ["State"
@@ -312,9 +329,9 @@
     ("S" "Start"      docker-compose-start)
     ("T" "Restart"    docker-compose-restart)]
    ["Other"
-    ("R" "Run"        docker-compose-run)
-    ("L" "Logs"       docker-compose-logs)
     ("E" "Exec"       docker-compose-exec)
+    ("L" "Logs"       docker-compose-logs)
+    ("R" "Run"        docker-compose-run)
     ("V" "Config"     docker-compose-config)]])
 
 (provide 'docker-compose)

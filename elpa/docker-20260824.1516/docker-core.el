@@ -22,6 +22,8 @@
 ;;; Commentary:
 
 ;;; Code:
+(eval-when-compile
+  (setq-local byte-compile-warnings '(not docstrings)))
 
 (require 'aio)
 (require 'transient)
@@ -41,18 +43,30 @@
 (defvar docker-status-strings '(:containers "" :images "" :networks "" :volumes "" :contexts "")
   "Plist of statuses for `docker' transient.")
 
-(defcustom docker-show-status t
+(defcustom docker-show-status 'local-only
   "Whether to display docker status in the main transient buffer."
   :group 'docker
-  :type 'boolean)
+  :type '(choice
+          (const :tag "Always" t)
+          (const :tag "Local Only" local-only)
+          (const :tag "Never" nil)))
+
+(defcustom docker-inspect-view-mode (if (fboundp 'json-mode) 'json-mode 'js-mode)
+  "Major mode used in `docker inspect' buffers."
+  :group 'docker
+  :type 'symbol)
 
 (defun docker-run-docker-async (&rest args)
   "Execute \"`docker-command' ARGS\" and return a promise with the results."
   (apply #'docker-run-async docker-command (docker-arguments) args))
 
-(defun docker-run-docker-async-with-buffer (&rest args)
-  "Execute \"`docker-command' ARGS\" and display the results in a buffer."
-  (apply #'docker-run-async-with-buffer docker-command (docker-arguments) args))
+(defun docker-run-docker-async-with-buffer-interactive (&rest args)
+  "Execute \"`docker-command' ARGS\" and display output in an interactive buffer."
+  (apply #'docker-run-async-with-buffer-interactive docker-command (docker-arguments) args))
+
+(defun docker-run-docker-async-with-buffer-noninteractive (&rest args)
+  "Execute \"`docker-command' ARGS\" and display output in a non-interactive buffer."
+  (apply #'docker-run-async-with-buffer-noninteractive docker-command (docker-arguments) args))
 
 (defun docker-get-transient-action ()
   "Extract the action out of `transient-current-command'."
@@ -81,12 +95,32 @@
   (aio-await (docker-run-docker-async action args (docker-utils-get-marked-items-ids)))
   (tablist-revert))
 
-(defun docker-generic-action-with-buffer (action args)
-  "Run \"`docker-command' ACTION ARGS\" and print output to a new buffer."
+(defun docker-generic-action-with-buffer-interactive (action args)
+  "Run \"`docker-command' ACTION ARGS\" and print output in an interactive buffer."
   (interactive (list (docker-get-transient-action)
                      (transient-args transient-current-command)))
   (--each (docker-utils-get-marked-items-ids)
-    (docker-run-docker-async-with-buffer (s-split " " action) args it)))
+    (docker-run-docker-async-with-buffer-interactive (s-split " " action) args it)))
+
+(defun docker-generic-action-with-buffer-noninteractive (action args)
+  "Run \"`docker-command' ACTION ARGS\" and print output in a non-interactive buffer."
+  (interactive (list (docker-get-transient-action)
+                     (transient-args transient-current-command)))
+  (--each (docker-utils-get-marked-items-ids)
+    (docker-run-docker-async-with-buffer-noninteractive (s-split " " action) args it)))
+
+(aio-defun docker-generic-action-with-buffer (action args)
+  "Run \"`docker-command' ACTION ARGS\", wait for completion, then display output.
+This collects all output before displaying, suitable for non-interactive commands."
+  (interactive (list (docker-get-transient-action)
+                     (transient-args transient-current-command)))
+  (--each (docker-utils-get-marked-items-ids)
+    (let* ((id it)
+           (output (aio-await (docker-run-docker-async (s-split " " action) args id))))
+      (docker-utils-with-buffer (format "%s %s" action id)
+        ;; Strip carriage returns (Docker outputs CRLF line endings)
+        (insert (ansi-color-apply (replace-regexp-in-string "\r" "" output)))
+        (special-mode)))))
 
 (aio-defun docker-inspect (&optional subcmd)
   "Run \"`docker-command' inspect\" on the selected items."
@@ -97,9 +131,7 @@
            (data (aio-await (docker-run-docker-async (concat (or subcmd "") " inspect") id))))
       (docker-utils-with-buffer (format "inspect %s" id)
         (insert data)
-        (if (fboundp 'json-mode)
-            (json-mode)
-          (js-mode))
+        (funcall docker-inspect-view-mode)
         (view-mode)))))
 
 (defun docker-read-log-level (prompt &rest _args)

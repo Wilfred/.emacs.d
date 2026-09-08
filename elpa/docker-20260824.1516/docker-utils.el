@@ -22,6 +22,8 @@
 ;;; Commentary:
 
 ;;; Code:
+(eval-when-compile
+  (setq-local byte-compile-warnings '(not docstrings)))
 
 (require 's)
 (require 'aio)
@@ -34,6 +36,17 @@
 (defun docker-utils-get-marked-items-ids ()
   "Get the id part of `tablist-get-marked-items'."
   (-map #'car (tablist-get-marked-items)))
+
+(defun docker-utils-compute-args (default custom)
+  "Helper function for merging DEFAULT and CUSTOM args."
+  (let* ((objs (tablist-get-marked-items))
+         (name (caar objs))
+         (matched-args (when name
+                         (--first (string-match (car it) name)
+                                  custom))))
+    (if matched-args
+        (cadr matched-args)
+      default)))
 
 (defun docker-utils-ensure-items ()
   "Ensure at least one item is selected."
@@ -99,14 +112,18 @@ Execute BODY in a buffer named with the help of NAME."
 
 (defun docker-utils-unit-multiplier (str)
   "Return the correct multiplier for STR."
-  (expt 1024 (-elem-index (upcase str) '("B" "KB" "MB" "GB" "TB" "PB" "EB"))))
+  (let* ((unit (or str "B"))
+         (idx (-elem-index (upcase unit) '("B" "KB" "MB" "GB" "TB" "PB" "EB"))))
+    (expt 1024 (or idx 0))))
 
 (defun docker-utils-human-size-to-bytes (str)
   "Parse STR and return size in bytes."
-  (let* ((parts (s-match "^\\([0-9\\.]+\\)\\([A-Z]+\\)?$" str))
-         (value (string-to-number (-second-item parts)))
-         (multiplier (docker-utils-unit-multiplier (-third-item parts))))
-    (* value multiplier)))
+  (let* ((parts (s-match "^\\([0-9\\.]+\\)\\([A-Za-z]+\\)?$" str)))
+    (unless parts
+      (error "Unexpected size format: %s" str))
+    (let* ((value (string-to-number (-second-item parts)))
+           (multiplier (docker-utils-unit-multiplier (-third-item parts))))
+      (* value multiplier))))
 
 (defun docker-utils-human-size-predicate (a b)
   "Sort A and B by image size."
@@ -174,6 +191,11 @@ This has no effect on the actual value of the variable."
   (--map
    (-map (-partial #'plist-get it) '(:name :width :template :sort :format))
    (symbol-value sym)))
+
+(defun docker-utils-package-p (package)
+  "Check if PACKAGE is available."
+  (or (featurep package)
+      (ignore-errors (require package))))
 
 (provide 'docker-utils)
 

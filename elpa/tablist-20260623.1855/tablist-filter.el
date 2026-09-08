@@ -32,6 +32,10 @@
 (defvar wisent-eoi-term)
 (declare-function wisent-parse "semantic/wisent/wisent.el")
 
+;;
+;; *Variables
+;;
+
 (defvar tablist-filter-binary-operator
   '((== . tablist-filter-op-equal)
     (=~ . tablist-filter-op-regexp)
@@ -73,6 +77,10 @@
      ((filter and filter) `(and ,$1 ,$3))
      ((filter or filter) `(or ,$1 ,$3))
      ((?\( filter ?\)) $2))))
+
+;;
+;; *Filter Parsing
+;;
 
 (defun tablist-filter-parser-init (&optional reinitialize interactive)
   (interactive (list t t))
@@ -255,6 +263,10 @@
          (_ (error "Invalid filter: %s" filter)))))
     (feval filter)))
 
+;;
+;; *Filter Operators
+;;
+
 (defun tablist-filter-get-item-by-name (entry col-name)
   (let* ((col (cl-position col-name tabulated-list-format
                            :key 'car
@@ -343,7 +355,7 @@ and \(...\) to group expressions.")
        (help-mode)))))
 
 ;;
-;; **Filter Functions
+;; *Filter Functions
 ;;
 
 ;; filter ::= nil | named | fn | (OP OP1 [OP2])
@@ -371,7 +383,7 @@ By default the filters are and'ed, unless OR-P is non-nil."
   "Remove the first operator or operand from filter.
 
 If filter starts with a negation, return filter unnegated,
-if filter starts with a dis- or conjuction, remove the first operand,
+if filter starts with a dis- or conjunction, remove the first operand,
 if filter is nil, raise an error,
 else return nil."
   (pcase filter
@@ -392,7 +404,7 @@ else return nil."
     (_ (funcall fn filter))))
 
 ;;
-;; Reading filter
+;; *Reading Filter
 ;;
 
 (defvar tablist-filter-edit-history nil)
@@ -445,4 +457,8 @@ else return nil."
       filter)))
 
 (provide 'tablist-filter)
+;; Local Variables:
+;; outline-regexp: ";;\\(\\(?:[;*]+ \\| \\*+\\)[^\s\t\n]\\|###autoload\\)\\|("
+;; indent-tabs-mode: nil
+;; End:
 ;;; tablist-filter.el ends here

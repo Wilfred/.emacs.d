@@ -5,8 +5,9 @@
 ;; Author: Andreas Politz <politza@fh-trier.de>
 ;; Keywords: extensions, lisp
 ;; Package: tablist
-;; Version: 1.0
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Version: 20260623.1855
+;; Package-Revision: 01f065e387ff
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -123,81 +124,81 @@ column."
 
 (defvar tablist-mode-filter-map
   (let ((kmap (make-sparse-keymap)))
-    (define-key kmap "p" 'tablist-pop-filter)
-    (define-key kmap "r" 'tablist-push-regexp-filter)
-    (define-key kmap "=" 'tablist-push-equal-filter)
-    (define-key kmap "n" 'tablist-push-numeric-filter)
-    (define-key kmap "!" 'tablist-negate-filter)
-    (define-key kmap "t" 'tablist-toggle-first-filter-logic)
-    (define-key kmap "/" 'tablist-display-filter)
-    (define-key kmap "z" 'tablist-suspend-filter)
+    (define-key kmap "p" #'tablist-pop-filter)
+    (define-key kmap "r" #'tablist-push-regexp-filter)
+    (define-key kmap "=" #'tablist-push-equal-filter)
+    (define-key kmap "n" #'tablist-push-numeric-filter)
+    (define-key kmap "!" #'tablist-negate-filter)
+    (define-key kmap "t" #'tablist-toggle-first-filter-logic)
+    (define-key kmap "/" #'tablist-display-filter)
+    (define-key kmap "z" #'tablist-suspend-filter)
 
-    (define-key kmap "a" 'tablist-push-named-filter)
-    (define-key kmap "s" 'tablist-name-current-filter)
-    (define-key kmap "D" 'tablist-delete-named-filter)
-    (define-key kmap "d" 'tablist-deconstruct-named-filter)
-    (define-key kmap "e" 'tablist-edit-filter)
-    (define-key kmap "C" 'tablist-clear-filter)
+    (define-key kmap "a" #'tablist-push-named-filter)
+    (define-key kmap "s" #'tablist-name-current-filter)
+    (define-key kmap "D" #'tablist-delete-named-filter)
+    (define-key kmap "d" #'tablist-deconstruct-named-filter)
+    (define-key kmap "e" #'tablist-edit-filter)
+    (define-key kmap "C" #'tablist-clear-filter)
     kmap))
 
 (defvar tablist-mode-mark-map
   (let ((kmap (make-sparse-keymap)))
-    (define-key kmap "c" 'tablist-change-marks)
-    (define-key kmap "!" 'tablist-unmark-all-marks)
-    (define-key kmap "r" 'tablist-mark-items-regexp)
-    (define-key kmap "n" 'tablist-mark-items-numeric)
-    (define-key kmap "m" 'tablist-mark-forward)
+    (define-key kmap "c" #'tablist-change-marks)
+    (define-key kmap "!" #'tablist-unmark-all-marks)
+    (define-key kmap "r" #'tablist-mark-items-regexp)
+    (define-key kmap "n" #'tablist-mark-items-numeric)
+    (define-key kmap "m" #'tablist-mark-forward)
     kmap))
 
 (defvar tablist-mode-regexp-map
   (let ((kmap (make-sparse-keymap)))
-    ;; (define-key kmap "&" 'tablist-flag-gargabe-items)
-    (define-key kmap "m" 'tablist-mark-items-regexp)
+    ;; (define-key kmap "&" #'tablist-flag-gargabe-items)
+    (define-key kmap "m" #'tablist-mark-items-regexp)
     kmap))
 
 (defvar tablist-minor-mode-map
   (let ((kmap (make-sparse-keymap)))
-    (define-key kmap "m" 'tablist-mark-forward)
-    (define-key kmap (kbd "DEL") 'tablist-unmark-backward)
-    (define-key kmap "k" 'tablist-do-kill-lines)
-    (define-key kmap "U" 'tablist-unmark-all-marks)
-    (define-key kmap "u" 'tablist-unmark-forward)
-    (define-key kmap "t" 'tablist-toggle-marks)
+    (define-key kmap "m" #'tablist-mark-forward)
+    (define-key kmap (kbd "DEL") #'tablist-unmark-backward)
+    (define-key kmap "k" #'tablist-do-kill-lines)
+    (define-key kmap "U" #'tablist-unmark-all-marks)
+    (define-key kmap "u" #'tablist-unmark-forward)
+    (define-key kmap "t" #'tablist-toggle-marks)
 
-    (define-key kmap (kbd "TAB") 'tablist-forward-column)
-    (define-key kmap "\t" 'tablist-forward-column)
-    (define-key kmap [backtab] 'tablist-backward-column)
+    (define-key kmap (kbd "TAB") #'tablist-forward-column)
+    (define-key kmap "\t" #'tablist-forward-column)
+    (define-key kmap [backtab] #'tablist-backward-column)
 
     (define-key kmap "%" tablist-mode-regexp-map)
     (define-key kmap "*" tablist-mode-mark-map)
     (define-key kmap "/" tablist-mode-filter-map)
 
-    ;; (define-key kmap "e" 'tablist-edit-column)
-    ;; (define-key kmap "i" 'tablist-insert-entry)
-    (define-key kmap "s" 'tablist-sort)
-    (define-key kmap [remap back-to-indentation] 'tablist-move-to-major-column)
-    (define-key kmap [remap next-line] 'tablist-next-line)
-    (define-key kmap [remap previous-line] 'tablist-previous-line)
-    (define-key kmap "<" 'tablist-shrink-column)
-    (define-key kmap ">" 'tablist-enlarge-column)
-    (define-key kmap "q" 'tablist-quit)
-    (define-key kmap "G" 'tablist-revert)
-    (define-key kmap (kbd "C-c C-e") 'tablist-export-csv)
+    ;; (define-key kmap "e" #'tablist-edit-column)
+    ;; (define-key kmap "i" #'tablist-insert-entry)
+    (define-key kmap "s" #'tablist-sort)
+    (define-key kmap [remap back-to-indentation] #'tablist-move-to-major-column)
+    (define-key kmap [remap next-line] #'tablist-next-line)
+    (define-key kmap [remap previous-line] #'tablist-previous-line)
+    (define-key kmap "<" #'tablist-shrink-column)
+    (define-key kmap ">" #'tablist-enlarge-column)
+    (define-key kmap "q" #'tablist-quit)
+    (define-key kmap "G" #'tablist-revert)
+    (define-key kmap (kbd "C-c C-e") #'tablist-export-csv)
     kmap))
 
 (defvar tablist-mode-map
   (let ((kmap (copy-keymap tablist-minor-mode-map)))
     (set-keymap-parent kmap tabulated-list-mode-map)
-    (define-key kmap "d" 'tablist-flag-forward)
-    (define-key kmap (kbd "RET") 'tablist-find-entry)
-    (define-key kmap "f" 'tablist-find-entry)
-    ;; (define-key kmap "~" 'tablist-flag-gargabe-items)
-    (define-key kmap "D" 'tablist-do-delete)
-    (define-key kmap "C" 'tablist-do-copy)
-    (define-key kmap "R" 'tablist-do-rename)
-    (define-key kmap "x" 'tablist-do-flagged-delete)
-    ;; (define-key kmap "F" 'tablist-find-marked-items)
-    ;; (define-key kmap (kbd "C-o") 'tablist-display-item)
+    (define-key kmap "d" #'tablist-flag-forward)
+    (define-key kmap (kbd "RET") #'tablist-find-entry)
+    (define-key kmap "f" #'tablist-find-entry)
+    ;; (define-key kmap "~" #'tablist-flag-gargabe-items)
+    (define-key kmap "D" #'tablist-do-delete)
+    ;; (define-key kmap "C" #'tablist-do-copy)
+    ;; (define-key kmap "R" #'tablist-do-rename)
+    (define-key kmap "x" #'tablist-do-flagged-delete)
+    ;; (define-key kmap "F" #'tablist-find-marked-items)
+    ;; (define-key kmap (kbd "C-o") #'tablist-display-item)
     kmap))
 
 ;;
@@ -298,7 +299,8 @@ as argument for the function `completion-in-region'.")
 
 ;;;###autoload
 (define-minor-mode tablist-minor-mode
-  nil nil nil nil
+  "Toggle tablist minor mode."
+  :global nil
   (unless (derived-mode-p 'tabulated-list-mode)
     (error "Buffer is not in Tabulated List Mode"))
   (tablist-init (not tablist-minor-mode)))
@@ -309,17 +311,16 @@ as argument for the function `completion-in-region'.")
 
 (defun tablist-init (&optional disable)
   (let ((cleaned-misc (cl-remove 'tablist-current-filter
-                                 mode-line-misc-info :key 'car)))
+                                 mode-line-misc-info :key #'car-safe)))
     (cond
      ((not disable)
       (set (make-local-variable 'mode-line-misc-info)
-           (append
-            (list
-             (list 'tablist-current-filter
-                   '(:eval (format " [%s]"
-                                   (if tablist-filter-suspended
-                                       "suspended"
-                                     "filtered")))))))
+           (cons '(tablist-current-filter
+                   (:eval (format " [%s]"
+                                  (if tablist-filter-suspended
+                                      "suspended"
+                                    "filtered"))))
+                 cleaned-misc))
       (add-hook 'post-command-hook
                 'tablist-selection-changed-handler nil t)
       (add-hook 'tablist-selection-changed-functions
@@ -435,18 +436,18 @@ a face on."
       (tabulated-list-put-tag
        (string tablist-marker-char))
       (put-text-property
-       (point-at-bol)
-       (1+ (point-at-bol))
+       (line-beginning-position)
+       (1+ (line-beginning-position))
        'face tablist-marker-face)
       (let ((columns (tablist-column-offsets)))
         (dolist (c (tablist-major-columns))
           (when (and (>= c 0)
                      (< c (length columns)))
-            (let ((beg (+ (point-at-bol)
+            (let ((beg (+ (line-beginning-position)
                           (nth c columns)))
                   (end (if (= c (1- (length columns)))
-                           (point-at-eol)
-                         (+ (point-at-bol)
+                           (line-end-position)
+                         (+ (line-beginning-position)
                             (nth (1+ c) columns)))))
               (cond
                ((and tablist-marked-face
@@ -547,7 +548,7 @@ OLD and NEW are both characters used to mark files."
               (tablist-put-mark)))))))))
 
 (defun tablist-unmark-all-marks (&optional marks interactive)
-  "Remove alls marks in MARKS.
+  "Remove all marks in MARKS.
 
 MARKS should be a string of mark characters to match and defaults
 to all marks.  Interactively, remove all marks, unless a prefix
@@ -647,13 +648,13 @@ proceeds as \(BINOP N OPERAND\)."
           (list (funcall fn))))
        (t
         (cl-labels ((search (re)
-                            (let (sucess)
+                            (let (success)
                               (tablist-skip-invisible-entries)
-                              (while (and (setq sucess
+                              (while (and (setq success
                                                 (re-search-forward re nil t))
                                           (invisible-p (point)))
                                 (tablist-forward-entry))
-                              sucess)))
+                              success)))
           (let ((regexp (tablist-marker-regexp))
                 next-position results found)
             (save-excursion
@@ -779,7 +780,7 @@ STATE is a return value of `tablist-get-mark-state'."
 
 (defun tablist-repeat-over-lines (arg function)
   "Call FUNCTION for the next ARG entries."
-  ;; Move out of potentially invisble area.
+  ;; Move out of potentially invisible area.
   (tablist-skip-invisible-entries)
   (let ((pos (make-marker)))
     (while (and (> arg 0)
@@ -839,7 +840,7 @@ STATE is a return value of `tablist-get-mark-state'."
       (forward-char))
     ;; before any columns
     (when (< current 0)
-      (goto-char (+ (point-at-bol) (if (> n 0)
+      (goto-char (+ (line-beginning-position) (if (> n 0)
                                        (car columns)
                                      (car (last columns)))))
       (setq n (* (cl-signum n) (1- (abs n)))))
@@ -953,7 +954,7 @@ ARG the prefix-arg of the command used in
 
 ARG should be the `current-prefix-arg', FN is a function of two
 arguments \(ID ENTRY\) handling the operation.  It gets called
-repeatly with all marked items.  OPERATION is a symbol or string
+repeatedly with all marked items.  OPERATION is a symbol or string
 describing the operation, it is used for display.
 
 Optional non-nil DELETE-P means, remove the items from the display.
@@ -976,20 +977,21 @@ Optional REVERT-P means, revert the display afterwards."
 (defvar tablist-edit-column-minor-mode-map
   (let ((kmap (make-sparse-keymap)))
     (set-keymap-parent kmap (current-global-map))
-    (define-key kmap [remap self-insert-command] 'self-insert-command)
-    (define-key kmap "\r" 'tablist-edit-column-commit)
-    (define-key kmap (kbd "C-g") 'tablist-edit-column-quit)
-    (define-key kmap (kbd "C-c C-c") 'tablist-edit-column-commit)
-    (define-key kmap (kbd "C-c C-q") 'tablist-edit-column-quit)
-    (define-key kmap "\t" 'tablist-edit-column-complete)
-    (define-key kmap (kbd "TAB") 'tablist-edit-column-complete)
-    (define-key kmap [remap end-of-buffer] 'end-of-line)
-    (define-key kmap [remap beginning-of-buffer] 'beginning-of-line)
-    (define-key kmap [remap mark-whole-buffer] 'tablist-edit-column-mark-field)
+    (define-key kmap [remap self-insert-command] #'self-insert-command)
+    (define-key kmap "\r" #'tablist-edit-column-commit)
+    (define-key kmap (kbd "C-g") #'tablist-edit-column-quit)
+    (define-key kmap (kbd "C-c C-c") #'tablist-edit-column-commit)
+    (define-key kmap (kbd "C-c C-q") #'tablist-edit-column-quit)
+    (define-key kmap "\t" #'tablist-edit-column-complete)
+    (define-key kmap (kbd "TAB") #'tablist-edit-column-complete)
+    (define-key kmap [remap end-of-buffer] #'end-of-line)
+    (define-key kmap [remap beginning-of-buffer] #'beginning-of-line)
+    (define-key kmap [remap mark-whole-buffer] #'tablist-edit-column-mark-field)
     kmap))
 
 (define-minor-mode tablist-edit-column-minor-mode
-  "" nil nil nil
+  "Toggle tablist-edit-column minor mode."
+  :global nil
   (unless (or tablist-minor-mode
               (derived-mode-p 'tablist-mode))
     (error "Not in a tablist buffer"))
@@ -1008,11 +1010,11 @@ Optional REVERT-P means, revert the display afterwards."
   (unless n (setq n (tablist-current-column)))
   (tablist-assert-column-editable n)
   (let* ((offsets (append (tablist-column-offsets)
-                          (list (- (point-at-eol)
-                                   (point-at-bol)))))
-         (beg (+ (point-at-bol)
+                          (list (- (line-end-position)
+                                   (line-beginning-position)))))
+         (beg (+ (line-beginning-position)
                  (nth n offsets)))
-         (end (+ (point-at-bol)
+         (end (+ (line-beginning-position)
                  (nth (1+ n) offsets)))
          (entry (tabulated-list-get-entry beg))
          (inhibit-read-only t)
@@ -1024,9 +1026,9 @@ Optional REVERT-P means, revert the display afterwards."
     (goto-char beg)
     (delete-region beg end)
     (add-text-properties
-     (point-at-bol) (point-at-eol)
+     (line-beginning-position) (line-end-position)
      '(read-only t field t))
-    (unless (= beg (point-at-bol))
+    (unless (= beg (line-beginning-position))
       (put-text-property (1- beg) beg 'rear-nonsticky t))
     (save-excursion
       ;; Keep one read-only space at the end for keeping text
@@ -1036,7 +1038,7 @@ Optional REVERT-P means, revert the display afterwards."
         (concat
          (tablist-nth-entry n entry)
          (propertize " "
-                     'display `(space :align-to ,(- end (point-at-bol)))))
+                     'display `(space :align-to ,(- end (line-beginning-position)))))
         'field nil
         'front-sticky '(tablist-edit)
         'rear-nonsticky '(read-only field)
@@ -1083,7 +1085,7 @@ Optional REVERT-P means, revert the display afterwards."
       (tablist-edit-column-minor-mode -1)
       (remove-overlays beg end 'tablist-edit t)
       (put-text-property beg end 'tablist-edit nil)
-      (delete-region (point-at-bol) (1+ (point-at-eol)))
+      (delete-region (line-beginning-position) (1+ (line-end-position)))
       (save-excursion
         (tabulated-list-print-entry id entry))
       (forward-char (nth column (tablist-column-offsets))))))
@@ -1369,7 +1371,7 @@ Return the output buffer."
 (defun tablist-enlarge-column (&optional column width)
   "Enlarge column COLUMN by WIDTH.
 
-This function is lazy and therfore pretty slow."
+This function is lazy and therefore pretty slow."
   (interactive
    (list nil (* (prefix-numeric-value current-prefix-arg)
                 3)))
@@ -1515,7 +1517,8 @@ FILTER defaults to `tablist-current-filter'."
        (tablist-filter-negate filter))))
   (force-mode-line-update))
 
-(defadvice tabulated-list-print (after tabulated-list activate)
+(define-advice tabulated-list-print
+    (:after (&rest _) tablist-reapply-filter)
   "Reapply the filter."
   (when (or tablist-minor-mode
             (derived-mode-p 'tablist-mode))
@@ -1861,8 +1864,8 @@ visibility."
     (beginning-of-line)
     (let ((inhibit-read-only t))
       (add-text-properties
-       (point-at-bol)
-       (1+ (point-at-eol))
+       (line-beginning-position)
+       (1+ (line-end-position))
        `(invisible ,flag)))))
 
 (defun tablist-filter-hide-entry (&optional pos)
@@ -1938,4 +1941,8 @@ the 0-th column as numbers by the less-than relation."
                       (aref (cadr e2) column)))))
 
 (provide 'tablist)
+;; Local Variables:
+;; outline-regexp: ";;\\(\\(?:[;*]+ \\| \\*+\\)[^\s\t\n]\\|###autoload\\)\\|("
+;; indent-tabs-mode: nil
+;; End:
 ;;; tablist.el ends here

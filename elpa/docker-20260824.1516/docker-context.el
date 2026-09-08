@@ -22,6 +22,8 @@
 ;;; Commentary:
 
 ;;; Code:
+(eval-when-compile
+  (setq-local byte-compile-warnings '(not docstrings)))
 
 (require 's)
 (require 'aio)
@@ -92,10 +94,18 @@ displayed values in the column."
          (lines (s-split "\n" data t)))
     (-map (-partial #'docker-utils-parse docker-context-columns) lines)))
 
+(aio-defun docker-context-active-name (&rest args)
+  (let* ((fmt "{{ json .Current }} {{ json .Name }}")
+	 (data (aio-await (docker-run-docker-async "context" "ls" args (format "--format=\"%s\"" fmt))))
+	 (lines (s-split "\n" data t))
+	 (active-line (-first (lambda (line) (string-match-p "true" (car (s-split " " line)))) lines)))
+    (when active-line
+      (cadr (split-string active-line "\"")))))
+
 (aio-defun docker-context-entries-propertized (&rest args)
   "Return the propertized docker contexts data for `tabulated-list-entries'."
   (let ((entries (aio-await (docker-context-entries args)))
-        (active (car (s-split "\n" (aio-await (docker-run-docker-async "context" "show")) t))))
+        (active (aio-await (docker-context-active-name args))))
     (--map-when (string= active (car it)) (docker-context-entry-set-active it) entries)))
 
 (defun docker-context-entry-set-active (entry)
@@ -110,7 +120,7 @@ The result is the tabulated list id for an entry is propertized with
 (aio-defun docker-context-update-status-async ()
   "Write the status to `docker-status-strings'."
   (plist-put docker-status-strings :contexts "Contexts")
-  (when docker-show-status
+  (when (or (eq docker-show-status t) (and (eq docker-show-status 'local-only) (not (file-remote-p default-directory))))
     (let* ((entries (aio-await (docker-context-entries-propertized (docker-context-ls-arguments)))))
       (plist-put docker-status-strings
                  :contexts
@@ -125,6 +135,12 @@ The result is the tabulated list id for an entry is propertized with
    (docker-context-entries-propertized (docker-context-ls-arguments))))
 
 (docker-utils-define-transient-arguments docker-context-ls)
+
+(transient-define-prefix docker-context-ls ()
+  "Empty transient to list contexts.
+
+Contrary to other menus no option is required to list the context, yet
+this definition is required to ensure the context listing.")
 
 (docker-utils-transient-define-prefix docker-context-rm ()
   "Transient for removing contexts."

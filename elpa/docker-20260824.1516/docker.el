@@ -1,6 +1,11 @@
-;;; docker-group.el --- Docker group  -*- lexical-binding: t -*-
+;;; docker.el --- Interface to Docker  -*- lexical-binding: t -*-
 
 ;; Author: Philippe Vaucher <philippe.vaucher@gmail.com>
+;; URL: https://github.com/Silex/docker.el
+;; Keywords: filename, convenience
+;; Package-Version: 20260824.1516
+;; Package-Revision: e476b1bf73e9
+;; Package-Requires: ((aio "1.0") (dash "2.19.1") (emacs "28.1") (s "1.13.0") (tablist "1.1") (transient "0.4.3"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -21,12 +26,19 @@
 
 ;;; Commentary:
 
+;; This package allows you to manipulate docker images, containers & more from Emacs.
+
 ;;; Code:
+(eval-when-compile
+  (setq-local byte-compile-warnings '(not docstrings)))
 
-(defgroup docker nil
-  "Docker customization group."
-  :group 'convenience)
+(require 'docker-compose)
+(require 'docker-container)
+(require 'docker-image)
+(require 'docker-network)
+(require 'docker-volume)
+(require 'docker-context)
 
-(provide 'docker-group)
+(provide 'docker)
 
-;;; docker-group.el ends here
+;;; docker.el ends here

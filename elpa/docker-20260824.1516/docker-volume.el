@@ -22,6 +22,8 @@
 ;;; Commentary:
 
 ;;; Code:
+(eval-when-compile
+  (setq-local byte-compile-warnings '(not docstrings)))
 
 (require 's)
 (require 'aio)
@@ -111,7 +113,7 @@ The result is the tabulated list id for an entry is propertized with
 (aio-defun docker-volume-update-status-async ()
   "Write the status to `docker-status-strings'."
   (plist-put docker-status-strings :volumes "Volumes")
-  (when docker-show-status
+  (when (or (eq docker-show-status t) (and (eq docker-show-status 'local-only) (not (file-remote-p default-directory))))
     (let* ((entries (aio-await (docker-volume-entries-propertized (docker-volume-ls-arguments))))
            (dangling (--filter (docker-volume-dangling-p (car it)) entries)))
       (plist-put docker-status-strings
@@ -136,7 +138,7 @@ The result is the tabulated list id for an entry is propertized with
 (aio-defun docker-volume-dired (name)
   "Enter `dired' in the volume named NAME."
   (interactive (list (docker-volume-read-name)))
-  (let ((path (aio-await (docker-run-docker-async "inspect" "-f" "\"{{ .Mountpoint }}\"" name))))
+  (let ((path (s-trim-right (aio-await (docker-run-docker-async "inspect" "-f" "\"{{ .Mountpoint }}\"" name)))))
     (dired (format "/sudo::%s" path))))
 
 (defun docker-volume-dired-selection ()
