@@ -2,6 +2,9 @@
 (defvar rust-cargo-bin)
 (defvar rust-cargo-default-arguments)
 
+(declare-function rust--compile "rust-cargo")
+(declare-function sp-splice-sexp "smartparens")
+
 (defun wh/rust-clippy ()
   "Clippy command eqvivalent of `rust-check'."
   (interactive)
