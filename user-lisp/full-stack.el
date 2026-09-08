@@ -1,6 +1,10 @@
 ;;; -*- lexical-binding: nil; -*-
 (require 'dash)
 
+(declare-function s-chop-prefix "s")
+(declare-function s-chop-suffix "s")
+(declare-function s-join "s")
+
 (defun full-stack--indent (form highlight-index-path)
   (with-temp-buffer
     (emacs-lisp-mode)
