@@ -6,7 +6,7 @@
 
 (use-package eglot
   :config
-  (add-hook 'eglot--managed-mode-hook (lambda () (flymake-mode -1)))
+  (add-hook 'eglot-managed-mode-hook (lambda () (flymake-mode -1)))
   (global-flycheck-eglot-mode)
 
   ;; Rendering in the margin (default) uses an emoji, making the line
