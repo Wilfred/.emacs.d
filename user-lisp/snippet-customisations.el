@@ -12,7 +12,8 @@
 (define-key yas-minor-mode-map (kbd "TAB") nil)
 (define-key yas-minor-mode-map (kbd "SPC") 'yas-expand)
 
-(setq yas-fallback-behavior 'call-other-command)
+(with-suppressed-warnings ((obsolete yas-fallback-behavior))
+  (setq yas-fallback-behavior 'call-other-command))
 
 (defun wh-yas-no-expand-in-comment/string ()
   "Don't expand yasnippets in strings or comments.
