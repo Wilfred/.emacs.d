@@ -62,7 +62,8 @@
              (args-end nil))
 
         ;; remove 'pass'
-        (backward-delete-char 4)
+        (with-suppressed-warnings ((interactive-only backward-delete-char))
+          (backward-delete-char 4))
 
         (save-excursion
           ;; go to the function definition and find the arguments
