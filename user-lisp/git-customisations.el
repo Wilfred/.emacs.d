@@ -12,6 +12,7 @@
 (declare-function magit-get-current-branch "magit-git")
 (declare-function magit-get-indirect-upstream-branch "magit-git")
 (declare-function magit-get-upstream-branch "magit-git")
+(declare-function magit-define-popup-action "magit-obsolete")
 (declare-function magit-read-string-ns "magit-utils")
 (declare-function magit-refresh "magit-mode")
 (declare-function magit-run-git "magit-process")
