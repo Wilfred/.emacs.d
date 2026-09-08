@@ -1,6 +1,9 @@
 ;;; -*- lexical-binding: nil; -*-
 (defvar org-clock-continuously)
 
+(declare-function wh/org-today-entry "org-customisations")
+(declare-function wh/org-today-subheading "org-customisations")
+
 (use-package org
   :config
   ;; When clocking in, just use the time from the last clocked out
