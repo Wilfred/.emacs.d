@@ -33,6 +33,8 @@
 ;;                   "sleep 1; date; sleep 2; date; sleep 2; date"
 ;;                   "ls /")
 
+(defvar commands-list)
+
 (defun execute-commands (buffer &rest commands)
   "Execute a list of shell commands sequentially"
   (with-current-buffer buffer
