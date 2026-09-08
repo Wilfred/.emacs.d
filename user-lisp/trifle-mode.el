@@ -62,9 +62,9 @@
 
 (defconst trifle-font-lock-keywords
   (list
-   (cons trifle-keyword-regex font-lock-builtin-face)
-   (cons trifle-constant-regex font-lock-constant-face)
-   (cons trifle-keyword-symbol-regex font-lock-constant-face)
+   (cons trifle-keyword-regex 'font-lock-builtin-face)
+   (cons trifle-constant-regex 'font-lock-constant-face)
+   (cons trifle-keyword-symbol-regex 'font-lock-constant-face)
    (list trifle-function-regex 1 'font-lock-function-name-face)
    (list trifle-macro-regex 1 'font-lock-function-name-face))
   "Highlighting for Trifle mode.")
