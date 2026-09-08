@@ -24,7 +24,7 @@
       (text-mode)
       (add-face-text-property
        region-start region-end
-       font-lock-constant-face))
+       'font-lock-constant-face))
 
     ;; `cl-prettyprint' adds leading and trailing newlines, remove
     ;; those.
