@@ -14,7 +14,11 @@
 (defun time-iso-8601 (time-in-seconds)
   "Convert a unix timestamp to ISO 8601 format. We assume the timestamp is in UTC."
   (concat
-   (format-time-string "%Y-%m-%dT%T" (list (rsh time-in-seconds)) t)
+   (format-time-string
+    "%Y-%m-%dT%T"
+    (list (with-suppressed-warnings ((obsolete rsh))
+            (rsh time-in-seconds)))
+    t)
    (funcall (lambda (x) (concat (substring x 0 3) ":" (substring x 3 5)))
             (format-time-string "%z"))))
 
