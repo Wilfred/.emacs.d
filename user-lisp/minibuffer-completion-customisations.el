@@ -1,6 +1,9 @@
 ;;; -*- lexical-binding: nil; -*-
 (defvar ivy-format-function)
 
+(declare-function ivy-alt-done "ivy")
+(declare-function ivy-immediate-done "ivy")
+
 ;;; Commentary:
 ;; Good minibuffer completion is crucial in Emacs: it affects user
 ;; efficiency and discoverability of Emacs features.
