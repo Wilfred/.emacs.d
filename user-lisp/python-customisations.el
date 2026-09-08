@@ -21,11 +21,26 @@
 ;;   does not work with python-shell-send-defun because it tries to
 ;;   inspect the previous line for decorators.
 
+(require 'dash)
+
 (defvar flycheck-python-mypy-args)
+(defvar flycheck-python-mypy-executable)
 (defvar pytest-cmd-flags)
 
 (declare-function python-smart-execute "python-smart-execute")
 (declare-function python-smart-execute-no-move "python-smart-execute")
+(declare-function comint-truncate-buffer "comint")
+(declare-function crux-smart-open-line-above "crux")
+(declare-function er/mark-python-block "python-el-fgallina-expansions")
+(declare-function er/mark-python-statement "python-el-fgallina-expansions")
+(declare-function python-indent-dedent-line-backspace "python")
+(declare-function python-indent-shift-left "python")
+(declare-function python-nav-backward-up-list "python")
+(declare-function python-nav-forward-sexp "python")
+(declare-function python-nav-forward-statement "python")
+(declare-function s-chop-prefixes "s")
+(declare-function s-trim "s")
+(declare-function which-function "which-func")
 (declare-function sp-backward-sexp "smartparens")
 (declare-function sp-forward-sexp "smartparens")
 
