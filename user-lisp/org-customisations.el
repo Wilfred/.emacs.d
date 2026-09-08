@@ -1,4 +1,6 @@
 ;;; -*- lexical-binding: nil; -*-
+(defvar org-clock-continuously)
+
 (use-package org
   :config
   ;; When clocking in, just use the time from the last clocked out
