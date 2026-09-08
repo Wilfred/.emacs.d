@@ -1,6 +1,9 @@
 ;;; -*- lexical-binding: nil; -*-
 ;;; eclim, which lets us use eclispe as a server
 
+(defvar eclim-executable)
+(defvar help-at-pt-timer-delay)
+
 (setq eclim-executable (expand-file-name "~/.eclipse/org.eclipse.platform_3.7.0_155965261/eclim"))
 
 (defvar eclim-in-use nil)
