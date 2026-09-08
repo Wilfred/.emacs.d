@@ -185,7 +185,7 @@ except Exception as e:
 
 ;; TODO: move to emr.
 (defun wh/unwrap-python-try ()
-  "Given a single line wrapped in a try: block, extract the line and remove the try/except."
+  "Extract a single line wrapped in a try: block and remove the try/except."
   (interactive "*")
   ;; Move to the except: block
   (python-nav-forward-statement)
