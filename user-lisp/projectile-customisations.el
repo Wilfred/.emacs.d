@@ -1,5 +1,8 @@
 ;;; -*- lexical-binding: nil; -*-
 (defvar projectile-mode-line)
+(defvar projectile-enable-caching)
+(defvar projectile-svn-command)
+(defvar projectile-tags-command)
 
 (setq projectile-svn-command
       "find . -type f | grep -v '/.svn/' | tr '\\n' '\\0'")
