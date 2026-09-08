@@ -38,7 +38,8 @@
     (beginning-of-line)
     (search-forward "dbg!(")
     (sp-splice-sexp)
-    (backward-delete-char 4)))
+    (with-suppressed-warnings ((interactive-only backward-delete-char))
+      (backward-delete-char 4))))
 
 ;; TODO: use rust-dbg-wrap-or-unwrap
 (defun wh/rust-dbg-dwim ()
