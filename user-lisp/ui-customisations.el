@@ -1,6 +1,9 @@
 ;;; -*- lexical-binding: nil; -*-
 (declare-function elisp-refs--filter-obarray "elisp-refs")
+(declare-function f-abbrev "f")
 (declare-function interaction-log-mode "interaction-log")
+(declare-function magit-status-mode "magit-status")
+(declare-function projectile-project-name "projectile")
 
 ;; scroll one row at at time
 (setq scroll-step 1)
