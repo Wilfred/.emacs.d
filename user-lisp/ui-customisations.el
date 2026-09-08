@@ -71,6 +71,7 @@ Defaults to `t'.")
 (define-minor-mode caps-lock-show-mode
   "Display whether caps lock is on."
   :global t
+  :group 'environment
   :lighter (:eval (if (caps-lock-on (x-led-mask)) " CAPS-LOCK" "")))
 
 ;; always truncate lines (i.e. don't wrap lines)
