@@ -1,5 +1,10 @@
 ;;; -*- lexical-binding: nil; -*-
 
+(declare-function eglot-code-actions "eglot")
+(declare-function eglot-find-typeDefinition "eglot")
+(declare-function eglot-format-buffer "eglot")
+(declare-function eglot-rename "eglot")
+
 ;; eglot
 ;; 
 ;; (load "package") ; workaround on Emacs 28
