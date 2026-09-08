@@ -1,12 +1,13 @@
 ;;; ivy-hydra.el --- Additional key bindings for Ivy  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2015-2019  Free Software Foundation, Inc.
+;; Copyright (C) 2015-2026 Free Software Foundation, Inc.
 
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
+;; Maintainer: Basil L. Contovounesios <basil@contovou.net>
 ;; URL: https://github.com/abo-abo/swiper
-;; Package-Version: 20190731.1602
-;; Version: 0.12.0
-;; Package-Requires: ((emacs "24.1") (ivy "0.12.0") (hydra "0.13.4"))
+;; Package-Version: 20260213.941
+;; Package-Revision: 4defb814ce00
+;; Package-Requires: ((emacs "24.5") (ivy "0.15.1") (hydra "0.14.0"))
 ;; Keywords: convenience
 
 ;; This file is part of GNU Emacs.
@@ -35,6 +36,9 @@
 (require 'ivy)
 (require 'hydra)
 
+(eval-when-compile
+  (require 'cl-lib))
+
 (defun ivy--matcher-desc ()
   "Return description of `ivy--regex-function'."
   (let ((cell (assq ivy--regex-function ivy-preferred-re-builders)))
@@ -42,8 +46,45 @@
         (cdr cell)
       "other")))
 
-(defhydra hydra-ivy (:hint nil
-                     :color pink)
+(defun ivy-minibuffer-grow ()
+  "Grow the minibuffer window by 1 line."
+  (interactive)
+  (setq-local max-mini-window-height
+              (cl-incf ivy-height)))
+(ivy--no-M-x #'ivy-minibuffer-grow #'ivy--minibuffer-p)
+
+(defun ivy-minibuffer-shrink ()
+  "Shrink the minibuffer window by 1 line."
+  (interactive)
+  (when (> ivy-height 2)
+    (setq-local max-mini-window-height
+                (cl-decf ivy-height))
+    (window-resize nil -1)))
+(ivy--no-M-x #'ivy-minibuffer-shrink #'ivy--minibuffer-p)
+
+(defun ivy-hydra--read-action ()
+  "Read one of the available actions.
+Like `ivy-read-action', but unaffected by
+`ivy-read-action-function'."
+  (interactive)
+  (let ((ivy-read-action-function #'ivy-read-action-by-key))
+    (ivy-read-action)))
+(ivy--no-M-x #'ivy-hydra--read-action #'ivy--minibuffer-p)
+
+(defun ivy-hydra--toggle-truncate-lines ()
+  "Toggle `truncate-lines'."
+  (interactive)
+  (setq truncate-lines (not truncate-lines)))
+(ivy--no-M-x #'ivy-hydra--toggle-truncate-lines #'ivy--minibuffer-p)
+
+(defun ivy-hydra--find-definition ()
+  "Find the definition of `hydra-ivy'."
+  (interactive)
+  (ivy-exit-with-action
+   (lambda (_) (find-function #'hydra-ivy/body))))
+(ivy--no-M-x #'ivy-hydra--find-definition #'ivy--minibuffer-p)
+
+(defhydra hydra-ivy (:hint nil :color pink)
   "
 ^ ^ ^ ^ ^ ^ | ^Call^      ^ ^  | ^Cancel^ | ^Options^ | Action _w_/_s_/_a_: %-14s(ivy-action-name)
 ^-^-^-^-^-^-+-^-^---------^-^--+-^-^------+-^-^-------+-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^---------------------------
@@ -63,7 +104,7 @@ _h_ ^+^ _l_ | _d_one      ^ ^  | _o_ops   | _M_: matcher %-5s(ivy--matcher-desc)
   ("t" ivy-toggle-marks)
   ;; actions
   ("o" keyboard-escape-quit :exit t)
-  ("r" ivy-dispatching-done-hydra :exit t)
+  ("r" ivy-dispatching-done :exit t)
   ("C-g" keyboard-escape-quit :exit t)
   ("i" nil)
   ("C-o" nil)
@@ -78,13 +119,11 @@ _h_ ^+^ _l_ | _d_one      ^ ^  | _o_ops   | _M_: matcher %-5s(ivy--matcher-desc)
   ("<" ivy-minibuffer-shrink)
   ("w" ivy-prev-action)
   ("s" ivy-next-action)
-  ("a" ivy-read-action)
-  ("T" (setq truncate-lines (not truncate-lines)))
+  ("a" ivy-hydra--read-action)
+  ("T" ivy-hydra--toggle-truncate-lines)
   ("C" ivy-toggle-case-fold)
   ("U" ivy-occur :exit t)
-  ("D" (ivy-exit-with-action
-        (lambda (_) (find-function 'hydra-ivy/body)))
-       :exit t))
+  ("D" ivy-hydra--find-definition :exit t))
 
 (defvar ivy-dispatching-done-columns 2
   "Number of columns to use if the hint does not fit on one line.")
@@ -94,13 +133,11 @@ _h_ ^+^ _l_ | _d_one      ^ ^  | _o_ops   | _M_: matcher %-5s(ivy--matcher-desc)
 
 (defvar ivy-dispatching-done-hydra-exit-keys '(("M-o" nil "back")
                                                ("C-g" nil))
-  "Keys that can be used to exit `ivy-dispatching-done-hydra'.")
+  "Keys that can be used to exit `ivy-hydra-read-action'.")
 
-(defun ivy-dispatching-done-hydra ()
+(defun ivy-hydra-read-action (actions)
   "Select one of the available actions and call `ivy-done'."
-  (interactive)
-  (let* ((actions (ivy-state-action ivy-last))
-         (extra-actions ivy-dispatching-done-hydra-exit-keys)
+  (let* ((extra-actions ivy-dispatching-done-hydra-exit-keys)
          (doc (concat "action: "
                       (mapconcat
                        (lambda (x) (format "[%s] %s" (nth 0 x) (nth 2 x)))
@@ -109,7 +146,8 @@ _h_ ^+^ _l_ | _d_one      ^ ^  | _o_ops   | _M_: matcher %-5s(ivy--matcher-desc)
          (estimated-len (length doc))
          (n-columns (if (> estimated-len (window-width))
                         ivy-dispatching-done-columns
-                      nil)))
+                      nil))
+         (i 0))
     (if (null (ivy--actionp actions))
         (ivy-done)
       (funcall
@@ -119,13 +157,17 @@ _h_ ^+^ _l_ | _d_one      ^ ^  | _o_ops   | _M_: matcher %-5s(ivy--matcher-desc)
            ,@(mapcar (lambda (x)
                        (list (nth 0 x)
                              `(progn
-                                (ivy-set-action ',(nth 1 x))
-                                (ivy-done))
+                                (let ((prev-idx (car (ivy-state-action ivy-last))))
+                                  (setcar (ivy-state-action ivy-last) ,(cl-incf i))
+                                  ,@(if (eq ivy-exit 'ivy-dispatching-done)
+                                        '((ivy-done))
+                                      '((ivy-call)
+                                        (setcar (ivy-state-action ivy-last) prev-idx)))))
                              (nth 2 x)))
                      (cdr actions))
-           ,@extra-actions))))))
+           ,@extra-actions)))
+      nil)))
 
-(setq ivy-read-action-function (lambda (_) (ivy-dispatching-done-hydra)))
 
 (provide 'ivy-hydra)
 

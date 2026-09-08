@@ -16,14 +16,14 @@
 
 ;;; Generated autoloads from ivy.el
 
-(autoload 'ivy-resume "ivy" "\
-Resume the last completion session, or SESSION if non-nil.
+(autoload 'ivy-resume "ivy"
+"Resume the last completion session, or SESSION if non-nil.
 With a prefix arg, try to restore a recorded completion session,
 if one exists.
 
 (fn &optional SESSION)" t)
-(autoload 'ivy-read "ivy" "\
-Read a string in the minibuffer, with completion.
+(autoload 'ivy-read "ivy"
+"Read a string in the minibuffer, with completion.
 
 PROMPT is a string, normally ending in a colon and a space.
 `ivy-count-format' is prepended to PROMPT during completion.
@@ -35,7 +35,7 @@ PREDICATE is applied to filter out the COLLECTION immediately.
 This argument is for compatibility with `completing-read'.
 
 When REQUIRE-MATCH is non-nil, only members of COLLECTION can be
-selected. In can also be a lambda.
+selected.  It can also be a lambda.
 
 If INITIAL-INPUT is non-nil, then insert that input in the
 minibuffer initially.
@@ -89,8 +89,8 @@ It is used, along with COLLECTION, to determine which
 customizations apply to the current completion session.
 
 (fn PROMPT COLLECTION &key PREDICATE REQUIRE-MATCH INITIAL-INPUT HISTORY PRESELECT DEF KEYMAP UPDATE-FN SORT ACTION MULTI-ACTION UNWIND RE-BUILDER MATCHER DYNAMIC-COLLECTION EXTRA-PROPS CALLER)")
-(autoload 'ivy-completing-read "ivy" "\
-Read a string in the minibuffer, with completion.
+(autoload 'ivy-completing-read "ivy"
+"Read a string in the minibuffer, with completion.
 
 This interface conforms to `completing-read' and can be used for
 `completing-read-function'.
@@ -105,16 +105,16 @@ DEF is the default value.
 INHERIT-INPUT-METHOD is currently ignored.
 
 (fn PROMPT COLLECTION &optional PREDICATE REQUIRE-MATCH INITIAL-INPUT HISTORY DEF INHERIT-INPUT-METHOD)")
-(defvar ivy-mode nil "\
-Non-nil if ivy mode is enabled.
+(defvar ivy-mode nil
+"Non-nil if ivy mode is enabled.
 See the `ivy-mode' command
 for a description of this minor mode.
 Setting this variable directly does not take effect;
 either customize it (see the info node `Easy Customization')
 or call the function `ivy-mode'.")
 (custom-autoload 'ivy-mode "ivy" nil)
-(autoload 'ivy-mode "ivy" "\
-Toggle Ivy mode on or off.
+(autoload 'ivy-mode "ivy"
+"Toggle Ivy mode on or off.
 Turn Ivy mode on if ARG is positive, off otherwise.
 Turning on Ivy mode sets `completing-read-function' to
 `ivy-completing-read'.
@@ -126,12 +126,12 @@ Minibuffer bindings:
 \\{ivy-minibuffer-map}
 
 (fn &optional ARG)" t)
-(autoload 'ivy-switch-buffer "ivy" "\
-Switch to another buffer." t)
-(autoload 'ivy-switch-view "ivy" "\
-Switch to one of the window views stored by `ivy-push-view'." t)
-(autoload 'ivy-switch-buffer-other-window "ivy" "\
-Switch to another buffer in another window." t)
+(autoload 'ivy-switch-buffer "ivy"
+"Switch to another buffer." t)
+(autoload 'ivy-switch-view "ivy"
+"Switch to one of the window views stored by `ivy-push-view'." t)
+(autoload 'ivy-switch-buffer-other-window "ivy"
+"Switch to another buffer in another window." t)
 (register-definition-prefixes "ivy" '("ivy-" "with-ivy-window"))
 
 

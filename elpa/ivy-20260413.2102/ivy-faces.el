@@ -1,6 +1,6 @@
 ;;; ivy-faces.el --- Faces for Ivy -*- lexical-binding: t -*-
 
-;; Copyright (C) 2020-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2020-2026 Free Software Foundation, Inc.
 
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 ;; Keywords: convenience
@@ -26,6 +26,13 @@
   "Font-lock faces for `ivy'."
   :group 'ivy
   :group 'faces)
+
+(defface ivy-cursor
+  '((((class color) (background light))
+     :background "black" :foreground "white")
+    (((class color) (background dark))
+     :background "white" :foreground "black"))
+  "Cursor face for inline completion.")
 
 (defface ivy-current-match
   '((((class color) (background light))
