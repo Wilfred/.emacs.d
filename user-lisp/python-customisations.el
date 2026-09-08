@@ -21,6 +21,12 @@
 ;;   does not work with python-shell-send-defun because it tries to
 ;;   inspect the previous line for decorators.
 
+(defun wh/backward-up-python (old-function &rest args)
+  "Use Python navigation, or call OLD-FUNCTION with ARGS in other modes."
+  (if (eq major-mode 'python-mode)
+      (python-nav-backward-up-list)
+    (apply old-function args)))
+
 (use-package python
   :config
   ;; Open .pyi in Python mode. This has been fixed upstream:
@@ -83,12 +89,7 @@
   (define-key python-mode-map (kbd "s-u") 'python-nav-backward-up-list)
   ;; TODO: this is only necessary because the above keybinding is
   ;; overridden by smartparens.
-  (define-advice sp-backward-up-sexp (:around (old-function &rest args)
-                                      wh/backward-up-python)
-    "When editing python, defer to Python's navigation command."
-    (if (eq major-mode 'python-mode)
-        (python-nav-backward-up-list)
-      (apply old-function args)))
+  (advice-add 'sp-backward-up-sexp :around #'wh/backward-up-python)
 
   ;; mark-sexp is useless in python, we want the the equivalent command
   ;; for marking a Python statement.
