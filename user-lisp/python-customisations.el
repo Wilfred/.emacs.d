@@ -21,6 +21,9 @@
 ;;   does not work with python-shell-send-defun because it tries to
 ;;   inspect the previous line for decorators.
 
+(defvar flycheck-python-mypy-args)
+(defvar pytest-cmd-flags)
+
 (defun wh/backward-up-python (old-function &rest args)
   "Use Python navigation, or call OLD-FUNCTION with ARGS in other modes."
   (if (eq major-mode 'python-mode)
