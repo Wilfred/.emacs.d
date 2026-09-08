@@ -17,7 +17,7 @@
 
 (defun company-jit-match-p (prefix)
   "Does the text before point match PREFIX?"
-  (looking-back prefix))
+  (looking-back prefix nil))
 
 ;;;###autoload
 (define-minor-mode company-jit-mode
