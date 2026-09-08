@@ -83,11 +83,12 @@
   (define-key python-mode-map (kbd "s-u") 'python-nav-backward-up-list)
   ;; TODO: this is only necessary because the above keybinding is
   ;; overridden by smartparens.
-  (defadvice sp-backward-up-sexp (around wh/backward-up-python activate)
+  (define-advice sp-backward-up-sexp (:around (old-function &rest args)
+                                      wh/backward-up-python)
     "When editing python, defer to Python's navigation command."
     (if (eq major-mode 'python-mode)
         (python-nav-backward-up-list)
-      ad-do-it))
+      (apply old-function args)))
 
   ;; mark-sexp is useless in python, we want the the equivalent command
   ;; for marking a Python statement.
