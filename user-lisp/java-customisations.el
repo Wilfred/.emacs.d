@@ -18,7 +18,7 @@ is quite invasive, messing with (amongst others) after-save-hook."
 
 
 ;; use eclim-mode only for Java
-(add-hook 'java-mode-hook '(lambda () (progn (eclim-switch-on) (eclim-mode 1))))
+(add-hook 'java-mode-hook #'(lambda () (progn (eclim-switch-on) (eclim-mode 1))))
 
 ;; eclim key bindings
 (use-package cc-mode
@@ -26,7 +26,7 @@ is quite invasive, messing with (amongst others) after-save-hook."
   (define-key java-mode-map (kbd "<f6>") 'eclim-java-find-declaration))
 
 ; treat camelCaseWords as different words with M-f and M-b
-(add-hook 'java-mode-hook '(lambda () (subword-mode 1)))
+(add-hook 'java-mode-hook #'(lambda () (subword-mode 1)))
 
 (require 'f)
 
