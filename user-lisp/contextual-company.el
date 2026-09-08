@@ -111,7 +111,7 @@
   (let ((form (edebug-read-top-level-form)))
     (elisp-complete--add-to-recent form)))
 
-(defadvice eval-last-sexp (after elisp-complete--record-last-form activate)
+(define-advice eval-last-sexp (:after (&rest _) elisp-complete--record-last-form)
   (let ((form (elisp--preceding-sexp)))
     (elisp-complete--add-to-recent form)))
 
