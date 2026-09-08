@@ -36,11 +36,12 @@ Only zap forwards otherwise."
         (apply old-function args))
     (apply old-function args)))
 
-(defadvice zap-up-to-char (around zap-case-sensitive activate)
+(define-advice zap-up-to-char (:around (old-function &rest args)
+                               zap-case-sensitive)
   "Ensure `zap-up-to-char' is case sensitive.
 This command is generally called from `avy-zap-up-to-char-dwim'."
   (let ((case-fold-search nil))
-    ad-do-it))
+    (apply old-function args)))
 
 (global-set-key (kbd "M-z") #'avy-zap-up-to-char-dwim)
 
