@@ -54,10 +54,11 @@
 ;; Precise completion.
 
 ;; force hippie-expand completions to be case-sensitive
-(defadvice hippie-expand (around hippie-expand-case-fold activate)
+(define-advice hippie-expand (:around (old-function &rest args)
+                              hippie-expand-case-fold)
   "Try to do case-sensitive matching (not effective with all functions)."
   (let ((case-fold-search nil))
-    ad-do-it))
+    (apply old-function args)))
 
 (require 'dash)
 (require 'hippie-exp)
