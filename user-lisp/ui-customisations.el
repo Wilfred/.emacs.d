@@ -1,4 +1,7 @@
 ;;; -*- lexical-binding: nil; -*-
+(declare-function elisp-refs--filter-obarray "elisp-refs")
+(declare-function interaction-log-mode "interaction-log")
+
 ;; scroll one row at at time
 (setq scroll-step 1)
 
