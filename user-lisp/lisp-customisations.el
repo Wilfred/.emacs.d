@@ -8,6 +8,7 @@
 (declare-function paredit-forward "paredit")
 (declare-function paredit-forward-down "paredit")
 (declare-function paredit-forward-up "paredit")
+(declare-function wisent-python-default-setup "semantic/wisent/python")
 (declare-function wh/switch-on-paredit "lisp-customisations")
 (declare-function wh/was-compiled-p "lisp-customisations")
 
