@@ -19,6 +19,7 @@
 
 ;; dabbrev-expand should match case
 (require 'dabbrev)
+(defvar company-dabbrev-code-modes)
 (setq dabbrev-case-fold-search nil)
 
 (use-package company-dabbrev
