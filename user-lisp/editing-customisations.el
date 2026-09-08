@@ -27,13 +27,14 @@
 
 (setq avy-zap-forward-only t)
 
-(defadvice avy-zap-up-to-char-dwim (around wh/any-direction-when-avy activate)
+(define-advice avy-zap-up-to-char-dwim (:around (old-function &rest args)
+                                        wh/any-direction-when-avy)
   "When calling with a prefix argument, allow zapping in any direction.
 Only zap forwards otherwise."
   (if current-prefix-arg
       (let ((avy-zap-forward-only nil))
-        ad-do-it)
-    ad-do-it))
+        (apply old-function args))
+    (apply old-function args)))
 
 (defadvice zap-up-to-char (around zap-case-sensitive activate)
   "Ensure `zap-up-to-char' is case sensitive.
