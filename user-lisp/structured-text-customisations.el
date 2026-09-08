@@ -1,6 +1,9 @@
 ;;; -*- lexical-binding: nil; -*-
 (defvar markdown-gfm-use-electric-backquote)
 
+(declare-function crux-smart-open-line-above "crux")
+(declare-function hproperty:but-clear nil)
+
 ;; csv mode stuff, since it's used extensively in GBBO
 (autoload 'csv-mode "csv-mode")
 
