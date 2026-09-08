@@ -1,6 +1,11 @@
 ;;; -*- lexical-binding: nil; -*-
 ;;; conflicts-customisations.el -- Conveniences for handling files with conflicts
 
+(declare-function smerge-keep-all "smerge-mode")
+(declare-function smerge-keep-current "smerge-mode")
+(declare-function smerge-next "smerge-mode")
+(declare-function smerge-prev "smerge-mode")
+
 (defun wh/conflicts-list ()
   "Show all the conflicts in the current buffer using occur-mode."
   (interactive)
