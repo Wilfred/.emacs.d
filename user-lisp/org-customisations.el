@@ -3,6 +3,11 @@
 
 (declare-function wh/org-today-entry "org-customisations")
 (declare-function wh/org-today-subheading "org-customisations")
+(declare-function org-cycle-hide-drawers "org")
+(declare-function org-indent-mode "org-indent")
+(declare-function org-insert-time-stamp "org")
+(declare-function org-timestamp-down-day "org")
+(declare-function org-timestamp-up-day "org")
 
 (use-package org
   :config
