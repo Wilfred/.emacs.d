@@ -6,25 +6,6 @@
   (custom-set-faces
    '(magit-section-highlight ((t (:background "grey14")))))
 
-  (defun wh/magit-branch-from-current-and-checkout (branch)
-    "Create and checkout BRANCH from the current branch."
-    (interactive (list (magit-read-string-ns "Branch name")))
-    (let ((start-point (magit-get-current-branch)))
-      (if (string-match-p "^stash@{[0-9]+}$" start-point)
-          (magit-run-git "stash" "branch" branch start-point)
-        (magit-call-git "checkout" "-b" branch start-point)
-        (--when-let (and (magit-get-upstream-branch branch)
-                         (magit-get-indirect-upstream-branch start-point))
-          (magit-call-git "branch" (concat "--set-upstream-to=" it) branch))
-        (magit-refresh))))
-
-  (magit-define-popup-action 'magit-branch-popup
-    ?f "new branch From current" #'wh/magit-branch-from-current-and-checkout)
-
-  ;; I keep typing P (for push) instead of p. Set up an alias.
-  (magit-define-popup-action 'magit-push-popup
-    ?P "push alias" #'magit-push-current-to-upstream)
-
   ;; I never remember this command, so give it an alias. It's bound to C
   ;; in magit commit buffers.
   (defalias 'wh/magit-add-file-entry #'magit-commit-add-log))
@@ -63,11 +44,6 @@
 ;; master, then pulling your merged branch ends up reverting all the
 ;; changes files twice1
 (global-auto-revert-mode -1)
-
-;; Include 'x' in the magit popup.
-;; From https://github.com/magit/magit/issues/2141
-(magit-define-popup-action 'magit-dispatch-popup
-  ?x "Reset" 'magit-reset ?!)
 
 ;; Default colours are too subtle, make them obvious.
 (custom-set-faces
