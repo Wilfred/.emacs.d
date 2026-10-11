@@ -475,14 +475,6 @@ Visit the file after creation."
 
 
 
-;; flycheck also provides a great overview buffer, but it's usually bound
-;; to =C-c ! f=. This is tricky to type, so we use our own keybinding.
-
-
-(define-key flycheck-mode-map (kbd "C-c f") #'flycheck-list-errors)
-
-
-
 ;; ~flycheck-next-error~ doesn't push the mark, so we can't use
 ;; ~pop-mark~ to go back to our previous position. We define and activate
 ;; advice to fix that.
