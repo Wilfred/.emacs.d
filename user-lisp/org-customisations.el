@@ -9,10 +9,6 @@
   ;; See http://emacs.stackexchange.com/a/22540/304
   (remove-hook 'org-cycle-hook #'org-cycle-hide-drawers)
 
-  ;; Indent text according to its heading level.
-  (add-hook 'org-mode-hook #'org-indent-mode)
-  (diminish #'org-indent-mode)
-
   ;; When creating or completing a TODO, record the timestamps.
   (setq org-log-done 'time)
 
