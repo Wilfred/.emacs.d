@@ -28,7 +28,7 @@
                 hungry-delete hyperbole ido-ubiquitous
                 ido-vertical-mode imenu-anywhere impatient-mode
                 interaction-log io-mode io-mode-inf jade-mode js2-mode
-                js2-refactor json-mode jump-char keyfreq less-css-mode
+                json-mode jump-char keyfreq less-css-mode
                 lispy list-environment litable llvm-mode logstash-conf
                 lsp-mode lsp-treemacs lua-mode magit magit-section
                 markdown-toc merlin merlin-eldoc modalka monky mosey
