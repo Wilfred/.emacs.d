@@ -1,9 +1,8 @@
 ;;; -*- lexical-binding: nil; -*-
 (use-package go-mode
   :config
-  ;; Jump to definitions.
-  (setq godef-command "~/go/bin/godef")
-  (define-key go-mode-map (kbd "M-.") #'godef-jump)
+  ;; Use gopls for completion, documentation, and jump to definition.
+  (add-hook 'go-mode-hook #'eglot-ensure)
 
   ;; Run flycheck as you type.
   (add-hook 'go-mode-hook #'flycheck-mode)
@@ -12,14 +11,6 @@
   (defun wh/set-go-tab-width ()
     (setq tab-width 4))
   (add-hook 'go-mode-hook #'wh/set-go-tab-width)
-  ;; Use gocode for completion.
-
-  (defun wh/setup-company ()
-    (setq company-backends (list #'company-go)))
-  (add-hook 'go-mode-hook #'wh/setup-company)
-
-  ;; Show type of variable at point in the minibuffer.
-  (add-hook 'go-mode-hook #'go-eldoc-setup)
 
   ;; Using -s with goimports is not supported with upstream goimports.
   ;; See https://github.com/golang/go/issues/8759. Instead, use
