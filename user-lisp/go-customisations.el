@@ -12,11 +12,8 @@
     (setq tab-width 4))
   (add-hook 'go-mode-hook #'wh/set-go-tab-width)
 
-  ;; Using -s with goimports is not supported with upstream goimports.
-  ;; See https://github.com/golang/go/issues/8759. Instead, use
-  ;; $ go get github.com/jzelinskie/tools/cmd/goimports
+  ;; go install golang.org/x/tools/cmd/goimports@latest
   (setq gofmt-command "~/go/bin/goimports")
-  (setq gofmt-args (list "-s"))
 
   ;; TODO: send PR for this.
   (defun wh/gofmt-before-save ()
